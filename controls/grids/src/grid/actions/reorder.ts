@@ -240,8 +240,8 @@ export class Reorder implements IAction {
                     let isAvail: boolean;
                     for (let k: number = 0; k < fTh.length; k++) {
                         for (let j: number = 0; j < mTh.length; j++) {
-                            if (mTh[j].innerText === fTh[k].innerText && parseInt(mTh[j].getAttribute('aria-colindex'), 10) ===
-                                parseInt(fTh[k].getAttribute('aria-colindex'), 10)) {
+                            if (mTh[j].innerText === fTh[k].innerText && parseInt(mTh[j].getAttribute('data-colindex'), 10) ===
+                                parseInt(fTh[k].getAttribute('data-colindex'), 10)) {
                                 isAvail = true;
                                 break;
                             }
@@ -268,8 +268,8 @@ export class Reorder implements IAction {
                     for (let k: number = 0; k < mTh.length; k++) {
                         let isAvail: boolean;
                         for (let j: number = k + 1; j < mTh.length; j++) {
-                            if (mTh[j].innerText === mTh[k].innerText && parseInt(mTh[j].getAttribute('aria-colindex'), 10) ===
-                                parseInt(mTh[k].getAttribute('aria-colindex'), 10)) {
+                            if (mTh[j].innerText === mTh[k].innerText && parseInt(mTh[j].getAttribute('data-colindex'), 10) ===
+                                parseInt(mTh[k].getAttribute('data-colindex'), 10)) {
                                 isAvail = true;
                                 break;
                             }

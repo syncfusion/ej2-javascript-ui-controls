@@ -511,6 +511,38 @@ describe('Character Formatting of Heading', () => {
         expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
     });
 });
+describe('To check whether revisions are added after pressing enter inside table', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true });
+        DocumentEditor.Inject(Editor, Selection);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((): void => {
+        if (editor) {
+            editor.destroy();
+        }
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+    });
+    it('Press Enter inside the table', () => {
+        editor.editor.insertTable(1,1);
+        editor.editor.insertBookmark('S');
+        editor.enableTrackChanges = true;
+        editor.selection.handleDownKey();
+        editor.selection.handleUpKey();
+        editor.editor.onEnter();
+        expect(editor.revisions.length).toBe(1);
+    });
+});
 // describe("Paste Validation", () => {
 //     let editor: DocumentEditor = undefined;
 //     let viewer: LayoutViewer;

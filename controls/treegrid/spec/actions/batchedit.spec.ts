@@ -1411,6 +1411,55 @@ describe('Batch Edit module', () => {
     });
   });
 
+  describe('EJ2-60732 - Adding multiple record through addRecord method in Batch Editing', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Child" },
+          allowSorting: true,
+          allowFiltering: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Add - Adding multiple record through addRecord method', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        expect((gridObj.flatData[0] as ITreeData).childRecords.length).toBe(6);
+        done();
+      }
+      gridObj.addRecord({
+        taskID: 100,
+        taskName: 'Fist Record',
+        startDate: new Date('02/03/2017'),
+        progress: 100,
+      }, 1, 'Below');
+      gridObj.addRecord({
+        taskID: 101,
+        taskName: 'Second Record',
+        startDate: new Date('02/05/2017'),
+        progress: 100,
+      }, 4, 'Below');
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      gridObj.actionComplete = actionComplete;
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

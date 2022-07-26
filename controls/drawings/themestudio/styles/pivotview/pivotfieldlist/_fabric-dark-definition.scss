@@ -115,6 +115,16 @@ $field-list-sort-select-border-color: $neutral-tertiary-alt !default;
 $field-list-sort-select-color: $neutral-light-fontalt !default;
 $field-list-border: $field-list-default-border-color !default;
 $field-list-cal-button-text-color: $field-list-default-font-color !default;
+$field-list-calc-expand-icon-padding: 8px !default;
+$field-list-search-padding-size: 10px $field-list-title-padding-size !default;
+$field-list-member-prompt-padding-size: 25px 12px !default;
+$field-list-search-popup-table-height: 392px !default;
+$field-list-search-popup-axis-content-height: 162px !default;
+$field-list-search-popup-container-bigger-height: 570px !default;
+$field-list-search-popup-table-bigger-height: 400px !default;
+$field-list-search-popup-axis-table-bigger-height: 404px !default;
+$field-list-search-popup-axis-content-bigger-height: 165px !default;
+$field-list-filter-toolbar-items-margin: 20px !default;
 
 /*! component's common definitions and variables */
 $field-list-static-padding-size: 10px !default;
@@ -166,7 +176,7 @@ $pivot-calculated-formula-font-family: $font-family !default;
 $pivot-calculated-formula-font-padding: 5px 10px !default;
 $pivot-calculated-icon-opacity: 1 !default;
 $field-list-bigger-button-line-height: 1em !default;
-
+$field-list-adaptive-outerdiv-height: 164px !default;
 
 /*! component's common definitions and variables */
 $format-label-font-size: 13px !default;
@@ -178,3 +188,5 @@ $olap-tree-outer-div-height: 441px;
 $olap-bigger-tree-wrapper-height: 528px;
 $olap-bigger-tree-outer-div-height: 490px;
 $field-list-text-transform: none !default;
+$olap-bigger-tree-width: 283px !default;;
+$olap-bigger-tree-outer-div-width: 325px !default;

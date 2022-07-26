@@ -223,10 +223,10 @@ export class ContextMenu implements IAction {
         case 'Edit':
             if (this.parent.editModule) {
                 if (this.parent.editSettings.mode === 'Batch') {
-                    if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute(literals.ariaColIndex), 10))) {
-                        this.parent.editModule.editCell(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10),
+                    if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute(literals.dataColIndex), 10))) {
+                        this.parent.editModule.editCell(parseInt(this.row.getAttribute(literals.dataRowIndex), 10),
                                                         // eslint-disable-next-line
-                                                        (this.parent.getColumns()[parseInt(this.cell.getAttribute(literals.ariaColIndex), 10)] as Column).field);
+                                                        (this.parent.getColumns()[parseInt(this.cell.getAttribute(literals.dataColIndex), 10)] as Column).field);
                     }
                 } else {
                     this.parent.editModule.endEdit();
@@ -643,7 +643,7 @@ export class ContextMenu implements IAction {
         this.cell = (<HTMLElement>e.target) as HTMLTableCellElement;
         this.row = <HTMLElement>closest(<HTMLElement>e.target, 'tr.e-row') as HTMLTableRowElement || this.row;
         if (this.row && isSelectable && !parentsUntil(<HTMLElement>e.target, 'e-gridpager')) {
-            this.parent.selectRow(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10));
+            this.parent.selectRow(parseInt(this.row.getAttribute(literals.dataRowIndex), 10));
         }
     }
 }

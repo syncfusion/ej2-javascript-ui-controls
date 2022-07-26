@@ -1089,10 +1089,11 @@ export class DiagramEventHandler {
                 this.tool.mouseWheel(this.eventArgs);
             }
             this.diagram.scrollActions |= ScrollActions.Interaction;
+            let canMouseWheel:boolean = true;
             if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
-                this.diagram.scroller.zoom(1, change, 0, mousePosition);
+                this.diagram.scroller.zoom(1, change, 0, mousePosition,canMouseWheel);
             } else {
-                this.diagram.scroller.zoom(1, 0, change, mousePosition);
+                this.diagram.scroller.zoom(1, 0, change, mousePosition,canMouseWheel);
             }
             this.diagram.scrollActions &= ~ScrollActions.Interaction;
             if (horizontalOffset !== this.diagram.scroller.horizontalOffset
@@ -1289,6 +1290,7 @@ export class DiagramEventHandler {
 
     private doAutoScroll(option: string, e: PointerEvent | TouchEvent, delay?: number, autoScroll?: boolean): void {
         const position: string = option;
+        let canAutoScroll:boolean = true;
         if ((this.tool instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool
             || this.tool instanceof MoveTool || this.tool instanceof ResizeTool
             || this.tool instanceof SelectTool) && this.inAction) {
@@ -1324,7 +1326,7 @@ export class DiagramEventHandler {
             this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
             this.diagram.scrollActions |= ScrollActions.Interaction;
-            this.diagram.scroller.zoom(1, -left, -top, pos);
+            this.diagram.scroller.zoom(1, -left, -top, pos,canAutoScroll);
             this.diagram.scrollActions &= ~ScrollActions.Interaction;
         }
     }

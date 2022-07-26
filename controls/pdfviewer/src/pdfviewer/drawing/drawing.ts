@@ -3232,9 +3232,40 @@ export class Drawing {
      * @private
      * @returns {Object} - Returns the object.
      */
+     public canCopy(): boolean {
+        var activeElement = document.activeElement;
+        var cls = "e-pv-page-container";
+        var copyElement;
+        if (activeElement) {
+            copyElement = this.isViewerContainer(activeElement, cls);
+            if (copyElement)
+                return true;
+            else
+                return this.isViewerContainer(activeElement, "e-menu-item");
+        }
+        return true;
+    }
+    public isViewerContainer(element: Element, cls: string): boolean {
+        var cls = "e-pv-page-container";
+        var elementClassList = element.classList;
+        var parentClass = element.parentElement;
+        if (elementClassList && elementClassList.contains(cls)) {
+            return true;
+        }
+        else {
+            if (parentClass) {
+                return this.isViewerContainer(parentClass , cls)
+            }
+            else {
+                return false;
+            }
+        }
+    }
     public copy(): Object {
-        this.pdfViewer.clipboardData.pasteIndex = 1;
-        this.pdfViewer.clipboardData.clipObject = this.copyObjects();
+        if(this.canCopy()){
+            this.pdfViewer.clipboardData.pasteIndex = 1;
+            this.pdfViewer.clipboardData.clipObject = this.copyObjects();           
+        }
         return this.pdfViewer.clipboardData.clipObject;
     }
     /**
@@ -3469,10 +3500,12 @@ export class Drawing {
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.removedAnnotationCollection = [];
         }
-        this.pdfViewer.clipboardData.pasteIndex = 0;
-        this.pdfViewer.clipboardData.clipObject = this.copyObjects();
-        this.pdfViewer.renderDrawing(undefined, index);
-        this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
+        if(this.canCopy()){
+            this.pdfViewer.clipboardData.pasteIndex = 0;
+            this.pdfViewer.clipboardData.clipObject = this.copyObjects();
+            this.pdfViewer.renderDrawing(undefined, index);
+            this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
+        }
     }
     /**
      * @private

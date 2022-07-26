@@ -35,6 +35,10 @@ export class GanttChart {
     public keyboardModule: KeyboardEvents;
     public targetElement: Element;
     public virtualRender: VirtualContentRenderer;
+    public isEditableElement:any;
+    public tempNextElement:any;
+    public nextElementIndex:any;
+    public childrenIndex:any;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
@@ -972,6 +976,23 @@ export class GanttChart {
             $target.closest('.e-chart-row') ? ($target.closest('.e-chart-row') as any).rowIndex : -1;
         const isTab: boolean = (e.action === 'tab') ? true : false;
         const nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
+        this.tempNextElement=nextElement;
+        if(!isNullOrUndefined(nextElement['cellIndex'])){
+            if(this.parent.allowRowDragAndDrop){
+            this.childrenIndex=nextElement['cellIndex'];
+            this.nextElementIndex=nextElement['cellIndex']-1;
+        }
+        else{
+            this.childrenIndex=nextElement['cellIndex'];
+            this.nextElementIndex=nextElement['cellIndex'];
+        }
+        if(!this.parent.ganttColumns[this.nextElementIndex]['allowEditing'] && this.parent.ganttColumns[this.nextElementIndex]['field']!==this.parent.taskFields.id){
+            this.isEditableElement=true;
+        }
+        else{
+            this.isEditableElement=false;
+        }
+    }
         if (nextElement === 'noNextRow') {
             this.manageFocus($target as HTMLElement, 'remove', true);
             return;
@@ -1014,7 +1035,8 @@ export class GanttChart {
                     this.parent.treeGrid.grid.notify('key-pressed', e);
                 }
             }
-            if (!isNullOrUndefined(isInEditedState) && !this.parent.editModule.cellEditModule.isCellEdit) {
+          if (!(this.parent.editModule && this.parent.editModule.cellEditModule 
+            && !isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn))) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
                         this.manageFocus($target as HTMLElement, 'remove', false);

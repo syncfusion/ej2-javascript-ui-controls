@@ -1,5 +1,5 @@
 import { Gantt, Selection, Edit, Toolbar,Filter } from '../../src/index';
-import { projectData1, splitTasksData } from '../base/data-source.spec';
+import { editingData, projectData1, splitTasksData } from '../base/data-source.spec';
 import { IKeyPressedEventArgs } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { Browser, getValue } from '@syncfusion/ej2-base';
@@ -394,3 +394,87 @@ describe('Gantt Selection support', () => {
         });
     });
 });
+describe('Tab Key allow editing false', () => {
+    describe('Tab allow editing false', function () {
+        let ganttObj: Gantt;
+        let preventDefault: Function = new Function();
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    allowNextRowEdit:true
+
+        },
+
+        columns: [
+            { field: 'TaskID', width: 80 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'Duration',allowEditing:false},
+            { field: 'Progress'},
+            { field: 'Predecessor' }
+        ],
+        toolbar: [
+            'Add',
+            'Edit',
+            'Update',
+            'Delete',
+            'Cancel',
+            'ExpandAll',
+            'CollapseAll',
+        ],
+        enableContextMenu: true,
+        allowSelection: true,
+        height: '450px',
+        treeColumnIndex: 1,
+        highlightWeekends: true,
+        splitterSettings: {
+            columnIndex: 2,
+        },
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%',
+        },
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('07/28/2019')
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Tab action after allow editing false', () => {
+            let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+            triggerMouseEvent(startDate, 'dblclick');
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            let duration:HTMLElement=ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+            expect(duration.classList.contains('e-focused')).toBe(true);
+            let args2: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement };
+            ganttObj.keyboardModule.keyAction(args2);
+            let progress:HTMLElement=ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
+            expect(progress.classList.contains('e-editedbatchcell')).toBe(true);
+        });
+
+    });
+ });

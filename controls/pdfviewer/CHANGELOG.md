@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#SF-389566` - Now, Script Error is not occurs while try to change Pdf view to text view in sample.
+- `#SF-376222` - Now, Annotation selector binds while dragging with right click and then clicking left click.
+- `#SF-382568` - Now text boxes with the same name are saved and preserved after downloading and loading the document.
+- `SF-387261` - The signature in the signature field is not visible on Adobe Reader's print preview has been resolved.
+- `#SF-380373` - Now the event triggering is fixed for Hand Written Signature only, if it is a Signature field, then the add and remove signature events are skipped.
+- `#SF-383430` - Now copy, cut and paste does not generate any duplicates while using key short cut.
+- `#SF-376526` - Now, Mobile device resizing of the Signature Form Field has been improved.
+- `#SF-392270` - Now Signature is not drawn few inches away from the cursor on signature dialog.
+
 ## 20.2.39 (2022-07-19)
 
 ### PDF Viewer

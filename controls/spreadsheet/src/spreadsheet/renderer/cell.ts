@@ -160,7 +160,8 @@ export class CellRenderer implements ICellRenderer {
                 this.parent.notify(setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx), isUndoRedo: false});
             }
             if (args.cell.hyperlink) {
-                this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
+                this.parent.notify(
+                    createHyperlinkElement, { cell: args.cell, style: style, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
             if (args.cell.rowSpan > 1) {
                 const rowSpan: number = args.cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1));
@@ -213,28 +214,11 @@ export class CellRenderer implements ICellRenderer {
                     cell: args.td });
             }
         }
-        if (args.cell) {
-            if (args.cell.hyperlink && !args.td.classList.contains('e-cell-template')) {
-                let address: string; if (typeof (args.cell.hyperlink) === 'string') {
-                    address = args.cell.hyperlink;
-                    if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                        args.cell.hyperlink = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
-                    }
-                } else {
-                    address = args.cell.hyperlink.address;
-                    if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                        args.cell.hyperlink.address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
-                    }
-                }
-                this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
-            }
-            if (args.cell.wrap) {
-                this.parent.notify(wrapEvent, {
-                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet:
-                    sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh &&
-                    getRowHeight(sheet, args.rowIdx) > 20
-                });
-            }
+        if (args.cell && args.cell.wrap) {
+            this.parent.notify(wrapEvent, {
+                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet: sheet, initial: true, td: args.td, row:
+                    args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && getRowHeight(sheet, args.rowIdx) > 20
+            });
         }
         const validation: ValidationModel = (args.cell && args.cell.validation) || (sheet.columns && sheet.columns[args.colIdx] &&
             sheet.columns[args.colIdx].validation);

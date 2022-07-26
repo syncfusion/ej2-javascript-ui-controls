@@ -213,7 +213,7 @@ export class Render {
         const templateFn: string = 'templateFn';
         const colindex: number = args.column.index;
         if (isNullOrUndefined(treeColumn.field)) {
-            args.cell.setAttribute('aria-colindex', colindex + '');
+            args.cell.setAttribute('data-colindex', colindex + '');
         }
         if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
             args.column.template = treeColumn.template;

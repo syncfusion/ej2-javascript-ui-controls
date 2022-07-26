@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I380086` - Now, resizing the table's first and last columns when the Rich Text Editor is rendered inside the Grid component works properly.
+
+- `#I391326` - Now, the Font-family value property is case-Insensitive in the Rich Text Editor.
+
 ## 20.2.39 (2022-07-19)
 
 ### RichTextEditor
@@ -10,7 +20,9 @@
 
 - `#I388456` - Now, when an empty span tag is loaded in the Rich Text Editor, the text displays properly.
 
-- `#I388270` - Now, Script error is not thrown when we click background color toolbar of the RTE, which is rendered inside a table.
+- `#I386938` - Now, the Image resize in the Rich Text Editor works properly.
+
+- `#I386940` - Now, clicking `ctrl+B` continuously in list element works properly.
 
 ## 20.2.38 (2022-07-12)
 

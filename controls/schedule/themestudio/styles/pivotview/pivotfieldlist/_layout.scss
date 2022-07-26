@@ -667,7 +667,7 @@
               display: inline-block;
               height: $olap-tree-outer-div-height;
               overflow: auto;
-              width: 310px;
+              width: 100% !important;
             }
 
             .e-treeview {

@@ -126,7 +126,7 @@ export class BlazorAction {
         const uid: string = tr.getAttribute('data-uid');
         const rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
         const args: Object = {
-            uid: uid, classList: target.classList[0], index: tr.getAttribute('aria-rowindex'),
+            uid: uid, classList: target.classList[0], index: tr.getAttribute('data-rowindex'),
             rowIndex: gObj.getRowsObject().indexOf(rowObj), colSpan: this.parent.getVisibleColumns().length
         };
         gObj[adaptor][invokeMethodAsync]('OnDetailClick', args);
@@ -180,7 +180,7 @@ export class BlazorAction {
             if (this.virtualContentModule.activeKey === 'downArrow' || this.virtualContentModule.activeKey === 'upArrow') {
                 const row: Element = this.parent.getRowByIndex(this.virtualContentModule.blzRowIndex);
                 if (row) {
-                    this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+                    this.parent.selectRow(parseInt(row.getAttribute('data-rowindex'), 10));
                     // eslint-disable-next-line
                     ((<HTMLTableRowElement>row).cells[0] as any).focus({ preventScroll: true });
                 }

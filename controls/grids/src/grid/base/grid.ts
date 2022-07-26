@@ -3763,15 +3763,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const row: Element = closest(ele, '.' + literals.row);
                 if (!isNullOrUndefined(row) && !row.classList.contains('e-addedrow')) {
                     const rowObj: Row<Column> = this.getRowObjectFromUID(row.getAttribute('data-uid'));
-                    const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+                    const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
                     args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };
                 }
                 return args;
             }
-            const cellIndex: number = parseInt(cell.getAttribute(literals.ariaColIndex), 10);
+            const cellIndex: number = parseInt(cell.getAttribute(literals.dataColIndex), 10);
             if (!isNullOrUndefined(cell) && !isNaN(cellIndex)) {
                 const row: Element = closest(cell, '.' + literals.row);
-                const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+                const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
                 const frzCols: number = this.getFrozenColumns();
                 const tableName: freezeTable = this.columnModel[cellIndex].getFreezeTableName();
                 let rows: Row<{}>[] = <Row<{}>[]>this.contentModule.getRows();
@@ -3865,7 +3865,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[i].classList.contains(literals.row) && (!rows[i].classList.contains('e-hiddenrow') || includAdd)) {
                 if (this.isCollapseStateEnabled()) {
-                    dRows[parseInt(rows[i].getAttribute('aria-rowindex'), 10)] = rows[i];
+                    dRows[parseInt(rows[i].getAttribute('data-rowindex'), 10)] = rows[i];
                 } else {
                     dRows.push(rows[i] as Element);
                 }
@@ -4041,10 +4041,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 for (let j: number = 0; j < rows.length; j++) {
                     const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
                     if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index)) {
-                        const cell: Cell<Column> = rowsObj[cells][cellIndex];
-                        const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                        const td: Element = this.getCellFromIndex(j, cellIndex - indent);
-                        cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
+                        for (let i: number = 0; i < rowsObj[cells].length; i++) {
+                            const cell: Cell<Column> = rowsObj[cells][i];
+                            if (cell.isTemplate) {
+                                const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
+                                const td: Element = this.getCellFromIndex(j, i - indent);
+                                cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
+                            }
+                        }
                     }
                 }
             });
@@ -5683,7 +5687,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         this.toolTipObj.content = element.innerText;
                     }
                     this.prevElement = element;
-                    const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.ariaColIndex), 10)] as Column;
+                    const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
                     if (col.disableHtmlEncode) {
                         (<{ enableHtmlParse?: boolean }>this.toolTipObj).enableHtmlParse = false;
                     }
@@ -5708,7 +5712,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     rows[i].classList.remove('e-frozenhover');
                 }
             } else if (row) {
-                const rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute(literals.ariaRowIndex) + '"]'));
+                const rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[data-rowindex="' + row.getAttribute(literals.dataRowIndex) + '"]'));
                 rows.splice(rows.indexOf(row), 1);
                 for (let i: number = 0; i < rows.length; i++) {
                     if (row.getAttribute('aria-selected') !== 'true' && rows[i]) {
@@ -7004,7 +7008,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private deleteRowElement(row: Row<Column>): void {
         const tr: Element = this.getRowElementByUID(row.uid);
-        const index: number = parseInt(tr.getAttribute(literals.ariaRowIndex), 10);
+        const index: number = parseInt(tr.getAttribute(literals.dataRowIndex), 10);
         remove(tr);
         if (this.getFrozenColumns()) {
             const mtr: Element = this.getMovableRows()[index];

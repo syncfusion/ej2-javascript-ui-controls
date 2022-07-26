@@ -1321,6 +1321,9 @@ export class ResizeTool extends ToolBase {
             if (this.commandHandler.selectedItems.formFields.length > 0 && (this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'Textbox' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'Checkbox'
               || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'RadioButton' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'InitialField' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'SignatureField'
               || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'DropdownList' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'ListBox' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'PasswordField')) {
+                if(this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'SignatureField'){
+                    this.commandHandler.selectedItems.formFields[0].signatureIndicatorSettings = this.commandHandler.selectedItems.formFields[0].signatureIndicatorSettings ? this.commandHandler.selectedItems.formFields[0].signatureIndicatorSettings : { opacity: 1, backgroundColor: 'rgba(255, 228, 133, 0.35)', width: 19, height: 10, fontSize: 10, text: null, color: 'black' };
+                }
                 this.commandHandler.formDesignerModule.updateHTMLElement(this.commandHandler.selectedItems.formFields[0]);
             }
             this.commandHandler.renderSelector(this.prevPageId, this.prevSource.annotationSelectorSettings);

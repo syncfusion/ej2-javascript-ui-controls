@@ -1,7 +1,7 @@
 /**
  *  QueryBuilder spec document
  */
-import { QueryBuilder, ColumnsModel,  RuleModel, QueryBuilderModel, FormatObject } from '../src/query-builder/index';
+import { QueryBuilder, ColumnsModel,  RuleModel, QueryBuilderModel, FormatObject, TemplateColumn } from '../src/query-builder/index';
 import { createElement, remove, closest, select, selectAll, detach, getComponent, Internationalization, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
@@ -752,7 +752,6 @@ describe('QueryBuilder', () => {
             detach(queryBuilder.element);
         });
         it('displayMode testing Vertical', () => {
-            expect(queryBuilder.displayMode).toEqual('Horizontal');
             queryBuilder = new QueryBuilder({
                 columns: columnData,
                 displayMode: 'Vertical'
@@ -2465,12 +2464,12 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getGroup(document.getElementById('querybuilder_group0')).condition).toEqual('and');
             let slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
             slider.value = 30; slider.dataBind();
-            expect(queryBuilder.rule.rules[0].value).toEqual(30);
-            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-operator-input.e-control').ej2_instances;
+            expect(queryBuilder.rule.rules[0].value).toEqual(32);
+            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
             itemsCln[1].click();
-            operatorElem = queryBuilder.element.querySelector('.e-operator-input.e-control').ej2_instances;
+            operatorElem = queryBuilder.element.querySelector('.e-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
             itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
             itemsCln[0].click();
@@ -3053,7 +3052,102 @@ describe('QueryBuilder', () => {
             expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
         });
 
-
+        it('EJ2-61503 - Value template not destroy properly when we use complex data source', () => {
+            let dateTemplate: TemplateColumn = {
+                create: () => {
+                  return document.createElement('div');
+                },
+                destroy: (args: { elementId: string }) => {
+                    let dropDownList: DropDownList = getComponent(
+                      document.getElementById(args.elementId),
+                      'dropdownlist'
+                    ) as DropDownList;
+                    if (dropDownList) {
+                      dropDownList.destroy();
+                    }
+                  },
+                  write: (args: {
+                    elements: Element;
+                    values: string[] | string;
+                    operator: string;
+                  }) => {
+                    let ds: string[] = ['Cash', 'Debit Card', 'Credit Card', 'Net Banking', 'Wallet'];
+                    let dropdownlistObj: DropDownList = new DropDownList({
+                      dataSource: ds,
+                      value: ds[1],
+                      change: (e: any) => {
+                          queryBuilder.notifyChange(e.itemData.value, e.element);
+                      },
+                    });
+                    dropdownlistObj.appendTo('#' + args.elements.id);
+                },
+              };
+            let customFieldData: ColumnsModel[] = [
+                {
+                  label: 'general',
+                  field: 'general',
+                  columns: [
+                    {
+                      label: 'date',
+                      field: 'date',
+                      type: 'date',
+                      step: 0,
+                      template: dateTemplate,
+                    },
+                    {
+                      label: 'title',
+                      field: 'title',
+                      type: 'string',
+                      step: 0,
+                    },
+                    {
+                      label: 'code',
+                      field: 'code',
+                      type: 'string',
+                      step: 0,
+                    },
+                  ],
+                },
+                {
+                  label: 'custom',
+                  field: 'custom',
+                  columns: [
+                    {
+                      label: 'custom_code',
+                      field: 'custom_code',
+                      type: 'string',
+                      step: 1,
+                    },
+                    {
+                      label: 'custom_title',
+                      field: 'custom_title',
+                      type: 'string',
+                      step: 1,
+                    },
+                    {
+                      label: 'custom_date',
+                      field: 'custom_date',
+                      type: 'date',
+                      step: 1,
+                      template: dateTemplate,
+                    },
+                  ],
+                },
+              ];
+            queryBuilder = new QueryBuilder({
+                dataSource: complexData,
+                separator: '.',
+                columns: customFieldData
+            }, '#querybuilder');
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            filterElem.showPopup();
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            items[0].click();
+            queryBuilder.rule.rules[0].value = 'Football'
+            items[1].click();
+            expect(queryBuilder.rule.rules[0].value).toEqual("");
+        });
+        
     });
 
     describe('Events', () => {

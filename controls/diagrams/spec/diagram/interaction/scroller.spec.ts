@@ -461,4 +461,58 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Scroller offset is not updated properly dynamically', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_scrollerIssue' });
+            ele.style.width = '100%';
+            document.body.appendChild(ele);
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 350, offsetY: 350 };
+            diagram = new Diagram({
+                width: '500px',
+                height: '500px',
+                nodes: [node],
+                scrollSettings: { padding: { right: 50, bottom: 50 } }
+            });
+            diagram.appendTo('#diagram_scrollerIssue');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('changing scroll offset at runtime', (done: Function) => {
+            let preHorizontalOffset = diagram.scrollSettings.horizontalOffset;
+            let preVerticalOffset = diagram.scrollSettings.verticalOffset;
+            diagram.scrollSettings.horizontalOffset = 100;
+            diagram.scrollSettings.verticalOffset = 100;
+            diagram.dataBind();
+            expect(preHorizontalOffset === 0 && preVerticalOffset === 0 
+                && diagram.scrollSettings.horizontalOffset === 100 && diagram.scrollSettings.verticalOffset === 100).toBe(true);
+            done();
+        });
+        it('changing scroll offset at runtime with negative value', (done: Function) => {
+            let preHorizontalOffset = diagram.scrollSettings.horizontalOffset;
+            let preVerticalOffset = diagram.scrollSettings.verticalOffset;
+            diagram.scrollSettings.horizontalOffset = -200;
+            diagram.scrollSettings.verticalOffset = -200;
+            diagram.dataBind();
+            expect(preHorizontalOffset === 100 && preVerticalOffset === 100 
+                && diagram.scrollSettings.horizontalOffset === 0 && diagram.scrollSettings.verticalOffset === 0).toBe(true);
+            done();
+        });
+        it('changing scroll offset at runtime with scroll Limit Infinity', (done: Function) => {
+            let preHorizontalOffset = diagram.scrollSettings.horizontalOffset;
+            let preVerticalOffset = diagram.scrollSettings.verticalOffset;
+            diagram.scrollSettings.scrollLimit = 'Infinity';
+            diagram.scrollSettings.horizontalOffset = 600;
+            diagram.scrollSettings.verticalOffset = -700;
+            diagram.dataBind();
+            expect(preHorizontalOffset === 0 && preVerticalOffset === 0 
+                && diagram.scrollSettings.horizontalOffset === 600 && diagram.scrollSettings.verticalOffset === -700).toBe(true);
+            done();
+        });
+    });
 });

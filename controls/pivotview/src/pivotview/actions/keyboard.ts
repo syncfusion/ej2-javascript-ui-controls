@@ -339,7 +339,7 @@ export class KeyboardInteraction {
         if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row' &&
             !target.classList.contains('e-numerictextbox')) {
             let control: PivotView = this.parent as PivotView;
-            let colIndex: number = Number((e.target as HTMLElement).getAttribute('aria-colIndex'));
+            let colIndex: number = Number((e.target as HTMLElement).getAttribute('data-colindex'));
             let rowIndex: number = Number((e.target as HTMLElement).getAttribute('index'));
             let ele: HTMLElement;
             /* eslint-disable */
@@ -348,7 +348,7 @@ export class KeyboardInteraction {
                     ele = (rowIndex === 0 || colIndex === 0 || (target.nodeName !== 'TH' &&
                         control.renderModule.rowStartPos !== rowIndex)) ? null : this.getParentElement(control, ele, colIndex, rowIndex - 1);
                 } else if (e.action === 'shiftDown' || e.action === 'downArrow') {
-                    ele = control.element.querySelector('th[aria-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
+                    ele = control.element.querySelector('th[data-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
                 }
                 else if (e.action === 'shiftLeft' || e.action === 'leftArrow') {
                     ele = (e.target as HTMLElement).previousSibling as HTMLElement;
@@ -360,7 +360,7 @@ export class KeyboardInteraction {
             }
             if (!isNullOrUndefined(ele)) {
                 if (control.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(cls.ROW_CELL_CLASS) : true) {
-                    colIndex = Number(ele.getAttribute('aria-colindex'));
+                    colIndex = Number(ele.getAttribute('data-colindex'));
                     rowIndex = Number(ele.getAttribute('index'));
                     let colSpan: number = Number(ele.getAttribute('aria-colspan'));
                     control.clearSelection(ele, e, colIndex, rowIndex);
@@ -380,11 +380,11 @@ export class KeyboardInteraction {
                 }
             } else {
                 if (e.action === 'upArrow') {
-                    ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + (rowIndex - 1) + '"]');
+                    ele = control.element.querySelector('[data-colindex="' + colIndex + '"][index="' + (rowIndex - 1) + '"]');
                     rowIndex--;
                 }
                 else if (e.action === 'downArrow') {
-                    ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
+                    ele = control.element.querySelector('[data-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
                     rowIndex++;
                 }
                 if (!isNullOrUndefined(ele)) {
@@ -414,7 +414,7 @@ export class KeyboardInteraction {
     }
     private getParentElement(control: PivotView, ele: HTMLElement, colIndex: number, rowIndex: number): HTMLElement {
         while (!ele) {
-            ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + rowIndex + '"]');
+            ele = control.element.querySelector('[data-colindex="' + colIndex + '"][index="' + rowIndex + '"]');
             colIndex--;
         }
         return ele;

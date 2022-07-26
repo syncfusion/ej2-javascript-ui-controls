@@ -650,7 +650,6 @@ describe('Summary with Sorting', () => {
     });
 
     it('Summary format', () => {
-      debugger;
       expect(TreegridObj.element.getElementsByClassName('e-gridfooter')[0].getElementsByTagName('tfoot')[0].querySelector('.e-templatecell').innerHTML === "Max: $11.00").toBe(true);
       });
     afterAll(() => {

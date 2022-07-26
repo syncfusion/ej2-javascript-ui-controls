@@ -541,3 +541,47 @@ describe('Rtl context menu validation', () => {
         expect(editor.selection.isEmpty).toBe(false);
     });
 });
+describe('Adding custom context menu', () => {
+    let editor: DocumentEditor;
+    let menu: ContextMenu;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection);
+        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        menu = editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        menu.destroy();
+        editor = undefined;
+        menu = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Adding custom context menu', () => {
+        let menuItems: MenuItemModel[] = [
+            {
+                text: 'Search In Google',
+                id: 'search_in_google',
+                iconCss: 'e-icons e-de-ctnr-find'
+            }
+        ];
+        menu.enableCustomContextMenu = true;
+        editor.contextMenu.addCustomMenu(menuItems, true, false);
+        editor.editor.insertText("hello world");
+        editor.selection.selectAll();
+        let event: MouseEvent = document.createEvent('MouseEvent');
+        event.initEvent('contextmenu', true, true);
+        expect(()=> { editor.documentHelper.viewerContainer.dispatchEvent(event) }).not.toThrowError();
+    });
+});

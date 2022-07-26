@@ -1305,14 +1305,16 @@ export class Signature {
     private findMousePosition(event: MouseEvent | TouchEvent): void {
         let offsetX: number;
         let offsetY: number;
-        if (event.type.indexOf('touch') !== -1) {
+        if (event.type.indexOf('touch') !== -1) 
+        {
             event = event as TouchEvent;
             const element: HTMLElement = event.target as HTMLElement;
             // eslint-disable-next-line
             let currentRect: any = element.getBoundingClientRect();
-            this.mouseX = event.touches[0].pageX - currentRect.left;
-            this.mouseY = event.touches[0].pageY - currentRect.top;
-        } else {
+            this.mouseX = event.changedTouches[0].clientX - currentRect.left;
+            this.mouseY = event.changedTouches[0].clientY - currentRect.top;
+        }
+        else {
             event = event as MouseEvent;
             this.mouseX = event.offsetX;
             this.mouseY = event.offsetY;

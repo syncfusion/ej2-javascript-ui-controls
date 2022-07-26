@@ -1938,14 +1938,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private triggerEvents(args?: Object): void {
         this.trigger(getObject('name', args), args);
     }
+	private IsExpandCollapseClicked(args: RowDeselectEventArgs): void {
+		if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+			|| args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
+			args.cancel = true;
+			return;
+		}
+	}
     private bindGridEvents(): void {
         this.grid.rowSelecting = (args: RowDeselectEventArgs): void => {
-            if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
-          || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
-                args.cancel = true;
-                return;
-            }
-            this.trigger(events.rowSelecting, args);
+			this.IsExpandCollapseClicked(args);
+			this.trigger(events.rowSelecting, args);
+        };
+		this.grid.rowDeselecting = (args: RowDeselectEventArgs): void => {
+			this.IsExpandCollapseClicked(args);
+			this.trigger(events.rowDeselecting, args);
         };
         this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
             if (this.enableVirtualization && args.isHeaderCheckboxClicked &&
@@ -3734,7 +3741,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             });
         } else if (isNullOrUndefined(record)) {
             if (this.detailTemplate) {
-                record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('aria-rowindex')];
+                record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
             }
@@ -4003,7 +4010,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             rowIndex = this.getCurrentViewRecords().indexOf(record);
             row = gridRows[rowIndex];
         } else {
-            rowIndex = +row.getAttribute('aria-rowindex');
+            rowIndex = +row.getAttribute('data-rowindex');
         }
         if (!isNullOrUndefined(row)) {
             row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');

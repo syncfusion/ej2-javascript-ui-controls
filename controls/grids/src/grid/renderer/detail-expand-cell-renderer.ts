@@ -30,12 +30,12 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
             node.className = '';
             node.className = attributes['class'];
             node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonaldown e-icon-gdownarrow', attrs: {
-                href: '#', 'title': 'expanded'
+                href: 'javascript:void(0);', 'title': 'expanded'
             } }));
         } else {
 
             node.appendChild(this.parent.createElement('a', { className: 'e-icons e-dtdiagonalright e-icon-grightarrow', attrs: {
-                href: '#', 'title': 'collapsed'
+                href: 'javascript:void(0);', 'title': 'collapsed'
             } }));
         }
 

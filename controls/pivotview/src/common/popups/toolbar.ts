@@ -1135,11 +1135,11 @@ export class Toolbar {
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'checkBox');
-            if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) &&
+            if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) &&
                 !args.element.classList.contains(cls.MENU_DISABLE)) {
                 args.element.classList.add(cls.MENU_DISABLE);
                 checkbox.disabled = true;
-            } else if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) < 0) &&
+            } else if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) < 0) &&
                 args.element.classList.contains(cls.MENU_DISABLE)) {
                 args.element.classList.remove(cls.MENU_DISABLE);
                 checkbox.disabled = false;
@@ -1174,7 +1174,7 @@ export class Toolbar {
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.showLableState = chartSettings.legendSettings.visible;
         } else {
-            this.showLableState = ['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1 ?
+            this.showLableState = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) > -1 ?
                 false : true;
         }
         return this.showLableState;
@@ -1653,11 +1653,11 @@ export class Toolbar {
     private changeDropDown(args: ChangeEventArgs): void {
         let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
         if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
-            let checked: boolean = ['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1 ?
+            let checked: boolean = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(args.value.toString()) > -1 ?
                 false : true;
             (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = checked;
         }
-        if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(args.value.toString()) > -1) {
+        if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(args.value.toString()) > -1) {
             (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).disabled = true;
             (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         } else {
@@ -1688,7 +1688,7 @@ export class Toolbar {
         });
         checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', this.chartTypesDialog.element) as HTMLElement);
         checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);
-        if (['Pie', 'Funnel', 'Pyramid', 'Doughnut'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
+        if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
             checkbox.disabled = true;
             (getInstance(select('#' + this.parent.element.id + '_AxisModeOption'), DropDownList) as DropDownList).enabled = false;
         }

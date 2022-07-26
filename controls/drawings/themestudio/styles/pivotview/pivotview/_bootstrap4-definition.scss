@@ -43,9 +43,10 @@ $pivotgrid-bigger-drill-margintop: $pivotgrid-drill-margintop !default;
 $pivotgrid-rtl-expand-icon-font-size: 12px !default;
 $pivotgrid-collapse-icon-fonsize: 10px !default;
 $pivotgrid-expcoldiv-fontsize: 13px !default;
-$pivotgrid-vsort-mouse-margin: -25px -15px !default;
+$pivotgrid-vsort-mouse-margin: -15px 0 !default;
+$pivotgrid-vsort-row-margin: 0 !default;
 $pivotgrid-vsort-mouse-wrap-margin: -30px -15px !default;
-$pivotgrid-vsort-touch-margin: -28px -18px !default;
+$pivotgrid-vsort-touch-margin: -14px -8px !default;
 $pivotgrid-vsort-touch-wrap-margin: -30px -18px !default;
 $pivotgrid-tooltip-padding: 3px 2px !default;
 $pivotgrid-tooltip-fontcolor: #fff !default;
@@ -101,7 +102,8 @@ $pivotgrid-border-color: #545b62;
 $pivotgrid-active-border-color: #4e555b;
 $pivotgrid-box-shadow-color: rgba(108, 117, 125, .5);
 $pivot-toolbar-icon-hover-color: $pivotgrid-icon-hover-color !default;
-
+$pivotgrid-value-sort-icon-padding: 3px 0 4px 0 !default;
+$pivotgrid-value-sort-icon-font-size: 12px !default;
 
 /*! component's common definitions and variables */
 $pivotgrid-grouping-height: 30px !default;
@@ -123,3 +125,4 @@ $pivotgrid-grouping-padding-top: 0 !default;
 $pivotgrid-grouping-bigger-padding-top: 0 !default;
 $pivotgrid-button-icon-wrapper-size: 18px !default;
 $pivotgrid-bigger-button-icon-wrapper-size: 20px !default;
+$pivotgrid-bigger-button-icon-touch-margin-size: 2px !default;

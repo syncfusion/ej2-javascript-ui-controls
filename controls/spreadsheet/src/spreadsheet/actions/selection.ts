@@ -110,13 +110,16 @@ export class Selection {
             }
             const sheet: SheetModel = this.parent.getActiveSheet();
             let ele: HTMLElement = this.getActiveCell();
+            if (ele && (sheet.frozenRows || sheet.frozenColumns || sheet.selectedRange.includes(' '))) {
+                this.selectRange({ address: sheet.selectedRange });
+                return;
+            }
+            const sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+            const mergeArgs: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
             if (ele) {
-                if (sheet.frozenRows || sheet.frozenColumns || sheet.selectedRange.includes(' ')) {
-                    this.selectRange({ address: sheet.selectedRange });
-                    return;
-                }
                 const rowIdx: number = getCellIndexes(sheet.activeCell)[0];
-                if (rowIdx === args.rowIdx) {
+                this.parent.notify(mergedRange, mergeArgs);
+                if (rowIdx === args.rowIdx || mergeArgs.isActiveCell) {
                     ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
                 } else if (rowIdx > args.rowIdx) {
                     ele.style.top = `${parseFloat(ele.style.top) + args.threshold}px`;
@@ -124,10 +127,6 @@ export class Selection {
             }
             ele = this.getSelectionElement();
             if (ele) {
-                const selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
-                const sRange: number[] = getSwapRange(selectedRange);
-                const mergeArgs: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
-                this.parent.notify(mergedRange, mergeArgs);
                 if (mergeArgs.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) {
                     return;
                 }
@@ -150,24 +149,23 @@ export class Selection {
             if (!this.parent) {
                 return;
             }
-            let ele: HTMLElement = this.getActiveCell();
             const sheet: SheetModel = this.parent.getActiveSheet();
+            let ele: HTMLElement = this.getActiveCell();
+            if (ele && (sheet.frozenRows || sheet.frozenColumns || sheet.selectedRange.includes(' '))) {
+                this.selectRange({ address: sheet.selectedRange });
+                return;
+            }
+            const sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+            const e: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
             if (ele) {
-                if (sheet.frozenRows || sheet.frozenColumns || sheet.selectedRange.includes(' ')) {
-                    this.selectRange({ address: sheet.selectedRange });
-                    return;
-                }
+                this.parent.notify(mergedRange, e);
                 const colIdx: number = getCellIndexes(sheet.activeCell)[1];
-                if (colIdx === args.colIdx) {
+                if (colIdx === args.colIdx || e.isActiveCell) {
                     ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
                 } else if (colIdx > args.colIdx) {
                     ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
                 }
             }
-            const selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            const sRange: number[] = getSwapRange(selectedRange);
-            const e: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
-            this.parent.notify(mergedRange, e);
             ele = this.getSelectionElement();
             if (!ele || e.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) {
                 return;

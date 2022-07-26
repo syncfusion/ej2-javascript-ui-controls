@@ -5,7 +5,7 @@ import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
-import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
+import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel, updateCell } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
@@ -42,7 +42,7 @@ export class SpreadsheetHyperlink {
         this.parent.on(editHyperlink, this.editHyperlinkHandler, this);
         this.parent.on(openHyperlink, this.openHyperlinkHandler, this);
         this.parent.on(click, this.hyperlinkClickHandler, this);
-        this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
+        this.parent.on(createHyperlinkElement, this.createHyperlinkEle, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(deleteHyperlink, this.removeHyperlink, this);
         this.parent.on(removeHyperlink, this.removeHyperlinkHandler, this);
@@ -54,7 +54,7 @@ export class SpreadsheetHyperlink {
             this.parent.off(editHyperlink, this.editHyperlinkHandler);
             this.parent.off(openHyperlink, this.openHyperlinkHandler);
             this.parent.off(click, this.hyperlinkClickHandler);
-            this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
+            this.parent.off(createHyperlinkElement, this.createHyperlinkEle);
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(deleteHyperlink, this.removeHyperlink);
             this.parent.off(removeHyperlink, this.removeHyperlinkHandler);
@@ -463,47 +463,48 @@ export class SpreadsheetHyperlink {
         }
     }
 
-    private createHyperlinkElementHandler(args: { cell: CellModel, td: HTMLElement, rowIdx: number, colIdx: number }): void {
+    private createHyperlinkEle(args: { cell: CellModel, td: HTMLElement, rowIdx: number, colIdx: number, style: CellStyleModel }): void {
         const cell: CellModel = args.cell;
-        const td: HTMLElement = args.td;
-        const hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
         if (!isNullOrUndefined(cell.hyperlink)) {
-            let hyperlink: string | HyperlinkModel = cell.hyperlink;
-            if (typeof (hyperlink) === 'string') {
-                if (hyperlink.indexOf('http://') === -1 && hyperlink.indexOf('https://') === -1 &&
-                    hyperlink.indexOf('ftp://') === -1 && hyperlink.indexOf('www.') !== -1) {
-                    hyperlink = 'http://' + hyperlink;
+            const td: HTMLElement = args.td;
+            const hyperEle: HTMLElement = this.parent.createElement('a', { className: 'e-hyperlink e-hyperlink-style' });
+            let address: string;
+            if (typeof cell.hyperlink === 'string') {
+                if (cell.hyperlink.toLowerCase().indexOf('www.') === 0) {
+                    cell.hyperlink = 'http://' + cell.hyperlink;
                 }
-                if (hyperlink.indexOf('http://') === 0 || hyperlink.indexOf('https://') === 0 || hyperlink.indexOf('ftp://') === 0) {
-                    hyperEle.setAttribute('href', hyperlink as string);
-                    hyperEle.setAttribute('target', '_blank');
-                } else if (hyperlink.includes('=') || hyperlink.includes('!')) {
-                    hyperEle.setAttribute('ref', hyperlink as string);
+                address = cell.hyperlink;
+            } else {
+                address = cell.hyperlink.address;
+                if (address.toLowerCase().indexOf('www.') === 0) {
+                    cell.hyperlink.address = address = 'http://' + address;
                 }
-                hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink as string;
-                td.textContent = '';
-                td.innerText = '';
-                td.appendChild(hyperEle);
-            } else if (typeof (hyperlink) === 'object') {
-                if (hyperlink.address.indexOf('http://') === 0 || hyperlink.address.indexOf('https://') === 0 ||
-                    hyperlink.address.indexOf('ftp://') === 0) {
-                    hyperEle.setAttribute('href', hyperlink.address as string);
-                    hyperEle.setAttribute('target', '_blank');
-                } else if (hyperlink.address.includes('=') || hyperlink.address.includes('!')) {
-                    hyperEle.setAttribute('ref', hyperlink.address as string);
-                }
-                if (getTypeFromFormat(cell.format) === 'Accounting') {
-                    hyperEle.innerHTML = td.innerHTML;
-                } else {
-                    hyperEle.innerText = td.innerText !== '' ? td.innerText : hyperlink.address as string;
-                }
-                td.textContent = '';
-                td.innerText = '';
-                td.appendChild(hyperEle);
             }
-        } else if (td.querySelector('a') && cell.hyperlink) {
-            if (typeof (cell.hyperlink) === 'string') {
-                td.querySelector('a').setAttribute('href', cell.hyperlink);
+            if (address.indexOf('http://') === 0 || address.indexOf('https://') === 0 || address.indexOf('ftp://') === 0) {
+                hyperEle.setAttribute('href', address);
+                hyperEle.setAttribute('target', '_blank');
+            } else if (address.includes('=') || address.includes('!')) {
+                hyperEle.setAttribute('ref', address);
+            }
+            if (getTypeFromFormat(cell.format) === 'Accounting') {
+                hyperEle.innerHTML = td.innerHTML;
+            } else {
+                hyperEle.innerText = td.innerText !== '' ? td.innerText : address;
+            }
+            td.textContent = '';
+            td.innerText = '';
+            td.appendChild(hyperEle);
+            if (!args.style.color || !args.style.textDecoration) {
+                const style: CellStyleModel = {};
+                if (!args.style.color) {
+                    args.style.color = style.color = '#00e';
+                }
+                if (!args.style.textDecoration) {
+                    args.style.textDecoration = style.textDecoration = 'underline';
+                }
+                updateCell(
+                    this.parent, this.parent.getActiveSheet(), { rowIdx: args.rowIdx, colIdx: args.colIdx, preventEvt: true,
+                        cell: { style: style }});
             }
         }
     }

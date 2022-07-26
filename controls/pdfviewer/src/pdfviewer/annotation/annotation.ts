@@ -509,11 +509,12 @@ export class Annotation {
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.pdfViewerBase.tool = null;
                 this.pdfViewer.tool = null;
-                if (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature' || selectedAnnot.shapeAnnotationType === 'SignatureText' || selectedAnnot.shapeAnnotationType === 'SignatureImage') {
+                let isFormField = selectedAnnot.annotName === 'SignatureField' || selectedAnnot.annotName === 'SignatureText';
+                if ((!isFormField && (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature' || selectedAnnot.shapeAnnotationType === 'SignatureText' || selectedAnnot.shapeAnnotationType === 'SignatureImage'))) {
                     // eslint-disable-next-line max-len
                     const bounds: object = { left: selectedAnnot.bounds.x, top: selectedAnnot.bounds.y, width: selectedAnnot.bounds.width, height: selectedAnnot.bounds.height };
                     // eslint-disable-next-line max-len
-                    this.pdfViewer.fireSignatureRemove(pageNumber, selectedAnnot.signatureName, selectedAnnot.shapeAnnotationType as AnnotationType, bounds);
+                    this.pdfViewer.fireSignatureRemove(pageNumber, selectedAnnot.signatureName, selectedAnnot.shapeAnnotationType  as AnnotationType, bounds);
                 } else if (this.pdfViewer.annotationModule) {
                     // eslint-disable-next-line max-len
                     this.pdfViewer.fireAnnotationRemove(pageNumber, annotationId, annotType, selectedAnnot.bounds);

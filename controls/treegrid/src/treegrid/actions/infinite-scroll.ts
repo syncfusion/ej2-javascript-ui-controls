@@ -145,6 +145,9 @@ export class InfiniteScroll {
         });
         const actionArgs: ActionEventArgs = getValue('actionArgs', pageingDetails.actionArgs);
         const actions: string[] = getValue('actions', this.parent.grid.infiniteScrollModule);
+        if (this.parent.grid.infiniteScrollModule['isInitialRender'] && !this.parent.initialRender) {
+            this.parent.grid.pageSettings.currentPage = 1;
+        }
         const initial: boolean = actions.some((value: string): boolean => { return value === actionArgs.requestType; });
         const initialRender: boolean = initial ? true : this.parent.initialRender ? true : false;
         this.visualData = visualData;
@@ -158,8 +161,8 @@ export class InfiniteScroll {
                 this.parent.infiniteScrollSettings.initialBlocks = this.parent.infiniteScrollSettings.maxBlocks;
             }
             let size: number = initialRender ?
-                this.parent.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks :
-                this.parent.pageSettings.pageSize;
+                this.parent.grid.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks :
+                this.parent.grid.pageSettings.pageSize;
             let current: number = this.parent.grid.pageSettings.currentPage;
             if (!isNullOrUndefined(actionArgs)) {
                 const lastIndex: number = getValue('lastIndex', this.parent.grid.infiniteScrollModule);
@@ -175,7 +178,7 @@ export class InfiniteScroll {
                 } else {
                     if ((pageingDetails.actionArgs['action'] === 'expand' || pageingDetails.actionArgs['action'] === 'collapse') && this.parent.grid.pageSettings.currentPage !== 1) {
                         current = 1;
-                        size = this.parent.pageSettings.pageSize * this.parent.grid.pageSettings.currentPage;
+                        size = this.parent.grid.pageSettings.pageSize * this.parent.grid.pageSettings.currentPage;
                     }
                     query = query.page(current, size);
                 }

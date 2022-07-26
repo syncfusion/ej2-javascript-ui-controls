@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 20.2.39 (2022-07-19)
+## 20.2.40 (2022-07-26)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I375472` Issue with Rule template default rendered while add condition/group in query builder, if first column as rule template has been fixed.
+- `#I388333` Issue with Value template not destroy properly when we use complex data source in query builder has been fixed.
+
+## 20.2.36 (2022-06-30)
 
 ### QueryBuilder
 

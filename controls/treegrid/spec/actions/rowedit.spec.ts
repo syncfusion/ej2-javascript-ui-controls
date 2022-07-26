@@ -3130,3 +3130,41 @@ describe('EJ2-54664 - delete the parent and child record using deleteRecord meth
     done();
   });
 });
+
+describe('Add rows - Add rows as child', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let rows: Element[];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  it('Add row - new row postion', (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === 'add') {
+        expect(args.row.rowIndex).toBe(5);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    gridObj.grid.selectRow(0);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+

@@ -1314,6 +1314,20 @@ describe('Spreadsheet formula module ->', () => {
                     done();
                 });
             });
-        })
-    })
+        });
+    });
+    describe('EJ2-62007 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Issue in applying large formula in sheet.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('updateCell', [{ formula: '=LARGE(A1:B100,4)' }, 'J3']);
+            expect(parseInt(spreadsheet.sheets[0].rows[2].cells[9].value)).toEqual(41964);
+            done();
+        });
+    });
 });

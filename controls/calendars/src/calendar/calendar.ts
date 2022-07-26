@@ -94,8 +94,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected navigateNextHandler: Function;
     protected l10: L10n;
     protected todayDisabled: boolean;
+    protected nextIconClicked: boolean;
+    protected previousIconClicked: boolean;
     protected tabIndex: string;
     protected todayDate: Date;
+    protected islamicPreviousHeader: any;
     //this.element clone
     protected calendarElement: HTMLElement;
     protected isPopupClicked: boolean = false;
@@ -1394,6 +1397,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 if (this.calendarMode === 'Gregorian') {
                     this.currentDate.setFullYear(d.getFullYear());
                 } else {
+                    this.islamicPreviousHeader = this.headerElement.textContent;
                     const islamicDate: IslamicDateArgs = this.islamicModule.getIslamicDate(d);
                     this.currentDate = this.islamicModule.toGregorian(islamicDate.year, islamicDate.month, 1);
                 }

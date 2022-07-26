@@ -79,7 +79,7 @@ export class PivotChart {
             if (!this.parent.chart && (this.parent.element.querySelector('.e-chart') || this.parent.element.querySelector('.e-accumulationchart'))) {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
             }
-            if (this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) {
+            if (this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') {
                 this.measureList = this.dataSourceSettings.values.map((item) => { return item.name; });
             } else {
                 this.measureList = [chartSettings.value === '' ? this.dataSourceSettings.values[0].name : chartSettings.value];
@@ -155,7 +155,7 @@ export class PivotChart {
         this.columnGroupObject = {};
         this.accEmptyPoint = false;
         let pivotValues: IPivotValues = this.engineModule.pivotValues;
-        this.currentMeasure = (chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ? this.measureList[0] :
+        this.currentMeasure = (chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ? this.measureList[0] :
             (((chartSettings.value === '' || this.dataSourceSettings.values.filter((item: IFieldOptions) => {
                 return item.name === chartSettings.value;
             }).length === 0) && this.dataSourceSettings.values.length > 0) ? this.dataSourceSettings.values[0].name : chartSettings.value);
@@ -197,7 +197,7 @@ export class PivotChart {
                     header.valueSort.levelName.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) : undefined;
                 isValidHeader = false;
                 if (valueSort && valueSort[0] !== 'Grand Total') {
-                    if ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ||
+                    if ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ||
                         valueSort.indexOf(measureNames[this.currentMeasure]) > -1) {
                         isValidHeader = true;
                     }
@@ -316,7 +316,7 @@ export class PivotChart {
                         let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
                         if (!(this.parent.dataType === 'olap' && cell.isGrandSum) && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
-                            actualText !== '' && ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ? true : actualText === this.currentMeasure)) {
+                            actualText !== '' && ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ? true : actualText === this.currentMeasure)) {
                             if (isNullOrUndefined(firstRowCell.members)) {
                                 firstRowCell.members = [];
                             }
@@ -513,7 +513,7 @@ export class PivotChart {
                 className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
             }));
         }
-        if (!this.chartElement && this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {
+        if (!this.chartElement && this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis && this.chartSettings.chartSeries.type !== 'Pareto') {
             ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART) as HTMLElement).innerHTML = '';
             this.chartElement = (this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART).appendChild(createElement('div', {
                 className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
@@ -533,7 +533,7 @@ export class PivotChart {
         }
         let height: string | number = this.getChartHeight();
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
-            this.accumulationType.indexOf(type) < 0) {
+            this.accumulationType.indexOf(type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') {
             ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.height =
                 (height === 'auto' ? this.getChartAutoHeight() : height) + 'px';
             ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.width = width + 'px';
@@ -544,7 +544,7 @@ export class PivotChart {
         }
         if (this.parent.chart && ((this.parent.chart.getModuleName() === 'accumulationchart' &&
             this.accumulationType.indexOf(type) < 0) || (this.parent.chart.getModuleName() === 'chart' &&
-                this.accumulationType.indexOf(type) > -1))) {
+                this.accumulationType.indexOf(type) > -1 && this.chartSettings.chartSeries.type !== 'Pareto'))) {
             this.parent.chart.destroy();
             if (select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                 select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
@@ -629,7 +629,7 @@ export class PivotChart {
                         zoomSettings: currentZoomSettings,
                         axes: (type === 'Polar' || type === 'Radar') ? [] : axesWithRows.axes,
                         rows: (type === 'Polar' || type === 'Radar') ? [{}] :
-                            (type === 'Bar' || type === 'StackingBar' || type === 'StackingBar100' &&
+                            (type === 'Bar' || type === 'StackingBar' || type === 'StackingBar100' || type==='Pareto' &&
                                 this.chartSettings.enableMultipleAxis) ? [{ height: '100%' }] : axesWithRows.rows,
                         columns: (type === 'Polar' || type === 'Radar') ? [{}] :
                             (type === 'Bar' || type === 'StackingBar' || type === 'StackingBar100' &&
@@ -639,7 +639,7 @@ export class PivotChart {
                         width: width,
                         height: (this.parent.chartSettings.chartSeries.type !== 'Polar' &&
                             this.parent.chartSettings.chartSeries.type !== 'Radar' && this.parent.chartSettings.enableScrollOnMultiAxis &&
-                            this.parent.chartSettings.enableMultipleAxis && this.parent.dataSourceSettings.values.length > 0) ?
+                            this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.chartSeries.type !== 'Pareto' && this.parent.dataSourceSettings.values.length > 0) ?
                             Number(height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ? isNaN(Number(height)) ?
                                 height.toString() : (Number(height) - 5).toString() :
                                 (!isNaN(Number(height)) || this.parent.dataSourceSettings.values.length > 1) ?
@@ -736,6 +736,9 @@ export class PivotChart {
                     this.chartSettings.enableMultipleAxis) {
                     (this.parent.chart as Chart).rows = [{ height: '100%' }];
                     (this.parent.chart as Chart).columns = axesWithRows.columns;
+                } else if (type === 'Pareto' && this.chartSettings.enableMultipleAxis) {
+                    (this.parent.chart as Chart).rows = [{ height: '100%' }];
+                    (this.parent.chart as Chart).columns = [{ width: '100%' }];
                 } else {
                     (this.parent.chart as Chart).rows = axesWithRows.rows;
                     (this.parent.chart as Chart).columns = [{ width: '100%' }];
@@ -1126,7 +1129,7 @@ export class PivotChart {
 
     private tooltipRender(args: ITooltipRenderEventArgs): void {
         let measure: string = (args.series as Series).yAxisName ? ((args.series as Series).yAxisName.split('_CumulativeAxis')[0]) :
-            ((this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0) ?
+            ((this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ?
                 args.series.name ? args.series.name.split(' | ')[1] : args.data.seriesName ?
                     args.data.seriesName.split(' | ')[1] : this.currentMeasure : this.measuresNames[this.currentMeasure] ?
                     this.measuresNames[this.currentMeasure] : this.currentMeasure);
@@ -1201,7 +1204,7 @@ export class PivotChart {
             }
         }
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {
-            if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) >= 0) {
+            if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) >= 0) {
                 (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.overflow = 'visible';
             }
             else {
@@ -1626,7 +1629,7 @@ export class PivotChart {
     /* eslint-disable */
     /** @hidden */
     public getResizedChartHeight(): string {
-        let height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
+        let height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
             this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
             this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ? /* eslint-disable-line */
             isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :

@@ -3225,6 +3225,7 @@ export class Layout {
                 const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(nextParagraph);
                 this.moveFootNotesToPage(footWidget, paragraphWidget.bodyWidget, nextBody);
                 paragraphWidget = nextParagraph;
+                this.viewer.clientActiveArea.height -= this.getFootNoteHeight(footWidget);
             } else if (!isPageBreak) {
                 paragraphWidget.containerWidget.removeChild(paragraphWidget.indexInOwner);
                 if (paragraphWidget instanceof ParagraphWidget && paragraphWidget.floatingElements.length > 0) {
@@ -4704,33 +4705,35 @@ export class Layout {
         if (tableWidget.childWidgets.indexOf(row) === -1) {
             tableWidget.childWidgets.splice(index, 0, row);
         }
-        if (footnotes.length > 0) {
-            if (!isNullOrUndefined(footnotes)) {
-                for (let i: number = 0; i < footnotes.length; i++) {
-                    footnoteWidgets.push(footnotes[i].bodyWidget);
+        row.containerWidget = tableWidget;
+        if (!row.ownerTable.isInsideTable) {
+            if (footnotes.length > 0) {
+                if (!isNullOrUndefined(footnotes)) {
+                    footnoteWidgets = this.getFootnoteBody(footnotes);
                 }
-            }
-        } else {
-            if (!isNullOrUndefined(row)) {
-                for (let i: number = 0; i < row.childWidgets.length; i++) {
-                    let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
-                    for (let j: number = 0; j < cell.childWidgets.length; j++) {
-                        let footnoteCollection: BodyWidget[] = this.getFootNoteWidgetsOf(cell.childWidgets[j] as BlockWidget, true);
-                        for (let k: number = 0; k < footnoteCollection.length; k++) {
-                            footnoteWidgets.splice(footnoteWidgets.length, 0, footnoteCollection[k]);
+            } else {
+                if (!isNullOrUndefined(row)) {
+                    for (let i: number = 0; i < row.childWidgets.length; i++) {
+                        let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+                        for (let j: number = 0; j < cell.childWidgets.length; j++) {
+                            let footnoteCollection: BodyWidget[] = this.getFootNoteWidgetsOf(cell.childWidgets[j] as BlockWidget, true);
+                            for (let k: number = 0; k < footnoteCollection.length; k++) {
+                                footnoteWidgets.splice(footnoteWidgets.length, 0, footnoteCollection[k]);
+                            }
                         }
                     }
                 }
             }
-        }
-        row.containerWidget = tableWidget;
-        if (!isNullOrUndefined(footnoteWidgets) && footnoteWidgets.length > 0 && row.bodyWidget.previousRenderedWidget !== undefined && startRowIndex !== row.bodyWidget.page.index) {
-            if ((footnoteWidgets[0].containerWidget as FootNoteWidget).page.index !== row.bodyWidget.page.index) {
+            if (footnoteWidgets.length > 0 && isNullOrUndefined(footnoteWidgets[0].containerWidget)) {
+                this.layoutFootnoteInSplittedRow(row, footnoteWidgets);
+            } else if (!isNullOrUndefined(footnoteWidgets) && footnoteWidgets.length > 0 && row.bodyWidget.previousRenderedWidget !== undefined && startRowIndex !== row.bodyWidget.page.index && (footnoteWidgets[0].containerWidget as FootNoteWidget).page.index !== row.bodyWidget.page.index) {
                 this.moveFootNotesToPage(footnoteWidgets, (footnoteWidgets[0].containerWidget as FootNoteWidget).page.bodyWidgets[0], row.bodyWidget);
+            } else if (!this.isInitialLoad && !isNullOrUndefined(row.bodyWidget.page.footnoteWidget)) {
+                this.layoutfootNote(row.bodyWidget.page.footnoteWidget);
             }
+            footnotes.length = 0;
         }
         tableWidget.height = tableWidget.height + row.height;
-        footnotes.length = 0;
         if (this.viewer instanceof PageLayoutViewer) {
             if (!isNullOrUndefined(tableWidget.containerWidget)
                 && tableWidget.containerWidget.childWidgets.indexOf(tableWidget) >= 0 &&
@@ -4740,7 +4743,23 @@ export class Layout {
         }
         this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget, isInitialLayout);
         viewer.cutFromTop(row.y + row.height);
+        this.viewer.clientActiveArea.height -= this.getFootNoteHeight(footnoteWidgets);
         this.existFootnoteHeight = 0;
+    }
+    private layoutFootnoteInSplittedRow(row: TableRowWidget, footnoteWidgets: BodyWidget[]): void {
+        if (footnoteWidgets && footnoteWidgets.length > 0) {
+            if (isNullOrUndefined(row.ownerTable.bodyWidget.page.footnoteWidget)) {
+                this.addEmptyFootNoteToBody(row.ownerTable.bodyWidget);
+            }
+            let footnoteWidget: FootNoteWidget = row.ownerTable.bodyWidget.page.footnoteWidget;
+            if (footnoteWidget) {
+                for (let j: number = 0; j < footnoteWidgets.length; j++) {
+                    footnoteWidget.bodyWidgets.push(footnoteWidgets[j]);
+                    footnoteWidgets[j].containerWidget = footnoteWidget;
+                }
+                this.layoutfootNote(footnoteWidget);
+            }
+        }
     }
     private getFootNoteHeight(footnoteWidgets: BodyWidget | BodyWidget[]): number {
         let height: number = 0;
@@ -4881,6 +4900,7 @@ export class Layout {
         for (let i: number = 0; i < tableRowWidget.childWidgets.length; i++) {
             let cellWidget: TableCellWidget = tableRowWidget.childWidgets[i] as TableCellWidget;
             let splittedCell: TableCellWidget = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection);
+            footNoteCollection = [];
             if (!isNullOrUndefined(splittedCell)) {
                 if (splittedCell === cellWidget) {
                     //Returns if the whole content of the row does not fit in current page.
@@ -4967,6 +4987,9 @@ export class Layout {
         let footnoteElements = this.layoutedFootnoteElement;
         if(tableRowWidget.bodyWidget.page.footnoteWidget !== undefined) {
             this.footHeight = tableRowWidget.bodyWidget.page.footnoteWidget.height;
+            if(this.footnoteHeight === 0) {
+                this.footnoteHeight = this.footHeight;
+            }
         } else {
             this.footHeight = 0;
         }
@@ -5975,28 +5998,6 @@ export class Layout {
             if (container.childWidgets[i] instanceof TableWidget) {
                 this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget));
             }
-            // if (container.childWidgets[i] instanceof ParagraphWidget) {
-            //     const para: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
-            //     for (let i: number = 0; i < para.childWidgets.length; i++) {
-            //         const line: LineWidget = para.childWidgets[0] as LineWidget;
-            //         for (let k: number = 0; k < line.children.length; k++) {
-            //             const element: ElementBox = line.children[k];
-            //             if (element instanceof FootnoteElementBox) {
-            //                 if (!isNullOrUndefined(para.bodyWidget.page.footnoteWidget)) {
-            //                     break;
-            //                 } else {
-            //                     const prevWidget: ParagraphWidget = para.bodyWidget.previousRenderedWidget as ParagraphWidget;
-            //                     const prevBodyWidget: BodyWidget = para.bodyWidget.previousRenderedWidget as BodyWidget;
-            //                     const newBodyWidget: BodyWidget = para.bodyWidget as BodyWidget;
-            //                     const footWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(para);
-            //                     // this.updateContainerWidget(curretBlock as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
-            //                     this.moveFootNotesToPage(footWidgets, prevBodyWidget, newBodyWidget);
-            //                     this.layoutfootNote(para.bodyWidget.page.footnoteWidget);
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
             if (!skipHeight) {
                 top += (container.childWidgets[i] as Widget).height;
             }
@@ -6452,7 +6453,7 @@ export class Layout {
         //Update Client area for current position
         let yPos: number = this.getYPosition(currentTable);
         this.viewer.cutFromTop(yPos);
-        this.clearTableWidget(currentTable, true, true, true);
+        this.clearTableWidget(currentTable, true, true, true, true);
         this.isBidiReLayout = true;
         this.layoutBlock(currentTable, 0);
         this.viewer.updateClientAreaForBlock(currentTable, false);
@@ -6476,16 +6477,26 @@ export class Layout {
         }
         return table.y;
     }
-    private clearFootnoteReference(table: TableWidget): void {
-        if (table.footnoteElement.length > 0) {                                                                                                                                                                                                                                                                                                                    
-            for (let i: number = 0; i < table.footnoteElement.length; i++) {
+    private clearFootnoteReference(table: TableWidget, updateClientHeight: boolean): void {
+        if (table.footnoteElement && table.footnoteElement.length > 0) {
+            let startPage: Page = table.bodyWidget.page;
+            for (let i: number = table.footnoteElement.length - 1; i >= 0; i--) {
                 let footnote: FootnoteElementBox = table.footnoteElement[i];
                 footnote.isLayout = false;
                 let footNoteWidget: FootNoteWidget = footnote.bodyWidget.containerWidget as FootNoteWidget;
                 if (footNoteWidget && footNoteWidget.bodyWidgets.indexOf(footnote.bodyWidget) !== -1) {
+                    let footnoteHeight: number = this.getFootNoteHeight(footnote.bodyWidget);
+                    footNoteWidget.height -= footnoteHeight;
                     footNoteWidget.bodyWidgets.splice(footnote.bodyWidget.indexInOwner, 1);
-                    footNoteWidget.height -= this.getFootNoteHeight(footnote.bodyWidget);                                                                                                                                
+                    if (updateClientHeight && footNoteWidget.page === startPage) {
+                        this.viewer.clientActiveArea.height += footnoteHeight;
+                        this.viewer.clientArea.height += footnoteHeight;
+                    }
                 }
+                if (footNoteWidget.bodyWidgets.length === 0 && footNoteWidget.page) {
+                    footNoteWidget.page.footnoteWidget = undefined;
+                }
+                footnote.bodyWidget.containerWidget = undefined;
             }
             table.footnoteElement = undefined;
         }
@@ -6493,7 +6504,7 @@ export class Layout {
     /**
      * @private
      */
-    public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean): void {
+    public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean, updateClientHeight?: boolean): void {
         table.height = 0;
         if (clearGrid) {
             table.isGridUpdated = false;
@@ -6502,7 +6513,7 @@ export class Layout {
             table.y = 0;
             table.x = 0;
             if (table.footnoteElement && table.footnoteElement.length > 0) {
-                this.clearFootnoteReference(table);
+                this.clearFootnoteReference(table, updateClientHeight);
             }
         }
         for (let i: number = 0; i < table.childWidgets.length; i++) {
@@ -6725,25 +6736,6 @@ export class Layout {
             row = this.layoutRow(tableView, row);
             row = row.nextRow as TableRowWidget;
         }
-        // if (index !== tableView.length && tableView.length > 1) {
-        //     if (tableView[0] && !isNullOrUndefined(tableView[0].bodyWidget.page.footnoteWidget)) {
-        //         const foot: BodyWidget[] = this.getFootNoteWidgetsOf(tableView[0]);
-        //         let Index: number = tableView[0].bodyWidget.page.footnoteWidget.bodyWidgets.indexOf(foot[0]);
-        //         if (Index === -1) {
-        //         const prevBodyWidget1: BodyWidget = tableView[0].bodyWidget;
-        //         const newBodyWidget: BodyWidget = tableView[1].bodyWidget;
-        //                     // this.updateContainerWidget(curretBlock as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
-        //         this.moveFootNotesToPage(foot, newBodyWidget, prevBodyWidget1);
-        //         }
-        //     }
-        //     if (tableView[tableView.length - 1] !== tableView[tableView.length - 2]) {
-        //         const footNoteWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(tableView[tableView.length - 1]);
-        //         const prevBodyWidget1: BodyWidget = tableView[tableView.length - 1].bodyWidget;
-        //         const newBodyWidget: BodyWidget = tableView[tableView.length - 2].bodyWidget;
-        //                     // this.updateContainerWidget(curretBlock as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
-        //         this.moveFootNotesToPage(footNoteWidgets, newBodyWidget, prevBodyWidget1);
-        //     }
-        // }
         if (this.documentHelper.viewer instanceof PageLayoutViewer && table.wrapTextAround && (table.positioning.verticalAlignment === 'Bottom' || table.positioning.verticalAlignment === 'Center' || table.positioning.verticalAlignment === 'Outside')) {
             this.updateTableFloatPoints(table);
             this.updateChildLocationForTable(table.y, table);
@@ -6901,12 +6893,7 @@ export class Layout {
     public layoutRow(tableWidget: TableWidget[], row: TableRowWidget, isRowLayout?: boolean): TableRowWidget {
         let isNestedTable = row.ownerTable.isInsideTable;
         if (!isNestedTable) {
-            this.layoutedFootnoteElement = [];
-            if(!isNullOrUndefined(row.bodyWidget.page.footnoteWidget) && row.bodyWidget.page.footnoteWidget.bodyWidgets.length !== 0) {
-                this.existFootnoteHeight = row.bodyWidget.page.footnoteWidget.height;
-            } else {
-                this.existFootnoteHeight = 0;
-            }
+            this.updateExistingFootnoteHeight(row);
         }
         const viewer: LayoutViewer = this.viewer;
         const rowWidgets: TableRowWidget[] = [row];
@@ -6928,6 +6915,14 @@ export class Layout {
         }
         return rows[rows.length - 1];
     }
+    private updateExistingFootnoteHeight(row: TableRowWidget): void {
+        this.layoutedFootnoteElement = [];
+        if (!isNullOrUndefined(row.bodyWidget.page.footnoteWidget) && row.bodyWidget.page.footnoteWidget.bodyWidgets.length !== 0) {
+            this.existFootnoteHeight = row.bodyWidget.page.footnoteWidget.height;
+        } else {
+            this.existFootnoteHeight = 0;
+        }
+    }
     private getAdjacentRowCell(cell: TableCellWidget, cellStartPos: number, cellEndPos: number, rowIndex: number): TableCellWidget[] {
         const adjCells: TableCellWidget[] = [];
         let adjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
@@ -6938,8 +6933,24 @@ export class Layout {
                 previouRow = true;
             }
             for (let i: number = 0; i < adjRow.childWidgets.length; i++) {
+                let addAdjCell: boolean = true;
                 const adjCell: TableCellWidget = adjRow.childWidgets[i] as TableCellWidget;
                 const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
+                if(previouRow) {
+                    let prevAdjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+                    for (let j: number = 0; j < prevAdjRow.childWidgets.length; j++) {
+                        var prevAdjCell: TableCellWidget = prevAdjRow.childWidgets[j] as TableCellWidget;
+                        var prevAdjCellStartPos: number = prevAdjCell.x - prevAdjCell.margin.left;
+                        if(adjCellStartPos === prevAdjCellStartPos) {
+                            adjRow = prevAdjRow;
+                            i = j;
+                            i--;
+                            previouRow = false;
+                            addAdjCell = false;
+                            break;
+                        }
+                    }
+                }
                 const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
                 /* eslint-disable-next-line max-len */
                 if ((HelperMethods.round(adjCellEndPos, 2) > HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2))
@@ -6948,7 +6959,7 @@ export class Layout {
                     /* eslint-disable-next-line max-len */
                     || (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2))) {
                     //Skipped adding the Horizontal merge start cell multiple times.
-                    if (adjCells.indexOf(adjCell) === -1) {
+                    if (adjCells.indexOf(adjCell) === -1 && addAdjCell) {
                         adjCells.push(adjCell);
                     }
                 }
@@ -7108,60 +7119,12 @@ export class Layout {
             paragraphWidget.childWidgets.push(lineWidget);
             cell.childWidgets.push(paragraphWidget);
         }
-        let footnoteWidgets: BodyWidget[] = [];
         for (let i: number = 0; i < cell.childWidgets.length; i++) {
             const block: BlockWidget = cell.childWidgets[i] as BlockWidget;
             viewer.updateClientAreaForBlock(block, true);
             block.containerWidget = cell;
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
-            // for (let k: number = 0; k < block.childWidgets.length; k++) {
-            //     if (block.childWidgets[k] instanceof LineWidget) {
-            //         // eslint-disable-next-line
-            //         let line: any = block.childWidgets[k];
-            //         for (let j: number = 0; j < line.children.length; j++) {
-            //             const child: ElementBox = line.children[j];
-            //             if (child instanceof FootnoteElementBox) {
-            //                 let foot: FootNoteWidget = child.line.paragraph.bodyWidget.page.footnoteWidget;
-            //                 let body: BodyWidget = child.line.paragraph.bodyWidget;
-            //                 let findIndex: number = -1;
-            //                 if (!isNullOrUndefined(foot)) {
-            //                     for (let i: number = 0; i < foot.bodyWidgets.length; i++) {
-            //                         if ((foot.bodyWidgets[i]).footNoteReference === child) {
-            //                             findIndex = i;
-            //                         }
-            //                     }
-            //                 }
-            //                 if (findIndex === -1) {
-            //                     if (!isNullOrUndefined(body.nextRenderedWidget)) {
-            //                         const footNoteWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(child.paragraph);
-            //                         if (child.bodyWidget.page.index !== footNoteWidgets[0].page.index) {
-            //                             const prevBodyWidget1: BodyWidget = body;
-            //                             const newBodyWidget: BodyWidget = body.nextRenderedWidget as BodyWidget;
-            //                             // this.updateContainerWidget(curretBlock as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
-            //                             this.moveFootNotesToPage(footNoteWidgets, newBodyWidget, prevBodyWidget1);
-            //                             this.layoutfootNote(body.page.footnoteWidget);
-            //                             this.viewer.updateClientArea(body.page.footnoteWidget.sectionFormat, body.page, true);
-            //                         }
-            //                     }
-            //                 }
-
-            //             }
-            //             if (child instanceof FootnoteElementBox && !isNullOrUndefined(cell.bodyWidget.page.footnoteWidget)) {
-            //                 this.footHeight = cell.bodyWidget.page.footnoteWidget.height;
-            //                 let footnoteCollection: BodyWidget[] = this.getFootNoteWidgetsOf(child.paragraph);
-            //                 for (var l = 0; l < footnoteCollection.length; l++) {
-            //                     footnoteWidgets.splice(footnoteWidgets.length, 0, footnoteCollection[l]);
-            //                 }
-            //                 this.footNote = footnoteWidgets;
-            //                 this.isTableFootNote = true;
-            //                 break;
-            //             } else {
-            //                 this.footHeight = 0;
-            //             }
-            //         }
-            //     }
-            // }
         }
         this.updateWidgetToRow(cell);
         viewer.updateClientAreaForCell(cell, false);
@@ -7320,19 +7283,21 @@ export class Layout {
     public updateFieldElements(): void {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
             const fieldBegin: FieldElementBox = this.documentHelper.fields[i];
-            if (!isNullOrUndefined(this.documentHelper.selection)) {
-                const fieldCode: string = this.documentHelper.selection.getFieldCode(fieldBegin);
-                if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages')) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
-                    const textElement: FieldTextElementBox = fieldBegin.fieldSeparator.nextNode as FieldTextElementBox;
-                    if (!isNullOrUndefined(textElement)) {
-                        const prevPageNum: string = textElement.text;
-                        textElement.text = this.documentHelper.pages.length.toString();
-                        const paragraph: ParagraphWidget = fieldBegin.line.paragraph;
-                        if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)
-                            && prevPageNum !== textElement.text) {
-                            const lineIndex: number = paragraph.childWidgets.indexOf(fieldBegin.line);
-                            const elementIndex: number = fieldBegin.line.children.indexOf(textElement);
-                            this.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+            if (this.viewer instanceof PageLayoutViewer || (this.viewer instanceof WebLayoutViewer && !(fieldBegin.line.paragraph.bodyWidget instanceof HeaderFooterWidget))) {
+                if (!isNullOrUndefined(this.documentHelper.selection)) {
+                    const fieldCode: string = this.documentHelper.selection.getFieldCode(fieldBegin);
+                    if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages')) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                        const textElement: FieldTextElementBox = fieldBegin.fieldSeparator.nextNode as FieldTextElementBox;
+                        if (!isNullOrUndefined(textElement)) {
+                            const prevPageNum: string = textElement.text;
+                            textElement.text = this.documentHelper.pages.length.toString();
+                            const paragraph: ParagraphWidget = fieldBegin.line.paragraph;
+                            if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)
+                                && prevPageNum !== textElement.text) {
+                                const lineIndex: number = paragraph.childWidgets.indexOf(fieldBegin.line);
+                                const elementIndex: number = fieldBegin.line.children.indexOf(textElement);
+                                this.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                            }
                         }
                     }
                 }
@@ -7656,6 +7621,10 @@ export class Layout {
         if (isClearHeight) {
             row.height = 0;
         }
+        let isNestedTable = row.ownerTable.isInsideTable;
+        if (!isNestedTable) {
+            this.updateExistingFootnoteHeight(row);
+        }
         const rows: TableRowWidget[] = [row];
         this.addTableRowWidget(viewer.clientActiveArea, rows) as TableRowWidget;
         viewer.updateClientAreaForRow(row, true);
@@ -7668,8 +7637,34 @@ export class Layout {
             this.shiftCellWidget(cell, this.getMaxTopCellMargin(row) + row.topBorderWidth, this.getMaxBottomCellMargin(row) + row.bottomBorderWidth, isClearHeight);
         }
         viewer.updateClientAreaForRow(row, false);
+        if (!isNestedTable) {
+            let footheight: number = this.footnoteHeight;
+            this.updateFootnoteToBody(row, this.layoutedFootnoteElement);
+            this.footnoteHeight = footheight;
+        }
         this.updateWidgetsToTable(tables, rows, row);
+        if (!isNestedTable) {
+            this.layoutedFootnoteElement = [];
+        }
         return rows[rows.length - 1];
+    }
+
+    private updateFootnoteToBody(row: TableRowWidget, footnoteElements: FootnoteElementBox[]): void {
+        this.layoutFootnoteInSplittedRow(row, this.getFootnoteBody(footnoteElements));
+        if (isNullOrUndefined(row.ownerTable.footnoteElement)) {
+            row.ownerTable.footnoteElement = [];
+        }
+        for (let i: number = 0; i < footnoteElements.length; i++) {
+            row.ownerTable.footnoteElement.push(footnoteElements[i]);
+        }
+    }
+    
+    private getFootnoteBody(footnoteElements: FootnoteElementBox[]): BodyWidget[] {
+        let footnoteWidgets: BodyWidget[] = [];
+        for (let i: number = 0; i < footnoteElements.length; i++) {
+            footnoteWidgets.push(footnoteElements[i].bodyWidget);
+        }
+        return footnoteWidgets;
     }
 
     public shiftCellWidget(cell: TableCellWidget, maxCellMarginTop: number, maxCellMarginBottom: number, isClearHeight: boolean): void {
@@ -7678,6 +7673,7 @@ export class Layout {
         }
         const viewer: LayoutViewer = this.viewer;
         this.addTableCellWidget(cell, viewer.clientActiveArea, maxCellMarginTop, maxCellMarginBottom) as TableCellWidget;
+        let clientHeight: number = this.viewer.clientActiveArea.height;
         viewer.updateClientAreaForCell(cell, true);
         for (let i: number = 0; i < cell.childWidgets.length; i++) {
             const block: BlockWidget = cell.childWidgets[i] as BlockWidget;
@@ -7691,18 +7687,19 @@ export class Layout {
         }
         this.updateWidgetToRow(cell);
         viewer.updateClientAreaForCell(cell, false);
+        if(!cell.ownerTable.isInsideTable) {
+            this.viewer.clientActiveArea.height = clientHeight;
+        }
     }
 
     public shiftParagraphWidget(paragraph: ParagraphWidget): void {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + paragraph.height);
-        if (!isNullOrUndefined((paragraph as ParagraphWidget).floatingElements)) {
-            //this.shiftLayoutFloatingItems(paragraph as ParagraphWidget);
-            // for (let i: number = 0; i < paragraph.floatingElements.length; i++) {
-            //     let shape: ShapeElementBox = paragraph.floatingElements[i];
-            //     this.layoutElement(shape, paragraph);
-            // }
+        let footnoteCollection: BodyWidget[] = this.getFootNoteWidgetsOf(paragraph as BlockWidget, true);
+        for (let i: number = 0; i < footnoteCollection.length; i++) {
+            this.layoutedFootnoteElement.push(footnoteCollection[i].footNoteReference);
         }
+        this.footnoteHeight += this.getFootNoteHeight(footnoteCollection);
         this.updateWidgetToPage(this.viewer, paragraph);
     }
 
@@ -7735,7 +7732,7 @@ export class Layout {
         //const isPageLayout: boolean = viewer instanceof PageLayoutViewer;
         const combinedTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
         this.documentHelper.layout.updateChildLocationForTable(combinedTable.y, combinedTable);
-        this.clearTableWidget(combinedTable, true, false);
+        this.clearTableWidget(combinedTable, true, false, false, true);
         this.shiftTableWidget(combinedTable, this.viewer);
         this.updateVerticalPositionToTop(table, false);
         if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {

@@ -659,7 +659,7 @@ describe('Batch Editing module', () => {
 
         it('cell save', (done: Function) => {
             //last action check
-            expect(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex')).toBe('1');
+            expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe('1');
             let cellSave = (args?: any): void => {
                 expect(gridObj.isEdit).toBeTruthy();
                 gridObj.cellSave = null;
@@ -3001,7 +3001,7 @@ describe('Batch editing render with Freeze => ', () => {
     it('tab key with frozen columns', (done: Function) => {
         gridObj.addRecord();
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex')).toBe("1");
+        expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe("1");
         done();
     });
 
@@ -3811,5 +3811,35 @@ describe('EJ2-59995 - Frozen Grid Batch editing Bulk Validation and script error
     afterAll(() => {
         destroy(gridObj);
         gridObj = null; 
+    });
+});
+
+describe('EJ2-61565-Custom commands inside command column disappear on back tab with batch editing', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                allowResizing: true,
+                editSettings : { allowEditing: true, allowAdding: true, allowDeleting: true , mode: "Batch" },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID',isPrimaryKey: true , width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false},
+                    { field: 'Freight', type: 'number' },
+                    { headerText: 'Commands', width: 120, commands: [{ buttonOption: { content: 'Details', cssClass: 'e-flat' } }]}
+                ],
+                commandClick: (args: any) => {
+                    alert(JSON.stringify(args.rowData));
+                }
+            }, done);
+    });
+    it('editing the Command Column cell', () => {
+        gridObj.editCell(0,undefined);
+        expect((gridObj.element as any).classList.contains('e-editing')).toBeFalsy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
     });
 });

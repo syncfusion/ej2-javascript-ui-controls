@@ -96,6 +96,9 @@ export class ContextMenu implements IContextMenu {
     }
 
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        if(this.pdfViewerBase.preventContextmenu){
+            args.cancel = true;
+        }
         const target: HTMLElement = this.setTarget(args);
         let currentAnnotSettings : any = this.pdfViewer.selectedItems.annotations.length !== 0 ? this.pdfViewer.selectedItems.annotations[0].annotationSettings : null;
         // eslint-disable-next-line max-len

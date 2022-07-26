@@ -29,7 +29,7 @@ export class ExpandCellRenderer extends IndentCellRenderer implements ICellRende
         node.setAttribute('tabindex', '-1');
         node.appendChild(this.parent.createElement('a', {
             className: isExpand ? 'e-icons e-gdiagonaldown e-icon-gdownarrow' : 'e-icons e-gnextforward e-icon-grightarrow',
-            attrs: { href: '#', 'title': isExpand ? 'expanded' : 'collapsed' }
+            attrs: { href: 'javascript:void(0);', 'title': isExpand ? 'expanded' : 'collapsed' }
         }));
         return node;
     }

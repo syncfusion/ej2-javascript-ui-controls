@@ -6110,6 +6110,7 @@ Remove terinal segment in initial
     public scroll(scrollX: number, scrollY: number, focusPoint?: PointModel): void {
         const panx: number = canPanX(this.diagram);
         const pany: number = canPanY(this.diagram);
+        let canPan:boolean = true;
         if (isBlazor()) {
             this.diagram.setCursor('grabbing');
             this.diagram.scroller.zoom(
@@ -6118,7 +6119,7 @@ Remove terinal segment in initial
         } else {
             this.diagram.pan(
                 (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
-                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint);
+                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint,canPan);
         }
     }
 

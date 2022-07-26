@@ -634,6 +634,7 @@ export class PdfViewerBase {
      * @private
      */
     public isPageRotated: boolean = false;
+    public preventContextmenu: boolean;
     private downloadFileName: string = '';
     /**
      * @private
@@ -7114,7 +7115,7 @@ export class PdfViewerBase {
                     }
                 }
             }
-            const ten: number = 10 / this.getZoomFactor();
+            const ten: number = this.pdfViewer.touchPadding / this.getZoomFactor();
             const matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, obj.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
             //check for resizing tool
@@ -7170,9 +7171,9 @@ export class PdfViewerBase {
     public checkForResizeHandles(
         diagram: PdfViewer, element: DrawingElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
         const forty: number = 40 / 1;
-        let ten: number = 10 / 1;
+        let ten: number = this.pdfViewer.touchPadding / 1;
         if (element.actualSize.width < 40 || element.actualSize.height < 40) {
-            ten = 5 * this.getZoomFactor() / 1;
+            ten = ten / 2 * this.getZoomFactor() / 1;
         }
         const selectedItems: Selector = diagram.selectedItems as Selector;
         let isStamp: boolean = false;
@@ -7935,8 +7936,14 @@ export class PdfViewerBase {
      * @returns {void}
      */
     public diagramMouseDown(evt: MouseEvent | TouchEvent): void {
-        if ((evt as MouseEvent).which === 3) {
+        if (this.tool instanceof MoveTool && !(this.tool instanceof StampTool) && this.tool['inAction']) {
             this.diagramMouseUp(evt);
+            if((evt as MouseEvent).which === 1){
+                    this.preventContextmenu =true;
+                    setTimeout(()=>{
+                        this.preventContextmenu = false;
+                },200)
+            }
         }
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);

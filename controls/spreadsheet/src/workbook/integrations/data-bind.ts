@@ -270,6 +270,7 @@ export class DataBind {
                     if ((<CellModel>prop).value.indexOf('http://') === 0 || (<CellModel>prop).value.indexOf('https://') === 0 ||
                         (<CellModel>prop).value.indexOf('ftp://') === 0 || (<CellModel>prop).value.indexOf('www.') === 0) {
                         data.hyperlink = (<CellModel>prop).value;
+                        data.style = { textDecoration: 'underline', color: '#00e' };
                     } else {
                         data.value = (<CellModel>prop).value;
                     }
@@ -285,6 +286,7 @@ export class DataBind {
                     if ((<string>prop).indexOf('http://') === 0 || (<string>prop).indexOf('https://') === 0 ||
                         (<string>prop).indexOf('ftp://') === 0 || (<string>prop).indexOf('www.') === 0) {
                         data.hyperlink = <string>prop;
+                        data.style = { textDecoration: 'underline', color: '#00e' };
                     } else {
                         data.value = <string>prop;
                     }

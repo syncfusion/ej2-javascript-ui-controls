@@ -134,11 +134,11 @@ export class Clipboard implements IAction {
                 if (isFrozen) {
                     const fTr: HTMLElement = dataRows[rIdx];
                     const mTr: HTMLElement = mRows[rIdx];
-                    isAvail = !fTr.querySelector('[aria-colindex="' + cIdx + '"]') ?
-                        mTr.querySelector('[aria-colindex="' + cIdx + '"]') : true;
+                    isAvail = !fTr.querySelector('[data-colindex="' + cIdx + '"]') ?
+                        mTr.querySelector('[data-colindex="' + cIdx + '"]') : true;
                     if (frRows && !isAvail) {
                         const frTr: HTMLElement = frRows[rIdx];
-                        isAvail = frTr.querySelector('[aria-colindex="' + cIdx + '"]');
+                        isAvail = frTr.querySelector('[data-colindex="' + cIdx + '"]');
                     }
                 }
                 if (!isAvail) {
@@ -287,7 +287,7 @@ export class Clipboard implements IAction {
         const isElement: boolean = typeof cells[0] !== 'string';
         for (let j: number = 0; j < cells.length; j++) {
             if (withHeader && isCell) {
-                const colIdx: number = parseInt((cells[j] as HTMLElement).getAttribute(literals.ariaColIndex), 10);
+                const colIdx: number = parseInt((cells[j] as HTMLElement).getAttribute(literals.dataColIndex), 10);
                 this.copyContent += (this.parent.getColumns() as Column[])[colIdx].headerText + '\n';
             }
             if (isElement) {

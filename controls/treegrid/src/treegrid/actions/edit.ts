@@ -33,6 +33,7 @@ export class Edit {
     private isTabLastRow: boolean;
     private prevAriaRowIndex: string = '-1';
     private isAddedRowByMethod: boolean = false;
+    private isAddedRowByContextMenu: boolean = false;
     /**
      * Constructor for Edit module
      *
@@ -88,10 +89,10 @@ export class Edit {
     private gridDblClick(e: MouseEvent): void {
         this.doubleClickTarget = e.target as HTMLElement;
     }
-    private getRowPosition(addArgs: { newRowPosition: RowPosition, addRowIndex: number, ariaRowIndex: number }): void {
+    private getRowPosition(addArgs: { newRowPosition: RowPosition, addRowIndex: number, dataRowIndex: number }): void {
         addArgs.newRowPosition = this.parent.editSettings.newRowPosition;
         addArgs.addRowIndex = this.addRowIndex;
-        addArgs.ariaRowIndex = +this.prevAriaRowIndex;
+        addArgs.dataRowIndex = +this.prevAriaRowIndex;
     }
     private beforeStartEdit(args: Object) : void {
         this.parent.trigger(events.actionBegin, args);
@@ -245,7 +246,7 @@ export class Edit {
         if (!(this.parent.grid.editSettings.allowEditing) || this.parent.grid.isEdit) {
             return;
         }
-        const column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
+        const column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('data-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
         this.parent.editSettings.allowEditing && column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
           target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
@@ -253,8 +254,8 @@ export class Edit {
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
             if (this.parent.enableVirtualization) {
                 const tr: HTMLTableRowElement = <HTMLTableRowElement>parentsUntil(args.target as Element, 'e-row');
-                this.prevAriaRowIndex = tr.getAttribute('aria-rowindex');
-                tr.setAttribute('aria-rowindex', tr.rowIndex + '');
+                this.prevAriaRowIndex = tr.getAttribute('data-rowindex');
+                tr.setAttribute('data-rowindex', tr.rowIndex + '');
             }
             this.updateGridEditMode('Batch');
         }
@@ -297,7 +298,7 @@ export class Edit {
         const prom: Deferred = args[promise];
         delete args[promise];
         if (this.parent.enableVirtualization && !isNullOrUndefined(this.prevAriaRowIndex) && this.prevAriaRowIndex !== '-1') {
-            args.row.setAttribute('aria-rowindex', this.prevAriaRowIndex);
+            args.row.setAttribute('data-rowindex', this.prevAriaRowIndex);
             this.prevAriaRowIndex = undefined;
         }
         if (this.keyPress !== 'enter') {
@@ -622,8 +623,8 @@ export class Edit {
             }
         }
         const rows: Element[] = this.parent.grid.getDataRows();
-        const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
-        const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+        const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('data-rowindex') : 0;
+        const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('data-rowindex') : 0;
         const withinRange: boolean = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
         const isVirtualization: boolean = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
         if (this.parent.editSettings.mode !== 'Dialog') {
@@ -691,20 +692,27 @@ export class Edit {
                 focussedElement.focus();
             }
         }
-        if (this.parent.editSettings.mode === 'Batch' && !isNullOrUndefined(this.addRowIndex) && this.addRowIndex !== -1) {
+        if (this.parent.editSettings.mode === 'Batch' && !isNullOrUndefined(this.addRowIndex) && this.addRowIndex !== -1 && this['isAddedRowByMethod'] && !this.isAddedRowByContextMenu) {
             index = this.batchEditModule.getAddRowIndex();
             this.selectedIndex = this.batchEditModule.getSelectedIndex();
-            if (this.parent.editModule['isAddedRowByMethod']) {
-                const args: Object = {
-                    action : 'add',
-                    data: this.parent.getBatchChanges()['addedRecords'][0],
-                    index: index,
-                    seletedRow: 0
-                };
-                this.parent.editModule.beginAddEdit(args);
-                this.parent.editModule.batchEditModule['batchAddRowRecord'].push(this.parent.editModule.batchEditModule['addRowRecord']);
-                this.parent.editModule.batchEditModule['batchAddedRecords'].push(args['data']);
+            const batchAddedRecords: ITreeData[] = this.parent.getBatchChanges()['addedRecords'];
+            let newlyAddedRecord: ITreeData;
+            if (batchAddedRecords.length) {
+                for (let i: number = 0; i < batchAddedRecords.length; i++) {
+                    if (isNullOrUndefined(batchAddedRecords[i].uniqueID)) {
+                        newlyAddedRecord = batchAddedRecords[i];
+                    }
+                }
             }
+            const args: Object = {
+                action : 'add',
+                data: newlyAddedRecord,
+                index: index,
+                seletedRow: 0
+            };
+            this.beginAddEdit(args);
+            this.batchEditModule['batchAddRowRecord'].push(this.batchEditModule['addRowRecord']);
+            this.batchEditModule['batchAddedRecords'].push(args['data']);
         }
     }
     // private beforeDataBound(args: BeforeDataBoundArgs): void {
@@ -764,7 +772,7 @@ export class Edit {
                 this.selectedIndex = this.parent.grid.selectedRowIndex;
             }
             if (this.parent.enableVirtualization) {
-                let selector: string = '.e-row[aria-rowindex="' + this.selectedIndex + '"]';
+                let selector: string = '.e-row[data-rowindex="' + this.selectedIndex + '"]';
                 let row: HTMLTableRowElement;
                 if (this.selectedIndex > -1 && this.parent.editSettings.newRowPosition !== 'Top' &&
                   this.parent.editSettings.newRowPosition !== 'Bottom') {
@@ -773,7 +781,7 @@ export class Edit {
                     this.addRowIndex = row ? row.rowIndex : 0;
                 } else {
                     if (this.prevAriaRowIndex && this.prevAriaRowIndex !== '-1') {
-                        selector = '.e-row[aria-rowindex="' + this.prevAriaRowIndex + '"]';
+                        selector = '.e-row[data-rowindex="' + this.prevAriaRowIndex + '"]';
                         row = <HTMLTableRowElement>this.parent.getContent().querySelector(selector);
                         this.addRowIndex = row ? row.rowIndex : 0;
                     } else {
@@ -828,10 +836,16 @@ export class Edit {
             const key: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
             let position: string = null;
             value.taskData = isNullOrUndefined(value.taskData) ? extend({}, args.data) : value.taskData;
-            const currentData: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
+            let currentData: ITreeData[];
+            if (this.parent.editSettings.mode === 'Batch' && this['isAddedRowByMethod'] && !isNullOrUndefined(this.addRowIndex)) {
+                currentData = this.batchEditModule['batchRecords'];
+            }
+            else {
+                currentData = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
+            }
             if (this.parent.enableVirtualization && args.index !== 0) {
                 this.addRowIndex = this.parent.grid.getCurrentViewRecords().indexOf( this.addRowRecord);
-                this.selectedIndex = parseInt(this.parent.getRows()[this.addRowIndex].getAttribute('aria-rowindex'), 10);
+                this.selectedIndex = parseInt(this.parent.getRows()[this.addRowIndex].getAttribute('data-rowindex'), 10);
             }
             let index: number =  this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
@@ -841,7 +855,7 @@ export class Edit {
             const isVirtualization: boolean = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
             const rows: HTMLTableRowElement[] = this.parent.getRows();
             const firstAriaIndex: number = rows.length ? currentData.indexOf(currentData[0]) : 0;
-            const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+            const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('data-rowindex') : 0;
             const withinRange: boolean = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
             if (currentData.length) {
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];

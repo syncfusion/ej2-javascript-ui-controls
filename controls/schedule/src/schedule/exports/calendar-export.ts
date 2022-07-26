@@ -15,6 +15,11 @@ export class ICalendarExport {
     }
 
     public initializeCalendarExport(fileName: string, customData: Record<string, any>[]): void {
+        const icsString = this.getCalendarString(fileName, customData);
+        this.download(icsString, fileName);
+    }
+
+    public getCalendarString(fileName?: string, customData?: Record<string, any>[]): string {
         let eventsData: Record<string, any>[] = (customData) ? customData :
             extend([], this.parent.eventsData, null, true) as Record<string, any>[];
         eventsData = this.parent.eventBase.sortByTime(eventsData);
@@ -99,7 +104,7 @@ export class ICalendarExport {
             'X-WR-TIMEZONE:' + timeZone
         ].join(SEPARATOR);
         const icsString: string = iCalendar + SEPARATOR + iCalendarEvents.join(SEPARATOR) + SEPARATOR + 'END:VCALENDAR';
-        this.download(icsString, fileName);
+        return icsString;
     }
 
     private customFieldFilter(eventObj: Record<string, any>, fields: EventFieldsMapping): string[] {

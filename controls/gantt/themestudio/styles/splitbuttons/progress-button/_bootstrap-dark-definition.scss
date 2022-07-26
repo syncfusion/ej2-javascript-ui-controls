@@ -17,10 +17,10 @@ $progress-btn-spinner-padding-small: 10px !default;
 $progress-btn-spinner-padding-bigger: 14px !default;
 $progress-btn-spinner-padding-bigger-small: 12px !default;
 
-$progress-btn-flat-primary-progress-color: #ff4081 !default;
-$progress-btn-flat-success-progress-color: #4d841d !default;
-$progress-btn-flat-info-progress-color: #0378d5 !default;
-$progress-btn-flat-warning-progress-color: #c15700 !default;
-$progress-btn-flat-danger-progress-color: #d64113 !default;
+$progress-btn-flat-primary-progress-color: rgba($brand-primary-font, 1) !default;
+$progress-btn-flat-success-progress-color: rgba($brand-primary-font, 1) !default;
+$progress-btn-flat-info-progress-color: rgba($brand-primary-font, 1) !default;
+$progress-btn-flat-warning-progress-color: rgba($brand-primary-font, 1) !default;
+$progress-btn-flat-danger-progress-color: rgba($brand-primary-font, 1) !default;
 $btn-flat-primary-path-arc: none;
 //enddefault

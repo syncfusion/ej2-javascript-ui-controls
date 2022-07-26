@@ -924,8 +924,8 @@ export class InfiniteScroll implements IAction {
         const cell: Element = ((e.byClick && e.clickArgs.target) || (e.byKey && e.keyArgs.target)
             || (!this.isFocusScroll && <{ target?: Element }>e).target) as Element;
         if (cell && cell.classList.contains('e-rowcell')) {
-            const cellIdx: number = parseInt(cell.getAttribute('aria-colindex'), 10);
-            const rowIdx: number = parseInt(cell.parentElement.getAttribute('aria-rowindex'), 10);
+            const cellIdx: number = parseInt(cell.getAttribute('data-colindex'), 10);
+            const rowIdx: number = parseInt(cell.parentElement.getAttribute('data-rowindex'), 10);
             this.lastFocusInfo = { rowIdx: rowIdx, cellIdx: cellIdx };
         }
     }
@@ -940,7 +940,7 @@ export class InfiniteScroll implements IAction {
             }
             const cell: Element = document.activeElement;
             let rowIndex: number = getRowIndexFromElement(cell.parentElement);
-            this.cellIndex = parseInt(cell.getAttribute(literals.ariaColIndex), 10);
+            this.cellIndex = parseInt(cell.getAttribute(literals.dataColIndex), 10);
             const content: Element = gObj.getContent().firstElementChild;
             const totalRowsCount: number = (this.maxPage * gObj.pageSettings.pageSize) - 1;
             const visibleRowCount: number = Math.floor((content as HTMLElement).offsetHeight / this.parent.getRowHeight());

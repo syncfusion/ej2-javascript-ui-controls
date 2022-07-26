@@ -545,6 +545,17 @@ export class Link {
         this.removeEventListener();
     }
     /**
+     * Clears the Link Module.
+     *
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+     public moduleDestroy(): void {
+        this.parent = null;
+    }
+    
+    /**
      * For internal use only - Get the module name.
      *
      * @returns {void}

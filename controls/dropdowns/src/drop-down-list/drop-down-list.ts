@@ -1863,6 +1863,25 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 this.initial = false;
             }
+            else if (this.getModuleName() === 'autocomplete' && this.value && this.typedString === '' && !(this.dataSource instanceof DataManager)) {
+                const checkFields: string = this.typeOfData(this.dataSource).typeof === 'string' ? '' : this.fields.value;
+                const checkValue: boolean = list.some((x: {[key: string]: boolean | string | number}) => x[checkFields] === this.value);
+                let query: Query = new Query();
+                if (!checkValue) {
+                    new DataManager(this.dataSource).executeQuery(query.where(new Predicate(checkFields, 'equal', this.value)))
+                        .then((e: Object) => {
+                            if ((e as ResultData).result.length > 0) {
+                                this.value = checkFields !== '' ? (e as ResultData).result[0][this.fields.value].toString() : (e as ResultData).result[0].toString();
+                                this.addItem((e as ResultData).result, list.length);
+                                this.updateValues();
+                            } else {
+                                this.updateValues(); 
+                            }
+                        });
+                } else {
+                    this.updateValues(); 
+                }
+            }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
                     && !this.isFilterFocus) || (isNullOrUndefined(this.itemData) && this.allowFiltering)

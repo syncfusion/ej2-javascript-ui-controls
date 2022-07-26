@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#F175828` - Now, `customSelection` event is trigger when we render the component with `itemTemplate` and `allowFiltering`.
+
 ## 20.2.39 (2022-07-19)
 
 ### ListBox
 
 #### Bug Fixes
 
-- `#I384240` - Issue with "`RemoveItems` not working properly after adding items with specific index" has been resolved.
+- `#I386103` - Issue with "Datasource not update properly after clearing the filtering in the dual listbox" has been resolved.
 
 ## 20.2.36 (2022-06-30)
 

@@ -180,17 +180,18 @@ describe('Resize ->', () => {
             });
         });
     });
-    describe('EJ2-56260->', () => {
-        beforeEach((done: Function) => {
+    describe('EJ2-56260, EJ2-58247->', () => {
+        let activeCell: HTMLElement; let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{ ranges: [{ dataSource: defaultData }] }]
             }, done);
         });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
         it('Row height issue after performing undo operation->', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet = helper.getInstance();
             spreadsheet.setRowHeight(10, 0);
             spreadsheet.selectRange("B1:B200");
             helper.getElement('#' + helper.id + '_cut').click();
@@ -204,6 +205,58 @@ describe('Resize ->', () => {
                         expect(helper.getInstance().sheets[0].rows[0].height).toBe(10);
                         done();
                     });
+                });
+            });
+        });
+        it('Merged cell selection misalignment on row resize', (done: Function) => {
+            helper.invoke('selectRange', ['C7:D8']);
+            helper.invoke('merge');
+            setTimeout((): void => {
+                activeCell = helper.getElementFromSpreadsheet('.e-active-cell');
+                expect(activeCell.style.height).toBe('41px');
+                expect(spreadsheet.sheets[0].rows[6].height).toBeUndefined();
+                const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+                const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[7].cells[0];
+                const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+                helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 50, offsetY: 3 }, spreadsheet.element, rowHdr);
+                helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 50, offsetY: 3 }, document, rowHdr);
+                setTimeout((): void => {
+                    expect(activeCell.style.height).toBe('90px');
+                    expect(spreadsheet.sheets[0].rows[6].height).toBe(69);
+                    done();
+                });
+            });
+        });
+        it('Merged cell selection misalignment on column resize', (done: Function) => {
+            expect(activeCell.style.width).toBe('129px');
+            expect(spreadsheet.sheets[0].columns[2].width).toBeUndefined();
+            const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+            const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[3];
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top + 1, offsetX: 3 }, colHdrPanel, colHdr);
+            helper.triggerMouseAction('mousemove', { x: offset.left + 50, y: offset.top + 1, offsetX: 3 }, spreadsheet.element, colHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left + 50, y: offset.top + 1, offsetX: 3 }, document, colHdr);
+            setTimeout((): void => {
+                expect(activeCell.style.width).toBe('179px');
+                expect(spreadsheet.sheets[0].columns[2].width).toBe(114);
+                done();
+            });
+        });
+        it('Merged cell other than active cell row / col resize', (done: Function) => {
+            expect(spreadsheet.sheets[0].columns[3]).toBeUndefined();
+            helper.invoke('setColWidth', [100, 3]);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(100);
+            setTimeout((): void => {
+                expect(activeCell.style.width).toBe('215px');
+                expect(spreadsheet.sheets[0].rows[7].height).toBeUndefined();
+                helper.invoke('setRowHeight', [60, 7]);
+                expect(spreadsheet.sheets[0].rows[7].height).toBe(60);
+                setTimeout((): void => {
+                    expect(activeCell.style.height).toBe('130px');
+                    done();
                 });
             });
         });

@@ -595,10 +595,6 @@ export class Resize {
                 return;
             }
             this.setRowHeight(actualIdx, idx, `${rowHeight}px`, prevData);
-            if (CellElem && CellElem.rowSpan) {
-                const td: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
-                (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.height = td.offsetHeight + 'px';
-            }
             if (this.trgtEle.parentElement.style.display === 'none') {
                 const sheet: SheetModel = this.parent.getActiveSheet();
                 const selectedRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
@@ -652,10 +648,6 @@ export class Resize {
                 curWidth = getColumnWidth(this.parent.getActiveSheet(), idx);
             }
             this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (e.clientX - this.event.clientX) + curWidth, curWidth);
-            if (CellElem && CellElem.colSpan) {
-                const td: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
-                (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.width = td.offsetWidth +  'px';
-            }
         }
         if (CellElem && CellElem.format && CellElem.format.indexOf('*') > -1) {
             this.parent.notify(rowFillHandler, { cell: CellElem, value: CellElem.format[CellElem.format.indexOf('*') + 1].toString(),

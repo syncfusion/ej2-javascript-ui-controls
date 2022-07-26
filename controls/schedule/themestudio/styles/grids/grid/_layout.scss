@@ -2487,11 +2487,15 @@
 
     .e-icon-gdownarrow {
       font-size: $grid-group-down-arrow-icon-font-size;
+      padding: $grid-group-down-arrow-icon-padding;
+      text-decoration: none;
       text-indent: $group-collapse-icon-text-indent;
     }
 
     .e-icon-grightarrow {
       font-size: $grid-group-right-arrow-icon-font-size;
+      padding: $grid-group-right-arrow-icon-padding;
+      text-decoration: none;
       text-indent: $group-expand-icon-text-indent;
     }
 
@@ -3665,7 +3669,12 @@
   .e-gridheader .e-headercontent .e-reorderuparrow,
   .e-gridheader .e-headercontent .e-reorderdownarrow {
     font-size: $grid-biggerreorderarrow-font-size;
-    margin-top: $grid-bigger-reorderarrow-margin-top;
+  }
+
+  .e-gridheader .e-headercontent .e-reorderuparrow {
+    @if $grid-skin == 'fluent' or $grid-skin == 'bootstrap5' {
+      margin-top: -9px;
+    }
   }
 
   .e-gridheader thead .e-icons {

@@ -77,7 +77,7 @@ export class EditRender {
             gObj.element.getElementsByClassName('e-gridform')[index];
         const isVirtualFrozen: boolean = frzCols && this.parent.enableColumnVirtualization && args.isScroll;
         if (frzCols && gObj.editSettings.mode === 'Normal') {
-            const rowIndex: number = parseInt(args.row.getAttribute(literals.ariaRowIndex), 10);
+            const rowIndex: number = parseInt(args.row.getAttribute(literals.dataRowIndex), 10);
             if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
                 || rowIndex < gObj.frozenRows)) {
                 fForm = gObj.element.querySelector('.' + literals.movableHeader).querySelector('.e-gridform');
@@ -211,7 +211,7 @@ export class EditRender {
                 const cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
                 const cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 const td: Element = cellRenderer.render(
-                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.ariaRowIndex) : 0 }, this.parent.enableVirtualization);
+                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.dataRowIndex) : 0 }, this.parent.enableVirtualization);
                 const div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;

@@ -1,6 +1,6 @@
 /* eslint-disable */
 // eslint-disable-next-line max-len
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // eslint-disable-next-line max-len
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel } from './pdfviewer-model';
@@ -5426,6 +5426,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public tool: string;
 
     /**
+     * @private
+     */
+     public touchPadding: number = 10;
+
+    /**
      * store the drawing objects.
      *
      * @private
@@ -5443,6 +5448,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     protected preRender(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
+        if(Browser.isDevice){
+            this.touchPadding = 20;
+        }
     }
 
     protected render(): void {

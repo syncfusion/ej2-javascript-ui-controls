@@ -722,6 +722,50 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('Check appointment rendering with timezone', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Paris',
+                StartTime: new Date(2022, 2, 23, 2, 0),
+                EndTime: new Date(2022, 2, 23, 5, 0)
+            }
+        ];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2022, 2, 20), timezone: 'UTC', currentView: 'Week'
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('CR issue - EJ2-61857 - On Schedule property change', () => {
+            schObj.dataBound = null;
+            schObj.allowResizing = false;
+            schObj.dataBind();
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toBe(1);
+            expect(app[0].querySelector('.e-time').innerHTML).toEqual('2:00 AM - 5:00 AM');
+        });
+        it('CR issue - EJ2-61857 - On eventSettings property change', () => {
+            schObj.dataBound = null;
+            schObj.eventSettings.enableIndicator = true;
+            schObj.dataBind();
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toBe(1);
+            expect(app[0].querySelector('.e-time').innerHTML).toEqual('2:00 AM - 5:00 AM');
+        });
+        it('CR issue - EJ2-61857 - On refreshEvents method with local data refresh', () => {
+            schObj.dataBound = null;
+            schObj.refreshEvents(false);
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toBe(1);
+            expect(app[0].querySelector('.e-time').innerHTML).toEqual('2:00 AM - 5:00 AM');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

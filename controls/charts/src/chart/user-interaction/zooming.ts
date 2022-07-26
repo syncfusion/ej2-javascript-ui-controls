@@ -366,6 +366,7 @@ export class Zoom {
             if ((axis.orientation === 'Vertical' && mode !== 'X') ||
                 (axis.orientation === 'Horizontal' && mode !== 'Y')) {
                 cumulative = Math.max(Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1) + (0.25 * direction), 1);
+                cumulative = (cumulative > 50000000000) ? 50000000000 : cumulative;
                 if (cumulative >= 1) {
                     origin = axis.orientation === 'Horizontal' ? mouseX / axis.rect.width : 1 - (mouseY / axis.rect.height);
                     origin = origin > 1 ? 1 : origin < 0 ? 0 : origin;
@@ -493,7 +494,7 @@ export class Zoom {
                 currentZP = (selectionMin - this.zoomAxes[index].actualMin) / this.zoomAxes[index].actualDelta;
                 currentZF = (selectionMax - selectionMin) / this.zoomAxes[index].actualDelta;
                 argsData.currentZoomPosition = currentZP < 0 ? 0 : currentZP;
-                argsData.currentZoomFactor = currentZF > 1 ? 1 : currentZF;
+                argsData.currentZoomFactor = currentZF > 1 ? 1 : (currentZF < 0.03) ? 0.03 : currentZF;
                 if (!argsData.cancel) {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
@@ -820,7 +821,7 @@ export class Zoom {
         if (chart.isTouch) {
             if (chart.isDoubleTap && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)
                 && this.touchStartList.length === 1 && this.isZoomed) {
-                this.toolkit.reset();
+                this.toolkit.reset(e);
             }
             this.touchStartList = [];
             chart.isDoubleTap = false;

@@ -138,9 +138,13 @@ export class SvgRenderer implements IRenderer {
             'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
             'transform': 'rotate(' + options.angle + ','
                 + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
-            'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity,
-            'aria-label': ariaLabel ? ariaLabel : ''
+            'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
         };
+        if (ariaLabel) {
+            // BLAZ-24062: Adding 'aria-label' without role attribute it causes violation in accessibility test
+            attr['role'] = 'img';
+            attr['aria-label'] = ariaLabel;
+        }
         if (options.class) {
             attr['class'] = options.class;
         }
@@ -251,9 +255,13 @@ export class SvgRenderer implements IRenderer {
             'cy': options.centerY,
             'r': options.radius,
             'visibility': options.visible ? 'visible' : 'hidden',
-            'class': classval,
-            'aria-label': ariaLabel ? ariaLabel['aria-label'] : ''
+            'class': classval
         };
+        if (ariaLabel) {
+            // BLAZ-24062: Adding 'aria-label' without role attribute it causes violation in accessibility test
+            attr['role'] = 'img';
+            attr['aria-label'] = ariaLabel;
+        }
         circle.style.display = options.visible ? 'block' : 'none';
         setAttributeSvg(circle, attr);
         gElement.appendChild(circle);
@@ -305,16 +313,19 @@ export class SvgRenderer implements IRenderer {
             attr = {
                 'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
                     + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + '),scale(' + scale + ')',
-                'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
-                'aria-label': ariaLabel ? ariaLabel : ''
+                'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity
             };
         } else {
             attr = {
                 'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
                     + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
-                'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
-                'aria-label': ariaLabel ? ariaLabel : ''
+                'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity
             };
+        }
+        if (ariaLabel) {
+            // BLAZ-24062: Adding 'aria-label' without role attribute it causes violation in accessibility test
+            attr['role'] = 'img';
+            attr['aria-label'] = ariaLabel;
         }
         if (options.class) {
             attr['class'] = options.class;
@@ -494,9 +505,13 @@ export class SvgRenderer implements IRenderer {
                 'id': options.id + '_text', 'fill': options.color, 'visibility': options.visible ? 'visible' : 'hidden',
                 'text-decoration': options.textDecoration, 'transform': 'rotate(' + options.angle + ','
                     + (pivotX) + ',' + (pivotY) + ')'
-                    + 'translate(' + (options.x) + ',' + (options.y) + ')', 'opacity': options.opacity,
-                'aria-label': ariaLabel ? ariaLabel : ''
+                    + 'translate(' + (options.x) + ',' + (options.y) + ')', 'opacity': options.opacity
             };
+            if (ariaLabel) {
+                // BLAZ-24062: Adding 'aria-label' without role attribute it causes violation in accessibility test
+                attr['role'] = 'img';
+                attr['aria-label'] = ariaLabel;
+            }
             setAttributeSvg(text, attr);
         }
     }
@@ -661,7 +676,7 @@ export class SvgRenderer implements IRenderer {
         if (element.scale === 'Slice') {
             this.drawClipPath(element, nativeElement, height, width, parentSvg);
         }
-        setAttributeSvg(nativeElement, element.description ? { 'aria-label': element.description } : {});
+        setAttributeSvg(nativeElement, element.description ? { 'role': 'img', 'aria-label': element.description } : {});
     }
 
     private setNativTransform(element: DiagramNativeElement, nativeElement: SVGElement, height: number, width: number): void {

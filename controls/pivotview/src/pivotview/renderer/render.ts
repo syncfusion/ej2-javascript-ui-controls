@@ -431,7 +431,7 @@ export class Render {
                 isGroupElement = true;
             }
             let rowIndex: number = Number(elem.getAttribute('index'));
-            let colIndex: number = Number(elem.getAttribute('aria-colindex'));
+            let colIndex: number = Number(elem.getAttribute('data-colindex'));
             let pivotValue1: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
             let selectedID: string = item.id;
             switch (selectedID) {
@@ -501,7 +501,7 @@ export class Render {
                         if (groupField && groupField.type === 'Custom' || (this.parent.engineModule.fieldList[fieldName].isCustomField && fieldName.indexOf('_custom_group') > -1)) {
                             groupField = PivotUtil.getFieldByName(fieldName.replace('_custom_group', ''), this.parent.dataSourceSettings.groupSettings) as IGroupSettings;
                             if (groupField) {
-                                let cell: IAxisSet = (this.parent.engineModule.pivotValues[Number(elem.getAttribute('index'))][Number(elem.getAttribute('aria-colindex'))] as IAxisSet);
+                                let cell: IAxisSet = (this.parent.engineModule.pivotValues[Number(elem.getAttribute('index'))][Number(elem.getAttribute('data-colindex'))] as IAxisSet);
                                 let selectedCellsInfo: SelectedCellsInfo[] = this.parent.groupingModule.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
                                 selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(), cellInfo: cell });
                                 let selectedOptions: string[] = this.parent.groupingModule.getSelectedOptions(selectedCellsInfo);
@@ -693,7 +693,7 @@ export class Render {
             ele = target.parentElement.parentElement;
         }
         let rowIndx: number = Number(ele.getAttribute('index'));
-        let colIndx: number = Number(ele.getAttribute('aria-colindex'));
+        let colIndx: number = Number(ele.getAttribute('data-colindex'));
         let pivotValue: IAxisSet = this.parent.pivotValues[rowIndx][colIndx] as IAxisSet;
         let aggregateType: string;
         if (args.item.id.indexOf(this.parent.element.id + '_Agg') > -1) {
@@ -837,7 +837,7 @@ export class Render {
             let fieldName: string = target.getAttribute('fieldName');
             if (!fieldName || fieldName == '') {
                 let rowIndx: number = Number(target.getAttribute('index'));
-                let colIndx: number = Number(target.getAttribute('aria-colindex'));
+                let colIndx: number = Number(target.getAttribute('data-colindex'));
                 fieldName = (this.engine.pivotValues[rowIndx][colIndx] as IAxisSet).actualText as string;
             }
             let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -1032,7 +1032,7 @@ export class Render {
         /* eslint-disable-next-line */
         let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         for (let element of selectedElements) {
-            let colIndex: number = Number(element.getAttribute('aria-colindex'));
+            let colIndex: number = Number(element.getAttribute('data-colindex'));
             let rowIndex: number = Number(element.getAttribute('index'));
             let cell: IAxisSet = (this.engine.pivotValues[rowIndex][colIndex] as IAxisSet);
             if (cell) {
@@ -1074,7 +1074,7 @@ export class Render {
             let isRowFieldsAvail: boolean = cell.valueSort && cell.valueSort.levelName === (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' &&
                 this.parent.localeObj.getConstant('grandTotal') + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText));
             tCell.setAttribute('index', cell.rowIndex ? cell.rowIndex.toString() : '0');
-            if (tCell.getAttribute('aria-colindex') === '0') {
+            if (tCell.getAttribute('data-colindex') === '0') {
                 if (this.parent.dataType === 'pivot') {
                     let isValueCell: boolean = cell.type && cell.type === 'value';
                     tCell.innerText = '';
@@ -1172,15 +1172,15 @@ export class Render {
                 let innerText: string = tCell.innerText;
                 tCell.innerText = '';
                 tCell.classList.add(cls.VALUESCONTENT);
-                cell = (args.data as IGridValues)[Number(tCell.getAttribute('aria-colindex'))] as IAxisSet;
+                cell = (args.data as IGridValues)[Number(tCell.getAttribute('data-colindex'))] as IAxisSet;
                 cell = isNullOrUndefined(cell) ? (args.column.customAttributes.cell as IAxisSet) : cell;
                 cell.isGrandSum = isRowFieldsAvail ? true : cell.isGrandSum;
                 if (cell.isSum) {
                     tCell.classList.add(cls.SUMMARY);
                 }
                 let isGrandSum: boolean = (isNullOrUndefined(cell.isGrandSum) && (!isNullOrUndefined(this.parent.olapEngineModule) && this.parent.olapEngineModule.olapValueAxis === 'column') && this.parent.dataType === 'olap' &&
-                    ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < Number(tCell.getAttribute('aria-colindex'))));
-                if (cell.isGrandSum || (isGrandSum || this.colGrandPos === Number(tCell.getAttribute('aria-colindex'))) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
+                    ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < Number(tCell.getAttribute('data-colindex'))));
+                if (cell.isGrandSum || (isGrandSum || this.colGrandPos === Number(tCell.getAttribute('data-colindex'))) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
                     tCell.classList.add('e-gtot');
                 } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(cell.colIndex)) {
                     tCell.classList.add('e-colstot');
@@ -1195,12 +1195,12 @@ export class Render {
                         '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
                 }));
                 if (this.parent.gridSettings.allowReordering && !this.parent.showGroupingBar) {
-                    tCell.setAttribute('aria-colindex', (args.column.customAttributes.cell as IAxisSet).colIndex.toString());
+                    tCell.setAttribute('data-colindex', (args.column.customAttributes.cell as IAxisSet).colIndex.toString());
                 }
             }
             if (this.parent.cellTemplate) {
                 let index: string = tCell.getAttribute('index');
-                let colindex: string = tCell.getAttribute('aria-colindex');
+                let colindex: string = tCell.getAttribute('data-colindex');
                 let templateID: string = index + '_' + colindex;
                 /* eslint-disable-next-line */
                 let element: any = this.parent.getCellTemplate()(
@@ -1367,7 +1367,7 @@ export class Render {
                         (args.node as HTMLElement).style.borderBottomWidth = '0px';
                     }
                 }
-                args.node.setAttribute('aria-colindex', cell.colIndex.toString());
+                args.node.setAttribute('data-colindex', cell.colIndex.toString());
                 args.node.setAttribute('index', cell.rowIndex.toString());
                 let fieldName: string;
                 if (this.parent.dataType === 'pivot') {
@@ -1451,7 +1451,7 @@ export class Render {
                 tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex);
                 if (this.parent.cellTemplate) {
                     let index: string = tCell.getAttribute('index');
-                    let colindex: string = tCell.getAttribute('aria-colindex');
+                    let colindex: string = tCell.getAttribute('data-colindex');
                     let templateID: string = index + '_' + colindex;
                     this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
                 }
@@ -1534,7 +1534,7 @@ export class Render {
         cell = (cell.className.indexOf('e-headercelldiv') > -1 ? cell.parentElement : cell);
         let args: HyperCellClickEventArgs = {
             currentCell: cell,
-            data: this.engine.pivotValues[Number(cell.getAttribute('index'))][Number(cell.getAttribute('aria-colindex'))],
+            data: this.engine.pivotValues[Number(cell.getAttribute('index'))][Number(cell.getAttribute('data-colindex'))],
             cancel: true,
             nativeEvent: e
         };

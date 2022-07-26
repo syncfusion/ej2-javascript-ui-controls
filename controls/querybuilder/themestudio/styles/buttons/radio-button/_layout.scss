@@ -73,7 +73,7 @@
       &:focus,
       &.e-focus {
         @if $skin-name == 'FluentUI' {
-          border: 1px solid $radio-btn-border-color;
+          border: 1px solid transparent;
         }
       }
 
@@ -240,6 +240,24 @@
 
     &:focus,
     .e-focus {
+      +label,
+      & .e-label {
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid $radio-btn-border-color;
+        }
+      }
+    }
+
+    &:focus:not(:focus-visible) {
+      +label,
+      & .e-label {
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid transparent;
+        }
+      }
+    }
+
+    &:focus-visible {
       +label,
       & .e-label {
         @if $skin-name == 'FluentUI' {
@@ -423,6 +441,24 @@
       +label,
       & .e-label {
         @if $skin-name == 'FluentUI' {
+          border: 1px solid transparent;
+        }
+      }
+    }
+
+    &:focus:not(:focus-visible) {
+      +label,
+      & .e-label {
+        @if $skin-name == 'FluentUI' {
+          border: 1px solid transparent;
+        }
+      }
+    }
+
+    &:focus-visible {
+      +label,
+      & .e-label {
+        @if $skin-name == 'FluentUI' {
           border: 1px solid $radio-btn-border-color;
         }
       }
@@ -432,7 +468,7 @@
   .e-bigger .e-radio+label {
     @if $skin-name == 'FluentUI' {
       border: 1px solid transparent;
-      height: 24px;
+      height: 28px;
     }
   }
 

@@ -52,7 +52,7 @@ export class NormalEdit {
             parentsUntil(parentsUntil(target,  literals.gridContent), 'e-grid').id === gObj.element.id)) || (gObj.frozenRows
                 && parentsUntil(target, literals.headerContent))) && !parentsUntil(target, 'e-unboundcelldiv')) {
             this.rowIndex = parentsUntil(target, literals.rowCell)
-                ? parseInt(target.parentElement.getAttribute(literals.ariaRowIndex), 10) : -1;
+                ? parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10) : -1;
             if (gObj.isEdit) {
                 gObj.editModule.endEdit();
             }
@@ -116,9 +116,9 @@ export class NormalEdit {
 
     protected startEdit(tr: Element): void {
         const gObj: IGrid = this.parent;
-        this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute(literals.ariaRowIndex), 10);
+        this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute(literals.dataRowIndex), 10);
         if (gObj.enableVirtualization || gObj.enableInfiniteScrolling) {
-            const selector: string = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
+            const selector: string = '.e-row[data-rowindex="' + this.rowIndex + '"]';
             const virtualRow: Element = this.parent.element.querySelector(selector);
             if (!virtualRow) {
                 return;
@@ -190,7 +190,7 @@ export class NormalEdit {
         gObj.showSpinner();
         if (gObj.enableInfiniteScrolling) {
             this.uid = (args.row as Element).getAttribute('data-uid');
-            const index: number =  parseInt((args.row as Element).getAttribute('aria-rowindex'), 10);
+            const index: number =  parseInt((args.row as Element).getAttribute('data-rowindex'), 10);
             this.parent.notify(events.refreshInfiniteEditrowindex, { index: index });
         }
         gObj.notify(events.updateData, args);
@@ -411,7 +411,7 @@ export class NormalEdit {
             if (this.needRefresh()) {
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);
             }
-            const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + rowObj.index + '"]'));
+            const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[data-rowindex="' + rowObj.index + '"]'));
             if (frzCols && tr.length) {
                 for (let i: number = 0; i < tr.length; i++) {
                     const rowUid: string = tr[i].getAttribute('data-uid');

@@ -294,7 +294,7 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     public buildAttributeFromCell<Column>(node: HTMLElement, cell: Cell<Column>, isCheckBoxType?: boolean): void {
         const attr: ICell<Column> & { 'class'?: string[] } = {};
-        const prop: { 'colindex'?: string } = { 'colindex': literals.ariaColIndex };
+        const prop: { 'colindex'?: string } = { 'colindex': literals.dataColIndex };
         const classes: string[] = [];
 
         if (cell.colSpan) {
@@ -322,8 +322,10 @@ export class CellRenderer implements ICellRenderer<Column> {
 
         if (cell.cellType === CellType.Header) {
             attr[prop.colindex] = cell.colIndex;
+            attr[literals.ariaColIndex] = cell.colIndex + 1;
         }   else if (!isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
+            attr[literals.ariaColIndex] = cell.index + 1;
         }
 
         if (!cell.visible) {

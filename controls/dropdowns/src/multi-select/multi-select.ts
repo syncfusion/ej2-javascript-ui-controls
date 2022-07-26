@@ -3044,7 +3044,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     protected updateDataList(): void {
-        if (this.mainList && this.ulElement && !(this.isFiltered || this.filterAction)) {
+        if (this.mainList && this.ulElement && !(this.isFiltered || this.filterAction || this.targetElement().trim())) {
             let isDynamicGroupItemUpdate : boolean = this.mainList.childElementCount < this.ulElement.childElementCount;
             let isReactTemplateUpdate : boolean = ((this.ulElement.childElementCount > 0 && this.ulElement.children[0].childElementCount > 0) && ( this.mainList.children[0].childElementCount < this.ulElement.children[0].childElementCount));
             let isAngularTemplateUpdate : boolean = this.itemTemplate && this.ulElement.childElementCount > 0 && !(this.ulElement.childElementCount < this.mainList.childElementCount) && (this.ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && this.ulElement.children[1] && this.ulElement.children[1].childElementCount > 0));

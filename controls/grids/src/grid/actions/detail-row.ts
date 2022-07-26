@@ -171,7 +171,7 @@ export class DetailRow {
             }
             classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
-            if (parseInt(tr.getAttribute(literals.ariaRowIndex), 10) === lastrowIdx && this.lastrowcell) {
+            if (parseInt(tr.getAttribute(literals.dataRowIndex), 10) === lastrowIdx && this.lastrowcell) {
                 addClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
                 this.lastrowcell = false;
             }

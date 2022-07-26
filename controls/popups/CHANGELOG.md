@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I393351` - Now, the drag action for the dialog content area is prevented.
+
 ## 20.2.39 (2022-07-19)
 
 ### Dialog

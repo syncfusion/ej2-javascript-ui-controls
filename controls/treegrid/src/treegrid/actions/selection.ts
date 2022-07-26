@@ -443,7 +443,7 @@ export class Selection {
                     childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
                         this.parent.getCurrentViewRecords() : this.parent.flatData;
                     childData.forEach((record: ITreeData) => {
-                        if (this.parent.enableVirtualization) {
+                        if (this.parent.enableVirtualization && record.childRecords.length > 0) {
                             if (record.hasChildRecords) {
                                 this.updateParentSelection(record);
                             } else {

@@ -10,10 +10,8 @@
       box-shadow: none;
     }
 
-    & .e-find-dlg {
-      & .e-header {
-        font-weight: 500;
-      }
+    & .e-find-dlg .e-header {
+      font-weight: 500;
     }
 
     & .e-scrollbar {
@@ -247,6 +245,10 @@
             background: $tbar-focus-bg;
             border-color: $ribbon-item-active-border-color;
           }
+
+          @if $skin-name == 'bootstrap5' {
+            color: $tbar-active-icon-color;
+          }
         }
       }
 
@@ -278,6 +280,12 @@
           & .e-icons,
           &.e-dropdown-btn .e-tbar-btn-text {
             color: inherit;
+          }
+        }
+
+        &.e-split-colorpicker {
+          @if $skin-name == 'bootstrap5' {
+            color: $tbar-default-font;
           }
         }
       }
@@ -624,11 +632,8 @@
       }
     }
 
-    & .e-datavalidation-dlg {
-
-      & .e-dlg-error {
-        color: $dlg-error-color;
-      }
+    & .e-datavalidation-dlg .e-dlg-error {
+      color: $dlg-error-color;
     }
   }
 

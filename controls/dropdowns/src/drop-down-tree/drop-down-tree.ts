@@ -2480,7 +2480,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             return 2;
         }
-        this.fields.dataSource = isNOU(this.fields.dataSource) ? [] : this.fields.dataSource;
+        if(isNOU(this.fields.dataSource)) this.fields.dataSource = [];
         for (let i: number = 0, len: number = this.fields.dataSource.length; i < len; i++) {
             if ((typeof field.child === 'string') && !isNOU(getValue(field.child, this.fields.dataSource[i]))) {
                 return 2;

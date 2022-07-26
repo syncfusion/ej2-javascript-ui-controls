@@ -1282,6 +1282,44 @@ describe('Drag related events testing', () => {
     });
 });
 
+describe('EJ2-62114 - Need to prevent drag action on the dialog content', () => {
+    let dragEle: HTMLElement;
+    let dialog: Dialog;
+    let mousemove: any;
+    let mouseUp: any;
+    beforeEach(() => {
+        dragEle = createElement('div', { id: 'dialog' });
+        document.body.appendChild(dragEle);
+        dialog = new Dialog({
+            allowDragging: true,
+            header: "Draggable dialog",
+            content: "Dialog content",
+            animationSettings: { effect: 'None' }
+        }, '#dialog');
+        mousemove = getEventObject('MouseEvents', 'mousemove');
+        mousemove = setMouseCoordinates(mousemove, 17, 14);
+        let mousedown: any = getEventObject('MouseEvents', 'mousedown');
+        mousedown = setMouseCoordinates(mousedown, 5, 5);
+        mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-dlg-content")[0];
+        EventHandler.trigger(document.getElementsByClassName("e-dlg-content")[0] as HTMLElement, 'mousedown', mousedown);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-dlg-content");
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCoordinates(mousemove, 5, 5);
+        mouseUp = getEventObject('MouseEvents', 'mouseup');
+        mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-dlg-content")[0];
+    });
+    it('Drag action testing for the content area', () => {
+        mousemove = setMouseCoordinates(mousemove, 5, 5);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+        expect((dialog.element as HTMLElement).style.left).toBe('8px');
+        expect((dialog.element as HTMLElement).style.top).toBe('8px');
+    });
+    afterEach(() => {
+        destroyDialog(dialog);
+    });
+});
+
 describe('Position property testing using string type', () => {
     let dialog: Dialog;
     beforeEach((): void => {

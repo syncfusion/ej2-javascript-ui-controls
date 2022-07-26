@@ -3733,7 +3733,7 @@ export abstract class LayoutViewer {
             this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
             this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
             this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
-            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height - this.documentHelper.layout.footnoteHeight);
+            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
         }
     }
     public updateClientAreaForCell(cell: TableCellWidget, beforeLayout: boolean): void {
@@ -3759,6 +3759,10 @@ export abstract class LayoutViewer {
             this.clientActiveArea.y = cellWidget.y - cellWidget.margin.top - HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.cellSpacing);
             if (!cell.ownerTable.isInsideTable) {
                 this.clientActiveArea.height = this.clientArea.bottom - rowWidget.y > 0 ? this.clientArea.bottom - rowWidget.y : 0;
+                if(!cell.ownerTable.wrapTextAround && this.documentHelper.layout.existFootnoteHeight > 0) {
+                    let updateHeight: number = this.clientActiveArea.height - this.documentHelper.layout.existFootnoteHeight;
+                    this.clientActiveArea.height = updateHeight < 0 ? 0 : updateHeight;
+                }
             }
             this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
             this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
@@ -4236,9 +4240,6 @@ export class PageLayoutViewer extends LayoutViewer {
         this.updateClientArea(section.sectionFormat, page);
         page.bodyWidgets.push(section);
         page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
-        if (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo && this.owner.editorHistory.currentHistoryInfo.action === 'Paste') {
-            this.documentHelper.layout.layoutHeaderFooter(page.previousPage.bodyWidgets[0], viewer, page.previousPage);
-        }
         this.documentHelper.layout.layoutHeaderFooter(section, viewer, page);
         this.updateClientArea(section.sectionFormat, page);
         this.documentHelper.layout.footnoteHeight = 0;

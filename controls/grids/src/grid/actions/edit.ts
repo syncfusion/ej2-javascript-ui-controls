@@ -685,7 +685,7 @@ export class Edit implements IAction {
             const editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
             const addRow: Element = this.parent.element.querySelector('.' + literals.addedRow);
             if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
-                && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.ariaRowIndex), 10) < this.parent.frozenRows) {
+                && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.dataRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
             const restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll', 'virtualscroll'];
@@ -998,7 +998,7 @@ export class Edit implements IAction {
         let table: Element;
         if (gObj.editSettings.mode !== 'Dialog') {
             isFHdr = (gObj.frozenRows && gObj.frozenRows
-                > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.ariaRowIndex), 10) || 0));
+                > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.dataRowIndex), 10) || 0));
             const field: string = (inputElement as HTMLInputElement).name;
             let col: Column;
             if (field) {
@@ -1079,7 +1079,7 @@ export class Edit implements IAction {
             : [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
             if (viewPortRowCount > 1 && rows.length >= viewPortRowCount
-                && rows[rows.length - 1].getAttribute(literals.ariaRowIndex) === row.getAttribute(literals.ariaRowIndex)) {
+                && rows[rows.length - 1].getAttribute(literals.dataRowIndex) === row.getAttribute(literals.dataRowIndex)) {
                 isBatchModeLastRow = true;
             }
         }
@@ -1087,8 +1087,8 @@ export class Edit implements IAction {
             if (this.parent.frozenRows) {
                 const fHeraderRows: HTMLCollection = frzCols ? this.parent.getFrozenVirtualHeader().querySelector(literals.tbody).children
                     : this.parent.getHeaderTable().querySelector(literals.tbody).children;
-                isFHdr = fHeraderRows.length > (parseInt(row.getAttribute(literals.ariaRowIndex), 10) || 0);
-                isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.ariaRowIndex), 10) === fHeraderRows.length - 1;
+                isFHdr = fHeraderRows.length > (parseInt(row.getAttribute(literals.dataRowIndex), 10) || 0);
+                isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.dataRowIndex), 10) === fHeraderRows.length - 1;
             }
             if (isFHdrLastRow || (viewPortRowCount > 1 && rows.length >= viewPortRowCount
                 && ((this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args

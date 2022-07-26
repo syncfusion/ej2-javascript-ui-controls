@@ -89,7 +89,6 @@ export class CanvasRenderer {
                 this.setStyle(canvas, options as StyleAttributes);
                 ctx.rect(options.x, options.y, options.width, options.height);
                 ctx.fillRect(options.x, options.y, options.width, options.height);
-                ctx.fill();
                 ctx.stroke();
                 ctx.closePath();
                 ctx.restore();

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-len */
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, removeClass } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { getRecurrenceStringFromDate, generate } from '../../recurrence-editor/date-generator';
 import { ActionEventArgs, EventFieldsMapping, SaveChanges, CrudArgs, CrudAction, TdData } from '../base/interface';
@@ -50,7 +50,7 @@ export class Crud {
             const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
             this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: Record<string, any>) => data[this.parent.eventFields.isBlock]);
-            this.parent.refreshEvents(false);
+            this.refreshProcessedData();
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
@@ -66,6 +66,32 @@ export class Crud {
     public dataManagerFailure(e: ReturnType): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
+    }
+
+    public refreshProcessedData(): void {
+        if (this.parent.dragAndDropModule) {
+            this.parent.dragAndDropModule.actionObj.action = '';
+            removeClass([this.parent.element], 'e-event-action');
+        }
+        if (this.parent.activeViewOptions && this.parent.activeViewOptions.eventTemplate) {
+            let templateNames: string[] = ['eventTemplate'];
+            if (this.crudObj.isCrudAction &&
+                ['Agenda', 'MonthAgenda', 'Year', 'TimelineYear'].indexOf(this.parent.currentView) === -1) {
+                templateNames = [];
+                for (let i: number = 0, len: number = this.crudObj.sourceEvent.length; i < len; i++) {
+                    templateNames.push('eventTemplate_' + this.crudObj.sourceEvent[i].groupIndex);
+                    if (this.crudObj.targetEvent[i] && this.crudObj.sourceEvent[i].groupIndex !==
+                        this.crudObj.targetEvent[i].groupIndex) {
+                        templateNames.push('eventTemplate_' + this.crudObj.targetEvent[i].groupIndex);
+                    }
+                }
+            }
+            this.parent.resetTemplates(templateNames);
+        }
+        const eventsData: Record<string, any>[] = this.parent.eventsData || [];
+        const blockData: Record<string, any>[] = this.parent.blockData || [];
+        const data: Record<string, any>[] = eventsData.concat(blockData);
+        this.parent.notify(events.dataReady, { processedData: this.parent.eventBase ? this.parent.eventBase.processData(data) : [] });
     }
 
     private refreshData(args: CrudArgs): void {

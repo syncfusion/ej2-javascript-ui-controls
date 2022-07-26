@@ -621,29 +621,32 @@ export class Toolbar {
                     }
                     this.deSelectItem(this.formDesignerItem);
                 } else if (this.pdfViewerBase.pageCount > 0) {
-                    this.toolbar.enableItems(this.downloadItem.parentElement, true);
-                    this.toolbar.enableItems(this.printItem.parentElement, true);
-                    this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), true);
-                    this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), true);
-                    this.updateUndoRedoButtons();
-                    this.updateNavigationButtons();
-                    this.updateZoomButtons();
-                    if (this.pdfViewer.magnificationModule) {
-                        this.zoomDropDown.readonly = false;
-                    }
-                    this.updateInteractionItems();
-                    // modify this condition if new annotation types are added.
-                    if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation) {
-                        this.toolbar.enableItems(this.annotationItem.parentElement, true);
-                    }
-                    if (this.pdfViewer.formDesignerModule && this.pdfViewer.enableFormDesigner) {
-                        this.toolbar.enableItems(this.formDesignerItem.parentElement, true);
-                    }
-                    if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
-                        this.toolbar.enableItems(this.textSearchItem.parentElement, true);
-                    }
-                    if (this.pdfViewer.annotationModule && this.pdfViewer.enableStickyNotesAnnotation) {
-                        this.toolbar.enableItems(this.commentItem.parentElement, true);
+                    var obj : any = this.pdfViewerBase.getElement('_currentPageInputContainer')
+                    if(obj){
+                        this.toolbar.enableItems(this.downloadItem.parentElement, true);
+                        this.toolbar.enableItems(this.printItem.parentElement, true);
+                        this.toolbar.enableItems(this.pdfViewerBase.getElement('_currentPageInputContainer'), true);
+                        this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), true);
+                        this.updateUndoRedoButtons();
+                        this.updateNavigationButtons();
+                        this.updateZoomButtons();
+                        if (this.pdfViewer.magnificationModule) {
+                            this.zoomDropDown.readonly = false;
+                        }
+                        this.updateInteractionItems();
+                        // modify this condition if new annotation types are added.
+                        if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation) {
+                            this.toolbar.enableItems(this.annotationItem.parentElement, true);
+                        }
+                        if (this.pdfViewer.formDesignerModule && this.pdfViewer.enableFormDesigner) {
+                            this.toolbar.enableItems(this.formDesignerItem.parentElement, true);
+                        }
+                        if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
+                            this.toolbar.enableItems(this.textSearchItem.parentElement, true);
+                        }
+                        if (this.pdfViewer.annotationModule && this.pdfViewer.enableStickyNotesAnnotation) {
+                            this.toolbar.enableItems(this.commentItem.parentElement, true);
+                        }    
                     }
                 }
                 if (this.pdfViewer.toolbarSettings.annotationToolbarItems) {

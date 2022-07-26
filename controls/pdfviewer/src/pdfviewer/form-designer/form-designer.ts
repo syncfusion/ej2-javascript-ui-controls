@@ -2943,7 +2943,7 @@ export class FormDesigner {
             formFieldAnnotationType: formFieldType,
             name: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? 'Initial' + this.setFormFieldIndex() : 'Signature' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', alignment: 'left',
             isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
-            isInitialField: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? true : false
+            isInitialField: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? true : false,signatureIndicatorSettings : { opacity: 1, backgroundColor: 'rgba(255, 228, 133, 0.35)', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }
         };
         this.pdfViewer.tool = "DrawTool";
     }

@@ -3,7 +3,7 @@ import { createGrid, destroy } from '../base/treegridutil.spec';
 import { QueryCellInfoEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
-import { virtualData, editVirtualData, dataSource } from '../base/datasource.spec';
+import { virtualData, editVirtualData, dataSource, addVirtualData, dataSource1 } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { select } from '@syncfusion/ej2-base';
@@ -482,7 +482,7 @@ describe('TreeGrid Virtual Scroll', () => {
         };
         gridObj.grid.actionComplete = actionComplete;
         gridObj.grid.actionBegin = actionBegin;
-        rowIndex = parseInt(gridObj.getRows()[0].getAttribute('aria-rowindex'), 10);
+        rowIndex = parseInt(gridObj.getRows()[0].getAttribute('data-rowindex'), 10);
         gridObj.grid.selectRow(rowIndex);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
     });
@@ -663,7 +663,7 @@ describe('TreeGrid Virtual Scroll', () => {
         if(row.querySelector('.e-treegridexpand')){
             isParent = true;
         }
-        gridObj.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
+        gridObj.selectRow(parseInt(row.getAttribute('data-rowindex'), 10));
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
     });
 
@@ -748,6 +748,52 @@ describe('TreeGrid Virtual Scroll', () => {
     });
   });
 
+  describe('EJ2-60955- The checkbox selection is not working properly while the child has an empty child array.', () => {
+	if (!addVirtualData.length) {
+        dataSource1();
+    }
+	let TreeGridObj: TreeGrid;
+	let actionComplete: () => void;
+	beforeAll((done: Function) => {
+		TreeGridObj = createGrid(
+			{
+				dataSource: addVirtualData,
+				enableVirtualization: true,
+				allowSorting: true,
+				allowFiltering: true,
+				autoCheckHierarchy: true,
+				childMapping: 'Crew',
+				toolbar: ['Indent', 'Outdent', 'Add', 'Delete', 'Update', 'Cancel'],
+				editSettings: {
+					allowAdding: true,
+					allowEditing: true,
+					allowDeleting: true,
+				},
+				height: 400,
+				treeColumnIndex: 1,
+				columns: [
+					{ field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right', isPrimaryKey: true },
+					{ field: 'FIELD1', headerText: 'Player Name', width: 140, showCheckbox: true },
+					{ field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+					{ field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+					{ field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+				]
+			},
+			done
+		);
+	});
+
+	it('Checkbox checking', () => {
+		(<HTMLElement>TreeGridObj.element.querySelectorAll('.e-row')[0].getElementsByClassName('e-frame e-icons')[0] as any).click();
+		expect(TreeGridObj.getCheckedRecords().length).toBe(5);
+		TreeGridObj.collapseAll();
+		expect(TreeGridObj.getCheckedRecords().length).toBe(5);
+	});
+
+	afterAll(() => {
+		destroy(TreeGridObj);
+	});
+});
 
   describe('EJ2-58929 - Searching after scroll shows no records to display in case of Virtualization enabled', () => {
     let gridObj: TreeGrid;
@@ -887,7 +933,6 @@ describe('TreeGrid Virtual Scroll', () => {
       });
 
       it('Row Reorder Testing for Above, Child, Below positions After Sorting', () => {
-        debugger;
         TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, 'above');
         expect((TreeGridObj.rowDragAndDropModule['draggedRecord'] as ITreeData).level).toBe(0);
         TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, 'child');

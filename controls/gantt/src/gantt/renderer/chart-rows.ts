@@ -1739,6 +1739,12 @@ export class ChartRows extends DateProcessor {
             }
             const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, data);
+            let nextEditableElement: HTMLElement=this.parent.ganttChartModule.tempNextElement;
+            if (this.parent.ganttChartModule.isEditableElement && nextEditableElement) {
+                this.parent.treeGrid.grid.focusModule.focus();
+                addClass([this.parent.treeGrid.getRows()[tr['ariaRowIndex']].children[this.parent.ganttChartModule.childrenIndex]], 'e-focused');
+                this.parent.ganttChartModule.tempNextElement=null;
+            }
             const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                 this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;

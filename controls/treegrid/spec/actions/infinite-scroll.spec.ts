@@ -130,7 +130,7 @@ describe('TreeGrid Infinite Scroll', () => {
         });
         it('initial render', () => {
             expect(treegrid.getRows().length).toBe(150);
-            expect(parseInt(treegrid.getRows()[0].getAttribute('aria-rowindex'), 10)).toBe(0);
+            expect(parseInt(treegrid.getRows()[0].getAttribute('data-rowindex'), 10)).toBe(0);
             expect(treegrid.getCurrentViewRecords().length).toBe(150);
             expect(treegrid.grid.infiniteScrollSettings.enableCache).toBeFalsy();
             expect(treegrid.grid.infiniteScrollSettings.initialBlocks).toBe(3);
@@ -139,7 +139,6 @@ describe('TreeGrid Infinite Scroll', () => {
             expect(Object.keys((treegrid.grid.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(treegrid.grid.infiniteScrollSettings.initialBlocks);
         });
         it('collapse test', () => {
-            debugger;
             let rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
             expect(treegrid.getCurrentViewRecords().indexOf(treegrid.flatData[1])).toBe(-1);
@@ -155,7 +154,7 @@ describe('TreeGrid Infinite Scroll', () => {
         });
         it('scroll bottom', () => {
             expect(treegrid.getCurrentViewRecords().length).toBe(200);
-            expect(parseInt(treegrid.getRows()[150].getAttribute('aria-rowindex'), 10)).toBe(150);
+            expect(parseInt(treegrid.getRows()[150].getAttribute('data-rowindex'), 10)).toBe(150);
             expect(treegrid.getRows().length).toBe(200);
             expect(Object.keys((treegrid.grid.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(treegrid.infiniteScrollSettings.initialBlocks + 1);
         });
@@ -244,7 +243,6 @@ describe('TreeGrid Infinite Scroll', () => {
 
         it('Save New Row', (done: Function) => {
             actionComplete = (args?: any): void => {
-                debugger;
                 if (args.requestType === 'save') {
                     expect(treegrid.grid.element.querySelectorAll('.e-normaledit').length).toBe(0);
                     expect(treegrid.grid.element.querySelectorAll('.e-gridform').length).toBe(0);
@@ -308,7 +306,6 @@ describe('TreeGrid Infinite Scroll', () => {
         });
         it('Delete First Parent Row', (done: Function) => {
             actionComplete = (args?: any): void => {
-                debugger;
                 if (args.requestType === 'delete') {
                     expect((treegrid.grid.dataSource as any).length === 995).toBe(true);
                     done();
@@ -320,7 +317,6 @@ describe('TreeGrid Infinite Scroll', () => {
         });
         it('Delete Child Row', (done: Function) => {
             actionComplete = (args?: any): void => {
-                debugger;
                 if (args.requestType === 'delete') {
                     expect((treegrid.grid.dataSource as any).length === 994).toBe(true);
                     done();

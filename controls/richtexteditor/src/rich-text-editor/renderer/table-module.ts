@@ -595,7 +595,8 @@ export class Table {
         }
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
         const closestTable: Element = closest(target, 'table.e-rte-table');
-        if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable) {
+        if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable &&
+        	this.parent.contentModule.getEditPanel().contains(closestTable)) {
             this.removeResizeElement();
             this.removeHelper(e as MouseEvent);
             this.cancelResizeAction();
@@ -870,7 +871,8 @@ export class Table {
                 const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
                       (this.contentModule.getEditPanel() as HTMLElement).clientWidth) - paddingSize * 2;
                 let widthCompare: number;
-                if (!isNOU(this.curTable.parentElement.closest('table'))) {
+                if (!isNOU(this.curTable.parentElement.closest('table')) && !isNOU(this.curTable.closest('td')) &&
+                (this.contentModule.getEditPanel() as HTMLElement).contains(this.curTable.closest('td'))) {
                     const currentTd: HTMLElement = this.curTable.closest('td');
                     const currentTDPad: number = +getComputedStyle(currentTd).paddingRight.match(/\d/g).join('');
                     // Padding of the current table with the parent element multiply with 2.

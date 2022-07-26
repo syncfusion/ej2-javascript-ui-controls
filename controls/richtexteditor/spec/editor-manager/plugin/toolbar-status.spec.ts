@@ -317,3 +317,26 @@ describe('Update Toolbar commands', () => {
         expect(format.underline).toEqual(true);
     });
 });
+describe('EJ2-61863 - Font-family value property as case-sensitive', () => {
+    var innervalue = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +'<span id="MScontent" style="font-family:Arial, sans-serif">MS-content</span>'+'</div>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Check Font-family value property as case-Insensitive ', () => {
+        let node: Node = document.getElementById('MScontent');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['arial,sans-serif']);
+        expect(format.fontname).toEqual('arial,sans-serif');
+        expect(format.fontcolor).toEqual('rgb(0, 0, 0)');
+    });
+});

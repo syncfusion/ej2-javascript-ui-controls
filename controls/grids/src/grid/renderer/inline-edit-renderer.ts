@@ -121,7 +121,7 @@ export class InlineEditRender {
     }
 
     private getFreezeRightRow(row: Element): Element {
-        const idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+        const idx: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
         const fCont: Element = this.parent.getFrozenLeftContentTbody();
         const fHdr: Element = this.parent.getFrozenHeaderTbody();
         const frHdr: Element = this.parent.getFrozenRightHeaderTbody();
@@ -136,7 +136,7 @@ export class InlineEditRender {
 
     private getFreezeRow(row: Element): Element {
         if (this.parent.isFrozenGrid()) {
-            const idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+            const idx: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
             const fCont: Element = this.parent.getFrozenLeftContentTbody();
             const mCont: Element = this.parent.getMovableContentTbody();
             const fHdr: Element = this.parent.getFrozenHeaderTbody();
@@ -186,7 +186,7 @@ export class InlineEditRender {
         }
         let fCls: string;
         let cont: Element;
-        const idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+        const idx: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
         if (this.parent.isFrozenGrid()) {
             if (idx < this.parent.frozenRows) {
                 cont = this.parent.getHeaderContent();

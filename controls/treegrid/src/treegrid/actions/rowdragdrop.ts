@@ -204,7 +204,7 @@ export class RowDD {
                     dropIndex = this.selectedRow.rowIndex - 1;
                 }
                 if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
-                    dropIndex = parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10) - 1;
+                    dropIndex = parseInt(this.selectedRow.getAttribute('data-rowindex'), 10) - 1;
                 }
                 tObj[action] = 'indenting'; tObj[droppedIndex] = dropIndex;
                 this.eventTrigger('indenting', dropIndex);
@@ -220,7 +220,7 @@ export class RowDD {
                     }
                 }
                 if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
-                    dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('aria-rowindex'), 10);
+                    dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('data-rowindex'), 10);
                 }
                 tObj[action] = 'outdenting'; tObj[droppedIndex] = dropIndex;
                 this.eventTrigger('outdenting', dropIndex);
@@ -239,14 +239,14 @@ export class RowDD {
             if (!actionArgs.cancel) {
                 if (actionArgs.action === 'indenting'){
                     if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop) {
-                        this.reorderRows([parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10)], dropIndex, 'child');
+                        this.reorderRows([parseInt(this.selectedRow.getAttribute('data-rowindex'), 10)], dropIndex, 'child');
                     }
                     else {
                         this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'child');
                     }
                 } else if (actionArgs.action === 'outdenting') {
                     if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop) {
-                        this.reorderRows([parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10)], dropIndex, 'below');
+                        this.reorderRows([parseInt(this.selectedRow.getAttribute('data-rowindex'), 10)], dropIndex, 'below');
                     }
                     else {
                         this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'below');
@@ -881,7 +881,7 @@ export class RowDD {
     }
 
     private getTargetIdx(targetRow: Element): number {
-        return targetRow ? parseInt(targetRow.getAttribute('aria-rowindex'), 10) : 0;
+        return targetRow ? parseInt(targetRow.getAttribute('data-rowindex'), 10) : 0;
     }
 
     private getParentData(record: ITreeData, data?: Object[]): void {

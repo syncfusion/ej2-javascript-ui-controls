@@ -129,8 +129,8 @@ export class BatchEdit {
     protected dblClickHandler(e: MouseEvent): void {
         const target: Element = parentsUntil(e.target as Element, literals.rowCell);
         const tr: Element = parentsUntil(e.target as Element, literals.row);
-        const rowIndex: number = tr && parseInt(tr.getAttribute(literals.ariaRowIndex), 10);
-        const colIndex: number = target && parseInt(target.getAttribute(literals.ariaColIndex), 10);
+        const rowIndex: number = tr && parseInt(tr.getAttribute(literals.dataRowIndex), 10);
+        const colIndex: number = target && parseInt(target.getAttribute(literals.dataColIndex), 10);
         if (!isNullOrUndefined(target) && !isNullOrUndefined(rowIndex) && !isNaN(colIndex)
             && !target.parentElement.classList.contains(literals.editedRow)) {
             this.editCell(
@@ -520,7 +520,7 @@ export class BatchEdit {
                 beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
             if (this.parent.isFrozenGrid()) {
                 if (data) {
-                    index = parseInt(beforeBatchDeleteArgs.row.getAttribute(literals.ariaRowIndex), 10);
+                    index = parseInt(beforeBatchDeleteArgs.row.getAttribute(literals.dataRowIndex), 10);
                     selectedRows = [];
                     selectedRows.push(gObj.getRowByIndex(index));
                     selectedRows.push(gObj.getMovableRowByIndex(index));
@@ -583,7 +583,7 @@ export class BatchEdit {
             if (data) {
                 gObj.editModule.deleteRowUid = undefined;
                 if (gObj.getSelectedRows().length) {
-                    index = parseInt(gObj.getSelectedRows()[0].getAttribute(literals.ariaRowIndex), 10);
+                    index = parseInt(gObj.getSelectedRows()[0].getAttribute(literals.dataRowIndex), 10);
                 }
             }
             if (!gObj.isCheckBoxSelection) {
@@ -605,7 +605,8 @@ export class BatchEdit {
                 gridActionHandler(
                     this.parent,
                     (tableName: freezeTable, rowElements: Element[], rowObjects: Row<Column>[]) => {
-                        rowElements[i].setAttribute(literals.ariaRowIndex, j.toString());
+                        rowElements[i].setAttribute(literals.dataRowIndex, j.toString());
+                        rowElements[i].setAttribute(literals.ariaRowIndex, (j + 1).toString());
                         rowObjects[i].index = j;
                     },
                     dataRows, null, dataObjects
@@ -615,6 +616,7 @@ export class BatchEdit {
                 gridActionHandler(
                     this.parent,
                     (tableName: freezeTable, rowElements: Element[], rowObjects: Row<Column>[]) => {
+                        rowElements[i].removeAttribute(literals.dataRowIndex);
                         rowElements[i].removeAttribute(literals.ariaRowIndex);
                         rowObjects[i].index = -1;
                     },
@@ -990,7 +992,7 @@ export class BatchEdit {
             rowData = extend({}, {}, this.getDataByIndex(index), true);
         }
         if ((keys[0] === col.field && !row.classList.contains('e-insertedrow')) || col.columns ||
-            (col.isPrimaryKey && col.isIdentity)) {
+            (col.isPrimaryKey && col.isIdentity) || col.commands) {
             this.parent.isLastCellPrimaryKey = true;
             return;
         }
@@ -1018,7 +1020,7 @@ export class BatchEdit {
             cellEditArgs.columnObject.index = isNullOrUndefined(cellEditArgs.columnObject.index) ? 0 : cellEditArgs.columnObject.index;
             this.cellDetails = {
                 rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
-                cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute(literals.ariaColIndex), 10),
+                cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute(literals.dataColIndex), 10),
                 foreignKeyData: cellEditArgs.foreignKeyData
             };
             if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
@@ -1075,7 +1077,7 @@ export class BatchEdit {
             }
         } else {
             const rowEle: Element = this.parent.getRowElementByUID(rowObj.uid);
-            const rowIndex: number = parseInt(rowEle.getAttribute(literals.ariaRowIndex), 10);
+            const rowIndex: number = parseInt(rowEle.getAttribute(literals.dataRowIndex), 10);
             currentRowObj = this.parent.getRowsObject()[rowIndex];
             if (!currentRowObj.changes) {
                 currentRowObj.changes = extend({}, {}, rowObj.data, true);
@@ -1163,7 +1165,7 @@ export class BatchEdit {
         }
         if (this.parent.isRowDragable()) { cIdx++; }
         for (let m: number = 0; m < cells.length; m++) {
-            const colIndex: number = parseInt(cells[m].getAttribute(literals.ariaColIndex), 10);
+            const colIndex: number = parseInt(cells[m].getAttribute(literals.dataColIndex), 10);
             if (colIndex === index - cIdx) {
                 return m;
             }

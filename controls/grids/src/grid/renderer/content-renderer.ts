@@ -88,7 +88,7 @@ export class ContentRender implements IRenderer {
                 rows = this.parent.getRowsObject(); const prevPage: number = (<{ prevPage: number }>arg).prevPage;
                 if (this.parent.infiniteScrollSettings.enableCache && prevPage) {
                     const maxBlock: number = this.parent.infiniteScrollSettings.maxBlocks; rows = [];
-                    const rowIdx: number = (parseInt(this.rowElements[0].getAttribute('aria-rowindex'), 10) + 1);
+                    const rowIdx: number = (parseInt(this.rowElements[0].getAttribute('data-rowindex'), 10) + 1);
                     const startIdx: number = Math.ceil(rowIdx / this.parent.pageSettings.pageSize);
                     for (let i: number = 0, count: number = startIdx; i < maxBlock; i++, count++) {
                         if (this.infiniteCache[count]) {
@@ -633,9 +633,9 @@ export class ContentRender implements IRenderer {
             }
             const frozenCols: boolean = this.parent.isFrozenGrid();
             const rows: Element[] = this.parent.getRows();
-            let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.ariaRowIndex), 10);
+            let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.dataRowIndex), 10);
             const first: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
-            index = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10);
+            index = parseInt(rows[rows.length - 1].getAttribute(literals.dataRowIndex), 10);
             const last: number = Math.ceil(index / this.parent.pageSettings.pageSize);
             if (frozenCols) {
                 const idx: number = isFreeze ? 0 : 1;
@@ -1041,7 +1041,7 @@ export class ContentRender implements IRenderer {
         if (this.parent.infiniteScrollSettings.enableCache) {
             const fRows: number = this.parent.frozenRows;
             const idx: number = fRows > index ? 0 : fRows;
-            const firstRowIndex: number = parseInt(this.parent.getRows()[idx].getAttribute(literals.ariaRowIndex), 10);
+            const firstRowIndex: number = parseInt(this.parent.getRows()[idx].getAttribute(literals.dataRowIndex), 10);
             index = fRows > index ? index : (index - firstRowIndex) + fRows;
         }
         return index;
@@ -1224,7 +1224,8 @@ export class ContentRender implements IRenderer {
         row.index = index;
         row.edit = undefined;
         row.isDirty = false;
-        tr.setAttribute(literals.ariaRowIndex, index.toString());
+        tr.setAttribute(literals.dataRowIndex, index.toString());
+        tr.setAttribute(literals.ariaRowIndex, (index + 1).toString());
         this.updateCellIndex(tr, index);
     }
 

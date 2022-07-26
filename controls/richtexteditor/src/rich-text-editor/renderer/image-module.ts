@@ -49,7 +49,7 @@ export class Image {
     private isAllowedTypes: boolean = true;
     private pageX: number = null;
     private pageY: number = null;
-    private mousex: number = null;
+    private mouseX: number = null;
     private dialogRenderObj: DialogRenderer;
     private deletedImg: Node[] = [];
     private changedWidthValue: string;
@@ -398,7 +398,7 @@ export class Image {
             img.style.minWidth = this.parent.insertImageSettings.minWidth === 0 ? '20px' : formatUnit(this.parent.insertImageSettings.minWidth);
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    var original = img.offsetWidth + this.mousex;
+                    var original = img.offsetWidth + this.mouseX;
                     var finalWidthByPerc = (original / img.offsetWidth) *(parseFloat(img.style.width).toString() == 'NaN' ?  (img.offsetWidth/(parseFloat(getComputedStyle( this.parent.element).width))*100) : parseFloat(img.style.width));
                     img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
@@ -419,16 +419,16 @@ export class Image {
                 img.style.height = expectedY + 'px';
             } else {
                 if (this.parent.iframeSettings.enable){
-                    img.setAttribute('width', (img.width + this.mousex).toString());
+                    img.setAttribute('width', (img.width + this.mouseX).toString());
                 }
                 else{
-                    img.setAttribute('width', (img.offsetWidth + this.mousex).toString());
+                    img.setAttribute('width', (img.offsetWidth + this.mouseX).toString());
                 }
             }
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    var original = img.offsetWidth + this.mousex;
+                    var original = img.offsetWidth + this.mouseX;
                     var finalWidthByPerc =(original /img.offsetWidth)*(parseFloat(img.style.width).toString() == 'NaN' ?  (img.offsetWidth/(parseFloat(getComputedStyle( this.parent.element).width))*100) : parseFloat(img.style.width));
                     img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
@@ -490,7 +490,7 @@ export class Image {
         const mouseY: number = (this.resizeBtnStat.topLeft || this.resizeBtnStat.topRight) ? -(pageY - this.pageY) : (pageY - this.pageY);
         const width: number = parseInt(this.imgDupPos.width as string, 10) + mouseX;
         const height: number = parseInt(this.imgDupPos.height as string, 10) + mouseY;
-        this.mousex = mouseX;
+        this.mouseX = mouseX;
         this.pageX = pageX;
         this.pageY = pageY;
         if (this.resizeBtnStat.botRight) {
@@ -2304,6 +2304,18 @@ export class Image {
     public destroy(): void {
         this.prevSelectedImgEle = undefined;
         this.removeEventListener();
+    }
+    /* eslint-disable */
+    /**
+     * Clears the ImageModule.
+     * 
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    /* eslint-enable */
+    public moduleDestroy(): void {
+        this.parent = null;
     }
     /**
      * For internal use only - Get the module name.

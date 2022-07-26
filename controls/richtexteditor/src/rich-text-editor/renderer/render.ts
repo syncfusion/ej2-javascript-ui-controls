@@ -64,6 +64,15 @@ export class Render {
         this.removeEventListener();
     }
 
+    /**
+     * Clears the Render Module.
+     *
+     * @returns {void}
+     */
+     public moduleDestroy(): void {
+        this.parent = null;
+    }
+
     private addEventListener(): void {
         if (this.parent.isDestroyed) {
             return;

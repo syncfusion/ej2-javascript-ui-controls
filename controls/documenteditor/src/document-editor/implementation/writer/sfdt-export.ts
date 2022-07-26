@@ -157,9 +157,18 @@ export class SfdtExport {
             let bodyWidget: BlockContainer = startPara.bodyWidget as BlockContainer;
             let section: any = this.createSection(line.paragraph.bodyWidget as BlockContainer);
             this.document.sections.push(section);
-
-            if (startCell === endCell || isNullOrUndefined(endCell)) {
-                this.startLine  = line;
+            let selectionStartCell: TableCellWidget = startCell;
+            let selectionEndCell: TableCellWidget = endCell;
+            if (startCell instanceof TableCellWidget) {
+                selectionStartCell = this.getParentCell(selectionStartCell);
+            }
+            if (endCell instanceof TableCellWidget) {
+                selectionEndCell = this.getParentCell(selectionEndCell);
+            }
+            let isSameCell: boolean = selectionStartCell instanceof TableCellWidget && selectionEndCell instanceof TableCellWidget
+                && selectionEndCell.equals(selectionEndCell);
+            if (isSameCell || isNullOrUndefined(endCell)) {
+                this.startLine = line;
                 this.endLine = endLine;
                 this.endOffset = endOffset;
             } else {
@@ -182,7 +191,7 @@ export class SfdtExport {
                 }
             }
             let nextBlock: BlockWidget;
-            if ((startCell === endCell && !this.isPartialExport) || isNullOrUndefined(startCell)) {
+            if ((isSameCell && !this.isPartialExport) || isNullOrUndefined(startCell)) {
                 let paragraph: any = this.createParagraph(line.paragraph);
                 section.blocks.push(paragraph);
                 let lastBlock: BlockWidget = line.paragraph;
@@ -1813,6 +1822,12 @@ export class SfdtExport {
             widget = this.owner.documentHelper.layout.getParentTable(widget);
         }
         return widget;
+    }
+    private getParentCell(cell: TableCellWidget): TableCellWidget {
+        while (cell.ownerTable.isInsideTable) {
+            cell = cell.ownerTable.associatedCell;
+        }
+        return cell;
     }
     /** 
      * @private

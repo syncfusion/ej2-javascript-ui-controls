@@ -178,7 +178,8 @@ export class DragAndDrop {
                     && contentCell.querySelectorAll('.' + cls.CARD_CLASS).length === 0) {
                     target.appendChild(this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.BORDER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
-                    && (target.nextElementSibling && target.nextElementSibling.classList.contains(cls.CARD_WRAPPER_CLASS))) {
+                    && (target.nextElementSibling && target.nextElementSibling.classList.contains(cls.CARD_WRAPPER_CLASS))
+                    && (this.dragObj.targetClone && !this.dragObj.targetClone.previousElementSibling && !this.dragObj.targetClone.nextElementSibling)) {
                     target.nextElementSibling.appendChild(this.dragObj.targetClone);
                 }
             } else if (keys.length > 1 && (contentCell.classList.contains(cls.DROPPING_CLASS)  ||

@@ -1364,10 +1364,12 @@ export class Selection extends BaseSelection {
         index = chart.isRedrawSelection ? index : index.splice(0, index.length); // No need to remove selected indexes while redrawing
         let seriesElements: Element[];
         for (const series of seriesCollection) {
-            seriesElements = this.getSeriesElements(series);
-            this.removeStyles(seriesElements);
-            for (const seriesElement of seriesElements) {
-                this.removeStyles(this.getChildren(seriesElement));
+            if (series.visible) {
+                seriesElements = this.getSeriesElements(series);
+                this.removeStyles(seriesElements);
+                for (const seriesElement of seriesElements) {
+                    this.removeStyles(this.getChildren(seriesElement));
+                }
             }
         }
     }

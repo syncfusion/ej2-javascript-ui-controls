@@ -7,7 +7,7 @@ import {
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
     BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     CommentElementBox, CommentCharacterElementBox, CheckBoxFormField, DropDownFormField, TextFormField, FormField, ShapeElementBox,
-    TextFrame, ContentControl, FootnoteElementBox, FootNoteWidget, ShapeBase
+    TextFrame, ContentControl, FootnoteElementBox, FootNoteWidget, ShapeBase, HeaderFooters
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
@@ -981,9 +981,9 @@ export class Editor {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public stopProtection(password: string): void {
         if (this.documentHelper.isDocumentProtected) {
-            if ((!isNullOrUndefined(this.documentHelper.saltValue) || this.documentHelper.saltValue === '')
-            && (!isNullOrUndefined(this.documentHelper.hashValue) || this.documentHelper.hashValue === '')
-            && (!isNullOrUndefined(password) || password === '')) {
+            if ((!isNullOrUndefined(this.documentHelper.saltValue) && this.documentHelper.saltValue === '')
+                && (!isNullOrUndefined(this.documentHelper.hashValue) && this.documentHelper.hashValue === '')
+                && (!isNullOrUndefined(password) && password === '')) {
                 this.unProtectDocument();
                 return;
             }
@@ -2787,7 +2787,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public insertRevisionForBlock(widget: ParagraphWidget, revisionType: RevisionType, isTOC?: boolean, revision?: Revision): void {
+     public insertRevisionForBlock(widget: ParagraphWidget, revisionType: RevisionType, isTOC?: boolean, revision?: Revision, skipReLayout?: boolean): void {
         if (widget.childWidgets.length === 0 || !this.owner.enableTrackChanges) {
             return;
         }
@@ -2806,8 +2806,9 @@ export class Editor {
             // let textPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(editPostion);
             // this.selection.selectContent(textPosition, true);
             this.removeEmptyLine(widget);
-            this.documentHelper.layout.reLayoutParagraph(widget, 0, 0);
-
+            if (!skipReLayout) {
+                this.documentHelper.layout.reLayoutParagraph(widget, 0, 0);
+            }
         } else {
             let skipParaMark: boolean = false;
             if (isNullOrUndefined(revision)) {
@@ -5241,6 +5242,7 @@ export class Editor {
                 this.owner.viewer.updatePageBoundingRectangle(this.selection.start.paragraph.bodyWidget, page, page.boundingRectangle.y);
                 this.owner.viewer.updateClientArea(this.selection.start.paragraph.bodyWidget.sectionFormat, page);
             }
+            this.layoutWholeDocument();
         }
         for (let k: number = 0; k < bodyWidget.length; k++) {
             let widgets: BlockWidget[] = bodyWidget[k].childWidgets as BlockWidget[];
@@ -5322,7 +5324,28 @@ export class Editor {
                     if ((isNullOrUndefined(page.previousPage) || page.previousPage.sectionIndex !== page.sectionIndex)
                         && isNullOrUndefined(page.nextPage) && startParagraph.isEmpty() &&
                         bodyWidget.childWidgets.length === 1) {
-                        return true;
+                            let isEmpty: boolean = true;
+                            let sectionIndex: number = selection.start.paragraph.bodyWidget.sectionIndex;
+                            let headerFooters: HeaderFooters = this.documentHelper.headersFooters[sectionIndex];
+                            if (headerFooters) {
+                                for (const index in headerFooters) {
+                                    let headerFooter: HeaderFooterWidget = headerFooters[index];
+                                    if (!isNullOrUndefined(headerFooter)) {
+                                        let widget: BlockWidget = headerFooter.childWidgets[0] as BlockWidget;
+                                        if(widget instanceof TableWidget) {
+                                            isEmpty = false;
+                                        } else if((widget instanceof ParagraphWidget) && !widget.isEmpty()) {
+                                            isEmpty = false;
+                                        }
+                                    } else {
+                                        isEmpty = false;
+                                    }
+                                    if(!isEmpty) {
+                                        break;
+                                    }
+                                }
+                                return isEmpty;
+                            }
                     }
                 }
             }
@@ -10934,7 +10957,7 @@ export class Editor {
 
                         // We used this boolean since for table tracking we should add removed nodes only for entire table not for every elements in the table
                         this.skipTableElements = true;
-                        this.insertRevisionForBlock(paraWidget, 'Deletion');
+                        this.insertRevisionForBlock(paraWidget, 'Deletion', undefined, undefined, true);
                         this.skipTableElements = false;
                     }
                 }
@@ -10978,6 +11001,7 @@ export class Editor {
      * @returns {void}
      */
     public updateTable(table: TableWidget): void {
+        table = table.combineWidget(this.viewer) as TableWidget;
         table.updateRowIndex(0);
         table.isGridUpdated = false;
         table.buildTableColumns();
@@ -12998,7 +13022,7 @@ export class Editor {
                 if (!isNullOrUndefined(lastLine) && lastLine.children.length > 0) {
                     let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1].previousValidNodeForTracking;
                     //ensure whether para mark can be combined with element revision
-                    if (!this.checkParaMarkMatchedWithElement(lastElement, paragraphAdv.characterFormat, false, 'Insertion')) {
+                    if (!isNullOrUndefined(lastElement) && !this.checkParaMarkMatchedWithElement(lastElement, paragraphAdv.characterFormat, false, 'Insertion')) {
                         this.insertParaRevision(paragraphAdv);
                     }
                 }

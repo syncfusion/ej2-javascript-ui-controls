@@ -1892,9 +1892,8 @@ export class BasicFormulas {
             numArr.push(parseFloat(this.parent.getValueFromArg(cellCollection[i]).split(this.parent.tic).join('')));
         }
         numArr = numArr.sort((n1: number, n2: number) => n2 - n1);
-        const length: number = numArr.length;
-        for (let k: number = 0; k < length; k++) {
-            if ((isNaN(numArr[k]))) {
+        for (let k: number = 0; k < numArr.length; k++) {
+            if (isNaN(numArr[k])) {
                 numArr.splice(k, 1);
                 k--;
                 if (numArr.length === 0) {

@@ -873,7 +873,7 @@
         font-size: 42px;
     }
     .e-de-list-header-presetmenu .e-de-list-line {
-        border-bottom: 1px solid #ccc;
+        border-bottom: 1px solid $de-prop-btn-icon-clr;
         margin-left: 5px;
         width: 100%;
     }
@@ -887,7 +887,7 @@
         margin-left: 0;
     }
     .e-de-list-header-presetmenu div span {
-        color: #aaa;
+        //color: #aaa; 
         display: inline-block;
         vertical-align: middle;
     }
@@ -1032,10 +1032,7 @@
         }
     }
     .e-de-toc-template1 {
-        @if $skin-name=='tailwind' {
-            background: #fff;
-        }
-        @else {
+        @if $skin-name != 'tailwind' {
             background: $de-ctnr-bg-clr;
         }
         border: 1px solid $de-panel-border;

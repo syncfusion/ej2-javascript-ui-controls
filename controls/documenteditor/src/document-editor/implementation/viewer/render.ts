@@ -1731,7 +1731,7 @@ export class Renderer {
         let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
         let left: number = cellWidget.x - leftMargin - lineWidth;
-        let topMargin: number = cellWidget.topMargin ? HelperMethods.convertPointToPixel(cellWidget.topMargin) : 0;
+        let topMargin: number = (cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth);
         let top: number = cellWidget.y - topMargin;
         let width: number = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
         if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {

@@ -116,7 +116,7 @@ export class ContextMenu {
                 moveSheet(this.parent, this.parent.activeSheetIndex - 1, null, true);
                 break;
             case id + '_ascending':
-                this.parent.notify(applySort, null);
+                this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Ascending' } } });
                 break;
             case id + '_descending':
                 this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Descending' } } });

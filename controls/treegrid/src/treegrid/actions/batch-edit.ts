@@ -9,6 +9,7 @@ import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { classList } from '@syncfusion/ej2-base';
+import { RowPosition } from '../enum';
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
@@ -240,10 +241,11 @@ export class BatchEdit {
             this.parent.editModule[isTabLastRow] = false;
             return;
         }
-        if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && this.parent.grid.selectedRowIndex === -1) {
+        if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) &&
+        !this.parent.editModule['isAddedRowByContextMenu'] && (this.parent.grid.selectedRowIndex === -1 || this.parent.editModule['batchEditModule'].isAdd)) {
             this.selectedIndex = this.parent.editModule['selectedIndex'];
             this.addRowIndex = this.parent.editModule['addRowIndex'];
-            this.addRowRecord = this.parent.getCurrentViewRecords()[this.selectedIndex];
+            this.addRowRecord = this.batchRecords.length ? this.batchRecords[this.selectedIndex] : this.parent.getCurrentViewRecords()[this.selectedIndex];
         }
         else {
             this.selectedIndex = this.parent.grid.selectedRowIndex;
@@ -288,6 +290,11 @@ export class BatchEdit {
             // }
             }
             focusModule.getContent().matrix.current = [actualIndex, focusModule.getContent().matrix.current[1]];
+            if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && !this.parent.editModule['isAddedRowByContextMenu']) {
+                const newlyAddedRecords: ITreeData[] = this.parent.getBatchChanges()['addedRecords'];
+                const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[newlyAddedRecords.length - 1].getAttribute('data-rowindex'), 10);
+                this.batchRecords.splice(index, 0, newlyAddedRecords[newlyAddedRecords.length - 1]);
+            }
         }
     }
     private beforeBatchDelete(args?: BeforeBatchDeleteArgs): void {
@@ -312,7 +319,7 @@ export class BatchEdit {
             childs = findChildrenRecords(data);
             uid = this.parent.getSelectedRows()[0].getAttribute('data-uid');
         }
-        const parentRowIndex: number = parseInt(this.parent.grid.getRowElementByUID(uid).getAttribute('aria-rowindex'), 10);
+        const parentRowIndex: number = parseInt(this.parent.grid.getRowElementByUID(uid).getAttribute('data-rowindex'), 10);
         if (childs.length){
             const totalCount: number = parentRowIndex + childs.length; const firstChildIndex: number = parentRowIndex + 1;
             for (let i: number = firstChildIndex; i <= totalCount; i++){
@@ -348,7 +355,7 @@ export class BatchEdit {
     private updateRowIndex(): void {
         const rows: Element[] = this.parent.grid.getDataRows();
         for (let i: number = 0 ; i < rows.length; i++) {
-            rows[i].setAttribute('aria-rowindex', i.toString());
+            rows[i].setAttribute('data-rowindex', i.toString());
         }
         const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
                                  this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
@@ -356,9 +363,9 @@ export class BatchEdit {
             const mRows: Element[] = this.parent.grid.getMovableDataRows();
             const freezeRightRows: Element[] = this.parent.grid.getFrozenRightDataRows();
             for (let i: number = 0 ; i < mRows.length; i++) {
-                mRows[i].setAttribute('aria-rowindex', i.toString());
+                mRows[i].setAttribute('data-rowindex', i.toString());
                 if (freeze) {
-                    freezeRightRows[i].setAttribute('aria-rowindex', i.toString());
+                    freezeRightRows[i].setAttribute('data-rowindex', i.toString());
                 }
             }
         }
@@ -417,7 +424,9 @@ export class BatchEdit {
         if (!isNullOrUndefined(this.batchAddedRecords)) {
             for (let i: number = 0; i < this.batchAddedRecords.length; i++) {
                 index = data.map((e: Object) => { return e[primaryKey]; }).indexOf(this.batchAddedRecords[i][primaryKey]);
-                data.splice(index, 1);
+                if (index !== -1) {
+                    data.splice(index, 1);
+                }
                 if (this.parent.editSettings.newRowPosition === 'Child') {
                     index = currentViewRecords.map((e: Object) => { return e[primaryKey]; })
                         .indexOf(this.batchAddedRecords[i][parentItem] ? this.batchAddedRecords[i][parentItem][primaryKey]
@@ -474,9 +483,12 @@ export class BatchEdit {
             }
             if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
                 data.splice(data.length - addRecords.length, addRecords.length);
-                if (this.parent.editModule['isAddedRowByMethod'] && addRecords.length && !isNullOrUndefined(this.parent.editModule['addRowIndex'])) {
-                    const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[0].getAttribute('aria-rowindex'), 10);
-                    data.splice(index, 0, addRecords[0]);
+                if (this.parent.editModule['isAddedRowByMethod'] && addRecords.length && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && !this.parent.editModule['isAddedRowByContextMenu']) {
+                    addRecords.reverse();
+                    for (let i: number = 0; i < addRecords.length; i++) {
+                        const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[i].getAttribute('data-rowindex'), 10);
+                        data.splice(index, 0, addRecords[i]);
+                    }
                 }
                 if (!this.parent.allowPaging && data.length !== currentViewRecords.length) {
                     if (currentViewRecords.length > addRecords.length) {
@@ -493,12 +505,20 @@ export class BatchEdit {
                 }
             }
             if (this.batchAddRowRecord.length === 0) { this.batchAddRowRecord.push(this.parent.flatData[args.index]); }
+            if (this.parent.editModule['isAddedRowByContextMenu']) {
+                addRecords.reverse();
+            }
             for (i = 0; i < addRecords.length; i++) {
                 const taskData: ITreeData = extend({}, addRecords[i]);
                 delete taskData.parentItem; delete taskData.uniqueID; delete taskData.index; delete taskData.level;
                 delete taskData.hasChildRecords; delete taskData.childRecords; delete taskData.parentUniqueID;
                 if (!isNullOrUndefined(taskData.primaryParent)) {
                     delete taskData.primaryParent;
+                }
+                if (addRecords.length > 1 && this.parent.editModule['isAddedRowByContextMenu']) {
+                    const rowPosition: RowPosition = this.parent.editSettings.newRowPosition;
+                    this.parent.editSettings.newRowPosition = this.parent.editModule['previousNewRowPosition'];
+                    this.parent.editModule['previousNewRowPosition'] = rowPosition;
                 }
                 addRecords[i].taskData = taskData;
                 addRowRecord = this.batchAddRowRecord[i];
@@ -550,6 +570,9 @@ export class BatchEdit {
             }
         }
         this.batchAddRowRecord = this.batchAddedRecords = this.batchRecords =  this.batchDeletedRecords = this.currentViewRecords = [];
+        if (this.parent.editModule['isAddedRowByContextMenu']) {
+            this.parent.editModule['isAddedRowByContextMenu'] = false;
+        }
     }
 
     private getActualRowObjectIndex(index: number): number {

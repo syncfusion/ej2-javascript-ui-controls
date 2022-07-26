@@ -71,7 +71,13 @@ export const frozenRight: string = 'frozen-right';
 export const frozenLeft: string = 'frozen-left';
 
 /** @hidden */
+export const dataColIndex: string = 'data-colindex';
+
+/** @hidden */
 export const ariaColIndex: string = 'aria-colindex';
+
+/** @hidden */
+export const dataRowIndex: string = 'data-rowindex';
 
 /** @hidden */
 export const ariaRowIndex: string = 'aria-rowindex';

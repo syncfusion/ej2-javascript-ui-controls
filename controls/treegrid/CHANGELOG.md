@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### Tree Grid
+
+#### Bug fixes
+
+- `#F175410` - Resolved adding multiple rows through add record method in batch editing.
+
 ## 20.2.39 (2022-07-19)
+
+### Tree Grid
+
+#### Bug fixes
+
+- `#I384210` - Resolved infinite scrolling does not working properly when we toggle between virtualization to infinite scrolling.
+- `#F175598` - The checkbox column selection works properly when the child has an empty child array.
+
+## 20.2.38 (2022-07-12)
 
 ### Tree Grid
 

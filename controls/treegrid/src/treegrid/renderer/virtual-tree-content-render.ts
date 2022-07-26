@@ -24,7 +24,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private maxiPage: number = 0;
     private rowPosition: RowPosition;
     private addRowIndex: number;
-    private ariaRowIndex: number;
+    private dataRowIndex: number;
     private recordAdded: boolean = false;
     /** @hidden */
     public startIndex: number = -1;
@@ -38,7 +38,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     /** @hidden */
     public isDataSourceChanged: boolean = false;
     public getRowByIndex(index: number) : Element {
-        return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 10) === index)[0];
+        return this.parent.getDataRows().filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
     }
     public addEventListener(): void {
         this.parent.on(events.virtualActionArgs, this.virtualOtherAction, this);
@@ -221,7 +221,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
 
     private beginEdit(e: { data: Object, index: number }): void {
-        const selector: string = '.e-row[aria-rowindex="' + e.index + '"]';
+        const selector: string = '.e-row[data-rowindex="' + e.index + '"]';
         const index: number = (this.parent.getContent().querySelector(selector) as HTMLTableRowElement).rowIndex;
         const rowData: Object = this.parent.getCurrentViewRecords()[index];
         e.data = rowData;
@@ -229,15 +229,15 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     private beginAdd(args: { startEdit: boolean }): void {
         const addAction: string = 'addActionBegin'; const isAdd: string = 'isAdd';
-        const addArgs: { newRowPosition: RowPosition, addRowIndex: number, ariaRowIndex: number }
-      = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, ariaRowIndex: this.ariaRowIndex };
+        const addArgs: { newRowPosition: RowPosition, addRowIndex: number, dataRowIndex: number }
+      = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, dataRowIndex: this.dataRowIndex };
         this.parent.notify('get-row-position', addArgs);
         this.rowPosition = addArgs.newRowPosition;
         this.addRowIndex = addArgs.addRowIndex;
-        this.ariaRowIndex = addArgs.ariaRowIndex;
+        this.dataRowIndex = addArgs.dataRowIndex;
         const rows: HTMLTableRowElement[] = <HTMLTableRowElement[]>this.parent.getRows();
-        const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('aria-rowindex') : 0;
-        const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') : 0;
+        const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('data-rowindex') : 0;
+        const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('data-rowindex') : 0;
         const withInRange: boolean = this.parent.selectedRowIndex >= firstAriaIndex && this.parent.selectedRowIndex <= lastAriaIndex;
         if (!(this.rowPosition === 'Top' || this.rowPosition === 'Bottom')) {
             this[isAdd] = true;
@@ -295,12 +295,12 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     private onActionComplete(args: NotifyArgs): void {
         if (args.requestType === 'add') {
-            const addArgs: { newRowPosition: RowPosition, addRowIndex: number, ariaRowIndex: number }
-        = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, ariaRowIndex: this.ariaRowIndex };
+            const addArgs: { newRowPosition: RowPosition, addRowIndex: number, dataRowIndex: number }
+        = { newRowPosition: this.rowPosition, addRowIndex: this.addRowIndex, dataRowIndex: this.dataRowIndex };
             this.parent.notify('get-row-position', addArgs);
             this.rowPosition = addArgs.newRowPosition;
             this.addRowIndex = addArgs.addRowIndex;
-            this.ariaRowIndex = addArgs.ariaRowIndex;
+            this.dataRowIndex = addArgs.dataRowIndex;
         }
         const actionComplete: string = 'actionComplete';
         super[actionComplete](args);
@@ -364,7 +364,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
              !isNullOrUndefined(this.parent.getContent().querySelectorAll('.e-content tr')[rowPt])) {
                 const attr: string = this.parent.getContent().querySelectorAll('.e-content tr')[rowPt]
                     .querySelector('td').getAttribute('index');
-                firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('aria-rowindex');
+                firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('data-rowindex');
             }
             if (firsttdinx === 0) {
                 if (this.parent.allowRowDragAndDrop) {
@@ -456,7 +456,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             const isAdd: string = 'isAdd';
             if (this[isAdd] && !this.parent.getContent().querySelector('.e-content').querySelector('.e-addedrow')) {
                 if (!(this.rowPosition === 'Top' || this.rowPosition === 'Bottom')) {
-                    if (this.ariaRowIndex >= this.startIndex) {
+                    if (this.dataRowIndex >= this.startIndex) {
                         this.restoreNewRow();
                     } else if (this.addRowIndex && this.addRowIndex > -1) {
                         this[isAdd] = false;

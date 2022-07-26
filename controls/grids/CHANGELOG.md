@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### Grid
+
+#### Breaking Changes
+
+- The Expand and Collapse icon element change from div to anchor tag due to improvement in web accessibility.
+- `WAI-ARIA` `aria-rowindex` validation error has been resolved. Now the `aria-rowindex` and `aria-colindex` starting from 1.
+
 ## 20.2.39 (2022-07-19)
 
 ### Grid

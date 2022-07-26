@@ -1,21 +1,36 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { HyperlinkModel, Spreadsheet } from '../../../src';
+import { CellModel, HyperlinkModel, Spreadsheet } from '../../../src';
 import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
 
 describe('Hyperlink ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
 
-    describe('public method ->', () => {
+    describe('Cell model and public method ->', () => {
+        let spreadsheet: any;
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }],
+                rows: [{ index: 11, cells: [{ hyperlink: { address: 'www.google.com' } }] }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('', (done: Function) => {
+        it('Hyperlink cell binding', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            const cell: CellModel = spreadsheet.sheets[0].rows[11].cells[0];
+            expect((cell.hyperlink as HyperlinkModel).address).toBe('http://www.google.com');
+            expect(cell.style.textDecoration).toBe('underline');
+            expect(cell.style.color).toBe('#00e');
+            const cellEle: HTMLElement = helper.invoke('getCell', [11, 0]);
+            expect(cellEle.querySelector('.e-hyperlink').textContent).toBe('http://www.google.com');
+            expect(cellEle.style.textDecoration).toBe('underline');
+            expect(cellEle.style.color).not.toBe('');
+            done();
+        });
+        it('addHyperlink', (done: Function) => {
             helper.invoke('addHyperlink', ['www.google.com', 'A1']);
-            expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBe('http://www.google.com');
+            expect(spreadsheet.sheets[0].rows[0].cells[0].hyperlink).toBe('http://www.google.com');
             let td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
             expect(td.classList).toContain('e-hyperlink');
             expect(td.classList).toContain('e-hyperlink-style');
@@ -31,7 +46,22 @@ describe('Hyperlink ->', () => {
             expect(td.classList).toContain('e-hyperlink');
             td.click();
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('C5:C5');
+                expect(spreadsheet.sheets[0].selectedRange).toBe('C5:C5');
+                done();
+            });
+        });
+        it('Hyperlink applied through data range', (done: Function) => {
+            helper.invoke('updateRange', [{ dataSource: [{ Link: 'https://www.syncfusion.com' }], startCell: 'A13' }]);
+            spreadsheet.dataBind();
+            setTimeout(() => {
+                const cell: CellModel = spreadsheet.sheets[0].rows[13].cells[0];
+                expect(cell.hyperlink).toBe('https://www.syncfusion.com');
+                expect(cell.style.textDecoration).toBe('underline');
+                expect(cell.style.color).toBe('#00e');
+                const cellEle: HTMLElement = helper.invoke('getCell', [13, 0]);
+                expect(cellEle.querySelector('.e-hyperlink').textContent).toBe('https://www.syncfusion.com');
+                expect(cellEle.style.textDecoration).toBe('underline');
+                expect(cellEle.style.color).not.toBe('');
                 done();
             });
         });

@@ -1638,7 +1638,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
             this.uiStateValues = {
                 expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false, isCustomMonth: true, isResize: false
+                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false, isCustomMonth: true, isPreventTimezone: false
             };
         }
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
@@ -2132,11 +2132,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.currentView === 'Month' || ((this.currentView !== 'Agenda' && this.currentView !== 'MonthAgenda')
             && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
-            this.uiStateValues.isResize = true;
             this.activeView.resetColWidth();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.refreshEvents(false);
-            this.uiStateValues.isResize = false;
         } else {
             this.notify(events.contentReady, {});
         }
@@ -3211,25 +3209,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (isRemoteRefresh) {
             this.crudModule.refreshDataManager();
         } else {
-            if (this.activeViewOptions && this.activeViewOptions.eventTemplate) {
-                let templateNames: string[] = ['eventTemplate'];
-                if (this.crudModule && this.crudModule.crudObj.isCrudAction &&
-                    ['Agenda', 'MonthAgenda', 'Year', 'TimelineYear'].indexOf(this.currentView) === -1) {
-                    templateNames = [];
-                    for (let i: number = 0, len: number = this.crudModule.crudObj.sourceEvent.length; i < len; i++) {
-                        templateNames.push('eventTemplate_' + this.crudModule.crudObj.sourceEvent[i].groupIndex);
-                        if (this.crudModule.crudObj.targetEvent[i] && this.crudModule.crudObj.sourceEvent[i].groupIndex !==
-                            this.crudModule.crudObj.targetEvent[i].groupIndex) {
-                            templateNames.push('eventTemplate_' + this.crudModule.crudObj.targetEvent[i].groupIndex);
-                        }
-                    }
-                }
-                this.resetTemplates(templateNames);
+            if (this.uiStateValues) {
+                this.uiStateValues.isPreventTimezone = true;
             }
-            const eventsData: Record<string, any>[] = this.eventsData || [];
-            const blockData: Record<string, any>[] = this.blockData || [];
-            const data: Record<string, any>[] = eventsData.concat(blockData);
-            this.notify(events.dataReady, { processedData: this.eventBase ? this.eventBase.processData(data) : [] });
+            if (this.crudModule) {
+                this.crudModule.refreshProcessedData();
+            }
+            if (this.uiStateValues) {
+                this.uiStateValues.isPreventTimezone = false;
+            }
         }
     }
 

@@ -318,7 +318,6 @@ describe('Ensure freeze direction after removing freeze in columns', () => {
     });
        
     it('remove columns', (done: Function) => {
-		debugger;
       var column = gridObj.getColumnFieldNames()[1];
 	  gridObj.grid.getColumnByField(column).freeze = 'Right';
 	  gridObj.refreshColumns();
@@ -377,7 +376,7 @@ describe('RowEdit in Frozen Rows and columns', () => {
   it('Record double click', (done: Function) => {
    gridObj.actionBegin = (args?: any): void => {
      if (gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow').length > 0) {
-    expect((<any>+gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow')[0].getAttribute('aria-rowindex'))).toBe(2);
+    expect((<any>+gridObj.element.getElementsByClassName('e-frozenheader')[0].getElementsByClassName('e-editedrow')[0].getAttribute('data-rowindex'))).toBe(2);
      done();
      }
    };

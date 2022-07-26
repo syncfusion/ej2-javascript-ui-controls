@@ -264,10 +264,12 @@ export class Toolkit {
 
     // Toolkit events function calculation here.
     /** @private */
-    public reset(): boolean {
+    public reset(event: PointerEvent | TouchEvent | KeyboardEvent): boolean {
         let chart: Chart = this.chart;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
+        } else if (event.type == 'touchStart') {
+            event.stopPropagation();
         }
         let argsData: IZoomCompleteEventArgs;
         this.removeTooltip();

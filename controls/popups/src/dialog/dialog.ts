@@ -1478,13 +1478,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.headerEle = this.createElement('div', { id: this.element.id + '_title', className: DLG_HEADER });
         }
         this.createHeaderContent();
-        if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
-            this.setAllowDragging();
-        }
         this.headerContent.appendChild(this.headerEle);
         this.setTemplate(this.header, this.headerEle, 'header');
         attributes(this.element, { 'aria-labelledby': this.element.id });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
+        if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
+            this.setAllowDragging();
+        }
     }
 
     private setFooterTemplate(): void {

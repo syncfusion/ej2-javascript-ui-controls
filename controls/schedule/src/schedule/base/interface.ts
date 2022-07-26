@@ -532,7 +532,7 @@ export interface UIStateArgs {
     action?: boolean;
     isBlock?: boolean;
     isCustomMonth?: boolean;
-    isResize?: boolean;
+    isPreventTimezone?: boolean;
 }
 
 /**

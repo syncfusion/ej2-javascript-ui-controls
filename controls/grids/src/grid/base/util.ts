@@ -1411,7 +1411,8 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
         if (rows[i].isDataRow) {
             rows[i].index = startIndex;
             rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
-            rowElms[i].setAttribute(literals.ariaRowIndex, startIndex.toString());
+            rowElms[i].setAttribute(literals.dataRowIndex, startIndex.toString());
+            rowElms[i].setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
             if (rows[i].isAltRow) {
                 rowElms[i].classList.add('e-altrow');
             } else {
@@ -1895,7 +1896,7 @@ export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: str
  * @returns { number } row index
  */
 export function getRowIndexFromElement(row: Element): number {
-    return parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+    return parseInt(row.getAttribute(literals.dataRowIndex), 10);
 }
 
 /**

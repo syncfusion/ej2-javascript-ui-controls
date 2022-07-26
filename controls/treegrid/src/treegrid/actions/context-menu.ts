@@ -93,6 +93,7 @@ export class ContextMenu {
         if (args.item.id === 'Above' || args.item.id === 'Below' || args.item.id === 'Child') {
             this.parent.notify('savePreviousRowPosition', args);
             this.parent.setProperties({editSettings: {newRowPosition:  args.item.id }}, true);
+            this.parent.editModule['isAddedRowByContextMenu'] = true;
             this.parent.addRecord();
         }
         if (args.item.id === this.parent.element.id + '_gridcontrol_cmenu_Indent' || args.item.id === this.parent.element.id + '_gridcontrol_cmenu_Outdent') {

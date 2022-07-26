@@ -125,7 +125,7 @@ export function findChildrenRecords(records: ITreeData): Object[] {
         return [];
     }
     if (!isNullOrUndefined(records.childRecords)) {
-        const childRecords: ITreeData[] = records.childRecords;
+        const childRecords: ITreeData[] = records.childRecords.filter(items => !items.isSummaryRow);
         const keys: string[] = Object.keys(childRecords);
         for (let i: number = 0, len: number = keys.length; i < len; i++) {
             datas.push(childRecords[i]);

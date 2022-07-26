@@ -472,8 +472,8 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }, index: number): void {
-        (this.jsonData as { [key: string]: Object }[]).splice(index, 0, item);
+    protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
+        (this.jsonData as { [key: string]: Object }[]).push(item);
     }
 
     private initToolbar(): void {
@@ -1000,7 +1000,7 @@ export class ListBox extends DropDownBase {
             items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
             const fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: string;
             const dupData: {[key: string]: Object }[] = []; let itemIdx: number;
-            extend(dupData, [], this.jsonData as { [key: string]: Object }[]);
+            extend(dupData, [], this.listData as { [key: string]: Object }[]);
             const removeIdxes: number [] = []; const removeLiIdxes: number [] = [];
             for (let j: number = 0; j < items.length; j++) {
                 if (items[j] instanceof Object) {
@@ -1761,7 +1761,18 @@ export class ListBox extends DropDownBase {
             .filter((data: sortedType) => (data as { isHeader: boolean }).isHeader !== true);
         (tListBox.listData as dataType[]) = listData;
         tListBox.jsonData = jsonData;
-        fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
+        if (this.listData.length == this.jsonData.length) {
+            fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
+        } else if (this.allowFiltering) {
+            for (let i: number = 0; i < fListBox.listData.length; i++) {
+                for (let j: number = 0; j < fListBox.jsonData.length; j++) {
+                    if (fListBox.listData[i] === fListBox.jsonData[j]) {
+                        fListBox.jsonData.splice(j, 1);
+                    }
+                }
+            }
+            fListBox.listData = fListBox.sortedData = [];  
+        }
         if (isRefresh) {
             let sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
             tListBox.updateListItems(sourceElem, tListBox.ulElement);

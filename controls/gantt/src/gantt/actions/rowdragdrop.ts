@@ -151,7 +151,7 @@ export class RowDD {
             ganttDragelem.remove();
         }
         const gridRow: Element = closest(args.target, '.e-row');
-        const dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) : args.dropIndex;
+        const dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('data-rowindex'), 10) : args.dropIndex;
         args.dropIndex = dropIndex;
         args.dropRecord = this.parent.updatedRecords[args.dropIndex];
         this.parent.trigger('rowDrop', args);

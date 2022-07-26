@@ -83,7 +83,7 @@ export class FocusStrategy {
     protected onBlur(e?: FocusEvent): void {
         if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid'))
             && !(this.parent.element.classList.contains('e-childgrid') && !this.parent.element.matches(':focus-within')))
-            && !(isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('aria-colindex'), 10) === 0 &&
+            && !(isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('data-colindex'), 10) === 0 &&
             parseInt((e.target as Element).getAttribute('index'), 10) === 0)) { return; }
         this.removeFocus(); this.skipFocus = true; this.currentInfo.skipAction = false;
         this.setLastContentCellTabIndex();
@@ -1177,7 +1177,7 @@ export class ContentFocus implements IFocus {
         const row: Element = document.activeElement.parentElement;
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && row.classList.contains(literals.row)) {
-            const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+            const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
             isHeaderFocus = rowIndex > 0;
         }
         if (action === 'shiftTab' && this.parent.getFrozenMode() === 'Right' && current[0] === 0
@@ -1239,8 +1239,8 @@ export class ContentFocus implements IFocus {
         const isSelectable: boolean = isData || (e && e.action !== 'enter' && (info.element.classList.contains('e-detailrowcollapse')
             || info.element.classList.contains('e-detailrowexpand')));
         // eslint-disable-next-line
-        let [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.ariaRowIndex), 10), rIndex),
-            Math.min(parseInt(info.element.getAttribute(literals.ariaColIndex), 10), cIndex)];
+        let [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.dataRowIndex), 10), rIndex),
+            Math.min(parseInt(info.element.getAttribute(literals.dataColIndex), 10), cIndex)];
         if (this.parent.allowGrouping && this.parent.groupSettings.enableLazyLoading && isData) {
             rowIndex = this.parent.getDataRows().indexOf(info.element.parentElement);
         }

@@ -128,3 +128,5 @@ export const rowdraging: string = 'row-draging';
 export const rowDropped: string = 'row-dropped';
 /** @hidden */
 export const autoCol: string = 'auto-col';
+/** @hidden */
+export const rowDeselecting: string = 'rowDeselecting';

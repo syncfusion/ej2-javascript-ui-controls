@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, CellModel, setCell, getCell } from '../base/index';
-import { setLinkModel, getRangeIndexes, updateCell } from '../common/index';
+import { Workbook, SheetModel, CellModel, getCell, getSheet, getSheetIndex } from '../base/index';
+import { setLinkModel, getRangeIndexes, updateCell, getSwapRange } from '../common/index';
 import { HyperlinkModel } from '../common/class-model';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -41,60 +41,47 @@ export class WorkbookHyperlink {
     public setLinkHandler(args: { hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt?: boolean }): void {
         let hyperlink: string | HyperlinkModel = args.hyperlink;
         let cellAddr: string = args.cell;
-        let range: string[];
-        let sheetIdx: number;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let address: string;
+        let sheet: SheetModel;
         if (cellAddr && cellAddr.indexOf('!') !== -1) {
-            range = cellAddr.split('!');
-            const sheets: SheetModel[] = this.parent.sheets;
-            for (let idx: number = 0; idx < sheets.length; idx++) {
-                if (sheets[idx].name === range[0]) {
-                    sheetIdx = idx;
-                }
+            const addrArr: string[] = cellAddr.split('!');
+            sheet = getSheet(this.parent, getSheetIndex(this.parent, addrArr[0]));
+            cellAddr = addrArr[1];
+            if (!sheet) {
+                return;
             }
-            sheet = this.parent.sheets[sheetIdx];
-            cellAddr = range[1];
+        } else {
+            sheet = this.parent.getActiveSheet();
+            cellAddr = cellAddr || sheet.selectedRange;
         }
-        cellAddr = cellAddr ? cellAddr : this.parent.getActiveSheet().activeCell;
-        const cellIdx: number[] = getRangeIndexes(cellAddr);
-        const rowIdx: number = cellIdx[0];
-        const colIdx: number = cellIdx[1];
-        if (!sheet) {
-            return;
-        }
+        const cellIdx: number[] = getSwapRange(getRangeIndexes(cellAddr));
         const cell: CellModel = {};
         if (typeof (hyperlink) === 'string') {
-            if (hyperlink.indexOf('http://') !== 0 && hyperlink.indexOf('https://') !== 0 && hyperlink.indexOf('ftp://') !== 0) {
-                hyperlink = hyperlink.toLowerCase().indexOf('www.') === 0 ? 'http://' + hyperlink : hyperlink;
-                address = hyperlink;
+            if (hyperlink.toLowerCase().indexOf('www.') === 0) {
+                hyperlink = 'http://' + hyperlink;
             }
             cell.hyperlink = hyperlink;
         } else {
-            address = hyperlink.address;
-            if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
-                address = address.toLowerCase().indexOf('www.') === 0 ? 'http://' + address : address;
+            let address: string = hyperlink.address;
+            if (address.toLowerCase().indexOf('www.') === 0) {
+                address =  'http://' + address;
             }
-            cell.hyperlink = {
-                address: address
-            };
+            cell.hyperlink = { address: address };
         }
         if (args.displayText) {
             cell.value = args.displayText;
         }
+        let cellModel: CellModel;
         for (let rIdx: number = cellIdx[0]; rIdx <= cellIdx[2]; rIdx++) {
             for (let cIdx: number = cellIdx[1]; cIdx <= cellIdx[3]; cIdx++) {
-                let cellModel: CellModel = cell.value ? getCell(rIdx, cIdx, sheet) || {} : cell;
+                cellModel = cell.value ? getCell(rIdx, cIdx, sheet) || {} : cell;
                 cellModel.hyperlink = hyperlink;
                 if (isNullOrUndefined(cellModel.value)) {
                     cellModel.value = cell.value;
                 }
                 if (!updateCell(this.parent, sheet, { cell: cellModel, rowIdx: rIdx, colIdx: cIdx, preventEvt: !args.triggerEvt })) {
-                    if (!sheet.rows[rIdx].cells[cIdx].style) {
-                        sheet.rows[rIdx].cells[cIdx].style = {};
-                    }
-                    sheet.rows[rIdx].cells[cIdx].style.textDecoration = 'underline';
-                    sheet.rows[rIdx].cells[cIdx].style.color = '#00e';
+                    updateCell(
+                        this.parent, sheet, { rowIdx: rIdx, colIdx: cIdx, preventEvt: true, cell: { style:
+                            { textDecoration: 'underline', color: '#00e' } }});
                 }
             }
         }

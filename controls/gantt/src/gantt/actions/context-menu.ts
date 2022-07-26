@@ -309,7 +309,7 @@ export class ContextMenu {
             let rowIndex: number = -1;
             if (args.gridRow) {
                 // eslint-disable-next-line
-                rowIndex = parseInt(args.gridRow.getAttribute('aria-rowindex'), 0);
+                rowIndex = parseInt(args.gridRow.getAttribute('data-rowindex'), 0);
             } else if (args.chartRow) {
                 // eslint-disable-next-line
                 rowIndex = parseInt(args.chartRow.getAttribute('aria-rowindex'), 0);

@@ -73,7 +73,7 @@ $bigger-cpicker-btn-width: 31px !default;
 $menu-extension-padding: 10px !default;
 $ribbon-item-hover-border-color: transparent !default;
 $ribbon-item-active-border-color: transparent !default;
-$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
+$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 7px !default;
 //End Ribbon
 //Sorting
@@ -81,13 +81,14 @@ $sort-error-bg-color: #fce7e9;
 $sort-error-font-color: #333;
 //End Sorting
 //Hyperlink
-$hyper-link-color: #00e !default;
 $hyper-doc-border-color: #c8c8c8 !default;
 $hyper-text-border: #979797  !default;
 //End Hyperlink
 //Filtering
 $filter-icon-margin-bottom: 0 !default;
 $filter-icon-bigger-margin-bottom: 12px !default;
+$filter-selectall-padding: 22px !default;
+$filter-selectall-bigger-padding: 27px !default;
 //End Filtering
 //Find And Replace
 $find-popup-border-top-color: #fafafa !default;

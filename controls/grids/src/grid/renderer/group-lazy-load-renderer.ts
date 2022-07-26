@@ -1116,7 +1116,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const tr: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         let row: Element;
         for (let i: number = 0; !isNullOrUndefined(index) && i < tr.length; i++) {
-            if (tr[i].getAttribute(literals.ariaRowIndex) === index.toString()) {
+            if (tr[i].getAttribute(literals.dataRowIndex) === index.toString()) {
                 row = tr[i];
                 break;
             }

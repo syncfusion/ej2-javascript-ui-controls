@@ -1,10 +1,9 @@
 /* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { LineStyle } from '../../base/types';
+import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
-import { WBorder } from '../format';
 
 /**
  * @private
@@ -375,8 +374,8 @@ export class HtmlExport {
                 const cellWidth: number = HelperMethods.convertPointToPixel(cell.cellFormat.cellWidth);
                 tagAttributes.push('width="' + cellWidth.toString() + '"');
             }
-            const cellAlignment: string = isNullOrUndefined(cell.cellFormat.verticalAlignment) ? 'top' :
-                cell.cellFormat.verticalAlignment.toString().toLowerCase();
+            const cellAlignment: string = isNullOrUndefined(cell.cellFormat.verticalAlignment) ? 'top' : 
+                this.convertVerticalAlignment(cell.cellFormat.verticalAlignment);
             tagAttributes.push('valign="' + cellAlignment + '"');
             if (!isNullOrUndefined(cell.cellFormat.leftMargin) && cell.cellFormat.leftMargin !== 0) {
                 cellHtml += ('padding-left:' + cell.cellFormat.leftMargin.toString() + 'pt;');
@@ -391,7 +390,7 @@ export class HtmlExport {
                 cellHtml += ('padding-bottom:' + cell.cellFormat.bottomMargin.toString() + 'pt;');
             }
             if (!isNullOrUndefined(cell.cellFormat.borders)) {
-                cellHtml += this.serializeCellBordersStyle(cell);
+                cellHtml += this.serializeCellBordersStyle(cell.cellFormat.borders);
             }
         }
         if (cellHtml.length !== 0) {
@@ -408,6 +407,17 @@ export class HtmlExport {
          }
         blockStyle += (this.endTag('td'));
         return blockStyle;
+    }
+
+    private convertVerticalAlignment(cellVerticalAlignment: CellVerticalAlignment): string {
+        switch (cellVerticalAlignment) {
+            case 'Center':
+                return 'middle';
+            case 'Bottom':
+                return 'bottom';
+            default:
+                return 'top';
+        }
     }
 
     // Serialize Table
@@ -446,58 +456,46 @@ export class HtmlExport {
     private serializeTableBorderStyle(borders: any): string {
         let borderStyle: string = '';
 
-        if (!isNullOrUndefined(borders.left.lineStyle)) {
-            borderStyle += ('border-left-style:' + this.convertBorderLineStyle(borders.left.lineStyle));
-            borderStyle += ';';
+        let border: any = {};
+        //LeftBorder
+        border = borders.left;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'left');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-left-style:none;');
         }
-        if (borders.left.lineWidth) {
-            borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
-            borderStyle += ';';
+        //TopBorder
+        border = borders.top;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'top');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-top-style:none;');
         }
-        if (!isNullOrUndefined(borders.left.color)) {
-            borderStyle += ('border-left-color:' + HelperMethods.getColor(borders.left.color));
-            borderStyle += ';';
+        //RightBorder
+        border = borders.right;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'right');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-right-style:none;');
         }
-        if (!isNullOrUndefined(borders.right.lineStyle)) {
-            borderStyle += ('border-right-style:' + this.convertBorderLineStyle(borders.right.lineStyle));
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.right.lineWidth)) {
-            borderStyle += ('border-right-width:' + borders.right.lineWidth.toString() + 'pt');
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.right.color)) {
-            borderStyle += ('border-right-color:' + HelperMethods.getColor(borders.right.color));
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.top.lineStyle)) {
-            borderStyle += ('border-top-style:' + this.convertBorderLineStyle(borders.top.lineStyle));
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.top.lineWidth)) {
-            borderStyle += ('border-top-width:' + borders.top.lineWidth.toString() + 'pt');
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.top.color)) {
-
-            borderStyle += ('border-top-color:' + HelperMethods.getColor(borders.bottom.color));
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.bottom.lineStyle)) {
-            borderStyle += ('border-bottom-style:' + this.convertBorderLineStyle(borders.bottom.lineStyle));
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.bottom.lineWidth)) {
-            borderStyle += ('border-bottom-width:' + borders.bottom.lineWidth.toString() + 'pt');
-            borderStyle += ';';
-        }
-        if (!isNullOrUndefined(borders.bottom.color)) {
-            borderStyle += ('border-bottom-color:' + HelperMethods.getColor(borders.bottom.color));
-            borderStyle += ';';
+        //BottomBorder
+        border = borders.bottom;
+        if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
+            border.color = isNullOrUndefined(border.color) ? "#000000" : border.color;
+            border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
+            borderStyle += this.serializeBorderStyle(border, 'bottom');
+        } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
+            borderStyle += ('border-bottom-style:none;');
         }
         return borderStyle;
     }
-    private serializeCellBordersStyle(WCell: any): string {
+    private serializeCellBordersStyle(borders: any): string {
         let borderStyle: string = '';
 
         //borderStyle = 'border:solid 1px;';
@@ -524,8 +522,7 @@ export class HtmlExport {
         // }
         // borderStyle += this.serializeBorderStyle(borders.bottom, 'bottom');
 
-        let border: WBorder = undefined;
-        let borders: any = WCell.cellFormat.borders;
+        let border: any = {};
         //LeftBorder
         border = borders.left;
         if (!isNullOrUndefined(border) && border.lineStyle !== 'None' && border.lineStyle !== 'Cleared') {
@@ -542,7 +539,7 @@ export class HtmlExport {
             border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
             borderStyle += this.serializeBorderStyle(border, 'top');
         } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-            borderStyle += ('border-top-style:none');
+            borderStyle += ('border-top-style:none;');
         }
         //RightBorder
         border = borders.right;
@@ -551,7 +548,7 @@ export class HtmlExport {
             border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
             borderStyle += this.serializeBorderStyle(border, 'right');
         } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-            borderStyle += ('border-right-style:none');
+            borderStyle += ('border-right-style:none;');
         }
         //BottomBorder
         border = borders.bottom;
@@ -560,7 +557,7 @@ export class HtmlExport {
             border.lineWidth = isNullOrUndefined(border.lineWidth) ? 0.5 : border.lineWidth;
             borderStyle += this.serializeBorderStyle(border, 'bottom');
         } else if (!isNullOrUndefined(border) && border.hasNoneStyle) {
-            borderStyle += ('border-bottom-style:none');
+            borderStyle += ('border-bottom-style:none;');
         }
         return borderStyle;
     }
@@ -802,23 +799,43 @@ export class HtmlExport {
                 tagAttributes.push('bgcolor="' + HelperMethods.getColor(table.tableFormat.shading.backgroundColor) + '"');
             }
             //}
-            if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
-                tagAttributes.push('left-indent="' + (table.tableFormat.leftIndent.toString() + 'pt;') + '"');
-            }
             if (!isNullOrUndefined(table.tableFormat.cellSpacing) && table.tableFormat.cellSpacing > 0) {
                 tagAttributes.push('cellspacing="' + (((table.tableFormat.cellSpacing * 72) / 96) * 2).toString() + '"');
             } else {
                 tableStyle += ('border-collapse:collapse;');
             }
             tagAttributes.push('cellpadding="' + '0"');
-            // if (!isNullOrUndefined(table.tableFormat.borders)) {
-            //     tableStyle += this.serializeTableBorderStyle(table.tableFormat.borders);
-            // }
+            if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0 &&
+                table.tableFormat.tableAlignment === 'Left') {
+                tableStyle += 'margin-left:' + (table.tableFormat.leftIndent.toString() + 'pt;');
+            }
+            if (!isNullOrUndefined(table.tableFormat)) {
+                tableStyle += this.serializeTableWidth(table.tableFormat);
+            }
+            if (!isNullOrUndefined(table.tableFormat.borders)) {
+                tableStyle += this.serializeTableBorderStyle(table.tableFormat.borders);
+            }
         }
         if (tableStyle.length !== 0) {
             tagAttributes.push('style="', tableStyle.toString() + '"');
         }
         return blockStyle += (this.createAttributesTag('table', tagAttributes));
+    }
+
+    private serializeTableWidth(tableFormat: any): string {
+        let width: string = '';
+        switch (tableFormat.preferredWidthType) {
+            case 'Percent':
+                width += 'width: ' + tableFormat.preferredWidth.toString() + '%;';
+                break;
+            case 'Point':
+                width += 'width: ' + tableFormat.preferredWidth.toString() + 'pt;';
+                break;
+            case 'Auto':
+                width += 'width: auto;';
+                break;
+        }
+        return width;
     }
     private createTableEndTag(): string {
         let blockStyle: string = '';

@@ -1817,10 +1817,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             titleHeight,
             getAnchor, this.titleCollection, '', 'auto'
         );
-        options.x = parseInt(this.series[0].radius) >= 80 ? options.x : this.accBaseModule.center.x;
+        options.x = parseInt(this.series[0].radius) >= 80 || getAnchor != 'middle' ? options.x : this.accBaseModule.center.x;
         options.y = parseInt(this.series[0].radius) >= 80 ? options.y : (this.accBaseModule.center.y - this.accBaseModule.radius - padding 
                                                                          - titleHeight - legendHeight - expodeValue);
-        if (this.series[0].type === 'Pie' && parseInt(this.series[0].radius) < 80) {
+        if (this.series[0].type === 'Pie' && getAnchor === 'middle' && parseInt(this.series[0].radius) < 80) {
             options.x = (this.accBaseModule.center.x - (titleSize.width / 2)) < this.initialClipRect.x ?
                         (titleSize.width / 2) + this.initialClipRect.x :
                         (this.accBaseModule.center.x + (titleSize.width / 2)) > (this.initialClipRect.x + this.initialClipRect.width) ?

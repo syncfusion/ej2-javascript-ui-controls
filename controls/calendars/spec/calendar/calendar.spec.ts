@@ -4874,4 +4874,67 @@ describe(' Islamic Calendar', () => {
             expect(cal.tableBodyElement.querySelectorAll('tr .e-week-number')[4].textContent).toBe('' + 52);
         });    
     });
+    describe('Need to include the missing year 1396 is in the Islamic calendar', () => {
+        let calendar: any;
+        calendar = undefined;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+
+        });
+        afterEach(() => {
+            if (calendar) {
+                calendar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Ensured next and previous icon header element', () => {
+            Calendar.Inject(Islamic)
+            calendar = new Calendar({ start: "Decade", calendarMode: 'Islamic' });
+            calendar.appendTo('#calendar');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441 - 1450');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1431 - 1440');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1421 - 1430');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1411 - 1420');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1401 - 1410');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1391 - 1400');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1381 - 1390');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1371 - 1380');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1361 - 1370');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1361 - 1370');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1371 - 1380');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1381 - 1390');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1391 - 1400');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1401 - 1410');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1411 - 1420');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1421 - 1430');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1431 - 1440');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441 - 1450');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1451 - 1460');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1461 - 1470');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1471 - 1480');
+            (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1481 - 1490');
+        });
+    });  
 });

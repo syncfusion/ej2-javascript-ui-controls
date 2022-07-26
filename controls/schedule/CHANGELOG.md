@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.2.39 (2022-07-19)
+## 20.2.40 (2022-07-26)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I392060` - An issue with Appointments start and end time were changed on schedule property change has been fixed.
+
+## 20.2.38 (2022-07-12)
 
 ### Schedule
 

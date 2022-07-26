@@ -76,9 +76,14 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         const cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
         const tempCells: HTMLTableDataCellElement[] =  [].slice.call(node.querySelectorAll('.e-templatecell'));
         if (this.parent.isReact && tempCells.length) {
-            for (let i: number = 0, len: number = columns.length; i < len; i++) {
-                if (columns[i].template) {
-                    this.parent.refreshReactColumnTemplateByUid(columns[i].uid);
+            for (const col of columns) {
+                if (col.template) {
+                    setTimeout(
+                        () => {
+                            this.parent.refreshReactColumnTemplateByUid(col.uid);
+                        },
+                    0);
+                    break;
                 }
             }
         }
@@ -182,7 +187,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
                 if (row.cells.length) {
                     for (let i: number = cellIdx; i < row.cells.length; i++) {
-                        const cell: Element = eventArg.row.querySelector('.e-rowcell[aria-colindex="' + row.cells[i].index + '"]');
+                        const cell: Element = eventArg.row.querySelector('.e-rowcell[data-colindex="' + row.cells[i].index + '"]');
                         if (cell) {
                             removeClass([cell], ['e-selectionbackground', 'e-active']);
                         }
@@ -250,7 +255,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
     public buildAttributeFromRow(tr: Element, row: Row<T>): void {
         const attr: IRow<T> & { 'class'?: string[] } = {};
         const prop: { 'rowindex'?: string; 'dataUID'?: string, 'ariaSelected'?: string }
-            = { 'rowindex': literals.ariaRowIndex, 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
+            = { 'rowindex': literals.dataRowIndex, 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
         const classes: string[] = [];
 
         if (row.isDataRow) {
@@ -262,6 +267,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
 
         if (!isNullOrUndefined(row.index)) {
+            attr[literals.ariaRowIndex] = row.index + 1;
             attr[prop.rowindex] = row.index;
         }
 

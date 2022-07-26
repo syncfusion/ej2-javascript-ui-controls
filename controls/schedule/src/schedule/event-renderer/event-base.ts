@@ -48,7 +48,7 @@ export class EventBase {
             event = this.updateEventDateTime(event);
             if (timeZonePropChanged) {
                 this.processTimezoneChange(event, oldTimezone);
-            } else if (!this.parent.isPrinting && !this.parent.uiStateValues.isResize) {
+            } else if (!this.parent.isPrinting && !this.parent.uiStateValues.isPreventTimezone) {
                 event = this.processTimezone(event);
             }
             for (let level: number = 0; level < resourceCollection.length; level++) {

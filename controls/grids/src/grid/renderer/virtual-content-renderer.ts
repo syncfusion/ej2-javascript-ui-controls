@@ -479,7 +479,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cell: any = (<{ cells?: HTMLElement[] }>row).cells[this.cellIndex];
         cell.focus({ preventScroll: true });
-        this.parent.selectRow(parseInt(row.getAttribute(literals.ariaRowIndex), 10));
+        this.parent.selectRow(parseInt(row.getAttribute(literals.dataRowIndex), 10));
         this.activeKey = this.empty as string;
     }
 
@@ -708,7 +708,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private setVirtualPageQuery(args: { query: Query, skipPage: boolean }): void {
         const row: Element = this.parent.getContent().querySelector('.e-row');
         if (row && this.parent.isManualRefresh && this.currentInfo.blockIndexes && this.currentInfo.blockIndexes.length === 3) {
-            this.vgenerator.startIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+            this.vgenerator.startIndex = parseInt(row.getAttribute('data-rowindex'), 10);
             this.vgenerator.currentInfo = extend({}, this.currentInfo);
             this.vgenerator.currentInfo.blockIndexes = this.currentInfo.blockIndexes.slice();
             const includePrevPage: boolean = this.vgenerator.includePrevPage = this.currentInfo.blockIndexes[0] % 2 === 0;
@@ -883,7 +883,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const ele: Element = document.activeElement;
         if (ele.classList.contains(literals.rowCell)
             && e && (e.action === 'upArrow' || e.action === 'downArrow')) {
-            let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.ariaRowIndex), 10);
+            let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.dataRowIndex), 10);
             if (e && (e.action === 'downArrow' || e.action === 'upArrow')) {
                 const scrollEle: Element = this.parent.getContent().firstElementChild;
                 if (e.action === 'downArrow') {
@@ -892,7 +892,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     rowIndex -= 1;
                 }
                 this.rowIndex = rowIndex;
-                this.cellIndex = parseInt(ele.getAttribute(literals.ariaColIndex), 10);
+                this.cellIndex = parseInt(ele.getAttribute(literals.dataColIndex), 10);
                 const row: Element = this.parent.getRowByIndex(rowIndex);
                 const page: number = this.parent.pageSettings.currentPage;
                 const visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight()) - 1;
@@ -1105,7 +1105,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         rowCollection = isFrozenRight ? this.parent.getFrozenRightDataRows() : rowCollection;
         let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         if (isRowObject && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-            startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.ariaRowIndex), 10);
+            startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.dataRowIndex), 10);
             collection = collection.filter((m: object) => { return isNullOrUndefined((<{items?: object }>m).items); });
         }
         let selectedRow: Element | Object = collection[index - startIdx];

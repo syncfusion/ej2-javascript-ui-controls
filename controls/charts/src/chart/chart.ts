@@ -3300,7 +3300,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.element.focus();
                 break;
             case "R":
-                this.zoomModule.toolkit.reset();
+                this.zoomModule.toolkit.reset(e);
                 break;
         }
 

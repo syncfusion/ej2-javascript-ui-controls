@@ -42,7 +42,7 @@ export function findObjectsUnderMouse(
     let pt: PointModel = pdfBase.currentPosition || { x: event.offsetX, y: event.offsetY };
     pt = { x: pt.x / pdfBase.getZoomFactor(), y: pt.y / pdfBase.getZoomFactor() };
     const pageTable: ZOrderPageTable = pdfViewer.getPageTable(pdfBase.activeElements.activePageID);
-    const objArray: Object[] = findObjects(pt, pageTable.objects);
+    const objArray: Object[] = findObjects(pt, pageTable.objects, pdfViewer.touchPadding);
     return objArray as IElement[];
 }
 
@@ -98,7 +98,7 @@ export function findObjectUnderMouse(
         offsetX = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
         offsetY = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
     }
-    const offsetForSelector: number = 5;
+    const offsetForSelector: number = pdfViewer.touchPadding;
     let boundsDiff: number = 0;
     for (let i: number = 0; i < objects.length; i++) {
         if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
@@ -256,33 +256,34 @@ export function findTargetShapeElement(container: Container, position: PointMode
     if (container && container.children) {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const shapeElement: DrawingElement = container.children[i];
+            let touchPadding = padding;
             // eslint-disable-next-line
             if (!isNullOrUndefined((shapeElement as any).children) && (shapeElement as any).children.length > 0) {
                 // eslint-disable-next-line
                 for (let j: number = (shapeElement as any).children.length - 1; j >= 0; j--) {
                     // eslint-disable-next-line
                     let currentTarget: any = (shapeElement as any).children[j];
-                    if (currentTarget && currentTarget.bounds.containsPoint(position, 10)) {
+                    if (currentTarget && currentTarget.bounds.containsPoint(position, touchPadding)) {
                         if (currentTarget instanceof Container) {
                             const targetElement: DrawingElement = this.findTargetElement(currentTarget, position);
                             if (targetElement) {
                                 return targetElement;
                             }
                         }
-                        if (currentTarget.bounds.containsPoint(position, 10)) {
+                        if (currentTarget.bounds.containsPoint(position, touchPadding)) {
                             return currentTarget;
                         }
                     }
                 }
             } else {
-                if (shapeElement && shapeElement.bounds.containsPoint(position, 10)) {
+                if (shapeElement && shapeElement.bounds.containsPoint(position, touchPadding)) {
                     if (shapeElement instanceof Container) {
                         const targetElement: DrawingElement = this.findTargetElement(shapeElement, position);
                         if (targetElement) {
                             return targetElement;
                         }
                     }
-                    if (shapeElement.bounds.containsPoint(position, 10)) {
+                    if (shapeElement.bounds.containsPoint(position, touchPadding)) {
                         return shapeElement;
                     }
                 }
@@ -315,10 +316,10 @@ export function findTargetShapeElement(container: Container, position: PointMode
  * @param {PdfAnnotationBaseModel[]} objCollection - Specified the annotation object collections.
  * @returns {PdfAnnotationBaseModel[]} - Returns the annotation object collections.
  */
-export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[]): (PdfAnnotationBaseModel)[] {
+export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[], touchPadding : number): (PdfAnnotationBaseModel)[] {
     const objects: (PdfAnnotationBaseModel)[] = [];
     for (const obj of objCollection) {
-        if (findElementUnderMouse(obj as IElement, region, 10)  || ((obj.shapeAnnotationType === 'Stamp') && findElementUnderMouse(obj as IElement, region, 40))) {
+        if (findElementUnderMouse(obj as IElement, region, touchPadding)  || ((obj.shapeAnnotationType === 'Stamp') && findElementUnderMouse(obj as IElement, region, 40))) {
             insertObject(obj, 'zIndex', objects);
         }
     }

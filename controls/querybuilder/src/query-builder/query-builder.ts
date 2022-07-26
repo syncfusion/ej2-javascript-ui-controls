@@ -879,7 +879,7 @@
              ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
              ruleListElem.appendChild(ruleElem); this.ruleIdCounter++;
          }
-         if (column && column.ruleTemplate) {
+         if (column && column.ruleTemplate && type !== "insertRule") {
              args = { requestType: 'template-initialize', ruleID: ruleElem.id, action: action, fields: this.fields, rule: rule };
              this.trigger('actionBegin', args);
              this.ruleTemplateFn = this.templateParser(column.ruleTemplate);
@@ -905,7 +905,7 @@
              elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true) as Element;
          }
          ruleElem.appendChild(elem);
-         if (column && column.ruleTemplate) { this.renderReactTemplates(); }
+         if (column && column.ruleTemplate && type !== "insertRule") { this.renderReactTemplates(); }
          return ruleElem;
      }
      private addRuleElement(
@@ -931,7 +931,7 @@
          let operators: { [key: string]: Object }[]; let dropDownList: DropDownList; let ruleElem: Element;
          let newRule: RuleModel = { 'label': '', 'field': '', 'type': '', 'operator': '' };
          if (!args.cancel) {
-             if (column && column.ruleTemplate) {
+             if (column && column.ruleTemplate && args.type !== "insertRule") {
                  this.selectedColumn = column; operators = this.selectedColumn.operators;
                  newRule = {'label': column.label, 'field': column.field, 'type': column.type, 'operator': operators[0].value as string};
                  const passedRule: RuleModel = Object.keys(rule).length ? rule : newRule;
@@ -941,6 +941,9 @@
                  this.trigger('actionBegin', args);
  
              } else {
+                if(column && column.ruleTemplate) {
+                    act = args.type;
+                }
                  ruleElem = this.appendRuleElem(trgt, column, act, pId, 'field');
                  ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
                  let element: Element = ruleElem.querySelector('button');
@@ -974,7 +977,7 @@
              if (!this.isImportRules) {
                  this.updateAddedRule(trgt, rule, newRule, isRlTmp, pId);
              }
-             if (!column || (column && !column.ruleTemplate)) {
+             if (!column || (column && !column.ruleTemplate) || (column && (column.ruleTemplate && args.type == "insertRule"))) {
                  if (this.fieldMode === 'Default'){
                      let ddlField: DropDownListModel;
                      const ddlValue: string = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
@@ -2546,6 +2549,13 @@
          if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
              const parentId: string = closest(target, '.e-rule-container').id;
              prevItemData = this.getPreviousItemData(prevItemData, column);
+             if (prevItemData && prevItemData.template === undefined) {
+                if (prevItemData.columns) {
+                    prevItemData = this.getColumn(rule.field);
+                }
+             } else if (this.fieldMode === 'DropdownTree' && prevItemData === undefined) {
+                prevItemData = this.getColumn(rule.field);
+             }
              if (prevItemData && prevItemData.template) {
                  this.templateDestroy(prevItemData, parentId + '_valuekey0');
                  const elem: Element = select('#' + parentId + '_valuekey0', target.nextElementSibling);

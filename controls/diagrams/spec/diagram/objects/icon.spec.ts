@@ -363,6 +363,8 @@ describe('Diagram Control', () => {
         });
         it('Checking aria Label for the expand Collapse ', (done: Function) => {
             let rect: HTMLElement = (document.getElementById(diagram.nodes[0].id + '_icon_content_rect'));
+            // BLAZ-24062: Should to include the role attribute while adding the aria-label attribute.
+            expect((rect.getAttribute('role') === 'img'));
             expect((rect.getAttribute('aria-label') === 'Click here to expand or collapse'));
             done();
         });

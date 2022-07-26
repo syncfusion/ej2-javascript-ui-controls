@@ -1274,6 +1274,15 @@ describe('Chart Control', () => {
             expect(targetElement.childNodes.length == 8).toBe(true);
             done();
         });
+        it('Checking mouse wheel Zoom factor ', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.55').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
     });
 
     describe('Checking Pinch Zooming', () => {
@@ -1511,6 +1520,27 @@ describe('Chart Control', () => {
             chartObj.mouseLeave(<PointerEvent>trigger.onPointerLeave(areaElement, 768, 399, 25));
             chartObj.mouseLeave(<PointerEvent>trigger.onPointerLeave(areaElement, 304, 289, 26));
             trigger.doDoubleTab(areaElement, 608, 189, 504, 289, 504, 289, chartObj);
+        });
+        it('Checking pinch zooming height and width', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                let touchStartArgs: Object;
+                areaElement = document.getElementById('container_ChartAreaBorder');
+                chartObj.chartOnMouseDown(<PointerEvent>trigger.onTouchStart(areaElement, 608, 189, 504, 289, 504, 289));
+                chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
+                chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
+                if ((chartObj.zoomModule.zoomingRect.width > 0 && chartObj.zoomModule.zoomingRect.height > 0) || (chartObj.startMove && chartObj.crosshair.enable) )
+                    {
+                        expect(chartObj.zoomModule.performPinchZooming == null).toBe(true);
+                    }
+
+                done();
+            };
+            chartObj.zoomModule.zoomingRect.height = 1;
+            chartObj.zoomSettings.enablePinchZooming = true;
+            chartObj.crosshair.enable == true
+            chartObj.loaded = loaded;
+            chartObj.refresh();
         });
     });
     describe('Checking touch and device ', () => {
@@ -1837,4 +1867,122 @@ describe('Chart Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+describe('Area series zooming', () => {
+    let chartObj: Chart; let x: number; let y: number;
+    let loaded: EmitType<ILoadedEventArgs>;
+    let trigger: MouseEvents = new MouseEvents();
+    let element1: HTMLElement = createElement('div', { id: 'Zoomingcontainer' });
+    let content: string; let areaElement: Element;
+    let wheelArgs: unknown;
+    beforeAll(() => {
+        document.body.appendChild(element1);
+        let chartData: any[] = [
+            { x: 1900, y: 4 }, { x: 1920, y: 3.0 }, { x: 1940, y: 3.8 },
+            { x: 1960, y: 3.4 }, { x: 1980, y: 3.2 }, { x: 2000, y: 3.9 }
+        ];
+
+        chartObj = new Chart(
+            {
+                primaryXAxis: {
+                    title: 'Year',
+                    minimum: 1900, maximum: 2000, interval: 10,
+                    edgeLabelPlacement: 'Shift'
+                },
+                primaryYAxis: {
+                    minimum: 2, maximum: 5, interval: 0.5,
+                    title: 'Sales Amount in Millions'
+                },
+                series: [{
+                    dataSource: chartData,
+                    xName: 'x', yName: 'y',
+                    opacity: 0.5, fill: '#69D2E7',
+                    name: 'Product A',
+                    // Series type as area series
+                    type: 'Area', animation: { enable: false },
+                    marker: { visible: true }
+                }],
+                tooltip: {
+                    enable: true,
+                    format: '${series.name} ${point.x} : ${point.y}',
+                    fill: '#7bb4eb',
+                    border: {
+                        width: 2,
+                        color: 'grey'
+                    }
+                },
+                zoomSettings: {
+                    enableSelectionZooming: true,
+                    enableMouseWheelZooming: true,
+                    mode: 'X',
+                    enableScrollbar: false
+                },
+                title: 'Average Sales Comparison'
+            });
+        chartObj.appendTo('#Zoomingcontainer');
+
+    });
+    afterAll((): void => {
+        chartObj.destroy();
+        element1.remove();
+    });
+    it('Checking mouse wheel as false ', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            wheelArgs = {
+                preventDefault: prevent,
+                wheelDelta: 150,
+                detail: 3,
+                clientX: 310,
+                clientY: 150
+            };
+            chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
+            expect(chartObj.primaryXAxis.zoomFactor == 0.72).toBe(true);
+            expect(chartObj.primaryYAxis.zoomFactor == 1).toBe(true);
+            expect(chartObj.primaryYAxis.zoomPosition == 0).toBe(true);
+            done();
+        };
+        chartObj.zoomSettings.enableMouseWheelZooming = true;
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Checking mouse wheel as forward ', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            wheelArgs = {
+                preventDefault: prevent,
+                wheelDelta: 120,
+                detail: 3,
+                clientX: 210,
+                clientY: 100
+            };
+            chartObj.zoomModule.chartMouseWheel(<WheelEvent>wheelArgs);
+            expect(chartObj.primaryXAxis.zoomFactor.toFixed(2) == '0.55').toBe(true);
+            expect(chartObj.primaryYAxis.zoomFactor.toFixed(2) == '1.00').toBe(true);
+            expect(chartObj.primaryYAxis.zoomPosition.toFixed(2) == '0.00').toBe(true);
+            done();
+        };
+        chartObj.zoomSettings.enableMouseWheelZooming = true;
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
+    it('Checking pinch zooming with label', (done: Function) => {
+        loaded = (args: Object): void => {
+            chartObj.loaded = null;
+            let touchStartArgs: Object;
+            areaElement = document.getElementById('Zoomingcontainer_ChartAreaBorder');
+            chartObj.chartOnMouseDown(<PointerEvent>trigger.onTouchStart(areaElement, 608, 189, 504, 289, 504, 289));
+            chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 728, 389, 404, 289, 404, 189));
+            chartObj.mouseMove(<PointerEvent>trigger.onTouchMove(areaElement, 748, 129, 304, 289, 304, 289));
+            expect(chartObj.primaryXAxis.zoomFactor == 0.1286303252404946).toBe(true);
+            expect(chartObj.primaryYAxis.zoomFactor == 1).toBe(true);
+            if (chartObj.primaryXAxis.zoomFactor > 0.3) {
+                chartObj.primaryXAxis.zoomFactor = 0.3
+            }
+            done();
+        };
+        chartObj.zoomSettings.enablePinchZooming = true;
+        chartObj.loaded = loaded;
+        chartObj.refresh();
+    });
 });

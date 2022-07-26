@@ -3432,7 +3432,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.dataType === 'pivot') {
             let clonedDrillMembers: IDrillOptions[] = PivotUtil.cloneDrillMemberSettings(this.dataSourceSettings.drilledMembers);
-            let colIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('aria-colindex')) : Number(closest(target, 'th').getAttribute('aria-colindex'));
+            let colIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('data-colindex')) : Number(closest(target, 'th').getAttribute('data-colindex'));
             let rowIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('index')) : Number(closest(target, 'th').getAttribute('index'));
             let currentCell: IAxisSet = chartDrillInfo ? chartDrillInfo.cell :
                 this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet;
@@ -3531,7 +3531,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (chartDrillInfo) {
             currentCell = chartDrillInfo.cell;
         } else {
-            let colIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('aria-colindex')) : Number(closest(target, 'th').getAttribute('aria-colindex'));
+            let colIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('data-colindex')) : Number(closest(target, 'th').getAttribute('data-colindex'));
             let rowIndex: number = axis === 'row' ? Number(closest(target, 'td').getAttribute('index')) : Number(closest(target, 'th').getAttribute('index'));
             currentCell = this.olapEngineModule.pivotValues[rowIndex][colIndex] as IAxisSet;
         }
@@ -3864,7 +3864,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private setToolTip(args: TooltipEventArgs): void {
-        let colIndex: number = Number(args.target.getAttribute('aria-colindex'));
+        let colIndex: number = Number(args.target.getAttribute('data-colindex'));
         let rowIndex: number = Number(args.target.getAttribute('index'));
         let cell: IAxisSet =
             (this.dataSourceSettings.values.length > 0 && this.pivotValues &&
@@ -4059,7 +4059,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 let ele: Element = e.target as Element;
                 let axis: string = (ele.parentElement.classList.contains(cls.ROWSHEADER) || ele.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
                 ele = axis === 'column' ? closest(ele, 'th') : closest(ele, 'td');
-                let colIndex: number = Number(ele.getAttribute('aria-colindex'));
+                let colIndex: number = Number(ele.getAttribute('data-colindex'));
                 let rowIndex: number = Number(ele.getAttribute('index'));
                 let selectArgs: PivotCellSelectedEventArgs = {
                     cancel: false,
@@ -4136,7 +4136,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     if (this.actionBeginMethod()) {
                         return;
                     }
-                    let colIndex: number = Number(ele.getAttribute('aria-colindex'));
+                    let colIndex: number = Number(ele.getAttribute('data-colindex'));
                     let rowIndex: number = Number(ele.getAttribute('index'));
                     if (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 || this.dataSourceSettings.alwaysShowValueHeader)) {
                         let header: IAxisSet = this.pivotValues[rowIndex][colIndex] as IAxisSet;
@@ -4148,13 +4148,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                 header.members && header.members.length > 0) ? header.members[0].rowIndex : rowIndex;
                         }
                     } else if (this.dataSourceSettings.valueAxis === 'column' && (this.dataSourceSettings.values.length > 1 || this.dataSourceSettings.alwaysShowValueHeader)) {
-                        colIndex = (Number(ele.getAttribute('aria-colindex')) + Number(ele.getAttribute('aria-colspan')) - 1);
+                        colIndex = (Number(ele.getAttribute('data-colindex')) + Number(ele.getAttribute('aria-colspan')) - 1);
                         rowIndex = this.engineModule.headerContent.length - 1;
                     }
                     this.setProperties({
                         dataSourceSettings: {
                             valueSortSettings: {
-                                columnIndex: (Number(ele.getAttribute('aria-colindex')) +
+                                columnIndex: (Number(ele.getAttribute('data-colindex')) +
                                     Number(ele.getAttribute('aria-colspan')) - 1),
                                 sortOrder: this.dataSourceSettings.valueSortSettings.sortOrder === 'Descending' ? 'Ascending' : 'Descending',
                                 headerText: (this.pivotValues[rowIndex][colIndex] as IAxisSet).valueSort.levelName,
@@ -4488,7 +4488,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         /* eslint-disable */
         if (ele && !isNullOrUndefined(this.pivotValues) && this.pivotValues.length > 0) {
-            let colIndex: number = Number(ele.getAttribute('aria-colindex'));
+            let colIndex: number = Number(ele.getAttribute('data-colindex'));
             let rowIndex: number = Number(ele.getAttribute('index'));
             let colSpan: number = Number(ele.getAttribute('aria-colspan'));
             let selectArgs: PivotCellSelectedEventArgs = {
@@ -4646,10 +4646,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (!isCtrl || type === 'Single') {
                 for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR))) {
                     removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
-                    if (activeColumns.indexOf(ele.getAttribute('aria-colindex')) === -1) {
+                    if (activeColumns.indexOf(ele.getAttribute('data-colindex')) === -1) {
                         isToggle = false;
                     }
-                    let colIndex: number = Number(ele.getAttribute('aria-colindex'));
+                    let colIndex: number = Number(ele.getAttribute('data-colindex'));
                     actColPos[colIndex] = colIndex;
                 }
                 activeColumns = Object.keys(actColPos).length > 0 ? Object.keys(actColPos).sort(function (a: any, b: any) {
@@ -4677,7 +4677,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             let count: number = colStart;
             while (count <= colEnd) {
-                queryStringArray.push('[aria-colindex="' + count + '"]' + (this.gridSettings.selectionSettings.mode === 'Cell' ?
+                queryStringArray.push('[data-colindex="' + count + '"]' + (this.gridSettings.selectionSettings.mode === 'Cell' ?
                     '[index="' + rowStart + '"]' : "") + '');
                 count++;
             }
@@ -4703,21 +4703,21 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         control.savedSelectedCellsPos = [];
         control.cellSelectionPos = [];
         for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR))) {
-            control.savedSelectedCellsPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('aria-colindex') });
+            control.savedSelectedCellsPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('data-colindex') });
         }
         for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR))) {
-            control.cellSelectionPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('aria-colindex') });
+            control.cellSelectionPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('data-colindex') });
         }
     }
 
     private setSavedSelectedCells(): void {
         let control: PivotView = this;
         for (let item of [].slice.call(this.savedSelectedCellsPos)) {
-            let query: string = '[aria-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
+            let query: string = '[data-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
             addClass([control.element.querySelector(query)], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
         }
         for (let item of [].slice.call(this.cellSelectionPos)) {
-            let query: string = '[aria-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
+            let query: string = '[data-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
             addClass([control.element.querySelector(query)], [cls.CELL_SELECTED_BGCOLOR]);
         }
     }

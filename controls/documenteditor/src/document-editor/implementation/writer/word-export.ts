@@ -5783,7 +5783,7 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'val', this.wNamespace, list.abstractListId.toString());
             writer.writeEndElement();
             for (let lvl: number = 0, cnt: number = list.levelOverrides.length; lvl < cnt; lvl++) {
-                this.serializeLevelOverrides(writer, list.levelOverrides[lvl], lvl);
+                    this.serializeLevelOverrides(writer, list.levelOverrides[lvl], lvl);
             }
             writer.writeEndElement();
         }
@@ -5862,7 +5862,9 @@ export class WordExport {
         writer.writeStartElement(undefined, 'lvlOverride', this.wNamespace);
         writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
         writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
-        writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
+        if(!isNullOrUndefined(listLevel.startAt)) {
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
+        }
         writer.writeEndElement();
         writer.writeEndElement();     
     }

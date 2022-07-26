@@ -1826,6 +1826,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.scrollActions |= ScrollActions.PropertyChange;
                         this.updateScrollSettings(newProp);
                         this.scrollActions &= ~ScrollActions.PropertyChange;
+                        this.scrollSettings.horizontalOffset = -this.scroller.horizontalOffset||0;
+                        this.scrollSettings.verticalOffset = -this.scroller.verticalOffset||0;
                         break;
                     case 'locale':
                         if (newProp.locale !== oldProp.locale) {
@@ -3800,7 +3802,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.scroller.zoom(factor, 0, 0, options.focusPoint);
         this.updateBlazorDiagramProperties(attribute, true);
     }
-
     /**
      * Pans the diagram control to the given horizontal and vertical offsets
      *
@@ -3809,11 +3810,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {number} verticalOffset - Defines the vertical distance to which the diagram has to be scrolled
      * @param {PointModel} focusedPoint - Provide the focusedPoint value
      */
-    public pan(horizontalOffset: number, verticalOffset: number, focusedPoint?: PointModel): void {
+    public pan(horizontalOffset: number, verticalOffset: number, focusedPoint?: PointModel, isInteractiveZoomPan?:boolean): void {
         const attribute: string[] = this.getZoomingAttribute();
         this.updateBlazorDiagramProperties(attribute);
         this.setCursor('grabbing');
-        this.scroller.zoom(1, horizontalOffset, verticalOffset, focusedPoint);
+        this.scroller.zoom(1, horizontalOffset, verticalOffset, focusedPoint, isInteractiveZoomPan);
         this.updateBlazorDiagramProperties(attribute, true);
     }
 
@@ -6549,7 +6550,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private updateScrollSettings(newProp: DiagramModel): void {
         const hPan: number = (-this.scroller.horizontalOffset + newProp.scrollSettings.horizontalOffset || 0);
-        const vPan: number = (this.scroller.verticalOffset - newProp.scrollSettings.verticalOffset || 0);
+        const vPan: number = (-this.scroller.verticalOffset + newProp.scrollSettings.verticalOffset || 0);
 
         const oldValue: ScrollValues = {
             VerticalOffset: this.scrollSettings.verticalOffset, HorizontalOffset: this.scrollSettings.horizontalOffset,

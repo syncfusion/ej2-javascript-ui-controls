@@ -1159,7 +1159,13 @@ export class FormFields {
                     this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
                 }
                 // eslint-disable-next-line
-                this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
+                let isFormField = annot.shapeAnnotationType == 'Path' || annot.shapeAnnotationType == "SignatureText" || annot.shapeAnnotationType == "SignatureImage";
+                if (!isFormField) {
+                     // EJ2-60330 , This event will not trigger for formField.
+                     // So we have added the above condition, it should not trigger in all the time, 
+                     // because this code is for form field
+                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
+                }
                 this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
             }
         }
@@ -1567,14 +1573,24 @@ export class FormFields {
     public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any, signatureFontFamily?: string, signatureFontSize?: Number): void {
         this.pdfViewerBase.updateDocumentEditedProperty(true);
         // eslint-disable-next-line
+        let filterFields = [];
+        let fieldsByName = " ";
+        let filterFieldName = [];
+        let filterArrayLength = 0;
         let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         if(data){
             // eslint-disable-next-line
             let FormFieldsData: any = JSON.parse(data);
+            filterFields = FormFieldsData.filter((item: any) => item.uniqueID === target.id);
+                    if(filterFields.length > 0){
+                        fieldsByName = filterFields[0].FieldName;
+                        filterFieldName = FormFieldsData.filter((item: any)=> item.FieldName === fieldsByName);
+                        filterArrayLength = filterFieldName.length;
+                }
             for (let m: number = 0; m < FormFieldsData.length; m++) {
                 // eslint-disable-next-line
                 let currentData: any = FormFieldsData[m];
-                if (currentData.uniqueID === target.id) {
+                if (currentData.uniqueID === target.id || fieldsByName === currentData.FieldName ) {
                     if (target && target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
                         const signField: HTMLElement = target as HTMLElement;
                         if (signField.classList.contains('e-pdfviewer-signatureformfields') || signField.classList.contains('e-pdfviewer-signatureformfields-signature')) {
@@ -1655,6 +1671,8 @@ export class FormFields {
                         currentData.IsReadonly = true;
                     }
                     this.updateFormFieldsCollection(currentData);
+                    filterArrayLength--;
+                    if (filterArrayLength == 0)
                     break;
                 } else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
                     currentData.SelectedValue = target.value;
