@@ -4526,7 +4526,7 @@ export class WordExport {
                 let horizontalPosition: string = Math.round(table.positioning.horizontalPosition * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'tblpX', this.wNamespace, horizontalPosition);
             }
-            if ((!table.positioning.verticalAlignment || table.positioning.verticalAlignment === 'None') && table.positioning.verticalPosition > 0) {
+            if (!isNullOrUndefined(table.positioning.verticalAlignment) && table.positioning.verticalAlignment === 'None') {
                 let verticalPosition: string = Math.round(table.positioning.verticalPosition * this.twipsInOnePoint).toString();
                 writer.writeAttributeString('w', 'tblpY', this.wNamespace, verticalPosition);
             }

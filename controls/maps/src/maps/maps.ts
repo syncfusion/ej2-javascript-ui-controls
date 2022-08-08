@@ -27,7 +27,7 @@ import { Highlight } from './user-interaction/highlight';
 import { Selection } from './user-interaction/selection';
 import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
-import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';
+import { load, click, onclick, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle, Theme } from './model/theme';
@@ -301,12 +301,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
-     * Triggers when clicking an element in maps.
+     * Triggers when a user clicks on an element in Maps.
      *
      * @event click
+     * @deprecated
      */
     @Event()
     public click: EmitType<IMouseEventArgs>;
+    /**
+     * Triggers when a user clicks on an element in Maps.
+     *
+     * @event onclick
+     */
+    @Event()
+    public onclick: EmitType<IMouseEventArgs>;
     /**
      * Triggers when performing the double click operation on an element in maps.
      *
@@ -534,6 +542,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public availableSize: Size;
+
+    /**
+     * whether it is layer add or not.
+     *
+     * @private
+     */
+     public isAddLayer: boolean;
 
     /**
      * Specifies the localization object.
@@ -849,6 +864,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.renderArea();
         this.processRequestJsonData();
         this.renderComplete();
+        this.isAddLayer = !this.isTileMap ? false : this.isAddLayer;
     }
     /**
      * To Initialize the control rendering.
@@ -1647,6 +1663,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return isSelect;
     }
+	
     /**
      * This method is used to perform the operations when a click operation is performed on maps.
      *
@@ -1669,24 +1686,35 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 latitude: latitude, longitude: longitude,
                 isShapeSelected : this.SelectedElement(targetEle)
             };
-            this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
-                if (targetEle.id.indexOf('shapeIndex') > -1) {
-                    this.mergeCluster();
-                    if (getElement(this.element.id + '_mapsTooltip') &&
-                        this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
-                        removeElement(this.element.id + '_mapsTooltip');
-                    }
-                }
-                if (this.markerModule) {
-                    this.markerModule.markerClusterClick(e);
-                }
-                if (!eventArgs.cancel) {
-                    this.notify(click, targetEle);
-                }
-                if (!eventArgs.cancel && targetEle.id.indexOf('shapeIndex') !== -1) {
-                    this.triggerShapeSelection(targetEle);
-                }
-            });
+            if (this.onclick) {
+                eventArgs.name = onclick;
+                this.trigger('onclick', eventArgs, (mouseArgs: IMouseEventArgs) => {
+                    this.clickHandler(e, eventArgs, targetEle);
+                });
+            } else {
+                this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
+                    this.clickHandler(e, eventArgs, targetEle);
+                });
+            }
+        }
+    }
+
+    private clickHandler(e : PointerEvent, eventArgs : IMouseEventArgs, targetEle: Element) : void {
+        if (targetEle.id.indexOf('shapeIndex') > -1) {
+            this.mergeCluster();
+            if (getElement(this.element.id + '_mapsTooltip') &&
+                this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                removeElement(this.element.id + '_mapsTooltip');
+            }
+        }
+        if (this.markerModule) {
+            this.markerModule.markerClusterClick(e);
+        }
+        if (!eventArgs.cancel) {
+            this.notify(click, targetEle);
+        }
+        if (!eventArgs.cancel && targetEle.id.indexOf('shapeIndex') !== -1) {
+            this.triggerShapeSelection(targetEle);
         }
     }
 
@@ -1782,13 +1810,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     latitude = latLongValue.latitude;
                     longitude = latLongValue.longitude;
                 }
-                const eventArgs: IMouseEventArgs = {
-                    cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
-                    latitude: latitude, longitude: longitude, isShapeSelected: this.SelectedElement(targetEle)
-                };
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
-                });
             }
             this.titleTooltip(e, pageX, pageY, true);
             if (!isNullOrUndefined(this.legendModule)) {
@@ -2087,8 +2108,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {Object} layer - Specifies the layer for the maps.
      */
     public addLayer(layer: Object): void {
-        this.layers.push(new LayerSettings(this.layers[0] as LayerSettings, 'layers', layer));
-        this.refresh();
+        let mapsLayer: LayerSettingsModel[] = this.layers;
+        mapsLayer.push(layer);
+        this.isAddLayer = true;
+        this.layers = mapsLayer;
     }
     /**
      * This method is used to remove a layer from map.
@@ -2097,8 +2120,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public removeLayer(index: number): void {
-        this.layers.splice(index, 1);
-        this.refresh();
+        let mapsLayer: LayerSettingsModel[] = this.layers;
+        mapsLayer.splice(index, 1);
+        this.layers = mapsLayer;
     }
     /**
      * This method is used to add markers dynamically in the maps.
@@ -2389,7 +2413,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public onPropertyChanged(newProp: MapsModel, oldProp: MapsModel): void {
-        let render: boolean = false; let isMarker: boolean = false;
+        let render: boolean = false; let isMarker: boolean = false; let isLayer: boolean = false;
         let isStaticMapType: boolean = false;
         let layerEle: Element;
         if (newProp['layers']) {
@@ -2409,6 +2433,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             case 'legendSettings':
             case 'baseLayerIndex':
                 if (prop === 'layers') {
+                    isLayer = true;
                     const layerPropLength: number = Object.keys(newProp.layers).length;
                     for (let x: number = 0; x < layerPropLength; x++) {
                         if (!isNullOrUndefined(newProp.layers[x])) {
@@ -2430,7 +2455,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
             case 'zoomSettings':
                 if (!isNullOrUndefined(oldProp.zoomSettings)) {
-                    if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor) {
+                    if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor && !isLayer) {
                         render = false;
                     }
                     else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {

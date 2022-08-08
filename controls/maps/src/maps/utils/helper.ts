@@ -1093,8 +1093,8 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                             shapeCustom['borderWidth'] = eventArg.border.width;
                             shapeCustom['borderOpacity'] = isNullOrUndefined(eventArg.border.opacity) ? clusters.opacity : eventArg.border.opacity;
                         }
-                        tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((location.x + transPoint.x + eventArg.width) * maps.mapScaleValue);
-                        tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((location.y + transPoint.y + (eventArg.height / 2)) * maps.mapScaleValue);
+                        tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : tempX + postionY - (eventArg.width / 2);
+                        tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : tempY - (eventArg.height / 2);
                         if (maps.isTileMap && !maps.zoomSettings.enable) {
                             tempX = location.x;
                             tempY = location.y;
@@ -1173,7 +1173,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection);
             layerElement.appendChild(markerCollection);
         }
-        const markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_0_markerCluster');
+        const markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex +'_markerCluster');
         if (!isNullOrUndefined(markerCluster)) {
             markerCluster.remove();
         }
@@ -2322,6 +2322,8 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         }
     }
     scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue === 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
+    mapObject.widthBeforeRefresh = mapObject.availableSize.width;
+    mapObject.heightBeforeRefresh = mapObject.availableSize.height;
     return { scale: animate ? 1 : scaleFactor, location: new Point(x, y) };
 }
 
@@ -3235,7 +3237,11 @@ export function animate(element: Element, delay: number, duration: number, proce
         } else {
             window.cancelAnimationFrame(clearAnimation);
             end.call(this, { element: element });
-            element.setAttribute('style', markerStyle);
+            if (element.id.indexOf('Marker') > -1) {
+                console.log(element);
+                let markerElement: Element = getElementByID(element.id.split('_')[0] + '_Markers_Group');
+                markerElement.setAttribute('style', markerStyle);
+            }
         }
     };
     clearAnimation = window.requestAnimationFrame(startAnimation);

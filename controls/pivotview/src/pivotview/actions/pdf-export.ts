@@ -5,7 +5,7 @@ import {
 } from '@syncfusion/ej2-pdf-export';
 import { PivotView } from '../base/pivotview';
 import * as events from '../../common/base/constant';
-import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs } from '../../common/base/interface';
+import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs, ExportCompleteEventArgs } from '../../common/base/interface';
 import { IAxisSet, IPivotValues, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfBorderStyle } from '../../common/base/enum';
@@ -194,7 +194,7 @@ export class PDFExport {
      * @hidden
      */
     /* eslint-disable  */
-    public exportToPDF(pdfExportProperties?: PdfExportProperties): void {
+    public exportToPDF(pdfExportProperties?: PdfExportProperties, isBlob?: Boolean): void {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let eventParams: { document: PdfDocument, args: BeforeExportEventArgs } = this.applyEvent();
         let headerStyle: ITheme = this.getStyle();
@@ -377,7 +377,18 @@ export class PDFExport {
                 integratedCnt = 0;
             }
         } while (integratedCnt < colLength);
-        eventParams.document.save(eventParams.args.fileName + '.pdf');
+        let blobData: Promise<{ blobData: Blob; }>;
+        if (!isBlob) {
+            eventParams.document.save(eventParams.args.fileName + '.pdf');
+        }
+        else {
+            blobData = eventParams.document.save();
+        }
+        let exportCompleteEventArgs: ExportCompleteEventArgs = {
+            type: 'PDF',
+            promise: isBlob ? blobData : null
+        }
+        this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
         eventParams.document.destroy();
     }
 

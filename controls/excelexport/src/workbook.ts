@@ -1896,12 +1896,14 @@ export class Workbook {
         let contentTypeString: string = '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml" /><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" /><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml" /><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml" /><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml" /><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml" />';
         let sheetsOverride: string = '';
         let length: number = this.worksheets.length;
+        let drawingIndex: number = 0;
         for (let i: number = 0; i < length; i++) {
             /* tslint:disable-next-line:max-line-length */
             sheetsOverride += '<Override PartName="/xl/worksheets/sheet' + (i + 1).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml" />';
-            if(this.worksheets[i].images != undefined && this.worksheets[i].images.length > 0){
+            if(this.worksheets[i].images != undefined && this.worksheets[i].images.length > 0){                
+                drawingIndex++;
                 /* tslint:disable-next-line:max-line-length */
-                sheetsOverride += '<Override PartName="/xl/drawings/drawing' + (i + 1).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml" />';                
+                sheetsOverride += '<Override PartName="/xl/drawings/drawing' + (drawingIndex).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml" />';                
             }            
         }
         if(this.imageCount > 0)

@@ -351,7 +351,7 @@
 
   .e-pivot-calc-dialog-div {
     // sass-lint:disable-all
-    max-height: 550px !important;
+    max-height: 560px !important;
     // sass-lint:enable-all
     min-width: 290px;
 
@@ -367,13 +367,17 @@
         padding-top: 1px !important;
         // sass-lint:enable-all
       }
+
+      .e-pivot-calc-custom-format-div {
+        margin-top: 15px;
+      }
     }
 
     .e-pivot-all-field-title,
     .e-pivot-field-name-title,
     .e-pivot-formula-title,
     .e-olap-hierarchy-title,
-    .e-olap-format-title,
+    .e-pivot-format-title,
     .e-olap-member-title {
       color: $field-list-default-header-font-color;
       font-size: $field-list-header-font-size;
@@ -787,7 +791,7 @@
           }
         }
 
-        .e-olap-calculated-div {
+        .e-pivot-calculated-div {
           flex: auto;
           margin-left: 18px;
 
@@ -795,14 +799,14 @@
             height: 100px;
           }
 
-          .e-olap-calc-custom-format-div {
+          .e-pivot-calc-custom-format-div {
             margin-top: 15px;
           }
 
           .e-pivot-formula-title,
           .e-pivot-field-name-title,
           .e-olap-hierarchy-title,
-          .e-olap-format-title,
+          .e-pivot-format-title,
           .e-olap-member-title {
             padding-left: 0;
             padding-right: 0;
@@ -826,7 +830,7 @@
 
       &.e-rtl {
         .e-pivot-calc-outer-div {
-           .e-olap-calculated-div {
+           .e-pivot-calculated-div {
             margin-left: 0;
             margin-right: 18px;
           }
@@ -859,7 +863,7 @@
     .e-pivot-field-name-title,
     .e-pivot-formula-title,
     .e-olap-hierarchy-title,
-    .e-olap-format-title,
+    .e-pivot-format-title,
     .e-olap-member-title {
       font-size: $field-list-bigger-header-font-size;
       padding: $pivot-calculated-bigger-header-padding 0;
@@ -945,14 +949,14 @@
           }
         }
 
-        .e-olap-calculated-div {
+        .e-pivot-calculated-div {
           margin-left: 24px;
         }
       }
 
       &.e-rtl {
         .e-pivot-calc-outer-div {
-           .e-olap-calculated-div {
+           .e-pivot-calculated-div {
             margin-left: 0;
             margin-right: 24px;
           }

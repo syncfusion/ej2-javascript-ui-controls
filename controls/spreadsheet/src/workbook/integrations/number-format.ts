@@ -894,11 +894,12 @@ export class WorkbookNumberFormat {
             };
             const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
             dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
+            const inputMonth: string = dateArr[1].substring(0,3);
             if (firstVal = !Number(dateArr[0]) && months.find((month: string) => dateArr[0].includes(month))) {
                 updateSecValue(dateArr[1]);
-            } else if (firstVal = !Number(dateArr[1]) && months.find((month: string) => dateArr[1].includes(month))) {
+            } else if (firstVal = !Number(dateArr[1]) && months.find((month: string) => inputMonth.includes(month))) {
                 updateSecValue(dateArr[0]);
-            } else if (dateArr[0] && Number(dateArr[0]) <= 12) {
+            } else if (dateArr[0] && Number(dateArr[0]) <= 12 && Number(dateArr[1])) {
                 firstVal = months[Number(dateArr[0]) - 1];
                 updateSecValue(dateArr[1]);
             }

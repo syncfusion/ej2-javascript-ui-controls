@@ -983,14 +983,19 @@ export function doPasteUpdate(parent: IFileManager, operation: string, result: R
  * @private
  */
 export function readDropPath(parent: IFileManager): void {
-    const pathId: string = getValue('_fm_id', parent.dropData);
+    let pathId: string = getValue('_fm_id', parent.dropData);
     parent.expandedId = pathId;
     parent.itemData = [parent.dropData];
     if (parent.isPathDrag) {
         parent.notify(events.pathDrag, parent.itemData);
     } else {
         if (parent.navigationpaneModule) {
-            const node: Element = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
+            let node: Element = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
+            if(!node){
+                let liElement = document.querySelector('[data-id = "' + getValue('id', parent.dropData) + '"]');
+                pathId = liElement.getAttribute("data-uid");
+                node = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
+            }
             updatePath(<HTMLLIElement>node, parent.dropData, parent);
         }
         read(parent, events.dropPath, parent.dropPath);

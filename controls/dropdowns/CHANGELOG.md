@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.43 (2022-08-08)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I384240` - Issue with "`RemoveItems` not working properly after adding items with specific index" has been resolved.
+
 ## 20.2.40 (2022-07-26)
 
 ### MultiSelect

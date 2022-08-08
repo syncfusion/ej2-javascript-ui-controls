@@ -129,7 +129,7 @@ export class ContextMenu {
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
                 if (isNOU(this.targetElement.getAttribute('aria-selected'))) {
                     /* istanbul ignore next */
-                    this.parent.detailsviewModule.gridObj.selectRows([parseInt(this.targetElement.getAttribute('aria-rowindex'), 10)]);
+                    this.parent.detailsviewModule.gridObj.selectRows([parseInt(this.targetElement.getAttribute('data-rowindex'), 10)]);
                 }
                 selected = true;
                 /* istanbul ignore next */

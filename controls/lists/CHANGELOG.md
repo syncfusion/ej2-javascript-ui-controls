@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### ListView
+
+#### New Features
+
+- `#I385167` - Provided support to cancel the ListView select event.
+
 ## 20.2.36 (2022-06-30)
 
 ### ListView

@@ -1,5 +1,5 @@
 import { Workbook } from '@syncfusion/ej2-excel-export';
-import { ExcelRow, ExcelCell, ExcelColumn, BeforeExportEventArgs } from '../../common/base/interface';
+import { ExcelRow, ExcelCell, ExcelColumn, BeforeExportEventArgs, ExportCompleteEventArgs } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import { PivotView } from '../base/pivotview';
 import { IAxisSet, IPivotValues, PivotEngine } from '../../base/engine';
@@ -74,7 +74,7 @@ export class ExcelExport {
      * Method to perform excel export.
      * @hidden
      */
-    public exportToExcel(type: string, exportProperties?: ExcelExportProperties): void {
+    public exportToExcel(type: string, exportProperties?: ExcelExportProperties, isBlob?: Boolean): void {
         this.rows = []; this.actualrCnt = 0;
         let isHeaderSet: boolean = !isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.header);
         let isFooterSet: boolean = !isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.footer);
@@ -246,12 +246,21 @@ export class ExcelExport {
             workSheets.push({ columns: columns, rows: this.rows });
         }
         let book: Workbook = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, (this.parent as any).currencyCode);
-        if ('.xlsx' === fileName.substring(fileName.length - 5, fileName.length) || '.csv' === fileName.substring(fileName.length - 4, fileName.length)) {
-            book.save(fileName);
+        let fileExtension: string = fileName.split(".").pop();
+        let blobData: Promise<{ blobData: Blob; }>;
+        if (!isBlob) {
+            book.save(fileExtension === "xlsx" || fileExtension === "csv" ?
+                fileName : (fileName + (type === 'Excel' ? '.xlsx' : '.csv')))
         }
         else {
-            book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
+            blobData = book.saveAsBlob(fileExtension === "xlsx" || type === 'Excel' ?
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv');
         }
+        let exportCompleteEventArgs: ExportCompleteEventArgs = {
+            type: type,
+            promise: isBlob ? blobData : null
+        }
+        this.parent.trigger(events.exportComplete, exportCompleteEventArgs)
     }
 
     /**

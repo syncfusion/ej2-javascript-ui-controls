@@ -263,6 +263,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private showSubMenuOn: MenuOpenType = 'Auto';
     private defaultOption: boolean;
     private timer: number;
+    private currentTarget: Element;
     /**
      * Triggers while rendering each menu item.
      *
@@ -797,6 +798,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private cmenuHandler(e: MouseEvent & (TouchEventArgs | MouseEventArgs)): void {
         e.preventDefault();
+        this.currentTarget = e.target as Element;
         this.isCMenu = true;
         this.pageX = e.changedTouches ? e.changedTouches[0].pageX + 1 : e.pageX + 1;
         this.pageY = e.changedTouches ? e.changedTouches[0].pageY + 1 : e.pageY + 1;
@@ -1844,6 +1846,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         navIdx.length = 0;
                     }
                 }
+                if (this.enableScrolling) {
+                    if (this.element.classList.contains('e-vertical')){
+                        addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl);
+                    } else {
+                        addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+                    }
+                }
                 break;
             }
             }
@@ -1997,11 +2006,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (ul.querySelector('.' + FOCUSED)) {
                 (ul.querySelector('.' + FOCUSED) as HTMLElement).focus();
             } else {
-                const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
-                if (ele) {
-                    (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
-                } else {
-                    this.element.focus();
+                if (this.currentTarget) {
+                    if (!(this.currentTarget.classList.contains("e-numerictextbox") || this.currentTarget.classList.contains("e-textbox"))) {
+                        const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
+                        if (ele) {
+                            (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
+                        } else {
+                            this.element.focus();
+                        }
+                    }
                 }
             }
         } else {

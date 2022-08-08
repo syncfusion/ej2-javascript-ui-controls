@@ -422,6 +422,20 @@ export class Agenda extends AgendaBase implements IRenderer {
         }
     }
 
+    public scrollToDate(scrollDate: Date): void {
+        const date: Date = new Date(+util.resetTime(scrollDate));
+        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+            if (!this.parent.hideEmptyAgendaDays || this.parent.getEvents(date, util.addDays(date, 1), true).length > 0) {
+                this.parent.changeDate(date);
+            }
+        } else {
+            const dateElement: HTMLElement = this.element.querySelector('.' + cls.AGENDA_CELLS_CLASS + '[data-date="' + date.getTime() + '"]');
+            if (dateElement) {
+                this.getContentAreaElement().scrollTop = dateElement.offsetTop;
+            }
+        }
+    }
+
     public destroy(): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         if (this.element) {

@@ -5,7 +5,7 @@ import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { SfdtExport } from '../../../src/document-editor/implementation/writer/sfdt-export';
-import { LineWidget, ParagraphWidget, ShapeElementBox, TableWidget } from '../../../src/document-editor/implementation/viewer/page';
+import { BodyWidget, LineWidget, ParagraphWidget, ShapeElementBox, TableCellWidget, TableRowWidget, TableWidget } from '../../../src/document-editor/implementation/viewer/page';
 import { WordExport } from '../../../src/document-editor/implementation/writer/word-export';
 
 let charParaBidi: any = { "sections": [{ "blocks": [{ "characterFormat": { "bidi": true }, "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "???", "characterFormat": { "bidi": true } }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second column", "characterFormat": { "bdo": "RTL" } }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }, { "text": " ", "characterFormat": { "bdo": "RTL" } }, { "text": "?", "characterFormat": { "bdo": "RTL" } }] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "Third column " }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second Page" }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "ssASasAS" }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": true } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Line Number", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Header", "basedOn": "Normal", "link": "Header Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Header Char", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Footer", "basedOn": "Normal", "link": "Footer Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Footer Char", "basedOn": "Default Paragraph Font" }] };
@@ -15187,5 +15187,1350 @@ describe("Facing script error when exporting attached document",()=>{
         editor.openBlank();
         editor.open(JSON.stringify(contentControl));
         expect(()=>{ editor.save("ContentControl",'Sfdt')}).not.toThrowError();
+    });
+});
+let nestedTable : any = {
+	"sections": [
+		{
+			"sectionFormat": {
+				"pageWidth": 612,
+				"pageHeight": 792,
+				"leftMargin": 72,
+				"rightMargin": 72,
+				"topMargin": 72,
+				"bottomMargin": 72,
+				"differentFirstPage": false,
+				"differentOddAndEvenPages": false,
+				"headerDistance": 36,
+				"footerDistance": 36,
+				"bidi": false,
+				"pageNumberStyle": "Arabic"
+			},
+			"blocks": [
+				{
+					"rows": [
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"leftIndent": 0,
+												"rightIndent": 0,
+												"firstLineIndent": 0,
+												"textAlignment": "Left",
+												"beforeSpacing": 14,
+												"afterSpacing": 0,
+												"spaceBeforeAuto": false,
+												"spaceAfterAuto": false,
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"outlineLevel": "BodyText",
+												"listFormat": {},
+												"bidi": false,
+												"keepLinesTogether": false,
+												"keepWithNext": false,
+												"contextualSpacing": false,
+												"widowControl": true
+											},
+											"characterFormat": {
+												"bold": false,
+												"italic": false,
+												"fontSize": 10,
+												"fontFamily": "Times New Roman",
+												"underline": "None",
+												"strikethrough": "None",
+												"fontColor": "#00000000",
+												"bidi": false,
+												"boldBidi": false,
+												"italicBidi": false,
+												"fontSizeBidi": 10,
+												"fontFamilyBidi": "Times New Roman",
+												"allCaps": false
+											},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"bookmarkType": 0,
+													"name": "__FINDING_PLACEHOLDER_BOOKMARK_358"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"color": "#9EB722FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"left": {
+												"color": "#9EB722FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"right": {
+												"hasNoneStyle": false,
+												"lineStyle": "Cleared",
+												"lineWidth": 0
+											},
+											"bottom": {
+												"color": "#9EB722FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"diagonalDown": {
+												"hasNoneStyle": true,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": true,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {
+											"backgroundColor": "empty",
+											"foregroundColor": "empty",
+											"textureStyle": "TextureNone"
+										},
+										"topMargin": 0,
+										"rightMargin": 0,
+										"leftMargin": 0,
+										"bottomMargin": 0,
+										"preferredWidth": 1,
+										"preferredWidthType": "Point",
+										"cellWidth": 1,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 0
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"leftIndent": 0,
+												"rightIndent": 0,
+												"firstLineIndent": 0,
+												"textAlignment": "Left",
+												"beforeSpacing": 14,
+												"afterSpacing": 0,
+												"spaceBeforeAuto": false,
+												"spaceAfterAuto": false,
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"outlineLevel": "BodyText",
+												"listFormat": {},
+												"bidi": false,
+												"keepLinesTogether": false,
+												"keepWithNext": false,
+												"contextualSpacing": false,
+												"widowControl": true
+											},
+											"characterFormat": {
+												"bold": false,
+												"italic": false,
+												"fontSize": 10,
+												"fontFamily": "Times New Roman",
+												"underline": "None",
+												"strikethrough": "None",
+												"fontColor": "#00000000",
+												"bidi": false,
+												"boldBidi": false,
+												"italicBidi": false,
+												"fontSizeBidi": 10,
+												"fontFamilyBidi": "Times New Roman",
+												"allCaps": false
+											},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"bookmarkType": 0,
+													"name": "_FINDING_ID_1655900633275392"
+												}
+											]
+										},
+										{
+											"rows": [
+												{
+													"cells": [
+														{
+															"blocks": [
+																{
+																	"paragraphFormat": {
+																		"leftIndent": 0,
+																		"rightIndent": 0,
+																		"firstLineIndent": 0,
+																		"textAlignment": "Left",
+																		"beforeSpacing": 14,
+																		"afterSpacing": 0,
+																		"spaceBeforeAuto": false,
+																		"spaceAfterAuto": false,
+																		"lineSpacing": 1,
+																		"lineSpacingType": "Multiple",
+																		"styleName": "Normal",
+																		"outlineLevel": "BodyText",
+																		"listFormat": {},
+																		"bidi": false,
+																		"keepLinesTogether": false,
+																		"keepWithNext": false,
+																		"contextualSpacing": false,
+																		"widowControl": true
+																	},
+																	"characterFormat": {
+																		"bold": false,
+																		"italic": false,
+																		"fontSize": 10,
+																		"fontFamily": "Times New Roman",
+																		"underline": "None",
+																		"strikethrough": "None",
+																		"fontColor": "#00000000",
+																		"bidi": false,
+																		"boldBidi": false,
+																		"italicBidi": false,
+																		"fontSizeBidi": 10,
+																		"fontFamilyBidi": "Times New Roman",
+																		"allCaps": false
+																	},
+																	"inlines": [
+																		{
+																			"characterFormat": {
+																				"bold": false,
+																				"italic": false,
+																				"fontSize": 10,
+																				"fontFamily": "Segoe UI",
+																				"underline": "None",
+																				"strikethrough": "None",
+																				"fontColor": "#00000000",
+																				"bidi": false,
+																				"boldBidi": false,
+																				"italicBidi": false,
+																				"fontSizeBidi": 10,
+																				"fontFamilyBidi": "Segoe UI",
+																				"allCaps": false
+																			},
+																			"fieldType": 0,
+																			"hasFieldEnd": true
+																		},
+																		{
+																			"characterFormat": {
+																				"bold": false,
+																				"italic": false,
+																				"fontSize": 10,
+																				"fontFamily": "Segoe UI",
+																				"underline": "None",
+																				"strikethrough": "None",
+																				"fontColor": "#00000000",
+																				"bidi": false,
+																				"boldBidi": false,
+																				"italicBidi": false,
+																				"fontSizeBidi": 10,
+																				"fontFamilyBidi": "Segoe UI",
+																				"allCaps": false
+																			},
+																			"text": "ref _FIELD_FINDING_ID_1655900633275392 \\* MERGEFORMAT"
+																		},
+																		{
+																			"characterFormat": {},
+																			"fieldType": 2
+																		},
+																		{
+																			"characterFormat": {
+																				"bold": false,
+																				"italic": false,
+																				"fontSize": 10,
+																				"fontFamily": "Segoe UI",
+																				"underline": "None",
+																				"strikethrough": "None",
+																				"fontColor": "#00000000",
+																				"bidi": false,
+																				"boldBidi": false,
+																				"italicBidi": false,
+																				"fontSizeBidi": 10,
+																				"fontFamilyBidi": "Segoe UI",
+																				"allCaps": false
+																			},
+																			"text": "[1] "
+																		},
+																		{
+																			"characterFormat": {},
+																			"fieldType": 1
+																		}
+																	]
+																}
+															],
+															"cellFormat": {
+																"borders": {
+																	"top": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"left": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"right": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"bottom": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"diagonalDown": {
+																		"hasNoneStyle": true,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	},
+																	"diagonalUp": {
+																		"hasNoneStyle": true,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	},
+																	"horizontal": {
+																		"hasNoneStyle": false,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	},
+																	"vertical": {
+																		"hasNoneStyle": false,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	}
+																},
+																"shading": {
+																	"backgroundColor": "empty",
+																	"foregroundColor": "empty",
+																	"textureStyle": "TextureNone"
+																},
+																"topMargin": 0,
+																"rightMargin": 5.400000095367432,
+																"leftMargin": 5.400000095367432,
+																"bottomMargin": 0,
+																"preferredWidth": 30,
+																"preferredWidthType": "Point",
+																"cellWidth": 39.11521064863841,
+																"columnSpan": 1,
+																"rowSpan": 1,
+																"verticalAlignment": "Top"
+															},
+															"columnIndex": 0
+														},
+														{
+															"blocks": [
+																{
+																	"paragraphFormat": {
+																		"leftIndent": 0,
+																		"rightIndent": 0,
+																		"firstLineIndent": 0,
+																		"textAlignment": "Left",
+																		"beforeSpacing": 14,
+																		"afterSpacing": 0,
+																		"spaceBeforeAuto": false,
+																		"spaceAfterAuto": false,
+																		"lineSpacing": 1,
+																		"lineSpacingType": "Multiple",
+																		"styleName": "Normal",
+																		"outlineLevel": "BodyText",
+																		"listFormat": {},
+																		"bidi": false,
+																		"keepLinesTogether": false,
+																		"keepWithNext": false,
+																		"contextualSpacing": false,
+																		"widowControl": true
+																	},
+																	"characterFormat": {
+																		"bold": false,
+																		"italic": false,
+																		"fontSize": 10,
+																		"fontFamily": "Segoe UI",
+																		"underline": "None",
+																		"strikethrough": "None",
+																		"fontColor": "#00000000",
+																		"bidi": false,
+																		"boldBidi": false,
+																		"italicBidi": false,
+																		"fontSizeBidi": 10,
+																		"fontFamilyBidi": "Segoe UI",
+																		"allCaps": false
+																	},
+																	"inlines": [
+																		{
+																			"characterFormat": {
+																				"bold": false,
+																				"italic": false,
+																				"fontSize": 10,
+																				"fontFamily": "Segoe UI",
+																				"underline": "None",
+																				"strikethrough": "None",
+																				"fontColor": "#00000000",
+																				"bidi": false,
+																				"boldBidi": false,
+																				"italicBidi": false,
+																				"fontSizeBidi": 10,
+																				"fontFamilyBidi": "Segoe UI",
+																				"allCaps": false
+																			},
+																			"text": "Abc"
+																		}
+																	]
+																}
+															],
+															"cellFormat": {
+																"borders": {
+																	"top": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"left": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"right": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"bottom": {
+																		"color": "#000000",
+																		"hasNoneStyle": false,
+																		"lineStyle": "Single",
+																		"lineWidth": 1
+																	},
+																	"diagonalDown": {
+																		"hasNoneStyle": true,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	},
+																	"diagonalUp": {
+																		"hasNoneStyle": true,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	},
+																	"horizontal": {
+																		"hasNoneStyle": false,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	},
+																	"vertical": {
+																		"hasNoneStyle": false,
+																		"lineStyle": "None",
+																		"lineWidth": 0
+																	}
+																},
+																"shading": {
+																	"backgroundColor": "empty",
+																	"foregroundColor": "empty",
+																	"textureStyle": "TextureNone"
+																},
+																"topMargin": 0,
+																"rightMargin": 5.400000095367432,
+																"leftMargin": 5.400000095367432,
+																"bottomMargin": 0,
+																"preferredWidth": 70,
+																"preferredWidthType": "Percent",
+																"cellWidth": 408.8795891625341,
+																"columnSpan": 1,
+																"rowSpan": 1,
+																"verticalAlignment": "Top"
+															},
+															"columnIndex": 1
+														}
+													],
+													"rowFormat": {
+														"height": 1,
+														"allowBreakAcrossPages": false,
+														"heightType": "AtLeast",
+														"isHeader": false,
+														"borders": {
+															"top": {
+																"color": "#FFFFFFFF",
+																"hasNoneStyle": false,
+																"lineStyle": "Single",
+																"lineWidth": 0.5
+															},
+															"left": {
+																"color": "#FFFFFFFF",
+																"hasNoneStyle": false,
+																"lineStyle": "Single",
+																"lineWidth": 0.5
+															},
+															"right": {
+																"color": "#FFFFFFFF",
+																"hasNoneStyle": false,
+																"lineStyle": "Single",
+																"lineWidth": 0.5
+															},
+															"bottom": {
+																"color": "#FFFFFFFF",
+																"hasNoneStyle": false,
+																"lineStyle": "Single",
+																"lineWidth": 0.5
+															},
+															"diagonalDown": {
+																"hasNoneStyle": false,
+																"lineStyle": "None",
+																"lineWidth": 0
+															},
+															"diagonalUp": {
+																"hasNoneStyle": false,
+																"lineStyle": "None",
+																"lineWidth": 0
+															},
+															"horizontal": {
+																"color": "#FFFFFFFF",
+																"hasNoneStyle": false,
+																"lineStyle": "Single",
+																"lineWidth": 0.5
+															},
+															"vertical": {
+																"color": "#FFFFFFFF",
+																"hasNoneStyle": false,
+																"lineStyle": "Single",
+																"lineWidth": 0.5
+															}
+														},
+														"gridBefore": 0,
+														"gridAfter": 0,
+														"leftMargin": 5.4,
+														"topMargin": 0,
+														"rightMargin": 5.4,
+														"bottomMargin": 0
+													}
+												}
+											],
+											"grid": [
+												39.11521064863841,
+												408.8795891625341
+											],
+											"tableFormat": {
+												"borders": {
+													"top": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"left": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"right": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"bottom": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"diagonalDown": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"diagonalUp": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"horizontal": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													},
+													"vertical": {
+														"hasNoneStyle": false,
+														"lineStyle": "None",
+														"lineWidth": 0
+													}
+												},
+												"shading": {},
+												"leftIndent": 0,
+												"tableAlignment": "Left",
+												"topMargin": 0,
+												"rightMargin": 5.400000095367432,
+												"leftMargin": 5.400000095367432,
+												"bottomMargin": 0,
+												"preferredWidth": 99,
+												"preferredWidthType": "Percent",
+												"bidi": false,
+												"allowAutoFit": false
+											},
+											"description": null,
+											"title": null,
+											"columnCount": 2
+										},
+										{
+											"paragraphFormat": {
+												"leftIndent": 0,
+												"rightIndent": 0,
+												"firstLineIndent": 0,
+												"textAlignment": "Left",
+												"beforeSpacing": 14,
+												"afterSpacing": 0,
+												"spaceBeforeAuto": false,
+												"spaceAfterAuto": false,
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"outlineLevel": "BodyText",
+												"listFormat": {},
+												"bidi": false,
+												"keepLinesTogether": false,
+												"keepWithNext": false,
+												"contextualSpacing": false,
+												"widowControl": true
+											},
+											"characterFormat": {
+												"bold": false,
+												"italic": false,
+												"fontSize": 10,
+												"fontFamily": "Times New Roman",
+												"underline": "None",
+												"strikethrough": "None",
+												"fontColor": "#00000000",
+												"bidi": false,
+												"boldBidi": false,
+												"italicBidi": false,
+												"fontSizeBidi": 10,
+												"fontFamilyBidi": "Times New Roman",
+												"allCaps": false
+											},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"bookmarkType": 1,
+													"name": "_FINDING_ID_1655900633275392"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"color": "#000000",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"left": {
+												"color": "#000000",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"right": {
+												"color": "#000000",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"bottom": {
+												"color": "#000000",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"diagonalDown": {
+												"hasNoneStyle": true,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": true,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {
+											"backgroundColor": "empty",
+											"foregroundColor": "empty",
+											"textureStyle": "TextureNone"
+										},
+										"topMargin": 0,
+										"rightMargin": 5.400000095367432,
+										"leftMargin": 5.400000095367432,
+										"bottomMargin": 0,
+										"preferredWidth": 99,
+										"preferredWidthType": "Percent",
+										"cellWidth": 463.32,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 1
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"leftIndent": 0,
+												"rightIndent": 0,
+												"firstLineIndent": 0,
+												"textAlignment": "Left",
+												"beforeSpacing": 14,
+												"afterSpacing": 0,
+												"spaceBeforeAuto": false,
+												"spaceAfterAuto": false,
+												"lineSpacing": 1,
+												"lineSpacingType": "Multiple",
+												"styleName": "Normal",
+												"outlineLevel": "BodyText",
+												"listFormat": {},
+												"bidi": false,
+												"keepLinesTogether": false,
+												"keepWithNext": false,
+												"contextualSpacing": false,
+												"widowControl": true
+											},
+											"characterFormat": {
+												"bold": false,
+												"italic": false,
+												"fontSize": 10,
+												"fontFamily": "Times New Roman",
+												"underline": "None",
+												"strikethrough": "None",
+												"fontColor": "#00000000",
+												"bidi": false,
+												"boldBidi": false,
+												"italicBidi": false,
+												"fontSizeBidi": 10,
+												"fontFamilyBidi": "Times New Roman",
+												"allCaps": false
+											},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"bookmarkType": 1,
+													"name": "__FINDING_PLACEHOLDER_BOOKMARK_358"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {
+												"color": "#9EB722FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"left": {
+												"color": "#000000",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"right": {
+												"color": "#9EB722FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"bottom": {
+												"color": "#9EB722FF",
+												"hasNoneStyle": false,
+												"lineStyle": "Single",
+												"lineWidth": 1
+											},
+											"diagonalDown": {
+												"hasNoneStyle": true,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"diagonalUp": {
+												"hasNoneStyle": true,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"horizontal": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											},
+											"vertical": {
+												"hasNoneStyle": false,
+												"lineStyle": "None",
+												"lineWidth": 0
+											}
+										},
+										"shading": {
+											"backgroundColor": "empty",
+											"foregroundColor": "empty",
+											"textureStyle": "TextureNone"
+										},
+										"topMargin": 0,
+										"rightMargin": 0,
+										"leftMargin": 0,
+										"bottomMargin": 0,
+										"preferredWidth": 1,
+										"preferredWidthType": "Point",
+										"cellWidth": 1,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Top"
+									},
+									"columnIndex": 2
+								}
+							],
+							"rowFormat": {
+								"height": 1,
+								"allowBreakAcrossPages": false,
+								"heightType": "AtLeast",
+								"isHeader": false,
+								"borders": {
+									"top": {
+										"color": "#000000FF",
+										"hasNoneStyle": false,
+										"lineStyle": "Single",
+										"lineWidth": 0.5
+									},
+									"left": {
+										"color": "#000000FF",
+										"hasNoneStyle": false,
+										"lineStyle": "Single",
+										"lineWidth": 0.5
+									},
+									"right": {
+										"color": "#000000FF",
+										"hasNoneStyle": false,
+										"lineStyle": "Single",
+										"lineWidth": 0.5
+									},
+									"bottom": {
+										"color": "#000000FF",
+										"hasNoneStyle": false,
+										"lineStyle": "Single",
+										"lineWidth": 0.5
+									},
+									"diagonalDown": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"diagonalUp": {
+										"hasNoneStyle": false,
+										"lineStyle": "None",
+										"lineWidth": 0
+									},
+									"horizontal": {
+										"color": "#000000FF",
+										"hasNoneStyle": false,
+										"lineStyle": "Single",
+										"lineWidth": 0.5
+									},
+									"vertical": {
+										"color": "#9EB722FF",
+										"hasNoneStyle": false,
+										"lineStyle": "Single",
+										"lineWidth": 1
+									}
+								},
+								"gridBefore": 0,
+								"gridBeforeWidth": 0,
+								"gridBeforeWidthType": "Point",
+								"gridAfter": 0,
+								"gridAfterWidth": 0,
+								"gridAfterWidthType": "Point",
+								"leftMargin": 5.4,
+								"topMargin": 0,
+								"rightMargin": 5.4,
+								"bottomMargin": 0
+							}
+						}
+					],
+					"grid": [
+						1,
+						463.32,
+						1
+					],
+					"tableFormat": {
+						"borders": {
+							"top": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"left": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"right": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"bottom": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"diagonalDown": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"diagonalUp": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"horizontal": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							},
+							"vertical": {
+								"hasNoneStyle": false,
+								"lineStyle": "None",
+								"lineWidth": 0
+							}
+						},
+						"shading": {},
+						"leftIndent": 0,
+						"tableAlignment": "Left",
+						"topMargin": 0,
+						"rightMargin": 5.4,
+						"leftMargin": 5.4,
+						"bottomMargin": 0,
+						"preferredWidth": 0,
+						"preferredWidthType": "Auto",
+						"bidi": false,
+						"allowAutoFit": false
+					},
+					"description": null,
+					"title": null,
+					"columnCount": 3
+				},
+				{
+					"paragraphFormat": {
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": []
+				}
+			],
+			"headersFooters": {
+				"header": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				},
+				"footer": {
+					"blocks": [
+						{
+							"paragraphFormat": {
+								"listFormat": {}
+							},
+							"characterFormat": {},
+							"inlines": []
+						}
+					]
+				},
+				"evenHeader": {},
+				"evenFooter": {},
+				"firstPageHeader": {},
+				"firstPageFooter": {}
+			}
+		}
+	],
+	"characterFormat": {
+		"bold": false,
+		"italic": false,
+		"fontSize": 11,
+		"fontFamily": "Calibri",
+		"underline": "None",
+		"strikethrough": "None",
+		"baselineAlignment": "Normal",
+		"highlightColor": "NoColor",
+		"fontColor": "#00000000",
+		"boldBidi": false,
+		"italicBidi": false,
+		"fontSizeBidi": 11,
+		"fontFamilyBidi": "Calibri",
+		"allCaps": false
+	},
+	"paragraphFormat": {
+		"leftIndent": 0,
+		"rightIndent": 0,
+		"firstLineIndent": 0,
+		"textAlignment": "Left",
+		"beforeSpacing": 0,
+		"afterSpacing": 0,
+		"lineSpacing": 1,
+		"lineSpacingType": "Multiple",
+		"listFormat": {},
+		"bidi": false,
+		"keepLinesTogether": false,
+		"keepWithNext": false,
+		"widowControl": true
+	},
+	"defaultTabWidth": 36,
+	"trackChanges": false,
+	"enforcement": false,
+	"hashValue": "",
+	"saltValue": "",
+	"formatting": false,
+	"protectionType": "NoProtection",
+	"dontUseHTMLParagraphAutoSpacing": false,
+	"formFieldShading": true,
+	"compatibilityMode": "Word2013",
+	"styles": [
+		{
+			"name": "Normal",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"listFormat": {}
+			},
+			"characterFormat": {},
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 12,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level1",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 16,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 1 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 16,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Default Paragraph Font",
+			"type": "Character",
+			"characterFormat": {}
+		},
+		{
+			"name": "Heading 2",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level2",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 13,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 2 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 2 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 13,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 3",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level3",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 3 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 3 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 4",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level4",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"italicBidi": true,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 4 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 4 Char",
+			"type": "Character",
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"italicBidi": true,
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 5",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level5",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 5 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 5 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 6",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level6",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 6 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 6 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontFamilyBidi": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		}
+	],
+	"lists": [],
+	"abstractLists": [],
+	"comments": [],
+	"revisions": [],
+	"customXml": []
+};
+describe('Nested table and word export issue', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(SfdtExport,Editor,Selection);
+        editor = new DocumentEditor({ enableSfdtExport: true ,enableEditor: true, enableSelection: true});
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Nested table adjacent paragraph height issue',() => {
+        editor.open(JSON.stringify(nestedTable));
+        expect(((((((editor.documentHelper.pages[0].bodyWidgets[0] as BodyWidget).childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[1] as TableCellWidget).childWidgets[2] as ParagraphWidget).childWidgets[0] as LineWidget).height).toBe(0);
+    });
+    it('Word export issue', ()=>{
+        console.log('Word export issue');
+        let table: TableWidget = (editor.documentHelper.pages[0].bodyWidgets[0] as BodyWidget).childWidgets[0] as TableWidget;
+        let tableCell: TableCellWidget = (table.childWidgets[0] as TableRowWidget).childWidgets[1] as TableCellWidget;
+
+        expect(tableCell.cellFormat.preferredWidthType).toBe('Percent');
+        expect(tableCell.cellFormat.preferredWidth).toBe(99);
+
+        let nestedTableCellOne : TableCellWidget = ((tableCell.childWidgets[1] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget;
+        let nestedTableCellTwo : TableCellWidget = nestedTableCellOne.nextRenderedWidget as TableCellWidget;
+
+        expect(nestedTableCellOne.cellFormat.preferredWidthType).toBe('Point');
+        expect(nestedTableCellOne.cellFormat.preferredWidth).toBe(30);
+        expect(nestedTableCellTwo.cellFormat.preferredWidthType).toBe('Percent');
+        expect(nestedTableCellTwo.cellFormat.preferredWidth).toBe(70);
+
+        // after sfdt export, table cell different width unit values changed into unique values(Point) 
+        let exportNestedTableSfdt: any = editor.serialize();
+        editor.openBlank();
+        editor.open(exportNestedTableSfdt);
+        table = (editor.documentHelper.pages[0].bodyWidgets[0] as BodyWidget).childWidgets[0] as TableWidget;
+        tableCell = (table.childWidgets[0] as TableRowWidget).childWidgets[1] as TableCellWidget;
+
+        nestedTableCellOne = ((tableCell.childWidgets[1] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget;
+        nestedTableCellTwo = nestedTableCellOne.nextRenderedWidget as TableCellWidget;
+
+        expect(tableCell.cellFormat.preferredWidthType).toBe('Point');
+        expect(tableCell.cellFormat.preferredWidth).toBe(463.32);
+
+        expect(nestedTableCellOne.cellFormat.preferredWidthType).toBe('Point');
+        expect(nestedTableCellOne.cellFormat.preferredWidth).toBe(39.11521064863841);
+        expect(nestedTableCellTwo.cellFormat.preferredWidthType).toBe('Point');
+        expect(nestedTableCellTwo.cellFormat.preferredWidth).toBe(408.8795891625341);
+
     });
 });

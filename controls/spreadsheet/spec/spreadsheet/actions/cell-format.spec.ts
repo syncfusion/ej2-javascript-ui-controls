@@ -215,10 +215,10 @@ describe('Cell Format ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('fb22572 ->', () => {
+        describe('fb22572, EJ2-62186 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({ cellStyle: { fontSize: '8pt' }, sheets: [{ rows: [{ index: 3, cells:
-                    [{ index: 3, value: 'test' }] }], selectedRange: 'D4' }] }, done);
+                    [{ index: 3, value: '10-0347d' }] }], selectedRange: 'D4' }] }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -230,6 +230,13 @@ describe('Cell Format ->', () => {
                 expect(helper.getInstance().sheets[0].rows[3].height).toBeUndefined();
                 expect(helper.invoke('getRow', [2]).style.height).toBe('20px');
                 expect(helper.invoke('getRow', [3]).style.height).toBe('20px');
+                done();
+            });
+            it('Data Corruption while scrolling with larger data', (done: Function) => {
+                let sheets: SheetModel[] = helper.getInstance().sheets;
+                expect(getCell(3, 3, sheets[0]).value).toBe('10-0347d');
+                expect(getCell(3, 3, sheets[0]).format).toBeUndefined();
+                expect(helper.invoke('getCell', [3, 3]).textContent).toBe('10-0347d');
                 done();
             });
         });

@@ -234,7 +234,7 @@ describe('Dialog actions module', () => {
 
         afterAll(() => {
             util.destroy(kanbanObj);
-            (document.querySelector('.e-kanban-dialog') as HTMLElement).parentElement.remove();
+            (document.querySelector('.e-dialog.e-kanban-dialog') as HTMLElement).parentElement.remove();
         });
         it('Checking the value prevented on cancel button click', (done: Function) => {
             element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;

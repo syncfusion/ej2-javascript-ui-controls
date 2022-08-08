@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.43 (2022-08-08)
+
+### Switch
+
+#### Bug Fixes
+
+- `#384387` - The issue with "Switch component click event trigger two times when we handling enable/disable dynamically" has been resolved.
+
 ## 20.2.36 (2022-06-30)
 
 ### Checkbox

@@ -1028,7 +1028,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             } else {
                 this.setSelectLI(li, e);
-                this.element.focus();
             }
             closestElement = closest((e.target as HTMLElement), 'li') as HTMLElement;
             if (!isNullOrUndefined(closestElement)) {
@@ -1382,7 +1381,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         const eventArgs: object = {};
         merge(eventArgs, selectedItem);
         if (e) {
-            merge(eventArgs, { isInteracted: true, event: e, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
+            merge(eventArgs, { isInteracted: true, event: e, cancel: false, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
         }
         return eventArgs;
     }
@@ -1422,9 +1421,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.virtualizationModule.setSelectLI(li, e);
             }
             const eventArgs: object = this.selectEventData(li, e);
-            this.trigger('select', eventArgs);
-            this.selectedLI = li;
-            this.renderSubList(li);
+            this.trigger('select', eventArgs, (observedArgs: SelectEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.selectedLI = li;
+                    this.renderSubList(li);
+                }
+            });
         }
     }
 
@@ -2575,7 +2577,11 @@ export interface SelectEventArgs extends BaseEventArgs, SelectedItem {
     /**
      * It is used to check whether the element is checked or not.
      */
-    isChecked?: boolean;
+    isChecked?: boolean;    
+    /**
+     * Cancels the item selection if the value is true.
+     */
+    cancel: boolean;
 }
 
 /**

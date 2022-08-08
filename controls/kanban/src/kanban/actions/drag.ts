@@ -139,6 +139,8 @@ export class DragAndDrop {
         const selector: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS
             + '.' + cls.DROPPABLE_CLASS;
         const contentCell: HTMLElement = closest(target, selector) as HTMLElement;
+        let cellDimension : ClientRect;
+        let borderElem : HTMLElement;
         this.externalDrop(target);
         this.kanbanObj = this.parent.isExternalKanbanDrop ? this.parent.externalDropObj : this.parent;
         this.calculateArgs(e);
@@ -194,6 +196,13 @@ export class DragAndDrop {
         let isCollapsed: boolean = false;
         if (contentCell) {
             isCollapsed = contentCell.classList.contains(cls.COLLAPSED_CLASS) && contentCell.classList.contains(cls.DROPPING_CLASS);
+            cellDimension  = contentCell.getBoundingClientRect();
+            this.updateDimension(cellDimension);
+            borderElem = contentCell.querySelector('.' + cls.BORDER_CLASS) as HTMLElement;
+        }
+        if (target && target.tagName === 'TABLE') {
+            cellDimension = target.querySelector('.' + cls.CONTENT_ROW_CLASS).getBoundingClientRect();
+            this.updateDimension(cellDimension, target);
         }
         if (isCollapsed) {
             this.toggleVisible(target); addClass([contentCell], cls.TOGGLE_VISIBLE_CLASS);
@@ -217,9 +226,9 @@ export class DragAndDrop {
             }
         }
         document.body.style.cursor = (contentCell && contentCell.classList.contains(cls.DROPPING_CLASS) ||
-        (contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) ? '' : 'not-allowed';
+        (contentCell && borderElem && borderElem.classList.contains(cls.DROPPING_CLASS))) ? '' : 'not-allowed';
         if (cardElement && !(closest(cardElement, '.' + cls.CONTENT_CELLS_CLASS)).classList.contains(cls.DROPPING_CLASS) &&
-        !(contentCell && contentCell.firstChild && (contentCell.firstChild as HTMLElement).classList.contains(cls.DROPPING_CLASS))) {
+        !(contentCell && borderElem && borderElem.classList.contains(cls.DROPPING_CLASS))) {
             cardElement.style.cursor = 'not-allowed';
             document.body.style.cursor = 'not-allowed';
         }
@@ -340,11 +349,7 @@ export class DragAndDrop {
                 removeClass([dragCell], cls.DROPPING_CLASS);
             }
             const cellDimension : ClientRect  = dragCell.getBoundingClientRect();
-            [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
-                addClass([element], cls.DROPPING_CLASS);
-                element.style.height = parseInt(cellDimension.height.toString()) + 'px';
-                element.style.width = parseInt(cellDimension.width.toString()) + 'px' ;
-            });
+            this.updateDimension(cellDimension);
         } else if (dragCell && dragRow) {
             [].slice.call(dragRow.children).forEach((cell: Element) => {
                 const transition: string[] = this.kanbanObj.columns[dragCell.cellIndex].transitionColumns;
@@ -354,6 +359,18 @@ export class DragAndDrop {
                 }
             });
         }
+    }
+
+    private updateDimension(dimensions: ClientRect, target?: HTMLElement): void {
+        [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
+            addClass([element], cls.DROPPING_CLASS);
+            const hasAddButton = (element.previousElementSibling as HTMLElement);
+            element.style.height = parseInt(dimensions.height.toString()) - (hasAddButton &&
+                hasAddButton.classList.contains(cls.SHOW_ADD_BUTTON) ? hasAddButton.offsetHeight + hasAddButton.offsetTop : 0) + 'px';
+            if (!target || target.tagName !== 'TABLE') {
+                element.style.width = parseInt(dimensions.width.toString()) + 'px';
+            }
+        });
     }
 
     private keydownHandler(e: KeyboardEventArgs): void {

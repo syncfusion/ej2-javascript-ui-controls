@@ -1440,4 +1440,97 @@ describe('Chart Control', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+describe('checking bubble chart render in Canvas Mode.', () => {
+    let chart: Chart;
+    let loaded: EmitType<ILoadedEventArgs>;
+    let element: HTMLElement = createElement('div', { id: 'CanvasContainer' });
+    let dataLabel: HTMLElement;
+    let point: Points;
+    let trigger: MouseEvents = new MouseEvents();
+    let x: number;
+    let y: number;
+    let tooltip: HTMLElement;
+    let chartArea: HTMLElement;
+    let series: Series;
+    beforeAll(() => {
+        document.body.appendChild(element);
+        chart = new Chart({
+            primaryXAxis: {
+                title: 'Literacy Rate',
+                minimum: 60,
+                maximum: 100,
+                interval: 5
+            },
+            primaryYAxis: {
+                title: 'GDP Growth Rate',
+                minimum: 0,
+                maximum: 10,
+                interval: 2.5
+            },
+            series: [
+                {
+                    type: 'Bubble',
+                    dataSource: [
+                        { x: 92.2, y: 7.8, size: 1.347, text: 'China' },
+                        { x: 74, y: 6.5, size: 1.241, text: 'India' },
+                        { x: 90.4, y: 6.0, size: 0.238, text: 'Indonesia' },
+                        { x: 99.4, y: 2.2, size: 0.312, text: 'US' },
+                        { x: 88.6, y: 1.3, size: 0.197, text: 'Brazil' },
+                        { x: 99, y: 0.7, size: 0.0818, text: 'Germany' },
+                        { x: 72, y: 2.0, size: 0.0826, text: 'Egypt' },
+                        { x: 99.6, y: 3.4, size: 0.143, text: 'Russia' },
+                        { x: 99, y: 0.2, size: 0.128, text: 'Japan' },
+                        { x: 86.1, y: 4.0, size: 0.115, text: 'Mexico' },
+                        { x: 92.6, y: 6.6, size: 0.096, text: 'Philippines' },
+                        { x: 61.3, y: 1.45, size: 0.162, text: 'Nigeria' },
+                        { x: 82.2, y: 3.97, size: 0.7, text: 'Hong Kong' },
+                        { x: 79.2, y: 3.9, size: 0.162, text: 'Netherland' },
+                        { x: 72.5, y: 4.5, size: 0.7, text: 'Jordan' },
+                        { x: 81, y: 3.5, size: 0.21, text: 'Australia' },
+                        { x: 66.8, y: 3.9, size: 0.028, text: 'Mongolia' },
+                        { x: 78.4, y: 2.9, size: 0.231, text: 'Taiwan' }
+                    ],
+                    minRadius: 3,
+                    maxRadius: 8,
+                    xName: 'x', yName: 'y', size: 'size', name: 'Pound',
+                    marker: { dataLabel: { name: 'text' }}
+                },
+            ],
+            enableCanvas: true,
+            title: 'World Countries Details',
+        });
+        chart.appendTo('#CanvasContainer');
+    });
+    afterAll((): void => {
+        chart.destroy();
+        element.remove();
+    });
+    it('checking bubble chart render in canvas mode', (done: Function) => {
+        loaded = (args: Object): void => {
+            expect(document.getElementsByTagName('canvas')[0].id).toEqual('CanvasContainer_canvas');
+            done();
+        };
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+    it('checking  canvas mode bubble chart height ', (done: Function) => {
+        loaded = (args: Object): void => {
+            expect(document.querySelectorAll('canvas')[0].height).toEqual(450);
+            expect(document.querySelectorAll('canvas')[0].tabIndex).toEqual(0);
+            done();
+        };
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+});
 

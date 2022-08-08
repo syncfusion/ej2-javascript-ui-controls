@@ -250,7 +250,7 @@ export class Tooltip {
         if (ganttData) {
             data = ganttData.ganttProperties;
             taskName = !isNullOrUndefined(data.taskName) ? '<tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
-            data.taskName + '</td></tr>' : '';
+            ( this.parent.disableHtmlEncode ?  data.taskName.replace(/</g,"&lt;").replace(/>/g,"&gt;"):data.taskName) + '</td></tr>' : '';
         }
         switch (elementType) {
         case 'milestone':

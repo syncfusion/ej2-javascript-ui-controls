@@ -1039,7 +1039,7 @@ export class FormFields {
                     annot = {
                         // eslint-disable-next-line max-len
                         id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                        shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: rotateAngle === 90 || rotateAngle === 270 ? (bounds.width / 2) : (bounds.height / 2)
+                        shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: rotateAngle === 90 || rotateAngle === 270 ? (bounds.width / 1.25) : (bounds.height / 1.25)
                     };
                     if (annot.shapeAnnotationType === 'SignatureText') {
                         let textWidth: number = this.getTextWidth(annot.data, annot.fontSize, annot.fontFamily); 
@@ -1179,7 +1179,7 @@ export class FormFields {
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key === key) {
-                let formFieldIndex: number = this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldsData[i].FormField.id.split('_')[0]);
+                let formFieldIndex: number = this.pdfViewer.formFieldCollection.findIndex(el => el.id === formFieldsData[i].FormField.id.split('_')[0]);
                 if (annot.shapeAnnotationType === "SignatureText") {
                     formFieldsData[i].FormField.signatureType = "Text";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
@@ -1248,7 +1248,7 @@ export class FormFields {
         let signLeft: number = signIcon ? parseFloat(signIcon.style.left) * zoomvalue : 0;
         let difference: number = (currentLeft * zoomvalue) - (signLeft / zoomvalue);
         if (rotateAngle === 90 || rotateAngle === 270) {
-            this.rotateAngle = 0;
+        this.rotateAngle = 0;
             if (signIcon.style.left !== '') {
                 if (isDraw) {
                     return bounds = { x: currentLeft - (difference / zoomvalue) - zoomvalue, y: currentTop + (difference / zoomvalue) + zoomvalue, width: currentWidth, height: currentHeight };

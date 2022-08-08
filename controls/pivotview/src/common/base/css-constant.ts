@@ -342,13 +342,11 @@ export const CALC_FORMAT_INPUT: string = 'e-custom-format-input';
 /** @hidden */
 export const CALCINPUTDIV: string = 'e-pivot-calc-input-div';
 /** @hidden */
-export const CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-pivot-calc-custom-format-div';
-/** @hidden */
-export const OLAP_CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-olap-calc-custom-format-div';
+export const PIVOT_CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-pivot-calc-custom-format-div';
 /** @hidden */
 export const CALC_HIERARCHY_LIST_DIV: string = 'e-olap-calc-hierarchy-list-div';
 /** @hidden */
-export const CALC_FORMAT_TYPE_DIV: string = 'e-olap-calc-format-type-div';
+export const CALC_FORMAT_TYPE_DIV: string = 'e-pivot-calc-format-type-div';
 /** @hidden */
 export const CALC_MEMBER_TYPE_DIV: string = 'e-olap-calc-member-type-div';
 /** @hidden */
@@ -418,7 +416,7 @@ export const PIVOT_FORMULA_TITLE_CLASS: string = 'e-pivot-formula-title';
 /** @hidden */
 export const OLAP_HIERARCHY_TITLE_CLASS: string = 'e-olap-hierarchy-title';
 /** @hidden */
-export const OLAP_FORMAT_TITLE_CLASS: string = 'e-olap-format-title';
+export const PIVOT_FORMAT_TITLE_CLASS: string = 'e-pivot-format-title';
 /** @hidden */
 export const OLAP_MEMBER_TITLE_CLASS: string = 'e-olap-member-title';
 /** @hidden */

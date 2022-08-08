@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, filterData } from '../util/datasource.spec';
-import { Spreadsheet, filterByCellValue } from '../../../src/index';
+import { Spreadsheet, filterByCellValue, refreshCheckbox } from '../../../src/index';
 import { classList, getComponent } from '@syncfusion/ej2-base';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 
@@ -1462,6 +1462,32 @@ describe('Filter ->', () => {
                         expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
                         done();
                     });
+                });
+            });
+        });
+    });
+    describe('EJ2-62078 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B1' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Console error throws when clicking on the select area in filter pop-up in date format. ->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_sorting').click();
+            helper.getElement('#' + helper.id + '_applyfilter').click();
+            const cell: HTMLElement = helper.invoke('getCell', [0, 1]);
+            cell.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                setTimeout(() => {
+                    let checkboxList: HTMLElement = helper.getElement('.e-checkboxlist');
+                    let treeObj: any = getComponent(checkboxList.lastElementChild as HTMLElement, 'treeview');
+                    expect(treeObj.fields.dataSource.length).toBe(16);
+                    expect(treeObj.fields.dataSource.length === treeObj.checkedNodes.length).toBeTruthy();
+                    const searchBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
+                    helper.getInstance().notify(refreshCheckbox, { event: { type: 'keyup', keyCode: 8 , target: searchBox } }); //backspace key
+                    done();
                 });
             });
         });

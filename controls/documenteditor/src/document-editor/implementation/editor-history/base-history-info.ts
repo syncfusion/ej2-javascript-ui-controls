@@ -1138,6 +1138,8 @@ export class BaseHistoryInfo {
                 return 'pageHeight';
             case 'PageWidth':
                 return 'pageWidth';
+            case 'DifferentOddAndEvenPages':
+                return 'differentOddAndEvenPages';
             case 'TableAlignment':
                 return 'tableAlignment';
             case 'TableLeftIndent':

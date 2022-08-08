@@ -844,6 +844,9 @@ export class Layout {
             const position: Point = this.getFloatingItemPoints(element);
             element.x = position.x;
             element.y = position.y;
+            if(element.paragraph.indexInOwner !== 0 && element.verticalPosition > 0 && element.paragraph.y > element.y && this.viewer.clientArea.bottom === element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
+                this.moveToNextPage(this.viewer, element.line);
+            }
             const bodyWidget: BlockContainer = element.paragraph.bodyWidget;
             if (bodyWidget.floatingElements.indexOf(element) === -1) {
                 bodyWidget.floatingElements.push(element);
@@ -1801,7 +1804,7 @@ export class Layout {
                                 //available to fit this text in current line then move the text to bottom
                                 //of the floating item and this behavior is applicable only for Word 2013.
                                 //Lower versions split the text character by character.
-                                if ((elementBox.line.isFirstLine() && elementBox.indexInOwner === 0) && textWrappingStyle === 'Square'
+                                if ((elementBox.line.isFirstLine() && elementBox.indexInOwner === 0 || remainingClientWidth === 0) && textWrappingStyle === 'Square'
                                     && Math.round(rect.width) <= Math.round(minwidth)
                                     && ownerPara.containerWidget === containerWidget) {
                                     rect.x = clientLayoutArea.x;
@@ -2392,10 +2395,7 @@ export class Layout {
         lineWidget.margin = new Margin(0, topMargin, 0, bottomMargin);
         lineWidget.height = topMargin + height + bottomMargin;
         if (isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.isInsideTable
-            && paragraph.previousRenderedWidget instanceof TableWidget && paragraph.isEmpty()
-            && (!((paragraph.childWidgets[0] as LineWidget).children.length > 0
-                && (paragraph.childWidgets[0] as LineWidget).children[0] instanceof ListTextElementBox)
-                || (paragraph.childWidgets[0] as LineWidget).children.length === 0)) {
+            && paragraph.previousRenderedWidget instanceof TableWidget && paragraph.childWidgets.length == 1) {
             //Special behavior for empty cell mark after nested table, preserved with zero height by default.
             //Empty line is displayed in cell for the last empty paragraph (Cell mark - last paragraph in cell) after a nested table.
             lineWidget.height = 0;
@@ -3100,6 +3100,7 @@ export class Layout {
     private updateLineWidget(line: LineWidget): void {
         let spaceHeight: number = 0;
         let spaceBaseline: number = 0;
+        let isContainsImage: boolean = false;
         for (let i: number = 0; i < line.children.length; i++) {
             let element: ElementBox = line.children[i];
             if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
@@ -3131,19 +3132,27 @@ export class Layout {
                 }
             } else if (this.maxBaseline < element.height) {
                 this.maxBaseline = element.height;
+                if(element instanceof ImageElementBox) {
+                    isContainsImage = true;
+                }
             }
         }
         if (this.maxTextHeight === 0 && spaceHeight !== 0) {
-            if (line.isLastLine() && this.documentHelper.selection) {
-                let paragraphMarkSize: SizeInfo = this.documentHelper.selection.getParagraphMarkSize(line.paragraph, 0, 0);
-                this.maxTextHeight = paragraphMarkSize.height;
-                this.maxTextBaseline = spaceBaseline;
+            if (isContainsImage) {
+                this.maxTextHeight = 0;
+                this.maxTextBaseline = 0;
             } else {
-                this.maxTextHeight = spaceHeight;
-                this.maxTextBaseline = spaceBaseline;
-            }
-            if (this.maxBaseline < this.maxTextBaseline) {
-                this.maxBaseline = this.maxTextBaseline;
+                if (line.isLastLine() && this.documentHelper.selection) {
+                    let paragraphMarkSize: SizeInfo = this.documentHelper.selection.getParagraphMarkSize(line.paragraph, 0, 0);
+                    this.maxTextHeight = paragraphMarkSize.height;
+                    this.maxTextBaseline = spaceBaseline;
+                } else {
+                    this.maxTextHeight = spaceHeight;
+                    this.maxTextBaseline = spaceBaseline;
+                }
+                if (this.maxBaseline < this.maxTextBaseline) {
+                    this.maxBaseline = this.maxTextBaseline;
+                }
             }
         }
     }
@@ -5197,7 +5206,7 @@ export class Layout {
                             keepNext = true;
                         }
                     }
-                    bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : block, false);
+                    bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : block, keepNext);
 
                     let curretTable: TableWidget = tableWidgets[tableWidgets.length - 1];
                     //Move Next RowWidge to next page
@@ -5893,24 +5902,9 @@ export class Layout {
             if (this.viewer.clientActiveArea.y === this.viewer.clientArea.y && paraWidget.y + lineHeight >= bottom) {
                 return true;
             }
-        } else {
-            // For nested tables,
-            if (cellwidget.ownerTable.isInsideTable) {
-                // Gets the container cell widgets, consider it as client area for the cell widget.
-                let containerCellWidget: TableCellWidget = undefined;
-                if (cellwidget.containerWidget instanceof TableRowWidget &&
-                    cellwidget.containerWidget.containerWidget instanceof TableWidget
-                    && cellwidget.containerWidget.containerWidget.containerWidget instanceof TableCellWidget) {
-                    containerCellWidget = cellwidget.containerWidget.containerWidget.containerWidget as TableCellWidget;
-                }
-                if (!isNullOrUndefined(containerCellWidget) && cellwidget.containerWidget.y === containerCellWidget.y
-                    && paraWidget.y + lineHeight >= bottom) {
-                    return true;
-                }
-                /* eslint-disable-next-line max-len */
-            } else if (cellwidget.containerWidget.y === this.viewer.clientArea.y && paraWidget.y + lineHeight >= bottom) {
-                return true;
-            }
+        } else if (!cellwidget.ownerTable.isInsideTable && cellwidget.containerWidget.y === this.viewer.clientArea.y 
+            && paraWidget.y + lineHeight >= bottom) {
+            return true;
         }
         return (paraWidget.y + lineHeight <= bottom);
     }
@@ -6120,9 +6114,10 @@ export class Layout {
     }
     private considerPositionTableHeight(cellWidget: TableCellWidget, nestedWrapTable: TableWidget): boolean {
         if (nestedWrapTable.isLayouted && nestedWrapTable.wrapTextAround) {
-            let wrapTableBottom: number = nestedWrapTable.y + nestedWrapTable.height;
             for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
-                if (((cellWidget.childWidgets[i] as BlockWidget).y + (cellWidget.childWidgets[i] as BlockWidget).height) > wrapTableBottom) {
+                let blockWidget: BlockWidget = cellWidget.childWidgets[i] as BlockWidget;
+                if (nestedWrapTable !== blockWidget && (blockWidget.y === nestedWrapTable.y 
+                    || (blockWidget.y + blockWidget.height) < nestedWrapTable.y)) {
                     return false;
                 }
             }
@@ -6313,6 +6308,9 @@ export class Layout {
 
     /* eslint-disable-next-line max-len */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
+        if (!this.allowLayout) {
+            return;
+        }
         this.isRelayout = true;
         if (paragraphWidget.containerWidget instanceof TextFrame
             && (paragraphWidget.containerWidget.containerShape as ShapeElementBox).textWrappingStyle === 'Inline') {
@@ -6762,6 +6760,9 @@ export class Layout {
                 let rect: Rect = this.adjustClientAreaBasedOnTextWrapForTable(table, this.viewer.clientActiveArea);
                 if (clienactare.x !== rect.x) {
                     table.x = this.viewer.clientActiveArea.x;
+                }
+                if (clienactare.y !== rect.y) {
+                    table.y = this.viewer.clientActiveArea.y;
                 }
             }
         } else {
@@ -8260,9 +8261,6 @@ export class Layout {
 
     /* eslint-disable  */
     public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean): void {
-        if (!this.allowLayout) {
-            return;
-        }
         this.isFootnoteContentChanged = false;
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
             this.viewer.owner.editorModule.updateWholeListItems(paragraph);
@@ -9377,6 +9375,18 @@ export class Layout {
                     }
                 }
             }
+            if (paragraph && (vertOrigin === 'Paragraph' || vertOrigin === 'Line') && floatElement.textWrappingStyle !== "InFrontOfText" && floatElement.textWrappingStyle !== "Behind") {
+                if (this.documentHelper.compatibilityMode === 'Word2013') {
+                    if (!paragraph.isInHeaderFooter) {
+                        if (indentY + floatElement.height > this.viewer.clientArea.bottom) {
+                            indentY = this.viewer.clientArea.bottom - floatElement.height;
+                        }
+                        if (indentY < sectionFormat.topMargin) {
+                            indentY = sectionFormat.topMargin;
+                        }
+                    }
+                }
+            }
         }
         //}
 
@@ -9540,8 +9550,10 @@ export class Layout {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
                         } else if (position.verticalAlignment === 'Inside') {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
-                        } else if (isNullOrUndefined(position.verticalAlignment)) {
-                            this.viewer.clientActiveArea.y = (HelperMethods.convertPointToPixel(sectionFormat.topMargin) + HelperMethods.convertPointToPixel(position.verticalPosition));
+                        } else if (Math.round(position.verticalPosition) != 0 && !isNullOrUndefined(sectionFormat.topMargin)) {
+                            this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin + position.verticalPosition); 
+                        } else {
+                            this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(position.verticalPosition);
                         }
                     } else if (position.verticalOrigin === 'Paragraph') {
                         if (isNullOrUndefined(position.verticalAlignment) || position.verticalAlignment === 'None') {
@@ -9597,9 +9609,11 @@ export class Layout {
                         this.viewer.clientActiveArea.y = ownerCell.y;
                         this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
                     } else if (position.verticalOrigin === 'Margin') {
-                        this.viewer.clientActiveArea.y = ownerCell.y;
-                        this.viewer.clientActiveArea.y += ownerCell.topMargin;
                         this.viewer.clientActiveArea.y += HelperMethods.convertPointToPixel(position.verticalPosition);
+                        //Check whether the absolute table vertical position is top relative to the margin
+                        if (this.viewer.clientActiveArea.y < ownerCell.y || position.verticalAlignment === 'Top') {
+                            this.viewer.clientActiveArea.y = ownerCell.y;
+                        }
                     } else {
                         if (this.viewer.clientActiveArea.y + HelperMethods.convertPointToPixel(position.verticalPosition) < ownerCell.y) {
                             this.viewer.clientActiveArea.y = ownerCell.y;

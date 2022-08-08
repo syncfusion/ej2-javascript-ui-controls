@@ -921,7 +921,14 @@ export class FormDesigner {
                     } else {
                         if (formFieldsData[i].Key === element.id) {
                             formFieldsData[i].FormField.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
+                            let x = (point.x * zoomValue) + (element.actualSize.width * zoomValue)/2;
+                            x=  x - formFieldsData[i].FormField.signatureBound.width/2;
+                            let y = (point.y * zoomValue) + (element.actualSize.height * zoomValue)/2;
+                            y = y - formFieldsData[i].FormField.signatureBound.height/2;
+                            formFieldsData[i].FormField.signatureBound.x =  x;
+                            formFieldsData[i].FormField.signatureBound.y =  y;
                             this.pdfViewerBase.formFieldCollection[i].FormField.lineBound = formFieldsData[i].FormField.lineBound;
+                            this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = formFieldsData[i].FormField.signatureBound;
                         }
 
                     }

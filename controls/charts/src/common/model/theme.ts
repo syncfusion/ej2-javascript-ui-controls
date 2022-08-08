@@ -467,17 +467,63 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
         };
         break;
     case 'MaterialDark':
+        scrollStyle = {
+            backRect: '#424242',
+            thumb: '#616161',
+            circle: '#757575',
+            circleHover: '#616161',
+            arrow: '#BDBDBD',
+            grip: '#BDBDBD'
+        };
+        break;
     case 'FabricDark':
+        scrollStyle = {
+            backRect: '#282727',
+            thumb: '#333232',
+            circle: '#4A4848',
+            circleHover: '#514F4F',
+            arrow: '#ADB5BD',
+            grip: '#DADADA'
+        };
+        break;
     case 'BootstrapDark':
+        scrollStyle = {
+            backRect: '#2A2A2A',
+            thumb: '#313131',
+            circle: '#414141',
+            circleHover: '#484848',
+            arrow: '#DADADA',
+            grip: '#FFFFFF'
+        };
+        break;
     case 'Bootstrap5Dark':
+        scrollStyle = {
+            backRect: '#282D31',
+            thumb: '#3B4248',
+            circle: '#495057',
+            circleHover: '#6C757D',
+            arrow: '#A19F9D',
+            grip: '#ADB5BD'
+        };
+        break;
+    case 'HighContrast': 
+        scrollStyle = {
+            backRect: '#757575',
+            thumb: '#BFBFBF',
+            circle: '#FFFFFF',
+            circleHover: '#FFFFFF',
+            arrow: '#ADB5BD',
+            grip: '#969696'
+        };
+        break;   
     case 'TailwindDark':
         scrollStyle = {
-            backRect: '#252423',
-            thumb: '#323130',
-            circle: '#484644',
-            circleHover: '#323130',
-            arrow: '#A19F9D',
-            grip: '#A19F9D'
+            backRect: '#6B7280',
+            thumb: '#374151',
+            circle: '#4B5563',
+            circleHover: '#4B5563',
+            arrow: '#ADB5BD',
+            grip: '#D1D5DB'
         };
         break;
     case 'Fluent':
@@ -494,9 +540,9 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
         scrollStyle = {
             backRect: '#252423',
             thumb: '#323130',
-            circle: '#484644',
-            circleHover: '#323130',
-            arrow: '#A19F9D',
+            circle: '#3B3A39',
+            circleHover: '#3B3A39',
+            arrow: '#ADB5BD',
             grip: '#A19F9D'
         };
         break;

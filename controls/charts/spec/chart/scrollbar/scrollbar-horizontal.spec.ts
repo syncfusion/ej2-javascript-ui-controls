@@ -933,6 +933,97 @@ describe('Scrollbar Chart ', () => {
             expect(shadowEle.childElementCount).toBe(2);
             done();
         });
+        it('Checking Circle fill in Material Dark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#757575').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'MaterialDark';
+            chartObj.refresh();
+        });
+        it('Checking Circle fill in FabricDark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#4A4848').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'FabricDark';
+            chartObj.refresh();
+        });
+        it('Checking Circle fill in Bootstrap5Dark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#495057').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'Bootstrap5Dark';
+            chartObj.refresh();
+        });
+        it('Checking Circle fill in TailwindDark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#4B5563').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'TailwindDark';
+            chartObj.refresh();
+        });
+        it('Checking Circle fill in Bootstrap Dark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#414141').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'BootstrapDark';
+            chartObj.refresh();
+        });
+        it('Checking Circle fill in HighContrast theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#FFFFFF').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'HighContrast';
+            chartObj.refresh();
+        });
+        it('Checking Circle fill in FluentDark theme', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                trigger.draganddropEvent(ele, 150, 150, 400, 400);
+                let currentTarget: Element = document.getElementById('container_scrollBar_leftCircle_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 160, 390)));
+                expect(document.getElementById('container_scrollBar_leftCircle_primaryXAxis').getAttribute('fill') === '#3B3A39').toBe(true);
+                done();
+            }
+            chartObj.loaded = loaded;
+            chartObj.theme = 'FluentDark';
+            chartObj.refresh();
+        });
      });
 
     describe('Scrollbar Animation', () => {

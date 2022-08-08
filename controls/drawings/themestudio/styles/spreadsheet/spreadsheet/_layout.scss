@@ -109,7 +109,7 @@
       }
     }
 
-    & .e-goto-dlg {
+    & .e-goto-dlg.e-dialog {
       height: auto;
 
       & .e-dlg-content .e-goto-alert-span {
@@ -1847,7 +1847,7 @@
       }
     }
 
-    & .e-find-dlg {
+    & .e-find-dlg.e-dialog {
       height: auto;
       width: $find-dlg-width;
 
@@ -2813,7 +2813,7 @@
       width: $bigger-find-tool-dlg-width;
     }
 
-    & .e-goto-dlg {
+    & .e-goto-dlg.e-dialog {
       height: auto;
 
       & .e-btn {

@@ -1,9 +1,9 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
 import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel } from '../../workbook/index';
+import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction } from '../../workbook/index';
-import { SortEventArgs, BeforeSortEventArgs, SortOptions, applyCF, ApplyCFArgs } from '../../workbook/common/index';
+import { SortEventArgs, BeforeSortEventArgs, SortOptions, applyCF, ApplyCFArgs, getRangeIndexes } from '../../workbook/common/index';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList, ChangeEventArgs as DropdownChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
@@ -574,14 +574,27 @@ export class Sort {
      * @returns {void}
      */
     private sortCompleteHandler(args: SortEventArgs): void {
-        const range: number[] = getIndexesFromAddress(args.range);
+        let sheet: SheetModel;
+        let range: number[];
+        let sheetIdx: number = this.parent.activeSheetIndex;
+        if (args.range.includes('!')) {
+            const rangeArr: string[] = args.range.split('!');
+            sheetIdx = getSheetIndex(this.parent, rangeArr[0]);
+            sheet = getSheet(this.parent, sheetIdx);
+            range = getRangeIndexes(rangeArr[1]);
+        } else {
+            sheet = this.parent.getActiveSheet();
+            range = getRangeIndexes(args.range);
+        }
         for (let i: number = range[0]; i <= range[2]; i++) {
             for (let j: number = range[1]; j <= range[3]; j++) {
                 this.parent.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: i, colIndex: j });
             }
         }
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, true, true);
-        this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range });
+        if (sheetIdx === this.parent.activeSheetIndex && sheet.conditionalFormats && sheet.conditionalFormats.length) {
+            this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range });
+        }
         this.parent.hideSpinner();
     }
 }

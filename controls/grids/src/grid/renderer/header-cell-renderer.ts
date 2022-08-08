@@ -132,7 +132,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         if (column.allowSorting) {
             ariaAttr.sort = 'none';
         }
-        if ((this.parent.allowGrouping && column.allowGrouping) || column.allowReordering) {
+        if ((this.parent.allowGrouping && column.allowGrouping) || this.parent.allowReordering && column.allowReordering) {
             ariaAttr.grabbed = false;
         }
         node = this.extendPrepareHeader(column, node);

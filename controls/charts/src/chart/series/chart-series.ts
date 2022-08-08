@@ -2149,7 +2149,7 @@ export class Series extends SeriesBase {
             const elementId: string = chart.element.id;
             // 8 for extend border value 5 for extend size value
             const explodeValue: number = this.marker.border.width + 8 + 5;
-            const render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') ?
+            const render: SvgRenderer | CanvasRenderer = (this.type === 'Bubble') ?
                 chart.svgRenderer : chart.renderer;
             const index: string | number = this.index === undefined ? this.category : this.index;
             let markerHeight: number;
@@ -2186,7 +2186,7 @@ export class Series extends SeriesBase {
                 'transform': transform,
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
-            if (!this.chart.enableCanvas || this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') {
+            if (!this.chart.enableCanvas || this.type === 'Bubble') {
                 this.seriesElement.setAttribute("tabindex", index === 0 ? "0" : "");
                 this.seriesElement.setAttribute("style", "outline: none");
                 this.seriesElement.appendChild(this.clipRectElement);
@@ -2214,7 +2214,7 @@ export class Series extends SeriesBase {
                 }
             }
             if (this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') {
-                appendChildElement(false, chart.seriesElements, this.seriesElement, redraw);
+                appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
             }
         }
         if (

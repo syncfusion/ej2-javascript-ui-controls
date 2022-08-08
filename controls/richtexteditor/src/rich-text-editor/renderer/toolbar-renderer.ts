@@ -342,10 +342,11 @@ export class ToolbarRenderer implements IRenderer {
                     proxy.parent.notify(events.selectionRestore, {});
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     const parentNode: Node = range.startContainer.parentNode;
+                    const closestElement: Element = closest(range.startContainer.parentNode, 'table');
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                             (closest(range.startContainer.parentNode, 'td,th')) ||
                             (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
-                            && range.collapsed && args.subCommand === 'BackgroundColor') {
+                            && range.collapsed && args.subCommand === 'BackgroundColor'  && closest(closestElement,'.'+ classes.CLS_RTE)) {
                         proxy.parent.notify(events.tableColorPickerChanged,
                                             {
                                                 item: { command: args.command, subCommand: args.subCommand,

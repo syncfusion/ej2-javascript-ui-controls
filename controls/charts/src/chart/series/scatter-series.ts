@@ -134,7 +134,7 @@ export class ScatterSeries {
             previousPath = getElement(shapeOption.id).getAttribute('d');
         }
         appendChildElement(
-            false, series.seriesElement, drawSymbol(
+            series.chart.enableCanvas, series.seriesElement, drawSymbol(
                 point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
                 imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
                 series.chart.svgRenderer, series.clipRect
@@ -151,6 +151,9 @@ export class ScatterSeries {
             height: argsData.height, visible: true,
             width: argsData.width, shape: argsData.shape, imageUrl: imageURL
         };
+        if (series.chart.enableCanvas) {
+            series.chart.markerRender.render(series);
+        }
     }
     /**
      * Animates the series.

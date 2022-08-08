@@ -116,10 +116,15 @@ export class Selection {
             }
             const sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
             const mergeArgs: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
+            let isActiveCell: boolean;
             if (ele) {
                 const rowIdx: number = getCellIndexes(sheet.activeCell)[0];
                 this.parent.notify(mergedRange, mergeArgs);
-                if (rowIdx === args.rowIdx || mergeArgs.isActiveCell) {
+                if (mergeArgs.isActiveCell) {
+                    let cell: CellModel = getCell(sRange[0], sRange[1], sheet, false, true);
+                    isActiveCell = cell.rowSpan > 1 || cell.colSpan > 1;
+                }
+                if (rowIdx === args.rowIdx || isActiveCell) {
                     ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
                 } else if (rowIdx > args.rowIdx) {
                     ele.style.top = `${parseFloat(ele.style.top) + args.threshold}px`;
@@ -127,7 +132,7 @@ export class Selection {
             }
             ele = this.getSelectionElement();
             if (ele) {
-                if (mergeArgs.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) {
+                if (isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) {
                     return;
                 }
                 const rowStart: number = sRange[0];
@@ -157,17 +162,22 @@ export class Selection {
             }
             const sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
             const e: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
+            let isActiveCell: boolean;
             if (ele) {
                 this.parent.notify(mergedRange, e);
                 const colIdx: number = getCellIndexes(sheet.activeCell)[1];
-                if (colIdx === args.colIdx || e.isActiveCell) {
+                if (e.isActiveCell) {
+                    let cell: CellModel = getCell(sRange[0], sRange[1], sheet, false, true);
+                    isActiveCell = cell.rowSpan > 1 || cell.colSpan > 1;
+                }
+                if (colIdx === args.colIdx || isActiveCell) {
                     ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
                 } else if (colIdx > args.colIdx) {
                     ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
                 }
             }
             ele = this.getSelectionElement();
-            if (!ele || e.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) {
+            if (!ele || isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) {
                 return;
             }
             const colStart: number = sRange[1]; const colEnd: number = sRange[3];

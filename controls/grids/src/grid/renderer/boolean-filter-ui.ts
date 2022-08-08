@@ -73,7 +73,7 @@ export class BooleanFilterUI implements IFilterMUI {
     public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
         const drpuiObj: DropDownList = (<EJ2Intance>document.querySelector('#bool-ui-' + args.column.uid)).ej2_instances[0];
         if (!isNullOrUndefined(args.filteredValue) ) {
-            drpuiObj.text = args.filteredValue as string;
+            drpuiObj.value = args.filteredValue as string;
         }
     }
 

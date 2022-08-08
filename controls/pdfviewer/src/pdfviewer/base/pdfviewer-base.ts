@@ -26,7 +26,7 @@ import { TextSearch } from '../text-search';
 import { BookmarkView } from '../bookmark-view';
 import { ThumbnailView } from '../thumbnail-view';
 import { Magnification } from '../magnification';
-import { TextSelection } from '../text-selection';
+import { IRectangle, TextSelection } from '../text-selection';
 import { FormFields } from '../form-fields';
 /**
  * The `ISize` module is used to handle page size property of PDF viewer.
@@ -3075,15 +3075,24 @@ export class PdfViewerBase {
      */
     // eslint-disable-next-line
     public isClickWithinSelectionBounds(event: any): boolean {
+        var bounds: IRectangle;
         let isWithin: boolean = false;
+        var diCount = 5;
+        var negativeCount: number = ((this.currentPageNumber - diCount) < 0) ? 0 : this.currentPageNumber - diCount;
+        var positiveCount: number = ((this.currentPageNumber - diCount) > this.pageCount) ? this.pageCount : this.currentPageNumber + diCount;
         if (this.pdfViewer.textSelectionModule) {
-            const bounds: ClientRect = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(this.currentPageNumber - 1);
-            if (bounds) {
-                const currentBound: ClientRect = bounds;
-                if (this.getHorizontalValue(currentBound.left) < event.clientX && this.getHorizontalValue(currentBound.right) >
-                    event.clientX && this.getVerticalValue(currentBound.top) < event.clientY &&
-                    this.getVerticalValue(currentBound.bottom) > event.clientY) {
-                    isWithin = true;
+            for (var i:number = negativeCount; i < positiveCount; i++) {
+                if (i >= 0) {
+                    bounds = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(i);
+                    if (bounds) {
+                        const currentBound: IRectangle = bounds;
+                        if (this.getHorizontalValue(currentBound.left, i) < event.clientX && this.getHorizontalValue(currentBound.right, i) >
+                            event.clientX && this.getVerticalValue(currentBound.top, i) < event.clientY &&
+                            this.getVerticalValue(currentBound.bottom, i) > event.clientY) {
+                            isWithin = true;
+                            break;
+                        }
+                    }
                 }
             }
             if ((Browser.isIE || Browser.info.name === 'edge') && bounds) {
@@ -3105,17 +3114,18 @@ export class PdfViewerBase {
         return (value - pageBounds.top);
     }
 
-    private getHorizontalValue(value: number): number {
-        const pageDiv: HTMLElement = this.getElement('_pageDiv_' + (this.currentPageNumber - 1));
+    private getHorizontalValue(value: number, pageNumber: number): number {
+        const pageDiv: HTMLElement = this.getElement('_pageDiv_' + (pageNumber || this.currentPageNumber - 1));
         const pageBounds: ClientRect = pageDiv.getBoundingClientRect();
         return (value * this.getZoomFactor()) + pageBounds.left;
     }
 
-    private getVerticalValue(value: number): number {
-        const pageDiv: HTMLElement = this.getElement('_pageDiv_' + (this.currentPageNumber - 1));
+    private getVerticalValue(value: number, pageNumber: number): number {
+        const pageDiv: HTMLElement = this.getElement('_pageDiv_' + (pageNumber || this.currentPageNumber - 1));
         const pageBounds: ClientRect = pageDiv.getBoundingClientRect();
         return (value * this.getZoomFactor()) + pageBounds.top;
     }
+
 
     /**
      * @private

@@ -575,3 +575,4 @@ describe('To check whether revisions are added after pressing enter inside table
 //         setTimeout(function () { expect(isimage).toBe(true); }, 300);
 //     });
 // });
+

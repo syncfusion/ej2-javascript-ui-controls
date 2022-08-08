@@ -198,7 +198,7 @@ export class DateProcessor {
             const cloneDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneDate);
             if (hour > this.parent.defaultEndTime) {
                 this.setTime(this.parent.defaultEndTime, cloneDate);
-            } else if (hour <= this.parent.defaultStartTime && !ganttProp.isMilestone) {
+            } else if (hour <= this.parent.defaultStartTime && !isNullOrUndefined(ganttProp) && !ganttProp.isMilestone) {
                 cloneDate.setDate(cloneDate.getDate() - 1);
                 this.setTime(this.parent.defaultEndTime, cloneDate);
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
@@ -1226,7 +1226,13 @@ export class DateProcessor {
             sortDates(taskRange);
 
             if (!minStartDate || !maxEndDate) {
-                minStartDate = isNullOrUndefined(minStartDate) ? this.getDateFromFormat(new Date()) : minStartDate;
+                if (!minStartDate) {
+                    minStartDate = isNullOrUndefined(minStartDate) ? this.getDateFromFormat(new Date()) : minStartDate;
+                    minStartDate.setHours(0,0,0,0);
+                }
+                else {
+                    minStartDate = isNullOrUndefined(minStartDate) ? this.getDateFromFormat(new Date()) : minStartDate;
+                }
                 maxEndDate = this.getDateFromFormat(new Date(minStartDate.getTime()));
                 maxEndDate.setDate(maxEndDate.getDate() + 20);
             }

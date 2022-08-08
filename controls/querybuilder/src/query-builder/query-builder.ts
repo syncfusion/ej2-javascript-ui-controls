@@ -850,7 +850,7 @@
  
      private selectBtn(target: Element, event: MenuEventArgs): void {
          if (event.name === 'beforeOpen') {
-             if (this.showButtons.groupInsert) {
+             if (this.showButtons.groupInsert || isNullOrUndefined(this.showButtons.groupInsert)) {
                  if (this.element.querySelectorAll('.e-group-container').length >= this.maxGroupCount + 1) {
                      addClass([event.element.querySelector('li span.e-addgroup').parentElement], 'e-button-hide');
                  } else {
@@ -1249,7 +1249,7 @@
          tempElem = this.createElement('div', { attrs: { class: 'e-rule-value' } });
          fieldElem.appendChild(tempElem);
          tempElem = this.createElement('div', { attrs: { class: 'e-rule-value-delete' } });
-         if (this.showButtons.ruleDelete) {
+         if (this.showButtons.ruleDelete || isNullOrUndefined(this.showButtons.ruleDelete)) {
              clsName = 'e-removerule e-rule-delete e-css e-btn e-small';
          } else {
              clsName = 'e-removerule e-rule-delete e-css e-btn e-small e-button-hide';
@@ -1305,7 +1305,12 @@
                  this.btnGroupId++;
              }
              if (isGroup) {
-                 const clsName: string = this.showButtons.groupDelete ? 'e-deletegroup' : 'e-deletegroup e-button-hide';
+                 let clsName: string;
+                 if (this.showButtons.groupDelete || isNullOrUndefined(this.showButtons.groupDelete)){
+                     clsName = 'e-deletegroup';
+                 } else {
+                     clsName = 'e-deletegroup e-button-hide';
+                 }
                  dltGroupBtn = this.createElement('button', { attrs: { type: 'button', class: clsName } });
                  const button: Button = new Button({ iconCss: 'e-icons e-delete-icon', cssClass: 'e-small e-round' });
                  button.appendTo(dltGroupBtn);

@@ -3457,11 +3457,6 @@
       text-overflow: ellipsis;
     }
 
-    & .e-stackedheader .e-columnheader.e-wrap .e-headercelldiv,
-    & .e-stackedheader .e-columnheader.e-wrap .e-stackedheadercelldiv {
-      max-height: $grid-rowcell-wrap-max-height;
-    }
-
     & .e-columnheader.e-wrap .e-sortfilterdiv,
     &.e-wrap .e-columnheader .e-sortfilterdiv {
       margin: $grid-header-wrap-sortfilter-div-margin;

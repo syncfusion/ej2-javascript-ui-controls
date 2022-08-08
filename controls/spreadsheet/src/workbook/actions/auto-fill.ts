@@ -240,11 +240,11 @@ export class WorkbookAutoFill {
                 prop = { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
                     uiRefresh: true, pvtExtend: true };
                 updateCell(this.parent, sheet, prop);
-                if (!cfRefreshAll) {
-                    cfRefreshAll = prop.isFormulaDependent;
-                }
                 if (cf && !cfRefreshAll) {
-                    updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                    cfRefreshAll = prop.isFormulaDependent;
+                    if (!cfRefreshAll) {
+                        updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                    }
                 }
                 cellProps = {};
                 j++;
@@ -312,11 +312,11 @@ export class WorkbookAutoFill {
                 prop = { cell: cellProperty, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true, uiRefresh: true,
                     pvtExtend: true };
                 updateCell(this.parent, sheet, prop);
-                if (!cfRefreshAll) {
-                    cfRefreshAll = prop.isFormulaDependent;
-                }
                 if (cf && !cfRefreshAll) {
-                    updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                    cfRefreshAll = prop.isFormulaDependent;
+                    if (!cfRefreshAll) {
+                        updateCFModel(cf, cfRule, cellIdx.rowIndex, cellIdx.colIndex);
+                    }
                 }
                 cellProperty = {};
                 j++;

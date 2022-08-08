@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.2.40 (2022-07-26)
+
+### Diagram
+
+#### Bug fixes
+
+- `#I388692` - Now connectors are properly connected to the node after save and load.
+- `#I384554` - Now scroll settings offset are updated properly dynamically.
+
 ## 20.2.39 (2022-07-19)
 
 - `FB36050` - Now, oldValue & newValue argument of property change event updated properly while change order for nodes.

@@ -2692,6 +2692,11 @@ export class Drawing {
                 }
             }
         }
+        if (actualObject&& actualObject.shapeAnnotationType === "SignatureText"&& actualObject.wrapper) {
+            if (actualObject.wrapper.children && actualObject.wrapper.children.length > 1) {
+                actualObject.wrapper.children[1].isDirt = true;
+            }
+        }
         actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (actualObject && actualObject.formFieldAnnotationType) {

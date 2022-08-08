@@ -3185,6 +3185,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         case 'cut':
             this.onCut();
             break;
+        case 'tab':
+            if (this.iframeSettings.enable) {
+                this.isBlur = true;
+            }
+            break;
         }
         if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut' || e.event.action === 'delete')) {
             e.callBack({

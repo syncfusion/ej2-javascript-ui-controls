@@ -1501,12 +1501,13 @@ export class Signature {
                         } else {
                             if (pageAnnotationObject.annotations[z].shapeAnnotationType === 'SignatureText' && !this.checkDefaultFont(pageAnnotationObject.annotations[z].fontFamily)) {
                                 const signTypeCanvas: HTMLCanvasElement = createElement('canvas') as HTMLCanvasElement;
-                                signTypeCanvas.width = 150;
-                                signTypeCanvas.height = pageAnnotationObject.annotations[z].fontSize * 2;
+                                const bounds= JSON.parse(pageAnnotationObject.annotations[z].bounds);
+                                signTypeCanvas.width = (bounds && bounds.width)||150;
+                                signTypeCanvas.height = (bounds && bounds.height) || pageAnnotationObject.annotations[z].fontSize * 2;
                                 // eslint-disable-next-line
                                 const canvasContext: any = signTypeCanvas.getContext('2d');
                                 const x: number = signTypeCanvas.width / 2;
-                                const y: number = (signTypeCanvas.height / 2) - 10;
+                                const y: number = (signTypeCanvas.height / 2) + pageAnnotationObject.annotations[z].fontSize / 2- 10;
                                 canvasContext.textAlign = 'center';
                                 canvasContext.font = pageAnnotationObject.annotations[z].fontSize + 'px ' + pageAnnotationObject.annotations[z].fontFamily;
                                 canvasContext.fillText(pageAnnotationObject.annotations[z].data, x, y);

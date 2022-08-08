@@ -1533,7 +1533,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setCSSClass(oldCSSClass?: string): void {
-        if (this.cssClass) {
+         if (this.cssClass) {
             addClass([this.element], this.cssClass.split(' '));
         }
         if (oldCSSClass) {

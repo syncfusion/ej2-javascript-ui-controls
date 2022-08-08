@@ -21,6 +21,12 @@ export const loaded: string = 'loaded';
  */
 export const click: string = 'click';
 /**
+ * Specifies the maps onclick event name.
+ *
+ * @private
+ */
+export const onclick: string = 'onclick';
+/**
  * Specifies the maps right click event name.
  *
  * @private

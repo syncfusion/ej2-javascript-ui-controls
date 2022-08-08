@@ -394,13 +394,23 @@ export class TimelineYear extends Year {
     }
 
     public scrollToDate(scrollDate: Date): void {
-        if (this.parent.activeViewOptions.group.resources.length === 0) {
-            const date: number = +new Date(util.resetTime(scrollDate));
-            const element: HTMLElement = this.element.querySelector('[data-date="' + date + '"]');
-            if (element) {
-                this.getScrollableElement().scrollLeft = element.offsetLeft;
-                this.getScrollableElement().scrollTop = element.offsetTop;
+        let date : number;
+        if (this.parent.activeViewOptions.group.resources !== null && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            date = +new Date(util.resetTime(util.firstDateOfMonth(scrollDate)));
+        } else {
+            date = +new Date(util.resetTime(scrollDate));
+        }
+        const element: HTMLElement = this.element.querySelector('[data-date="' + date + '"]');
+        if (element) {
+            const wrap: Element = this.getScrollableElement();
+            if (this.parent.enableRtl) {
+                const conTable: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+                wrap.scrollLeft = -(conTable.offsetWidth - element.offsetLeft - element.offsetWidth);
+            } else {
+                wrap.scrollLeft = element.offsetLeft;
             }
+            wrap.scrollTop = element.offsetTop;
         }
     }
 

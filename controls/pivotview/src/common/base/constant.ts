@@ -20,6 +20,8 @@ export const afterPivotTableRender: string = 'afterPivotTableRender';
 /** @hidden */
 export const beforeExport: string = 'beforeExport';
 /** @hidden */
+export const exportComplete : string ='exportComplete';
+/** @hidden */
 export const excelHeaderQueryCellInfo: string = 'excelHeaderQueryCellInfo';
 /** @hidden */
 export const pdfHeaderQueryCellInfo: string = 'pdfHeaderQueryCellInfo';

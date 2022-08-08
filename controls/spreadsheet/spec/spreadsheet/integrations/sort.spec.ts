@@ -750,4 +750,38 @@ describe('Spreadsheet sorting module ->', () => {
             });
         });
     });
+
+    describe('EJ2-62223->', () => {
+        beforeEach((done: Function) => {
+            dataSource();
+            helper.initializeSpreadsheet({
+                created: () => {
+                    const spreadsheet: Spreadsheet = helper.getInstance()
+                    spreadsheet.updateCell({ value: 'Value', style: { fontWeight: 'bold' } }, 'A1');
+                    spreadsheet.updateCell({ value: 'Desc', style: { fontWeight: 'bold' } }, 'B1');
+                    spreadsheet.updateCell({ value: 'abc' }, 'A2');
+                    spreadsheet.updateCell({ value: 'xyz' }, 'A3');
+                    spreadsheet.updateCell({ value: 'Bundle a' }, 'B2');
+                    spreadsheet.updateCell({ value: 'Bundle bbbb', wrap: true }, 'B3');
+                }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Exception while applying sort descending when there is no CF in sheet', (done: Function) => {
+            const activeCell: HTMLElement = helper.getElementFromSpreadsheet('.e-active-cell');
+            expect(activeCell.style.height).toBe('20px');
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(2)');
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('xyz');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('xyz');
+                    expect(activeCell.style.height).toBe('20px');
+                    done();
+                });
+            });
+        });
+    });
 });

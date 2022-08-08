@@ -114,7 +114,7 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.text = this.formattedText;
                 this.headerText = argsData.headerText;
                 this.createTooltip(this.chart, isFirst, point.point.symbolLocation,
-                                   point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect, false,
+                    point.series.clipRect, point.point, !this.chart.tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
                                    null, point.point, this.template ? argsData.template : '');
             } else {
                 this.removeHighlight();

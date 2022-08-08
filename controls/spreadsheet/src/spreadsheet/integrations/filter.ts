@@ -949,7 +949,8 @@ export class Filter {
         } else {
             filteredList = groupedData;
             changeData();
-            treeViewObj.setProperties({ checkedNodes: checkedNodes });
+            treeViewObj.checkedNodes = checkedNodes;
+            treeViewObj.dataBind();
         }
     }
 

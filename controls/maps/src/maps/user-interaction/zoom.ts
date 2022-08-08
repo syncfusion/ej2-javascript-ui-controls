@@ -459,7 +459,7 @@ export class Zoom {
                                         this.maps.navigationLineModule.renderNavigation(
                                             this.currentLayer, this.maps.tileZoomLevel, this.index
                                         ),
-                                        layerElement.children[0]
+                                        layerElement.children[1]
                                     );
                                 } else {
                                     layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index));
@@ -564,15 +564,16 @@ export class Zoom {
                                     }
                                 }
                             }
-                        } else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1) {
+                        } else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1 && !isNullOrUndefined(this.maps.layers[this.index])) {
                             this.intersect = []; this.maps.zoomLabelPositions = [];
                             this.maps.zoomLabelPositions = this.maps.dataLabelModule.dataLabelCollections;
+                            let labelAnimate: boolean = !this.maps.isTileMap && animate;
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 if (currentEle.childNodes[k]['id'].indexOf('_LabelIndex_') > -1) {
                                     const labelIndex: number = parseFloat(currentEle.childNodes[k]['id'].split('_LabelIndex_')[1].split('_')[0]);
                                     this.zoomshapewidth = (currentEle.childNodes[k] as Element).getBoundingClientRect();
                                     this.maps.zoomShapeCollection.push(this.zoomshapewidth);
-                                    this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate);
+                                    this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', labelAnimate);
                                     const dataLabel: DataLabelSettingsModel = this.maps.layers[this.index].dataLabelSettings;
                                     const border: BorderModel = dataLabel.border;
                                     if (k > 0 && border['width'] > 1) {
@@ -1139,6 +1140,7 @@ export class Zoom {
                         if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                             document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
                         }
+                        this.maps.isAddLayer = false;
                     }, animationDuration);
                 }
             }

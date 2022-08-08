@@ -85,7 +85,7 @@ export class BubbleSeries {
                         marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString(),
                         series.chart.svgRenderer, series.clipRect
                     );
-                    appendChildElement(false, series.seriesElement, element, redraw);
+                    appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw);
                     bubblePoint.regions.push(
                         new Rect(
                             bubblePoint.symbolLocations[0].x - segmentRadius,
@@ -98,6 +98,9 @@ export class BubbleSeries {
                         height: argsData.height, visible: true,
                         shape: 'Circle', width: argsData.width
                     };
+                    if (series.chart.enableCanvas) {
+                        series.chart.markerRender.render(series);
+                    }
                     startLocation = redraw ? bubblePoint.symbolLocations[0] : null;
                     if (redraw) {
                         animateRedrawElement(element, 300, startLocation, bubblePoint.symbolLocations[0], 'cx', 'cy');

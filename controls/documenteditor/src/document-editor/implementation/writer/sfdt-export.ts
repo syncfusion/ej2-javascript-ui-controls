@@ -604,7 +604,11 @@ export class SfdtExport {
             !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets)) {
             next = (paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets[0].childWidgets[0] as BlockWidget;
         }
-        return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
+        if (this.isExport) {
+            return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
+        } else {
+            return next;
+        }
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         this.contentInline = [];
@@ -1415,6 +1419,9 @@ export class SfdtExport {
     private writeRowInternal(rowWidget: TableRowWidget, rows: any): TableRowWidget {
         if (!(rowWidget instanceof TableRowWidget)) {
             return rowWidget;
+        }
+        if (!rowWidget.isCellsHaveSameWidthUnit()) { 
+            rowWidget.updateUniformWidthUnitForCells();
         }
         let row: any = this.createRow(rowWidget);
         rows.push(row);

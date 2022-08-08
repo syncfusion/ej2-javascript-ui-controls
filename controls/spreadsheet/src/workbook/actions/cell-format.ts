@@ -441,11 +441,11 @@ export class WorkbookCellFormat {
                         if (isValExist) {
                             evtArgs = { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx, sheetIndex: sheetIdx };
                             this.parent.notify(workbookFormulaOperation, evtArgs);
-                            if (!cfRefreshAll) {
-                                cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
-                            }
                             if (cf && !cfRefreshAll) {
-                                updateCFModel(cf, cfRule, sRowIdx, sColIdx);
+                                cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
+                                if (!cfRefreshAll) {
+                                    updateCFModel(cf, cfRule, sRowIdx, sColIdx);
+                                }
                             }
                         }
                         break;
@@ -458,7 +458,7 @@ export class WorkbookCellFormat {
                         if (isValExist) {
                             evtArgs = { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx, sheetIndex: sheetIdx };
                             this.parent.notify(workbookFormulaOperation, evtArgs);
-                            if (!cfRefreshAll) {
+                            if (cf && !cfRefreshAll) {
                                 cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
                             }
                         }

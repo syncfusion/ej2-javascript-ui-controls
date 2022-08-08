@@ -1269,7 +1269,7 @@ export class LayerPanel {
                 } else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
-                        if (!isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                        if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
                             document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
                                 this.mapObject.element.id + '_animated_tiles_old';
                         }
@@ -1278,7 +1278,7 @@ export class LayerPanel {
                     } else {
                         animateElement = element ? element.children[0] as HTMLElement : null;
                     }
-                }
+                }                
                 let id: number = 0;
                 for (const tile of this.tiles) {
                     const imgElement: HTMLElement = createElement('img');

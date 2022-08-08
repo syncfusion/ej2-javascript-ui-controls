@@ -1890,7 +1890,7 @@ export class Editor {
      * @returns {void}
      */
     /* eslint-disable  */
-    public insertTextInternal(text: string, isReplace: boolean, revisionType?: RevisionType): void {
+    public insertTextInternal(text: string, isReplace: boolean, revisionType?: RevisionType, allowLayout?: boolean): void {
         if (text.indexOf('\r') >= 0 || text.indexOf('\n') >= 0) {
             if (text === '\r' || text === '\n' || text === '\r\n') {
                 this.onEnter();
@@ -1913,6 +1913,9 @@ export class Editor {
             if (maxLength !== 0 && resultText.length >= maxLength) {
                 return;
             }
+        }
+        if (isReplace) {
+            this.documentHelper.layout.allowLayout = !isNullOrUndefined(allowLayout) ? allowLayout : true;
         }
         let selection: Selection = this.documentHelper.selection;
         let insertPosition: TextPosition; let isRemoved: boolean = true;
@@ -2105,6 +2108,7 @@ export class Editor {
                     this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
                 }
             }
+            this.documentHelper.layout.allowLayout = true;
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
             if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
@@ -6351,6 +6355,7 @@ export class Editor {
                     newCell.index = j;
                     newCell.rowIndex = row.rowIndex;
                     newCell.containerWidget = row;
+                    newCell.cellFormat.copyFormat(startCell.cellFormat);
                     newCell.cellFormat.rowSpan = 1;
                     if (isNullOrUndefined(startParagraph)) {
                         startParagraph = this.selection.getFirstParagraph(newCell);
@@ -6369,17 +6374,25 @@ export class Editor {
 
     private copyCellFormats(row: TableRowWidget, index: number) {
         let newCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
-        let newCellPara: ParagraphWidget = newCell.childWidgets[0] as ParagraphWidget;
-        (index == (row.childWidgets.length - 1)) ? --index : ++index;
-        let nextCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
-        let nextCellpara: ParagraphWidget = nextCell.childWidgets[0] as ParagraphWidget;
-        let nextCellTextBox: TextElementBox = (nextCellpara.childWidgets[0] as LineWidget).children[0] as TextElementBox
-        newCellPara.paragraphFormat.copyFormat(nextCellpara.paragraphFormat);
-        newCell.cellFormat.copyFormat(nextCell.cellFormat);
-        if (!isNullOrUndefined(nextCellTextBox)) {
-            newCellPara.characterFormat.copyFormat(nextCellTextBox.characterFormat);
-        } else {
-            newCellPara.characterFormat.copyFormat(nextCellpara.characterFormat);
+        if (!isNullOrUndefined(newCell)) {
+            let newCellPara: ParagraphWidget = newCell.childWidgets[0] as ParagraphWidget;
+            (index == (row.childWidgets.length - 1)) ? --index : ++index;
+            let nextCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
+            let nextCellpara: ParagraphWidget = nextCell.childWidgets[0] as ParagraphWidget;
+            let line: LineWidget;
+            let nextCellTextBox: TextElementBox;
+            if (nextCellpara.childWidgets.length > 0) {
+                line = nextCellpara.childWidgets[0] as LineWidget;
+                if (line.children.length > 0) {
+                    nextCellTextBox = line.children[0] as TextElementBox;
+                }
+            }
+            newCellPara.paragraphFormat.copyFormat(nextCellpara.paragraphFormat);
+            if (!isNullOrUndefined(nextCellTextBox)) {
+                newCellPara.characterFormat.copyFormat(nextCellTextBox.characterFormat);
+            } else {
+                newCellPara.characterFormat.copyFormat(nextCellpara.characterFormat);
+            }
         }
     }
 
@@ -9920,10 +9933,12 @@ export class Editor {
         this.documentHelper.clearContent();
         let startSectionIndex: number = startPosition.paragraph.bodyWidget.sectionIndex;
         let endSectionIndex: number = endPosition.paragraph.bodyWidget.sectionIndex;
+        let isMultipleSection: boolean = false;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             if (this.documentHelper.pages[i].bodyWidgets[0].index === startSectionIndex) {
                 startPageIndex = i;
-                break;
+            } else {
+                isMultipleSection = true;
             }
         }
         for (let i: number = startPageIndex; i < this.documentHelper.pages.length; i++) {
@@ -9937,6 +9952,10 @@ export class Editor {
                 endPageIndex = i - 1;
                 break;
             }
+        }
+        if(isMultipleSection && property == "differentOddAndEvenPages" && startPosition.paragraph.isInHeaderFooter){
+            startPageIndex = 0;
+            endPageIndex = this.documentHelper.pages.length - 1;
         }
         // let startPageIndex: number = this.documentHelper.pages.indexOf((selection.start.paragraph.containerWidget as BodyWidget).page);
         // let endPageIndex: number = this.documentHelper.pages.indexOf((selection.end.paragraph.containerWidget as BodyWidget).page);
@@ -11054,7 +11073,7 @@ export class Editor {
             endOffset = this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget);
         }
         // If previous widget is splitted paragraph, combine paragraph widget.
-        let block: BlockWidget = paragraph.previousRenderedWidget ?
+        let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
 
         if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&

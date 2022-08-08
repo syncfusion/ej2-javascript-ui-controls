@@ -31,7 +31,6 @@ export class Selection {
     private addEventListener(): void {
         if (!this.maps.isDestroyed) {
             this.maps.on(click, this.mouseClick, this);
-            this.maps.on(Browser.touchEndEvent, this.mouseClick, this);
         }
     }
     /**
@@ -44,7 +43,6 @@ export class Selection {
             return;
         }
         this.maps.off(click, this.mouseClick);
-        this.maps.off(Browser.touchEndEvent, this.mouseClick);
     }
     private mouseClick(targetElement: Element): void {
         if (!isNullOrUndefined(targetElement['type']) && targetElement['type'].indexOf('touch') !== -1 &&

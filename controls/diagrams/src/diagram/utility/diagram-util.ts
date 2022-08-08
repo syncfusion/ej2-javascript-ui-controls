@@ -65,6 +65,7 @@ import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objec
 import { ConnectorFixedUserHandleModel, NodeFixedUserHandleModel } from '../objects/fixed-user-handle-model';
 import { ConnectorFixedUserHandle } from '../objects/fixed-user-handle';
 import { SymbolPaletteModel } from '../../symbol-palette';
+import { LayerModel } from '../diagram/layer-model';
 
 
 
@@ -1443,6 +1444,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.getDescription = getDescription;
     diagram.scrollSettings = dataObj.scrollSettings || {};
     diagram.commandManager = dataObj.commandManager || {};
+    sortLayerObjects(dataObj);
     diagram.layers = dataObj.layers || [];
     diagram.rulerSettings.horizontalRuler.arrangeTick = arrangeTickHorizontal;
     diagram.rulerSettings.verticalRuler.arrangeTick = arrangeTickVertical;
@@ -1514,6 +1516,49 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.swimlaneZIndexTable = {};
     return dataObj;
 }
+
+/**
+ * EJ2-61537 - Connectors not connected to the node after save and load
+ * when we add nodes and connectors at runtime.
+ * */
+ /**
+ * Sort the nodes and connectors in the layers.
+ * 
+ * @param {Diagram} dataObj - provide the model value.
+ * @private 
+ * */ 
+  function sortLayerObjects(dataObj:Diagram) : void
+  {
+      let i,j,k:number; let layers: LayerModel[]=[];
+      for(i=0;i<dataObj.layers.length;i++)
+      {
+          for(j=0;j<dataObj.layers[i].objects.length;j++)
+          {
+              for(k=0;k<dataObj.nodes.length;k++)
+              {
+                  if(dataObj.layers[i].objects[j]===dataObj.nodes[k].id)
+                  {
+                     
+                      layers.push(dataObj.layers[i].objects[j] as LayerModel);
+                  }
+              }
+          }
+          for(j=0;j<dataObj.layers[i].objects.length;j++)
+          {
+              for(k=0;k<dataObj.connectors.length;k++)
+              {
+                  if(dataObj.layers[i].objects[j]===dataObj.connectors[k].id)
+                  {
+                     
+                      layers.push(dataObj.layers[i].objects[j] as LayerModel);
+                  }
+              }
+          }
+          dataObj.layers[i].objects = layers as string[];
+          layers = [];
+      }
+  }
+
 /* eslint-enable */
 
 /**

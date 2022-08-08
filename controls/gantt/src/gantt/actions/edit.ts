@@ -112,7 +112,7 @@ export class Edit {
                 if (column) {
                     if (column.field === this.parent.taskFields.id) {
                         this.updateIDColumnEditParams(column);
-                    } else if (column.field === this.parent.taskFields.progress) {
+                    } else if (column.field === this.parent.taskFields.progress && isNullOrUndefined(column.edit)) {
                         this.updateProgessColumnEditParams(column);
                     } else if (column.field === this.parent.taskFields.resourceInfo) {
                         this.updateResourceColumnEditor(column);
@@ -2079,6 +2079,7 @@ export class Edit {
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         setValue('action', args.action, eventArgs);
+        this.parent.isOnDelete = false;
         this.parent.trigger('actionComplete', eventArgs);
         this.deletedTaskDetails = [];
         this.parent.initiateEditAction(false);

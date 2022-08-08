@@ -1887,6 +1887,7 @@ export class DocumentHelper {
             const textPosition: TextPosition = this.owner.selection.end;
             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                 || this.owner.imageResizerModule.isShapeResize) {
+                this.skipScrollToPosition = true;
                 this.owner.selection.moveTextPosition(touchPoint, textPosition, true);
             }
         }
@@ -1898,6 +1899,7 @@ export class DocumentHelper {
             const textPosition: TextPosition = this.owner.selection.end;
             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                 || this.owner.imageResizerModule.isShapeResize) {
+                this.skipScrollToPosition = true;
                 this.owner.selection.moveTextPosition(touchPoint, textPosition, true);
             }
     }
@@ -3601,6 +3603,18 @@ export class DocumentHelper {
             'skipBottomBorder': skipBottomBorder
         };
     }
+    /**
+     * @private
+     */
+    public isPageInVisibleBound(page: Page, pageTop: number): boolean {
+        let height: number = this.visibleBounds.height;
+        let vertical: number = this.viewerContainer.scrollTop;
+        let pageH: number = page.boundingRectangle.height * this.zoomFactor;
+        let isTopFit: boolean = pageTop >= vertical && pageTop <= vertical + height;
+        let isBottomFit: boolean = pageTop + pageH >= vertical && pageTop + pageH <= vertical + height;
+        let isMiddleFit: boolean = pageTop <= vertical && pageTop + pageH >= vertical + height;
+        return isTopFit || isBottomFit || isMiddleFit;
+    }
 }
 /**
  * @private
@@ -4411,18 +4425,12 @@ export class PageLayoutViewer extends LayoutViewer {
     public updateVisiblePages(): void {
         // Clears the container first.
         this.visiblePages = [];
-        let height: number = this.documentHelper.visibleBounds.height;
-        let vertical: number = this.documentHelper.viewerContainer.scrollTop;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             let page: Page = this.documentHelper.pages[i];
             let y: number = (page.boundingRectangle.y - this.pageGap * (i + 1)) * this.documentHelper.zoomFactor + this.pageGap * (i + 1);
-            let pageH: number = page.boundingRectangle.height * this.documentHelper.zoomFactor;
             let left: number = page.boundingRectangle.x;
-            let isTopFit: boolean = y >= vertical && y <= vertical + height;
-            let isBottomFit: boolean = y + pageH >= vertical && y + pageH <= vertical + height;
-            let isMiddleFit: boolean = y <= vertical && y + pageH >= vertical + height;
             //UI Virtualization
-            if (isTopFit || isBottomFit || isMiddleFit) {
+            if (this.documentHelper.isPageInVisibleBound(page, y)) {
                 this.addVisiblePage(page, left, y);
             }
         }

@@ -110,7 +110,7 @@ export class DataLabel {
         const zoomTransPoint : Point = this.maps.zoomTranslatePoint; let shapeWidth: number;
         const scaleZoomValue : number = !isNullOrUndefined(this.maps.scale)  ? Math.floor(this.maps.scale) : 1;
         const zoomLabelsPosition : boolean = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
-        this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable; this.maps.translateType = 'labels';
+        this.maps.zoomShapeCollection.length > 0 && !this.maps.isAddLayer : this.maps.zoomSettings.enable; this.maps.translateType = 'labels';
         for (let j: number = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];

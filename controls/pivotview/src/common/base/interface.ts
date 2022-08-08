@@ -1305,4 +1305,16 @@ export interface HeadersSortEventArgs {
     members?: string[] | number[];
     /** Defines an option to restrict the unwanted custom sorting operation. By default, the value is in 'false' state. */
     IsOrderChanged?: boolean;
-} 
+}
+
+/**
+ * The export complete event arguments provide the necessary information about the exported data after completing the file export.
+ */
+export interface ExportCompleteEventArgs {
+    /** Defines the current export type such as PDF, Excel, and CSV. */
+    type?: string;
+    /** Defines the promise object for blob data. */
+    promise?: Promise<{
+        blobData: Blob;
+    }>;
+}

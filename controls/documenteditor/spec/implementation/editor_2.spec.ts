@@ -3293,3 +3293,50 @@ describe('Insert Table paragraph format inheritance validation', () => {
         expect(paragraph.paragraphFormat.firstLineIndent).toBe(0);
     });
 });
+describe('Different Odd & Even Pages not working on v20.1.52', () => {
+    let editor: DocumentEditor = undefined;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+            DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            editor.appendTo('#container');
+        });
+        afterAll((done) => {
+            editor.destroy();
+            document.body.removeChild(document.getElementById('container'));
+            editor = undefined;
+            setTimeout(function () {
+                document.body.innerHTML = '';
+                done();
+            }, 1000);
+        });
+        it("Different Odd & Even Pages not working on v20.1.52",()=>{
+            console.log("Different Odd & Even Pages not working on v20.1.52");
+            editor.openBlank();
+            let i = 0;
+            while(i<5){
+                editor.editor.insertSectionBreak();
+                i++;
+            }
+            editor.selection.goToPage(5);
+            editor.selection.goToHeader();
+            editor.editor.updateSectionFormat("differentOddAndEvenPages",true);
+            editor.editor.insertText("hello");
+            editor.selection.goToPage(1);
+            editor.selection.goToHeader();
+            let text: any = (editor.selection.start.currentWidget.children[0] as TextElementBox).text;
+            expect(text).toBe("hello");
+            editor.selection.goToPage(2);
+            editor.selection.goToHeader();
+            expect(editor.selection.start.currentWidget.children.length).toBe(0);
+            editor.selection.goToPage(3);
+            editor.selection.goToHeader();
+            text = (editor.selection.start.currentWidget.children[0] as TextElementBox).text;
+            expect(text).toBe("hello");
+         });
+    });

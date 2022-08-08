@@ -323,7 +323,7 @@ export class FormDesignerToolbar {
                     let addInitialSpan: HTMLElement = createElement('button');
                     addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
                     addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('SignatureFieldDialogHeaderText');
-                    addInitialSpan.style.width = "130px";
+                    this.pdfViewer.locale === 'en-US' ? addInitialSpan.style.width = "130px" : addInitialSpan.style.width = "auto";
                     addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
@@ -340,7 +340,7 @@ export class FormDesignerToolbar {
                     let addInitialSpan: HTMLElement = createElement('button');
                     addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
                     addInitialSpan.textContent = this.pdfViewer.localeObj.getConstant('InitialFieldDialogHeaderText');
-                    addInitialSpan.style.width = "130px";
+                    this.pdfViewer.locale === 'en-US' ? addInitialSpan.style.width = "130px" : addInitialSpan.style.width = "auto";
                     addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);

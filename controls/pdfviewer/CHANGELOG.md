@@ -2,6 +2,52 @@
 
 ## [Unreleased]
 
+## 20.2.43 (2022-08-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#F176277` - Context menus will now open all the pages that are visible in the viewport.
+- `#SF-3813` - The signature is now being downloaded without any pixel issue.
+- `#SF-390997`,`#SF-392717`,`#SF-394607` - The signature is now displayed and properly positioned in the document that was downloaded.
+- `#SF-383108` - Now,the custom stamp annotations are added properly in touch mode
+- `#SF-377362` - Annotations are now placed in the correct position in the download PDF document with crop value.
+- `#SF-383385` - The delete key can be used to remove annotations added in touch mode.
+- `#SF-381030` - Unloading a PDF document from the first PDF Viewer component no longer affects the rendering of the PDF document in the second PDF Viewer component.
+- `#SF-385936` - The value of the Add Signature button will not extend outside the button and missing Portuguese tooltips have been translated.
+- `#SF-372855`, `#F173951` - An annotation can now be added and resized up to the edge of the PDF document.
+- `#SF-380996` - The `TextSearchComplete` event will be triggered when the text is searched in the PDF viewer.
+- `#SF-377035`,`#SF-379948` - A tooltip will be displayed in a form field even if the FormDesignerService is not injected.
+- `#SF-380472` - Added form fields after pressing escape no longer shades form fields.
+- `#SF-384112` - The `formFieldSelect` event will be triggered while selecting the first form field in the document.
+- `#SF-386568` - In the Bootstrap5 theme, the search icon will change to a clear icon after a search has been initiated.
+- `#SF-382999` - The type signature in the signature fields will be modified based on the height of the Signature field while resizing.
+- `#SF-379221` - Now, cache values (PDF_CONTENT) are updated in the `getCache()` method.
+- `#SF-385864` - Now, the dropdown values will be changed programmatically in the PDF Viewer.
+- `#SF-386545` - Now, the signature field color will appear while scrolling down long document.
+- `#SF-272377` - Now, the position and size of the arrow shapes in the shape annotation are same as in the downloaded document.
+- `#F173953` - Now, Script error have been resolved.
+- `#SF-378591` - The issue with the comment panel not opening after disabling and enabling again has been fixed.
+- `#SF-386545` - Now, the signature field color will appear with opacity while scrolling down long document.
+- `#SF-390764` - The issue of is document edited API is false while editing a document has been resolved.
+- `#SF-388086` - The issue of replied comments merging with other annotations has been resolved.
+- `#SF-379142`,`#SF-391296` - The x,y bounds of the form fields are proper while adding the form field.
+- `#SF-386887` - The issue with radio button alignment with different zoom settings has been resolved.
+- `#F175614` - For load failed and PDF file path not found errors, an error message is now displayed.
+- `#SF-379627` - formFieldMouseover and formFieldMouseLeave is now trigger properly.
+- `#SF-387260` - Now Signature Indicator Properties can be modified Programmatically in DOM.
+- `#SF-384670` - Now that the type has been fixed, the signature value for the second time has been updated using form field collections.
+- `#SF-382941`,`#SF-383132` - Now duplicate form fields able to select, move, delete and edit after deleting original form fields.
+- `#SF-389566` - Now, Script Error is not occurs while try to change Pdf view to text view in sample.
+- `#SF-376222` - Now, Annotation selector binds while dragging with right click and then clicking left click.
+- `#SF-382568` - Now text boxes with the same name are saved and preserved after downloading and loading the document.
+- `SF-387261` - The signature in the signature field is not visible on Adobe Reader's print preview has been resolved.
+- `#SF-380373` - Now the event triggering is fixed for Hand Written Signature only, if it is a Signature field, then the add and remove signature events are skipped.
+- `#SF-383430` - Now copy, cut and paste does not generate any duplicates while using key short cut.
+- `#SF-376526` - Now, Mobile device resizing of the Signature Form Field has been improved.
+- `#SF-392270` - Now Signature is not drawn few inches away from the cursor on signature dialog.
+
 ## 20.2.40 (2022-07-26)
 
 ### PDF Viewer

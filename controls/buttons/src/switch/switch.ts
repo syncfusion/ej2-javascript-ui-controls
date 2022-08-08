@@ -27,6 +27,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private tagName: string;
     private isFocused: boolean = false;
     private isDrag: boolean = false;
+    private isWireEvents: boolean = false;
     private delegateMouseUpHandler: Function;
     private delegateKeyUpHandler: Function;
     private formElement: HTMLFormElement;
@@ -265,11 +266,15 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                 if (newProp.disabled) {
                     this.setDisabled();
                     this.unWireEvents();
+                    this.isWireEvents = false;
                 } else {
                     this.element.disabled = false;
                     wrapper.classList.remove(DISABLED);
                     wrapper.setAttribute('aria-disabled', 'false');
-                    this.wireEvents();
+                    if (!this.isWireEvents) {
+                        this.wireEvents();
+                        this.isWireEvents = true;
+                    }
                 }
                 break;
             case 'value':

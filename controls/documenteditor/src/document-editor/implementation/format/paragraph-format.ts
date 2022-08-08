@@ -5,7 +5,7 @@ import { LineSpacingType, TextAlignment, OutlineLevel, TabJustification, TabLead
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WListFormat } from './list-format';
-import { ParagraphWidget, BodyWidget, TableCellWidget, BlockContainer } from '../viewer/page';
+import { ParagraphWidget, BodyWidget, TableCellWidget, BlockContainer, TextFrame } from '../viewer/page';
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
 import { DocumentHelper } from '../viewer';
@@ -307,7 +307,7 @@ export class WParagraphFormat {
         const docParagraphFormat: WParagraphFormat = this.getDocumentParagraphFormat();
         let isInsideBodyWidget: boolean = true;
         if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
-            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BlockContainer ||
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BlockContainer ||  this.ownerBase.containerWidget instanceof TextFrame ||
                 this.ownerBase.containerWidget instanceof TableCellWidget;
         }
         let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)

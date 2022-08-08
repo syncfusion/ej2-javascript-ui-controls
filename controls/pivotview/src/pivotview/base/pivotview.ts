@@ -16,7 +16,7 @@ import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
 import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, PivotActionInfo } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
-import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';
+import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs, ExportCompleteEventArgs } from '../../common/base/interface';
 import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, CellTemplateArgs } from '../../common/base/interface';
 import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';
 import { FieldListRefreshedEventArgs, MemberFilteringEventArgs, FieldDropEventArgs } from '../../common/base/interface';
@@ -921,7 +921,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(false)
     public enableFieldSearching: boolean;
-     
+
     /**
      * Allows you to sort individual value field and its aggregated values either in row or column axis to ascending or descending order. 
      * You can sort the values by clicking directly on the value field header positioned either in row or column axis of the pivot table.
@@ -1488,10 +1488,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /**
      * It allows to set properties for exporting.
      * @event
-     * @deprecated
      */
     @Event()
     public beforeExport: EmitType<BeforeExportEventArgs>;
+
+    /**
+     * It triggers when exporting to PDF, Excel, or CSV is complete
+     * @event
+     */
+    @Event()
+    public exportComplete: EmitType<ExportCompleteEventArgs>
 
     /**
      * It allows to do changes before applying the conditional formatting.
@@ -3316,7 +3322,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public excelExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): void { /* eslint-disable-line */
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('Excel', excelExportProperties);
+            this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob);
         } else {
             this.exportType = 'Excel';
             this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
@@ -3341,7 +3347,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public csvExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): void {   /* eslint-disable-line */
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('CSV', excelExportProperties);
+            this.excelExportModule.exportToExcel('CSV', excelExportProperties, isBlob);
         } else {
             this.exportType = 'CSV';
             this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
@@ -3366,7 +3372,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): void {  /* eslint-disable-line */
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
-            this.pdfExportModule.exportToPDF(pdfExportProperties);
+            this.pdfExportModule.exportToPDF(pdfExportProperties, isBlob);
         } else {
             this.grid.pdfExport(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
         }
@@ -3823,6 +3829,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         (mCntVScrollPos === mCntScrollPos ? (mCntScrollPos - hScrollPos) :
                             (mCntScrollPos < mCntVScrollPos && (hScrollPos === mCntVScrollPos || hScrollPos > mCntScrollPos) ?
                                 -(mCntVScrollPos - mCntScrollPos) : 0)));
+                    if(this.actionObj.actionName === 'Sort value' || this.actionObj.actionName === 'Sort field') {
+                        let excessMove = -this.scrollPosObject.horizontalSection;
+                        this.scrollPosObject.horizontalSection = this.scrollPosObject.horizontalSection + excessMove;
+                    }
                     horiOffset = (ele.scrollLeft > this.scrollerBrowserLimit) ?
                         ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
                         'translate(' + -(((ele.scrollLeft * this.horizontalScrollScale) -
@@ -4532,7 +4542,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.getSelectedCellsPos();
             });
         }
-        else{
+        else {
             this.clearSelection(null, e, null, null);
         }
     }

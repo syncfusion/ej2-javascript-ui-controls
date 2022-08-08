@@ -946,5 +946,48 @@ describe('ListBox', () => {
             expect(listObj1.list.getElementsByClassName('e-ul')[0].children[0].children[1].textContent).toEqual('No records found');
             expect(listObj1.list.getElementsByClassName('e-ul')[0].children[0].children[0].classList).toContain('img');
         });
+
+        it('EJ2-61108 - Datasource not update properly after clearing the filtering in the dual listbox', () => {
+            let toolChild: any = listObj1.getToolElem().children;
+            var ele = listObj2.list.getElementsByClassName('e-input-filter')[0];
+            expect(listObj2.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(11);
+            ele.click();
+            ele.value = "c";
+            listObj2.dataBind();
+            listObj2.keyDownStatus = true;
+            listObj2.onInput();
+            listObj2.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'c',
+                charCode: 22,
+                keyCode: 67,
+                which: 22,
+                code: 22
+            });
+            toolChild[5].click();
+            expect(listObj2.ulElement.childElementCount).toEqual(1);
+            expect(listObj2.ulElement.innerText).toEqual('No records found');
+            expect(listObj1.ulElement.childElementCount).toEqual(7);
+            var ele1 =  listObj2.list.getElementsByClassName('e-input-group-icon e-clear-icon e-icons')[0];
+            ele1.click();
+            expect(listObj2.ulElement.childElementCount).toEqual(9);
+        });
+
+        it('EJ2-61181 - RemoveItems not working properly after adding items with specific index', () => {
+            listObj = new ListBox({ dataSource: vegetableData }, elem);
+            let vegetable: { [key: string]: Object }[] = [
+                { text: 'Potato', id: 'item12' },
+            ];
+            expect(listObj.ulElement.children[1].innerText).toEqual('Spinach');
+            listObj.addItems(vegetable, 1);
+            expect(listObj.ulElement.children[1].innerText).toEqual('Potato');
+            listObj.removeItem(vegetable);
+            expect(listObj.ulElement.children[1].innerText).toEqual('Spinach');
+        });
+
     });
 });

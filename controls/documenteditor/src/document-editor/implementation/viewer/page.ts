@@ -2027,7 +2027,7 @@ export class TableWidget extends BlockWidget {
             for (let j: number = 0; j < rw.childWidgets.length; j++) {
                 let cell: TableCellWidget = rw.childWidgets[j] as TableCellWidget;
                 cell.cellFormat.cellWidth = this.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth);
-                 //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
+                //By default, if cell preferred widthType is auto , width set based on table width and type is changed to 'Point'
             }
             if (rowFormat.gridAfter > 0) {
                 rowFormat.afterWidth = this.tableHolder.getCellWidth(0, rowFormat.gridAfter, tableWidth);
@@ -2617,6 +2617,31 @@ export class TableRowWidget extends BlockWidget {
             row = row.previousWidget as TableRowWidget;
         }
         return rowSpannedCells;
+    }
+    /**
+     * @private
+     */
+     public isCellsHaveSameWidthUnit():boolean {
+        if(this.childWidgets.length > 0){
+            var firstCellWidthUnit = (this.childWidgets[0] as TableCellWidget).cellFormat.preferredWidthType;
+        for (let i: number = 1; i < this.childWidgets.length; i++) {
+            let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
+            if (firstCellWidthUnit != cell.cellFormat.preferredWidthType) {
+                return false;
+            }
+        }
+        }
+        return true;
+    }
+    /**
+     * @private
+     */
+    public updateUniformWidthUnitForCells():void{
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
+            cell.cellFormat.preferredWidthType = "Point";
+            cell.cellFormat.preferredWidth = cell.cellFormat.cellWidth;
+        }
     }
     /**
      * @private

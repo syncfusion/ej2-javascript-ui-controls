@@ -2050,19 +2050,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     protected renderCanvasSeries(item: Series): void {
         let svgElement: Element;
         let divElement: Element;
-        if ((item.type === 'Bubble' || item.type === 'Scatter' || item.drawType === 'Scatter')) {
-            svgElement = !svgElement ? this.svgRenderer.createSvg({ id: this.element.id + '_series_svg',
-                width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
-            divElement = !divElement ? this.createElement('div', { id: this.element.id + '_series' }) : divElement;
-            (divElement as HTMLElement).style.cssText = 'position: absolute';
-            const mainElement: HTMLElement = document.getElementById(this.element.id + '_Secondary_Element');
-            divElement.appendChild(svgElement);
-            mainElement.appendChild(divElement);
-        }
-        svgElement = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter' || item.drawType === 'Scatter')) ?
+        svgElement = (this.enableCanvas) ?
             svgElement : this.svgObject;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const canvas: boolean = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter' || item.drawType === 'Scatter')) ?
+        const canvas: boolean = (this.enableCanvas) ?
             false : this.enableCanvas;
     }
     private initializeIndicator(): void {

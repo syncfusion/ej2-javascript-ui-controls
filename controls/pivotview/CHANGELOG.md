@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 20.2.43 (2022-08-08)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I390649` - When virtual scrolling is enabled, the pivot table now properly refreshed while performing value sorting.
+
+#### New Features
+
+- `#I364830` - Improved server-side engine performance. As a result, pivot table can now render up to 3 million records without any issues.
+- `#I382580` - The calculated field UI now has a "Format" dropdown option for relational data source.
+
 ## 20.2.39 (2022-07-19)
 
 ### Pivot Table

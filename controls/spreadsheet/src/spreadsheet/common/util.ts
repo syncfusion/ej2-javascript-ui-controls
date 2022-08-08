@@ -2061,8 +2061,11 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                     if (!Object.keys(newCell).length || updateCell(context, sheet, prop)) {
                         continue;
                     }
-                    if (!cfRefreshAll) {
+                    if (cf && !cfRefreshAll) {
                         cfRefreshAll = prop.isFormulaDependent;
+                        if (!cfRefreshAll) {
+                            updateCFModel(cf, cfRule, sRIdx, sCIdx);
+                        }
                     }
                     if (td) {
                         if (td.querySelector('.e-cf-databar')) {
@@ -2071,9 +2074,6 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                         if (td.querySelector('.e-iconsetspan')) {
                             td.removeChild(td.querySelector('.e-iconsetspan'));
                         }
-                    }
-                    if (cf && !cfRefreshAll) {
-                        updateCFModel(cf, cfRule, sRIdx, sCIdx);
                     }
                 }
             }

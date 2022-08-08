@@ -49,6 +49,7 @@ export interface ITextMarkupAnnotation {
     isPrint: boolean
     isCommentLock: boolean
     isAnnotationRotated: boolean
+    annotationRotation?: number
 }
 
 /**
@@ -578,7 +579,7 @@ export class TextMarkupAnnotation {
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                             textMarkupContent: annotation.TextMarkupContent, textMarkupStartIndex: 0, textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation),
                             // eslint-disable-next-line max-len
-                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings, isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated, annotationRotation: annotation.AnnotationRotation
                         };
                         if (annotation.IsMultiSelect) {
                             annotationObject.annotNameCollection = annotation.AnnotNameCollection;
@@ -608,6 +609,7 @@ export class TextMarkupAnnotation {
                     let annotBounds: any = annotation.Bounds ? annotation.Bounds : annotation.bounds;
                     const opacity: number = annotation.Opacity ? annotation.Opacity : annotation.opacity;
                     const color: string = annotation.Color ? annotation.Color : annotation.color;
+                    let annotationRotation: number = annotation.AnnotationRotation ? annotation.AnnotationRotation : annotation.annotationRotation;
                     let isPrint: boolean = true;
                     if (annotation.TextMarkupAnnotationType) {
                         isPrint = annotation.IsPrint;
@@ -620,10 +622,10 @@ export class TextMarkupAnnotation {
                         this.renderHighlightAnnotation(annotBounds, opacity, color, context, factor, isPrint, pageNumber);
                         break;
                     case 'Strikethrough':
-                        this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint);
+                        this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint, annotationRotation);
                         break;
                     case 'Underline':
-                        this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint);
+                        this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint, annotationRotation);
                         break;
                     }
                 }
@@ -674,6 +676,11 @@ export class TextMarkupAnnotation {
         if (selectionObject.length > 0 && !this.isSelectionMaintained) {
             this.convertSelectionToTextMarkup(type, selectionObject, this.pdfViewerBase.getZoomFactor());
         }
+        let selection: any = window.getSelection();
+        let targetElement: any;
+        if (selection && selection.anchorNode) {
+            targetElement = selection.anchorNode.parentElement;
+        }
         if (this.isEnableTextMarkupResizer(type) && this.isExtended && window.getSelection().toString()) {
             const pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
             if (pageBounds[0] && pageBounds[0].bounds) {
@@ -697,7 +704,7 @@ export class TextMarkupAnnotation {
                                 isMultiSelect = true;
                             }
                             // eslint-disable-next-line max-len
-                            this.drawTextMarkups(type, pageBounds[k].bounds, pageBounds[k].pageIndex, pageBounds[k].rect, this.pdfViewerBase.getZoomFactor(), pageBounds[k].textContent, pageBounds[k].startIndex, pageBounds[k].endIndex, isMultiSelect);
+                            this.drawTextMarkups(type, pageBounds[k].bounds, pageBounds[k].pageIndex, pageBounds[k].rect, this.pdfViewerBase.getZoomFactor(), pageBounds[k].textContent, pageBounds[k].startIndex, pageBounds[k].endIndex, isMultiSelect, targetElement);
                         } else {
                             if (currentAnnot.isMultiSelect && currentAnnot.annotNameCollection) {
                                 this.modifyCurrentAnnotation(currentAnnot, pageBounds, k);
@@ -715,7 +722,7 @@ export class TextMarkupAnnotation {
                         isCleared = false;
                     }
                     // eslint-disable-next-line max-len
-                    this.drawTextMarkups(type, pageBounds[i].bounds, pageBounds[i].pageIndex, pageBounds[i].rect, this.pdfViewerBase.getZoomFactor(), pageBounds[i].textContent, pageBounds[i].startIndex, pageBounds[i].endIndex, isMultiSelect);
+                    this.drawTextMarkups(type, pageBounds[i].bounds, pageBounds[i].pageIndex, pageBounds[i].rect, this.pdfViewerBase.getZoomFactor(), pageBounds[i].textContent, pageBounds[i].startIndex, pageBounds[i].endIndex, isMultiSelect, targetElement);
                 }
             }
         }
@@ -915,7 +922,7 @@ export class TextMarkupAnnotation {
                 this.triggerAddEvent = true;
             }
             // eslint-disable-next-line max-len
-            this.drawTextMarkups(type, selectionObject[i].rectangleBounds, selectionObject[i].pageNumber, selectionObject[i].bound, factor, textValue, indexes.startIndex, indexes.endIndex, isMultiSelect);
+            this.drawTextMarkups(type, selectionObject[i].rectangleBounds, selectionObject[i].pageNumber, selectionObject[i].bound, factor, textValue, indexes.startIndex, indexes.endIndex, isMultiSelect, document.getElementById(selectionObject[i].startNode));
         }
     }
 
@@ -1035,7 +1042,7 @@ export class TextMarkupAnnotation {
         }
     }
     // eslint-disable-next-line
-    private drawTextMarkups(type: string, bounds: IRectangle[], pageNumber: number, rect: any, factor: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean): void {
+    private drawTextMarkups(type: string, bounds: IRectangle[], pageNumber: number, rect: any, factor: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean, targetElement?: any): void {
         let annotation: ITextMarkupAnnotation = null;
         this.isNewAnnotation = false;
         let author: string = 'Guest';
@@ -1051,6 +1058,9 @@ export class TextMarkupAnnotation {
         this.annotationAddMode = 'UI Drawn Annotation';
         // eslint-disable-next-line
         let allowedInteractions: any;
+        const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
+        let annotationRotate: number = 0;
+        let pageRotation: number = this.getAngle(pageDetails.rotation);
         if (context) {
             context.setLineDash([]);
             switch (type) {
@@ -1061,7 +1071,7 @@ export class TextMarkupAnnotation {
                 author = (this.pdfViewer.highlightSettings.author !== 'Guest' && this.pdfViewer.highlightSettings.author) ? this.pdfViewer.highlightSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 allowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : 'None';
                 // eslint-disable-next-line max-len
-                annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
+                annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
                     // eslint-disable-next-line max-len
                     this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, annotation.isPrint, pageNumber);
@@ -1074,10 +1084,24 @@ export class TextMarkupAnnotation {
                 author = (this.pdfViewer.strikethroughSettings.author !== 'Guest' &&  this.pdfViewer.strikethroughSettings.author) ? this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 allowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : 'None';
                 // eslint-disable-next-line max-len
-                annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
+                if (targetElement && targetElement.style.transform !== '') {
+                    if (targetElement.style.transform.startsWith('rotate(90deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 90);
+                    }
+                    else if (targetElement.style.transform.startsWith('rotate(180deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 180);
+                    }
+                    else if (targetElement.style.transform.startsWith('rotate(-90deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 270);
+                    }
+                    else {
+                        annotationRotate = pageRotation;
+                    }
+                }
+                annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
                     // eslint-disable-next-line max-len
-                    this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint);
+                    this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint, annotation.annotationRotation);
                 }
                 break;
             case 'Underline':
@@ -1087,10 +1111,24 @@ export class TextMarkupAnnotation {
                 author = (this.pdfViewer.underlineSettings.author !== 'Guest' && this.pdfViewer.underlineSettings.author) ? this.pdfViewer.underlineSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 allowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : 'None';
                 // eslint-disable-next-line max-len
-                annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions);
+                if (targetElement && targetElement.style.transform !== '') {
+                    if (targetElement.style.transform.startsWith('rotate(90deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 90);
+                    }
+                    else if (targetElement.style.transform.startsWith('rotate(180deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 180);
+                    }
+                    else if (targetElement.style.transform.startsWith('rotate(-90deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 270);
+                    }
+                    else {
+                        annotationRotate = pageRotation;
+                    }
+                }
+                annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
                     // eslint-disable-next-line max-len
-                    this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint);
+                    this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint, annotation.annotationRotation);
                 }
                 break;
             }
@@ -1115,6 +1153,28 @@ export class TextMarkupAnnotation {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools(type);
             }
         }
+    }
+
+    private getAngle(rotation: number): number {
+        // eslint-disable-next-line
+        let angle: any = 0;
+        if (rotation) {
+            switch (rotation) {
+                case 0:
+                    angle = 0;
+                    break;
+                case 1:
+                    angle = 90;
+                    break;
+                case 2:
+                    angle = 180;
+                    break;
+                case 3:
+                    angle = 270;
+                    break;
+            }
+        }
+        return angle;
     }
     // eslint-disable-next-line
     private retreiveTextIndex(annotation: any): any {
@@ -1171,44 +1231,49 @@ export class TextMarkupAnnotation {
     }
 
     // eslint-disable-next-line
-    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean): void {
+    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean, annotationRotation: number): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // eslint-disable-next-line
             let bound: any = this.getProperBounds(bounds[i]);
             const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
             let factorRatio : number = this.pdfViewerBase.getZoomRatio(factor); 
+            let rotation: number = pageDetails.rotation;
+            if (annotationRotation) {
+                let pageRotation = this.getAngle(rotation);
+                rotation = Math.abs(annotationRotation - pageRotation)/ 90
+            }
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
                 if (isPrint) {
-                    if (pageDetails.rotation === 1) {
+                    if (rotation === 1) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber);
-                    } else if (pageDetails.rotation === 2) {
+                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                    } else if (rotation === 2) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber);
-                    } else if (pageDetails.rotation === 3) {
-                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber);
+                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                    } else if (rotation === 3) {
+                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, annotationRotation);
                     } else {
-                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber);
+                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, annotationRotation);
                     }
                 }
             } else {
-                if (pageDetails.rotation === 1) {
+                if (rotation === 1) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber);
-                } else if (pageDetails.rotation === 2) {
+                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                } else if (rotation === 2) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber);
-                } else if (pageDetails.rotation === 3) {
-                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber);
+                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, annotationRotation);
+                } else if (rotation === 3) {
+                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, annotationRotation);
                 } else {
-                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber);
+                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, annotationRotation);
                 }
             }
         }
     }
 
     // eslint-disable-next-line
-    private renderUnderlineAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean): void {
+    private renderUnderlineAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean, annotationRotation: number): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // eslint-disable-next-line
             let boundValues: any = this.getProperBounds(bounds[i]);
@@ -1216,11 +1281,11 @@ export class TextMarkupAnnotation {
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
                 if (isPrint) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber);
+                    this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber, annotationRotation);
                 }
             } else {
                 // eslint-disable-next-line max-len
-                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber);
+                this.drawLine(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio, context, pageNumber, annotationRotation);
             }
         }
     }
@@ -1237,7 +1302,7 @@ export class TextMarkupAnnotation {
     }
 
     // eslint-disable-next-line max-len
-    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: any, pageNumber: number): void {
+    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: any, pageNumber: number, annotationRotation?: number): void {
         context.globalAlpha = opacity;
         if (isBlazor()) {
             y = y - 1;
@@ -1245,13 +1310,18 @@ export class TextMarkupAnnotation {
         height = height - 1;
         context.beginPath();
         const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
-        if (pageDetails.rotation === 1) {
+        let rotation: number = pageDetails.rotation;
+        if (annotationRotation) {
+            let pageRotation = this.getAngle(rotation);
+            rotation = Math.abs(annotationRotation - pageRotation)/ 90
+        }
+        if (rotation === 1) {
             context.moveTo(( x * factor), (y * factor));
             context.lineTo((x * factor), (y + height) * factor);
-        } else if (pageDetails.rotation === 2) {
+        } else if (rotation === 2) {
             context.moveTo(( x * factor), (y * factor));
             context.lineTo((width + x) * factor, (y * factor));
-        } else if (pageDetails.rotation === 3) {
+        } else if (rotation === 3) {
             context.moveTo((width + x) * factor, (y * factor));
             context.lineTo((width + x) * factor, (y + height) * factor);
         } else {
@@ -2602,7 +2672,7 @@ export class TextMarkupAnnotation {
 
     // eslint-disable-next-line max-len
     // eslint-disable-next-line
-    private getAddedAnnotation(type: string, color: string, opacity: number, bounds: any, author: string, subject: string, predefinedDate: string, note: string, isCommentLock: boolean, rect: any, pageNumber: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean, allowedInteractions?:any): ITextMarkupAnnotation {
+    private getAddedAnnotation(type: string, color: string, opacity: number, bounds: any, author: string, subject: string, predefinedDate: string, note: string, isCommentLock: boolean, rect: any, pageNumber: number, textContent: string, startIndex: number, endIndex: number, isMultiSelect?: boolean, allowedInteractions?:any, annotationRotate?: number): ITextMarkupAnnotation {
         // eslint-disable-next-line max-len
         const modifiedDate: string = predefinedDate ? predefinedDate : this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         const annotationName: string = this.pdfViewer.annotation.createGUID();
@@ -2619,7 +2689,7 @@ export class TextMarkupAnnotation {
             annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
             // eslint-disable-next-line max-len
             textMarkupContent: textContent, textMarkupStartIndex: startIndex, textMarkupEndIndex: endIndex, isMultiSelect: isMultiSelect, annotationSelectorSettings: this.getSelector(type),
-            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint, isCommentLock: isCommentLock, isAnnotationRotated: false
+            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode, annotationSettings: annotationSettings, isPrint: isPrint, isCommentLock: isCommentLock, isAnnotationRotated: false, annotationRotation: annotationRotate
         };
         if (isMultiSelect) {
             this.multiPageCollection.push(annotation);

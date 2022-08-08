@@ -188,7 +188,7 @@ export class MapsTooltip {
                 options: tooltipOption,
                 fill: option.fill,
                 maps: this.maps,
-                element: target, eventArgs: e
+                element: target, eventArgs: e, content: !isNullOrUndefined(currentData) ? currentData.toString() : ''
             };
 
             this.maps.trigger(tooltipRender, tooltipArgs, (args: ITooltipRenderEventArgs) => {
@@ -207,7 +207,7 @@ export class MapsTooltip {
                             header: '',
                             data: option['data'],
                             template: option['template'],
-                            content: [currentData.toString()],
+                            content: tooltipArgs.content.toString() != currentData.toString() ? [tooltipArgs.content.toString()] : [currentData.toString()],
                             shapes: [],
                             location: option['location'],
                             palette: [markerFill],
@@ -222,7 +222,7 @@ export class MapsTooltip {
                             header: '',
                             data: tooltipArgs.options['data'],
                             template: tooltipArgs.options['template'],
-                            content: [currentData.toString()],
+                            content: tooltipArgs.content.toString() != currentData.toString() ? [tooltipArgs.content.toString()] : [currentData.toString()],
                             shapes: [],
                             location: tooltipArgs.options['location'],
                             palette: [markerFill],

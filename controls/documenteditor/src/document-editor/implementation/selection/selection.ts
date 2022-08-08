@@ -1205,14 +1205,12 @@ export class Selection {
         const height: number = cellWidget.height;
         const pageTop: number = this.getPageTop(page);
         const pageLeft: number = page.boundingRectangle.x;
-        const isVisiblePage: boolean = this.viewer.containerTop <= pageTop
-            || pageTop < this.viewer.containerTop + this.documentHelper.selectionCanvas.height;
+        const isVisiblePage = this.documentHelper.isPageInVisibleBound(page, pageTop);
         const widgets: Dictionary<IWidget, object> = this.selectedWidgets;
         if (!this.isHightlightEditRegionInternal && !this.isHighlightFormFields) {
             if (widgets.containsKey(cellWidget) && widgets.get(cellWidget) instanceof SelectionWidgetInfo) {
                 selectionWidget = widgets.get(cellWidget) as SelectionWidgetInfo;
                 if (isVisiblePage) {
-
                     this.documentHelper.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.documentHelper.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.documentHelper.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.documentHelper.zoomFactor, height * this.documentHelper.zoomFactor);
                 }
             } else {
@@ -5342,7 +5340,7 @@ export class Selection {
      */
     public highlightContainer(cell: TableCellWidget, start: TextPosition, end: TextPosition): void {
         this.highlightInternal(cell.containerWidget as TableRowWidget, start, end);
-        this.highlightNextBlock(cell.ownerTable, start, end);
+        this.highlightNextBlock(cell.ownerTable.getSplitWidgets().pop() as TableWidget, start, end);
     }
     /**
      * Get previous valid element
@@ -10303,27 +10301,31 @@ export class Selection {
      */
     public navigateToNextEditingRegion(): void {
         let editRange: EditRangeStartElementBox = this.getEditRangeStartElement();
+        this.sortEditRangeCollection();
+        let length: number = this.editRangeCollection.length;
+        let index: number = length;
         if (!isNullOrUndefined(editRange)) {
-            //Sort based on position
-            for (let i: number = this.editRangeCollection.length - 1; i >= 0; i--) {
-                for (let j: number = 1; j <= i; j++) {
-                    let nextPosition: TextPosition = this.getPosition(this.editRangeCollection[j - 1]).startPosition;
-                    let firstPosition: TextPosition = this.getPosition(this.editRangeCollection[j]).startPosition;
-                    if (nextPosition.isExistAfter(firstPosition)) {
-                        let temp: EditRangeStartElementBox = this.editRangeCollection[j - 1];
-                        this.editRangeCollection[j - 1] = this.editRangeCollection[j];
-                        this.editRangeCollection[j] = temp;
-                    }
+            index = this.editRangeCollection.indexOf(editRange);
+        }
+        let editRangeStart: EditRangeStartElementBox = index < length - 1 ?
+            this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        this.selectRange(startPosition, endPosition);
+    }
+    private sortEditRangeCollection() {
+        //Sort based on position
+        for (let i: number = this.editRangeCollection.length - 1; i >= 0; i--) {
+            for (let j: number = 1; j <= i; j++) {
+                let nextPosition: TextPosition = this.getPosition(this.editRangeCollection[j - 1]).startPosition;
+                let firstPosition: TextPosition = this.getPosition(this.editRangeCollection[j]).startPosition;
+                if (nextPosition.isExistAfter(firstPosition)) {
+                    let temp: EditRangeStartElementBox = this.editRangeCollection[j - 1];
+                    this.editRangeCollection[j - 1] = this.editRangeCollection[j];
+                    this.editRangeCollection[j] = temp;
                 }
             }
-
-            let index: number = this.editRangeCollection.indexOf(editRange);
-            let editRangeStart: EditRangeStartElementBox = index < this.editRangeCollection.length - 1 ?
-                this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
-            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
-            let startPosition: TextPosition = positionInfo.startPosition;
-            let endPosition: TextPosition = positionInfo.endPosition;
-            this.selectRange(startPosition, endPosition);
         }
     }
     /**

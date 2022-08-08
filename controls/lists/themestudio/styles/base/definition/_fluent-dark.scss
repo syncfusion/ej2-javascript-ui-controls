@@ -70,7 +70,7 @@ $theme-darker: #004578 !default;
 
 
 $primary:      $theme-primary !default;
-$primary-text-color: $white !default;
+$primary-text-color: $gray200 !default;
 $primary-light: $theme-dark !default;
 $primary-lighter: $theme-darker !default;
 $primary-dark: $theme-dark !default;
@@ -306,7 +306,7 @@ $primary-text-disabled: $gray150 !default;
 
 $success-bg-color: $success !default;
 $success-border-color: $success !default;
-$success-text: $white !default;
+$success-text: $gray200 !default;
 $success-bg-color-hover: shade-color($success-bg-color, 10%) !default;
 $success-border-color-hover: $success-bg-color-hover !default;
 $success-text-hover: $success-text !default;
@@ -323,7 +323,7 @@ $success-text-disabled: $gray150 !default;
 // Warning-button
 $warning-bg-color: $warning !default;
 $warning-border-color: $warning !default;
-$warning-text: $white !default;
+$warning-text: $gray200 !default;
 $warning-bg-color-hover: tint-color($warning-bg-color, 10%) !default;
 $warning-border-color-hover: $warning-bg-color-hover !default;
 $warning-text-hover: $warning-text !default;
@@ -340,7 +340,7 @@ $warning-text-disabled: $gray150 !default;
 // danger-button
 $danger-bg-color: $danger !default;
 $danger-border-color: $danger !default;
-$danger-text: $white !default;
+$danger-text: $gray200 !default;
 $danger-bg-color-hover: shade-color($danger-bg-color, 10%) !default;
 $danger-border-color-hover: $danger-bg-color-hover !default;
 $danger-text-hover: $danger-text !default;
@@ -357,7 +357,7 @@ $danger-text-disabled: $gray150 !default;
 // Info-button
 $info-bg-color: $info !default;
 $info-border-color: $info-bg-color !default;
-$info-text: $white !default;
+$info-text: $gray200 !default;
 $info-bg-color-hover: shade-color($info-bg-color, 10%) !default;
 $info-border-color-hover: $info-bg-color-hover !default;
 $info-text-hover: $info-text !default;

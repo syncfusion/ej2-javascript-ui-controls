@@ -1173,6 +1173,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'BeforeSpacing'
 | 'RightIndent'
 | 'FirstLineIndent'
+| 'DifferentOddAndEvenPages'
 | 'LineSpacing'
 | 'LineSpacingType'
 | 'ListFormat'

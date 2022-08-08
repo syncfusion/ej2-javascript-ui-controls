@@ -85,7 +85,8 @@ export class Action {
             newData[this.parent.sortSettings.field] = 1;
             if (closest(target, '.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
                 const card: Element = this.parent.sortSettings.direction === 'Ascending' ?
-                    target.nextElementSibling.lastElementChild : target.nextElementSibling.firstElementChild;
+                    target.nextElementSibling.classList.contains(cls.BORDER_CLASS) ? target.nextElementSibling.nextElementSibling.lastElementChild : target.nextElementSibling.lastElementChild
+                    : target.nextElementSibling.classList.contains(cls.BORDER_CLASS) ? target.nextElementSibling.nextElementSibling.firstElementChild : target.nextElementSibling.firstElementChild;
                 const data: Record<string, any> = this.parent.getCardDetails(card) as Record<string, any>;
                 newData[this.parent.sortSettings.field] = data[this.parent.sortSettings.field] as number + 1;
             }

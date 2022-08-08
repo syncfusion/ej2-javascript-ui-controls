@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.39 (2022-07-19)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed the image corruption issue while multiple grid to Excel export.
+
 ## 20.2.36 (2022-06-30)
 
 ### Excel Export

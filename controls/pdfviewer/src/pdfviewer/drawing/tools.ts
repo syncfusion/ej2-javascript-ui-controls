@@ -1794,13 +1794,13 @@ export class NodeDrawingTool extends ToolBase {
                 // eslint-disable-next-line
                 this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
             }
-            this.drawingObject = null;
             this.dragging = false;
             super.mouseUp(args);
             this.inAction = false;
         } else {
             super.mouseUp(args);
         }
+        this.drawingObject = null;
     }
     /**
      * @private

@@ -811,4 +811,55 @@ describe('Detail template module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-61821 - Destroying Grid with child Grid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    aggregates: [{
+                        columns: [{
+                            type: 'Max',
+                            field: 'HireDate',
+                            format: { type: 'date', skeleton: 'medium' },
+                            footerTemplate: '${Max}',
+                        }],
+                    }],
+                    columns: [
+                        {field: 'EmployeeID',headerText: 'Employee ID',textAlign: 'Right',width: 125},
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'City', width: 110 },
+                        {field: 'HireDate',headerText: 'Hire date',width: 130,format: 'yMd',type: 'datetime'},],
+                    childGrid: {
+                        dataSource: filterData, queryString: 'EmployeeID',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                            { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                            { field: 'Freight', headerText: 'Freight', width: 120, format: 'N2' },
+                            { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                        ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Average',
+                            field: 'Freight',
+                            footerTemplate: 'Average: ${Average}',}
+                        ]},
+                        {
+                            columns: [{type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}',}]
+                        }],
+                    },}, done);
+                });
+                it('Grid destroy testing', () => {
+                gridObj.detailRowModule.expand(gridObj.getDataRows()[0].querySelector('.e-detailrowcollapse'));
+                gridObj.destroy();
+                expect(document.getElementsByClassName('e-grid')[0]).toBe(undefined);
+            });
+            afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

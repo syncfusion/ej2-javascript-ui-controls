@@ -2066,4 +2066,51 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Connector not connected to the node after save and load', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramConnectorIssue' });
+            document.body.appendChild(ele);
+            var nodes = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
+                }]
+            var connector: ConnectorModel = {};
+            connector.id = 'connector2';
+            connector.sourceID = "node1"
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: nodes, connectors: [connector]
+            });
+            diagram.appendTo('#diagramConnectorIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Adding node at runtime and checking for connection', function (done) {
+            var addNode = {
+                id: 'add1', width: 100, height: 100, offsetX: 500, offsetY: 100, annotations: [{ content: 'Add' }]
+            };
+            diagram.add(addNode);
+            diagram.dataBind();
+            diagram.connectors[0].targetID = 'add1';
+            diagram.dataBind();
+            localStorage.setItem('testSave1',diagram.saveDiagram());
+            var obj = JSON.parse(localStorage.getItem('testSave1'));
+            for (var i = 0; i < obj.nodes.length; i++) {
+                if (i === 1) {
+                    obj.nodes[i].offsetX += 30;
+                }
+            }
+            diagram.loadDiagram(JSON.stringify(obj));
+            diagram.dataBind();
+            expect(diagram.connectors[0].targetID === 'add1' && diagram.nodes[1].offsetX === 530).toBe(true);
+            console.log('Connector save and load');
+            done();
+        }); 
+    });
 });

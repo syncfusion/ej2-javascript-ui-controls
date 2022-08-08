@@ -212,4 +212,28 @@ describe('EJ2-6660-Header template', () => {
         });
     });
 
+    describe('EJ2-61488- Accessibility testing with header', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                }, done);
+        });
+        it('Ensuring the header is not draggable', () => {
+            expect(gridObj.getHeaderContent().querySelectorAll('th')[1].getAttribute('aria-grabbed')).toBe(null);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

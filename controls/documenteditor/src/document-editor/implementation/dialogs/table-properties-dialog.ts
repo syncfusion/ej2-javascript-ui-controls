@@ -293,6 +293,10 @@ export class TablePropertiesDialog {
             }
         }
         if (this.rowHeightValue) {
+            if (!this.rowFormat.hasValue('heightType')
+                && selection.rowFormat.heightType !== this.rowFormat.heightType) {
+                this.rowFormat.heightType = selection.rowFormat.heightType;
+            }
             this.rowFormat.height = this.rowHeightValue;
         }
         this.documentHelper.owner.editorModule.initComplexHistory('TableProperties');
@@ -953,7 +957,11 @@ export class TablePropertiesDialog {
      * @returns {void}
      */
     public onRowHeightTypeChange(): void {
-        this.rowFormat.heightType = this.rowHeightType.text as HeightType;
+        if (this.rowHeightType.value == 'At least') {
+            this.rowFormat.heightType = 'AtLeast';
+        } else if (this.rowHeightType.value == 'Exactly') {
+            this.rowFormat.heightType = 'Exactly';
+        }
     }
     /**
      * @private

@@ -741,7 +741,7 @@ export class UndoRedo {
             evtArgs = { action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex, cells[i].colIndex],
                 value: cells[i].formula ? cells[i].formula : cells[i].value, sheetIndex: getSheetIndex(this.parent, sheet.name) };
             this.parent.notify(workbookEditOperation, evtArgs);
-            if (!cfRefreshAll) {
+            if (cf && !cfRefreshAll) {
                 cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
             }
             if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell.wrap && !cells[i].wrap)) {

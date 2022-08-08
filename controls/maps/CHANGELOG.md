@@ -8,7 +8,20 @@
 
 ## [Unreleased]
 
-## 20.2.40 (2022-07-26)
+## 20.2.43 (2022-08-08)
+
+### Maps
+
+#### New Features
+
+- `#I390757` - As an alternative to the `click` event, the `onclick` event is exposed.
+
+#### Bug Fixes
+
+- `#I392653` - The `content` property in the event argument can now be used to customize the layer tooltip with format in the `tooltipRender` event.
+- `#F174180` - Maps will function properly when adding and removing layers via the `zoom` event.
+
+## 20.2.38 (2022-07-12)
 
 ### Maps
 

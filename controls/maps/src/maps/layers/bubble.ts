@@ -159,7 +159,7 @@ export class Bubble {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let translate: any;
                 const animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
+                if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule) && !this.maps.isTileMap) {
                     translate = getZoomTranslate(this.maps, layer, animate);
                 } else {
                     translate = getTranslate(this.maps, layer, animate);

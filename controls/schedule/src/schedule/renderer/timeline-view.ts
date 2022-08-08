@@ -51,9 +51,12 @@ export class TimelineViews extends VerticalView {
         if (scrollDate) {
             index = this.parent.getIndexOfDate(this.renderDates, util.resetTime(scrollDate));
             if (index >= 0) {
-                const timeString: string[] = hour.split(':');
-                if (timeString.length === 2) {
-                    date = new Date(scrollDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0));
+                date = scrollDate;
+                if (!isNullOrUndefined(hour)) {
+                    const timeString: string[] = hour.split(':');
+                    if (timeString.length === 2) {
+                        date = new Date(scrollDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0));
+                    }
                 }
             }
         }
@@ -61,8 +64,13 @@ export class TimelineViews extends VerticalView {
         if (isNullOrUndefined(date)) {
             return;
         }
-        const scrollLeft: number = isNullOrUndefined(scrollDate) ? this.getLeftFromDateTime(null, date) :
-            this.getLeftFromDateTime([index], date);
+        let scrollLeft: number;
+        if (isNullOrUndefined(hour) || !this.parent.activeViewOptions.timeScale.enable) {
+            scrollLeft = index * this.getWorkCellWidth();
+        } else {
+            scrollLeft = isNullOrUndefined(scrollDate) ? this.getLeftFromDateTime(null, date) :
+                this.getLeftFromDateTime([index], date);
+        }
         this.getScrollableElement().scrollLeft = !this.parent.enableRtl ? scrollLeft : -scrollLeft;
     }
 

@@ -113,7 +113,9 @@ export class Aggregate implements IAction {
         this.parent.off(uiUpdate, this.onPropertyChanged);
         this.parent.off(refreshAggregates, this.refresh);
         this.parent.off(destroy, this.destroy);
-        remove(this.parent.element.querySelector('.' + literals.gridFooter));
+        if (this.parent.element.querySelector('.' + literals.gridFooter)) {
+            remove(this.parent.element.querySelector('.' + literals.gridFooter));
+        }
     }
 
     public destroy(): void {

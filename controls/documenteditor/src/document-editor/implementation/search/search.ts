@@ -215,9 +215,16 @@ export class Search {
                 results = this.textSearch.findAll(text);
                 i = results.length;
              } else {
-                 this.navigate(results.innerList[i]);
-                 this.owner.editorModule.insertTextInternal(replaceText, true);
-                 results.innerList[i].destroy();
+                 this.navigate(result);
+                 let allowLayout: boolean = true;
+                 if(i > 0) {
+                     let previousResult: TextSearchResult = results.innerList[i - 1];
+                     if (previousResult.start.paragraph.equals(result.start.paragraph)) {
+                        allowLayout = false;
+                     }
+                 }
+                 this.owner.editorModule.insertTextInternal(replaceText, true, undefined, allowLayout);
+                 result.destroy();
              }
             //if (result.isHeader || result.isFooter) {
                 // eslint-disable-next-line max-len

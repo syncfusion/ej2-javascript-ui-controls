@@ -2,9 +2,26 @@
 
 ## [Unreleased]
 
+## 20.2.43 (2022-08-08)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I392233` - Filtering issue with Boolean values has been fixed and now working properly.
+- `#I388879` - Destroying Grid with expanded child grid throws script error has been resolved.
+- `#I388052` - Screen reader reads the column as draggable even though it is not a draggable column has been fixed.
+
 ## 20.2.40 (2022-07-26)
 
 ### Grid
+
+#### Bug Fixes
+
+- `#I387901` - Command column disappear on pressing shift+tab key issue has been fixed.
+- `#I375590` - Now the Screen Reader announcing the state of the expand and collapse icon properly.
+- `#I390959` - `setRowData` method is now working properly with Column Template has been fixed.
+- `#I390767` - Text wrapping is not applied in the Stack header feature issue has been fixed.
 
 #### Breaking Changes
 

@@ -392,6 +392,15 @@ export class Year extends ViewBase implements IRenderer {
         }
     }
 
+    public scrollToDate(scrollDate: Date): void {
+        const date: number = +new Date(util.resetTime(scrollDate));
+        let element: HTMLElement = this.element.querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + date + '"]');
+        if (element) {
+            element = closest(element, '.e-month-calendar') as HTMLElement;
+            this.getContentAreaElement().scrollTop = element.offsetTop;
+        }
+    }
+
     public destroy(): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) {
             return;

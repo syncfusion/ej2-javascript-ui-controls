@@ -784,3 +784,48 @@ console.log('module name validation');
         expect(name).toBe('ListDialog')
     });
 });
+
+describe('List dialog event validation-3', () => {
+    let editor: DocumentEditor;
+    let dialog: ListDialog;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, ListDialog);
+        DocumentEditor.Inject(EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = new ListDialog(editor.documentHelper);
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        dialog.destroy();
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('List NumberFormat event validation', (done) => {
+console.log('List NumberFormat event validation');
+        editor.openBlank();
+        editor.editorModule.insertText('Hello World');
+        editor.editor.applyNumbering('%1.', 'Number');
+        dialog.showListDialog();
+        setTimeout(() => {
+            let event: any = { target: { value: "%2." } };
+            (dialog as any).onNumberFormatChanged(event);
+            expect((dialog as any).viewModel.listLevel.numberFormat).toBe('%2.');
+            (dialog as any).onCancelButtonClick();
+            done();
+        });
+    });
+});

@@ -62,7 +62,8 @@ export class ConditionalFormatting {
             remove(select('#' + this.parentID + 'conditionalformatting', document));
         }
         this.parent.element.appendChild(createElement('div', {
-            id: this.parentID + 'conditionalformatting'
+            id: this.parentID + 'conditionalformatting',
+            className: cls.FORMAT_DIALOG
         }));
         let buttonModel: ButtonPropsModel[] = [
             {
@@ -97,13 +98,13 @@ export class ConditionalFormatting {
                 showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,  /* eslint-disable-line */
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
-                cssClass: cls.FORMAT_DIALOG + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
+                cssClass: this.parent.cssClass, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
             });
         } else {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel, /* eslint-disable-line */
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
-                cssClass: cls.FORMAT_DIALOG + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+                cssClass: this.parent.cssClass, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }

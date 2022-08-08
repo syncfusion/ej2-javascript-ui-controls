@@ -289,9 +289,6 @@ export class ListDialog {
      * @returns {void}
      */
     private onNumberFormatChanged = (args: any): void => {
-        if(!args.isInteracted) {
-            return;
-        }
         this.viewModel.listLevel.numberFormat = args.target.value;
     };
     /**

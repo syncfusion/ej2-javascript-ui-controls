@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.43 (2022-08-08)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I392060` - An issue with `scrollTo` method not working in timeline views has been fixed.
+
 ## 20.2.40 (2022-07-26)
 
 ### Schedule

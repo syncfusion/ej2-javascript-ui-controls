@@ -4277,6 +4277,86 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('EJ2-62147 - CR Issue scrollTo', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', width: '400px', selectedDate: new Date(2018, 4, 1),
+                views: [
+                    { option: 'TimelineDay' },
+                    { option: 'TimelineWeek', interval: 3 },
+                    { option: 'Agenda' },
+                    { option: 'Year' }
+                ],
+                currentView: 'TimelineWeek',
+                timeScale: { enable: false }
+            };
+            schObj = util.createSchedule(model, timelineData, done);
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(contentWrap.scrollLeft).toEqual(0);
+            schObj.scrollTo(null, new Date(2018, 4, 3));
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking with timescale disabled in timeline week view', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(contentWrap.scrollLeft).toEqual(200);
+        });
+        it('Checking with timescale disabled in timeline week view with rtl enabled', (done: DoneFn) => {
+            schObj.enableRtl = true;
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+                expect(contentWrap.scrollLeft).toEqual(0);
+                schObj.scrollTo(null, new Date(2018, 4, 3));
+                expect(contentWrap.scrollLeft).toEqual(-200);
+                done();
+            };
+        });
+        it('Checking in Agenda view', (done: DoneFn) => {
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+                expect(contentWrap.scrollTop).toEqual(1);
+                schObj.scrollTo(null, new Date(2018, 4, 3));
+                expect(contentWrap.scrollTop).toEqual(1286);
+                done();
+            };
+        });
+        it('Checking in Year view', (done: DoneFn) => {
+            schObj.currentView = 'Year';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+                expect(contentWrap.scrollTop).toEqual(0);
+                schObj.scrollTo(null, new Date(2018, 4, 3));
+                expect(contentWrap.scrollTop).toEqual(1256);
+                done();
+            };
+        });
+        it('Changing the views for Checking in Agenda view with virtual scroll', (done: DoneFn) => {
+            util.destroy(schObj);
+            const model: ScheduleModel = {
+                height: '500px', width: '400px', selectedDate: new Date(2018, 4, 1),
+                views: [
+                    { option: 'Agenda', allowVirtualScrolling: true }
+                ]
+            };
+            schObj = util.createSchedule(model, timelineData, done);
+        });
+        it('Checking scrollTo with agenda virtual scroll', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(contentWrap.scrollTop).toEqual(1);
+            schObj.scrollTo(null, new Date(2018, 4, 3));
+            schObj.dataBound = () => {
+                const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+                expect(contentWrap.scrollTop).toEqual(1);
+            };
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -1270,7 +1270,7 @@ export class DetailsView {
 
     private getFocusedItemIndex(): number {
         return (!isNOU(this.getFocusedItem())) ?
-            parseInt(this.getFocusedItem().getAttribute('aria-rowindex'), 10) : null;
+            parseInt(this.getFocusedItem().getAttribute('data-rowindex'), 10) : null;
     }
 
     /* istanbul ignore next */

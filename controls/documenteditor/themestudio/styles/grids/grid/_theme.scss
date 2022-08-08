@@ -261,6 +261,16 @@
       }
     }
 
+    &.e-disable-gridhover tr[role='row']:not(.e-editedrow):not(.e-detailrow):hover .e-rowcell,
+    &.e-disable-gridhover tr[role='row']:not(.e-detailrow):hover .e-detailrowcollapse,
+    &.e-disable-gridhover tr[role='row']:hover .e-rowdragdrop,
+    &.e-rtl .e-disable-gridhover tr[role='row']:hover .e-rowdragdrop,
+    &.e-disable-gridhover tr[role='row']:not(.e-detailrow):hover .e-detailrowexpand {
+      &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+        background-color: transparent;
+      }
+    }
+
     & tr[role='row']:hover .e-rowdragdrop {
       cursor: move;
     }

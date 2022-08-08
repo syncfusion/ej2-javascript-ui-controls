@@ -1762,6 +1762,247 @@
                 expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('3/26/2019');
             }
         });
-    });  
+    });
+    describe('Edit Duration of new task', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: [],
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    timelineViewMode: 'Week',
+                    topTier: {
+                      format: 'MMM',
+                      unit: 'Week',
+                    },
+                    bottomTier: {
+                      unit: 'Day',
+                      format: 'dd',
+                    },
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+		projectStartDate: new Date('07/22/2022'),
+                projectEndDate: new Date('08/28/2022')
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Edit duration of new task', () => {
+            ganttObj.fitToProject();
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType == 'add') {
+                    expect(args.data.EndDate.getDate() - args.data.StartDate.getDate()).toBe(1);
+                }
+            };
+            ganttObj.openAddDialog();
+            ganttObj.dataBind();
+	    let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = new Date('07/20/2022');
+	    SD.dataBind();
+            let name: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            name.value = '2 days';
+            name.dataBind();
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Cr progress', () => {
+        let ganttObj: Gantt;
+        let elem: HTMLElement;
+        let dropdownlistObj: DropDownList;
+        let data: [{ value: "0", text:"Pendiente" },{ value:"25", text: "Iniciado" }, { value:"50", text:"Activo" }, { value: "100", text: "Completado" }, { value: "0", text: "Cancelado" }];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress',editType:'dropdownedit',edit: {
+                        create: () => {
+                            elem = document.createElement('input');
+                            return elem;
+                        },
+                        read: () => {
+                           return dropdownlistObj.value;
+                        },
+                        destroy: () => {
+                            dropdownlistObj.destroy();
+                        },
+                        write: (args: any) => {
+                            dropdownlistObj = new DropDownList({
+                                dataSource: data,
+                                fields: { text: 'text', value: 'value' },
+                                value: args.rowData[args.column.field],
+                                floatLabelType: 'Auto',
+                            });
+                            dropdownlistObj.appendTo(elem);
+                        }
+                    } }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                   // columnIndex: 4
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),            
+            }, done);
+        });
+        afterAll(() => {
+           if (ganttObj) {
+               destroyGantt(ganttObj);
+           }
+       });
+       beforeEach((done) => {
+           setTimeout(done, 1000);
+           ganttObj.openEditDialog(4);
+       });
+       it('Dropdownedit progress', () => {
+           ganttObj.actionBegin = function (args: any): void {
+               if (args.requestType === "beforeOpenEditDialog") {
+                   args.dialogModel.animationSettings = { 'effect': 'none' };
+               }
+           };
+           ganttObj.dataBind();
+           let progressField: any = document.querySelector('#' + ganttObj.element.id + 'Progress') as HTMLInputElement;
+           if (progressField) {
+            triggerMouseEvent(progressField, 'click');
+            progressField.value = "Pendiente";
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.currentViewData[3].ganttProperties.progress).toBe(0);
+           }
+       });
+    });
  });
  

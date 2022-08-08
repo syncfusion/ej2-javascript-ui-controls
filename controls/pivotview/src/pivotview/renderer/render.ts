@@ -12,7 +12,7 @@ import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
-import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs } from '../../common/base/interface';
+import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, ExportCompleteEventArgs } from '../../common/base/interface';
 import { AggregateMenuOpenEventArgs, BeforeExportEventArgs, PivotColumn, ExcelRow } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
@@ -335,6 +335,11 @@ export class Render {
             (this.parent.lastColumn as any).width = 'auto';
             this.parent.lastColumn = undefined;
         }
+        let exportCompleteEventArgs: ExportCompleteEventArgs = {
+            type: 'PDF',
+            promise: args.promise
+        }
+        this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
     }
 
     private excelExportComplete(args: ExcelExportCompleteArgs): void {
@@ -342,6 +347,11 @@ export class Render {
             (this.parent.lastColumn as any).width = 'auto';
             this.parent.lastColumn = undefined;
         }
+        let exportCompleteEventArgs: ExportCompleteEventArgs = {
+            type: 'Excel/CSV',
+            promise: args.promise
+        }
+        this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
     }
 
     /* eslint-enable */
