@@ -616,7 +616,7 @@ export class ComboBox extends DropDownList {
     }
 
     protected incrementalSearch(e: KeyboardEventArgs): void {
-        this.showPopup();
+        this.showPopup(e);
         if (!isNullOrUndefined(this.listData)) {
             this.inlineSearch(e);
             e.preventDefault();
@@ -711,7 +711,7 @@ export class ComboBox extends DropDownList {
         }
         super.dropDownClick(e);
     }
-    private customValue(e?: MouseEvent | KeyboardEventArgs): void {
+    private customValue(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         const value: string | number | boolean = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
             const previousValue: string | number | boolean = this.previousValue;
@@ -751,7 +751,7 @@ export class ComboBox extends DropDownList {
         value: string | Object,
         eventArgs: { [key: string]: Object | string | number },
         previousValue: string | number | boolean,
-        e?: MouseEvent| KeyboardEventArgs): void {
+        e?: MouseEvent| KeyboardEventArgs | TouchEvent): void {
         const fields: FieldSettingsModel = this.fields;
         const item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
         let dataItem: { [key: string]: string | Object } = {};
@@ -880,8 +880,8 @@ export class ComboBox extends DropDownList {
      * @returns {void}
      * @deprecated
      */
-    public showPopup(): void {
-        super.showPopup();
+    public showPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        super.showPopup(e);
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**
@@ -890,7 +890,7 @@ export class ComboBox extends DropDownList {
      * @returns {void}
      * @deprecated
      */
-    public hidePopup(e?: MouseEvent | KeyboardEventArgs): void {
+    public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         /* eslint-enable valid-jsdoc, jsdoc/require-param */
         const inputValue: string | Object = this.inputElement && this.inputElement.value === '' ? null
             : this.inputElement && this.inputElement.value;

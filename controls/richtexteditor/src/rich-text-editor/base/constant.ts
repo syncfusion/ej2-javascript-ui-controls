@@ -440,6 +440,11 @@ export const readOnlyMode: string = 'readOnlyMode';
  * @hidden
  * @deprecated
  */
+ export const moduleDestroy: string = 'moduleDestroy';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const pasteClean: string = 'pasteClean';
 /**
  * @hidden

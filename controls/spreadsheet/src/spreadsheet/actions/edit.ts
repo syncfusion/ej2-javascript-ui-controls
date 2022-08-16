@@ -809,6 +809,13 @@ export class Edit {
                 }
             } else {
                 editWidth = (mainContElement.offsetWidth - (left - cont.scrollLeft) - 28) - this.parent.sheetModule.getRowHeaderWidth(sheet);
+                const tdEleInf: ClientRect = tdElem.getBoundingClientRect();
+                const panelWidth: number = mainContElement.getBoundingClientRect().width;
+                const getCellRight: number = this.parent.enableRtl ? tdEleInf.left : tdEleInf.right;
+                const scrollBar: Element = this.parent.getScrollElement();
+                if (panelWidth < getCellRight) {
+                    scrollBar.scrollLeft += getCellRight - panelWidth + this.parent.sheetModule.getScrollSize();
+                }
             }
             if (this.editCellData.rowIndex < frozenRow) { preventWrap = true; }
             const height: string = !preventWrap && ((cell && cell.wrap) || (tdElem && isWrap) || addWrap) ? 'auto;' : minHeight + 'px;';

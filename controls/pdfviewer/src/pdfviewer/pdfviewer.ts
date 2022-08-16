@@ -8202,11 +8202,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.drawing.clearSelectorLayer(pageId);
         this.viewerBase.isAnnotationSelect = false;
         this.viewerBase.isFormFieldSelect = false;
-        let module: any = this.annotationModule.textMarkupAnnotationModule;
-        if (module) {
-            const annotationSelect: number = module.selectTextMarkupCurrentPage;
-            this.annotationModule.textMarkupAnnotationModule.clearCurrentSelectedAnnotation();
-            this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect);
+        if(this.annotationModule){
+            let module: any = this.annotationModule.textMarkupAnnotationModule;
+            if (module) {
+                const annotationSelect: number = module.selectTextMarkupCurrentPage;
+                this.annotationModule.textMarkupAnnotationModule.clearCurrentSelectedAnnotation();
+                this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect);
+            }
         }
         this.enableServerDataBinding(allowServerDataBind, true);
     } 

@@ -4,7 +4,7 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { OpenOptions, OpenFailureArgs } from '../common/interface';
 import { refreshSheetTabs, completeAction, unProtectSheetPassword } from '../common/event';
-import { dialog, importProtectWorkbook, locale } from '../common/index';
+import { dialog, importProtectWorkbook, locale, OpenArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { openSuccess, openFailure, clearFormulaDependentCells } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
@@ -86,21 +86,26 @@ export class Open {
      * @returns {void} - File open success event declaration.
      */
     private openSuccess(response: JsonData): void {
-        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword', 'CorrectSheetPassword'];
+        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
+            'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
+        const openCancelFn: Function = (action: string): void => {
+            (this.parent.serviceLocator.getService(dialog) as Dialog).hide();
+            const file: File = new File([], response.guid, { type: action.toLowerCase() });
+            this.parent.open(<OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password });
+        };
         if (openError.indexOf(response.data) > -1) {
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
             if (openError[2] === response.data) {
                 if (!this.parent.element.querySelector('.e-importprotectworkbook-dlg')) {
                     this.parent.notify(importProtectWorkbook, response.eventArgs);
                 }
             } else if (openError[3] === response.data) {
-                const l10n: L10n = this.parent.serviceLocator.getService(locale);
                 const alertSpan: Element = this.parent.createElement('span', {
                     className: 'e-importprotectpwd-alert-span',
                     innerHTML: l10n.getConstant('InCorrectPassword')
                 });
                 (this.parent.element.querySelector('.e-importprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
             } else if (openError[4] === response.data) {
-                const l10n: L10n = this.parent.serviceLocator.getService(locale);
                 const alertSpan: Element = this.parent.createElement('span', {
                     className: 'e-unprotectsheetpwd-alert-span',
                     innerHTML: l10n.getConstant('InCorrectPassword')
@@ -116,10 +121,15 @@ export class Open {
             else  {
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.hide();
+                const sizeLimitAlert: boolean = response.data.includes('LimitExceeded');
                 (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                     content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n)
                         .getConstant(response.data as string),
-                    width: '300',
+                    width: '300', buttons: sizeLimitAlert ? [
+                        { click: openCancelFn.bind(this, `${response.data}Open`),
+                            buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true } },
+                        { click: openCancelFn.bind(this, `${response.data}Cancel`),
+                            buttonModel: { content: l10n.getConstant('Cancel') } }] : [],
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
                         const dlgArgs: DialogBeforeOpenEventArgs = {
                             dialogName: 'OpenDialog',
@@ -130,7 +140,7 @@ export class Open {
                             args.cancel = true;
                         }
                     }
-                });
+                }, sizeLimitAlert ? true : null);
                 this.parent.hideSpinner();
                 return;
             }
@@ -192,4 +202,5 @@ interface JsonData {
     data: string;
     eventArgs: OpenOptions;
     isOpenFromJson: boolean;
+    guid?: string;
 }

@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 20.2.44 (2022-08-16)
+
+### MultiSelect
+
+#### New Features
+
+- Provided event details in open and close event arguments in the multiselect component.
+
+### AutoComplete
+
+#### New Features
+
+- Provided event details in open and close event arguments in the autocomplete component.
+
+### ComboBox
+
+#### New Features
+
+- Provided event details in open and close event arguments in the combobox component.
+
+### DropDownList
+
+#### New Features
+
+- Provided event details in open and close event arguments in the dropdownlist component.
+
 ## 20.2.43 (2022-08-08)
 
 ### ListBox

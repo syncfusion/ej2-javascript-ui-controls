@@ -251,6 +251,11 @@ export class ContextMenu {
         } else {
             items = args.items;
         }
+        if (this.parent.selectionSettings.mode === 'None') {
+            if (target === 'Content') {
+                this.parent.enableContextMenuItems(['Filter'], false, false);
+            }
+        }
         if (target === 'ColumnHeader' || target === 'RowHeader') {
             if (args.element && args.element.childElementCount > 0) {
                 const insertEle: HTMLElement =
@@ -269,6 +274,14 @@ export class ContextMenu {
                     deleteEle.classList.remove('e-disabled');
                 } else if (!this.parent.allowDelete && !deleteEle.classList.contains('e-disabled')) {
                     deleteEle.classList.add('e-disabled');
+                }
+                if (this.parent.selectionSettings.mode === 'None') {
+                    if (target === 'ColumnHeader') {
+                        this.parent.enableContextMenuItems(['Insert Column','Delete Column','Hide Column'], false, false);
+                    }
+                    if (target === 'RowHeader') {
+                        this.parent.enableContextMenuItems(['Insert Row','Delete Row','Hide Row'], false, false);
+                    }
                 }
             }
         } else if (target === 'Footer') {

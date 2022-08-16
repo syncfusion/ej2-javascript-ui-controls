@@ -264,7 +264,7 @@ describe('Context-', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData.length).toBe(43);
+            expect(ganttObj.currentViewData.length).toBe(44);
         });
     });
      describe('Content menu -', () => {

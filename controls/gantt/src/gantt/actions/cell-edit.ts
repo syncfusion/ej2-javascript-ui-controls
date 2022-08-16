@@ -180,6 +180,9 @@ export class CellEdit {
             this.parent.editModule.endEditAction(args);
         }
         this.isCellEdit = false;
+        if (!isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn)) {
+            this.parent.editModule.cellEditModule.editedColumn = null;
+        }
         if (!isNOU(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }

@@ -159,7 +159,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Bottom');
             expect(ganttObj.flatData.length).toBe(9);
-            expect(ganttObj.dataSource[4].TaskName).toBe('New Task');
+            expect(ganttObj.dataSource[5].TaskName).toBe('New Task');
         });
 
         it('Add record to above position', () => {
@@ -167,7 +167,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Above', 5);
             expect(ganttObj.flatData.length).toBe(10);
-            expect(ganttObj.dataSource[1].TaskName).toBe('New Task');
+            expect(ganttObj.dataSource[2].TaskName).toBe('New Task');
         });
 
         it('Add record to below position', () => {
@@ -175,7 +175,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Predecessor: "2", Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Below',6);
             expect(ganttObj.flatData.length).toBe(11);
-            expect(ganttObj.dataSource[3].TaskName).toBe('New Task');
+            expect(ganttObj.dataSource[4].TaskName).toBe('New Task');
         });
 
         it('Add record as first child record', () => {
@@ -183,7 +183,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Child',7);
             expect(ganttObj.flatData.length).toBe(12);
-            expect(ganttObj.dataSource[3].subtasks[0].TaskName).toBe('New Task');
+            expect(ganttObj.dataSource[4].subtasks[0].TaskName).toBe('New Task');
         });
 
         it('Add record as child of child record', () => {
@@ -191,7 +191,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Child',8);
             expect(ganttObj.flatData.length).toBe(13);
-            expect(ganttObj.dataSource[3].subtasks[0].subtasks.length).toBe(1);
+            expect(ganttObj.dataSource[4].subtasks[0].subtasks.length).toBe(2);
         });
 
         it('Add record as second child', () => {
@@ -199,7 +199,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Child',7);
             expect(ganttObj.flatData.length).toBe(14);
-            expect(ganttObj.dataSource[3].subtasks.length).toBe(2);
+            expect(ganttObj.dataSource[4].subtasks.length).toBe(4);
         });
 
         it('Add record below to child record', () => {
@@ -209,7 +209,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0], 'Below', 2);
             expect(ganttObj.flatData.length).toBe(15);
-            expect(ganttObj.dataSource[0].subtasks[1].TaskName).toBe('New Task');
+            expect(ganttObj.dataSource[1].subtasks[1].TaskName).toBe('New Task');
         });       
 
         it('Add record above to child record', () => {
@@ -219,7 +219,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Above',2);
             expect(ganttObj.flatData.length).toBe(16);
-            expect(ganttObj.dataSource[0].subtasks[0].TaskName).toBe('Child Added Above');
+            expect(ganttObj.dataSource[1].subtasks[0].TaskName).toBe('Child Added Above');
         });
 
         it('Add record below to parent record', () => {
@@ -875,5 +875,65 @@ describe('Gantt Edit support', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 2000);
         });
+    });
+});
+describe('check datasource  without passing position', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+    dataSource:projectData,
+    allowSorting: true,
+    taskFields: {
+        id: 'TaskID',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        duration: 'Duration',
+        progress: 'Progress',
+        dependency:'Predecessor',
+        child: 'subtasks'
+    },
+
+    editSettings: {
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true,
+        allowAdding:true
+    },
+    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+    'PrevTimeSpan', 'NextTimeSpan'],
+    allowSelection: true,
+    gridLines: "Both",
+    showColumnMenu: false,
+    highlightWeekends: true,
+    timelineSettings: {
+        topTier: {
+            unit: 'Week',
+            format: 'dd/MM/yyyy'
+        },
+        bottomTier: {
+            unit: 'Day',
+            count: 1
+        }
+    },
+    labelSettings: {
+        leftLabel: 'TaskName',
+        taskLabel: 'Progress'
+    },
+    height: '550px',
+    allowUnscheduledTasks: true,
+    projectStartDate: new Date('03/25/2019'),
+    projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('datasource record length', () => {
+        ganttObj.addRecord()
+  expect((ganttObj.dataSource as any).length).toBe(2);
+        
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+        
     });
 });

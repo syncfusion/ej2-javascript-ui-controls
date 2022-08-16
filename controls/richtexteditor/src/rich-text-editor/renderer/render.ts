@@ -64,12 +64,7 @@ export class Render {
         this.removeEventListener();
     }
 
-    /**
-     * Clears the Render Module.
-     *
-     * @returns {void}
-     */
-     public moduleDestroy(): void {
+    private moduleDestroy(): void {
         this.parent = null;
     }
 
@@ -79,6 +74,7 @@ export class Render {
         }
         this.parent.on(events.modelChanged, this.refresh, this);
         this.parent.on(events.keyUp, this.keyUp, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private removeEventListener(): void {
         if (this.parent.isDestroyed) {
@@ -86,6 +82,7 @@ export class Render {
         }
         this.parent.off(events.modelChanged, this.refresh);
         this.parent.off(events.keyUp, this.keyUp);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     private keyUp(e: NotifyArgs): void {
         if (this.parent.editorMode === 'HTML') {

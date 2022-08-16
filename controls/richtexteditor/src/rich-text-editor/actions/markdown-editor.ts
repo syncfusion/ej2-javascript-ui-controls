@@ -42,6 +42,11 @@ export class MarkdownEditor {
         this.removeEventListener();
     }
 
+    private moduleDestroy(): void {
+        this.parent = null;
+        this.toolbarUpdate.parent = null;
+    }
+
     private addEventListener(): void {
         if (this.parent.isDestroyed) {
             return;
@@ -57,6 +62,7 @@ export class MarkdownEditor {
         this.parent.on(events.selectionSave, this.onSelectionSave, this);
         this.parent.on(events.selectionRestore, this.onSelectionRestore, this);
         this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -129,6 +135,7 @@ export class MarkdownEditor {
         this.parent.off(events.selectionSave, this.onSelectionSave);
         this.parent.off(events.selectionRestore, this.onSelectionRestore);
         this.parent.off(events.readOnlyMode, this.updateReadOnly);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     private render(): void {

@@ -18,13 +18,18 @@ export class EnterKeyAction {
     protected addEventListener(): void {
         this.parent.on(events.enterHandler, this.enterHandler, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private destroy(): void {
         this.removeEventListener();
     }
+    private moduleDestroy(): void {
+        this.parent = null;
+    }
     private removeEventListener(): void {
         this.parent.off(events.enterHandler, this.enterHandler);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     private getRangeNode(): void {
         this.range = this.parent.getRange();
@@ -143,7 +148,8 @@ export class EnterKeyAction {
                                     isImageNode = true;
                                     isNearBlockLengthZero = false;
                                 } else {
-                                    if (nearBlockNode.textContent.trim().length !== 0) {
+                                    if (nearBlockNode.textContent.trim().length !== 0 ||
+                                    nearBlockNode.childNodes[0].nodeName === 'IMG') {
                                         newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
                                         isNearBlockLengthZero = false;

@@ -7,6 +7,28 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
+export let projectNewData2: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Receive vehicle and create job card',
+        BaselineStartDate: new Date('03/05/2018 5:00:00 PM'),
+        BaselineEndDate: new Date('03/05/2018 5:00:00 PM'),
+        StartDate: new Date('03/05/2018 5:00:00 PM'),
+        EndDate: new Date('03/05/2018 5:00:00 PM'),
+        IsMilestone: true,
+        Duration: 0,
+      },
+      {
+        TaskID: 2,
+        TaskName: 'Allot mechanic and send vehicle to service bay',
+        BaselineStartDate: new Date('03/05/2018 10:00:00 AM'),
+        BaselineEndDate: new Date('03/06/2018 10:15:00 AM'),
+        StartDate: new Date('03/05/2018 10:15:00 AM'),
+        EndDate: new Date('03/06/2018 10:20:00 AM'),
+      }
+    ];
+
+
 export let scheduleModeData1: Object[] = [
     {
         "TaskID": 1,

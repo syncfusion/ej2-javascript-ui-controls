@@ -45,6 +45,7 @@ import { TrackChangesPane } from '../track-changes/track-changes-pane';
  * @private
  */
 export class DocumentHelper {
+    
     /**
      * @private
      */
@@ -539,6 +540,7 @@ export class DocumentHelper {
      * @private
      */
     public isFootnoteWidget: boolean = false;
+    
     /**
      * Gets visible bounds.
      *
@@ -1505,6 +1507,13 @@ export class DocumentHelper {
      * @returns {void}
      */
     public updateFocus = (): void => {
+        if (!isNullOrUndefined(this.currentSelectedComment)) {
+            if (this.owner.commentReviewPane && this.owner.commentReviewPane.commentPane.isEditMode) {
+                this.owner.commentReviewPane.commentPane.selectComment(this.currentSelectedComment);
+            }
+            this.selection.hideCaret();
+            return;
+        }
         if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
             if (!Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')
                 && !isNullOrUndefined(this.iframe)) {
@@ -1915,7 +1924,7 @@ export class DocumentHelper {
         if (this.scrollMoveTimer) {
             clearInterval(this.scrollMoveTimer);
         }
-        if (!this.isLeftButtonPressed(event)) {
+        if (!this.isLeftButtonPressed(event) && this.isMouseDown) {
             this.onMouseUpInternal(event);
         }
     };
@@ -2024,7 +2033,7 @@ export class DocumentHelper {
     public onMouseUpInternal = (event: MouseEvent): void => {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
             return;
-        }
+        } 
         event.preventDefault();
         this.isListTextSelected = false;
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
@@ -2117,6 +2126,7 @@ export class DocumentHelper {
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
                 this.selection.caret.style.display = 'none';
             }
+            
             this.isMouseDown = false;
             this.isFootnoteWidget = false;
             this.isSelectionChangedOnMouseMoved = false;
@@ -2124,6 +2134,7 @@ export class DocumentHelper {
             this.useTouchSelectionMark = true;
             this.isControlPressed = false;
             this.updateFocus();
+            
             if (this.isListTextSelected) {
                 this.selection.hideCaret();
             }
@@ -2461,6 +2472,10 @@ export class DocumentHelper {
         this.zoomX = undefined;
         this.zoomY = undefined;
         if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
+            if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
+                && !this.owner.commentReviewPane.commentPane.isEditMode) {
+                this.currentSelectedComment = undefined;
+            }
             if (this.touchDownOnSelectionMark === 0) {
                 this.updateTextPositionForSelection(new Point(touchPoint.x, touchPoint.y), this.tapCount);
                 if (this.tapCount === 2) {
@@ -2471,10 +2486,6 @@ export class DocumentHelper {
                 this.selection.updateCaretPosition();
             }
             this.selection.checkForCursorVisibility();
-            if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
-                && !this.owner.commentReviewPane.commentPane.isEditMode) {
-                this.currentSelectedComment = undefined;
-            }
         }
     }
     /**
@@ -2557,7 +2568,7 @@ export class DocumentHelper {
      * @param {Page} page - Specifies page to remove
      * @returns {void}
      */
-    public removePage(page: Page, updateHeaderFooterPage?:boolean): void {
+    public removePage(page: Page): void {
         if (this.currentPage === page) {
             this.currentPage = undefined;
         }
@@ -2599,14 +2610,6 @@ export class DocumentHelper {
                 top = page.boundingRectangle.bottom + 20;
                 page.repeatHeaderRowTableWidget = false;
             }
-        }
-        let start : TextPosition = this.selection.start as TextPosition;
-        if(!this.selection.isForward){
-            start = this.selection.end;
-        }
-        let currentPage: Page = (start.paragraph.containerWidget as BodyWidget).page as Page;
-        if(updateHeaderFooterPage){
-            this.owner.viewer.findFocusedPage(start.location,true,true,currentPage);
         }
     }
     // private removeRenderedPages(): void {
@@ -3943,7 +3946,7 @@ export abstract class LayoutViewer {
             this.clientActiveArea.width = 0;
         }
     }
-    public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean, updateHeaderFooterPage?: boolean, updatePage?: Page): Point {
+    public findFocusedPage(currentPoint: Point, updateCurrentPage: boolean, updateHeaderFooterPage?: boolean): Point {
         let point: Point = new Point(currentPoint.x, currentPoint.y);
         point.x += this.documentHelper.viewerContainer.scrollLeft;
         point.y += this.documentHelper.viewerContainer.scrollTop;
@@ -3962,7 +3965,12 @@ export abstract class LayoutViewer {
                 if (updateCurrentPage) {
                     this.documentHelper.currentPage = page;
                     if(updateHeaderFooterPage) {
-                        this.updateHeaderFooterPageInstance(page);
+                        if (!isNullOrUndefined(page.headerWidget)) {
+                            page.headerWidget.page = page;
+                        }
+                        if (!isNullOrUndefined(page.footerWidget)) {
+                            page.footerWidget.page = page;
+                        }
                     }
                 }
                 point.y = (point.y - (pageTop)) / this.documentHelper.zoomFactor;
@@ -3975,24 +3983,10 @@ export abstract class LayoutViewer {
                 }
                 return point;
             }
-            if(!isNullOrUndefined(updatePage)){
-                this.updateHeaderFooterPageInstance(updatePage);
-            }
-        }
-        if(!isNullOrUndefined(updatePage)){
-            this.updateHeaderFooterPageInstance(updatePage);
         }
         return point;
     }
 
-    private updateHeaderFooterPageInstance(page:Page):void{
-        if (!isNullOrUndefined(page.headerWidget)) {
-            page.headerWidget.page = page;
-        }
-        if (!isNullOrUndefined(page.footerWidget)) {
-            page.footerWidget.page = page;
-        }
-    }
     public getPageHeightAndWidth(height: number, width: number, viewerWidth: number, viewerHeight: number): PageInfo {
         height = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {

@@ -9,7 +9,12 @@ import { IAdvanceListItem } from '../../common';
  * `ToolbarAction` module is used to toolbar click action
  */
 export class ToolbarAction {
-    protected parent: IRichTextEditor;
+    /**
+     *
+     * @hidden
+     * @private
+     */
+    public parent: IRichTextEditor;
     private serviceLocator: ServiceLocator;
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;

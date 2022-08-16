@@ -890,6 +890,7 @@ export class LargeIconsView {
                         const val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
                         if (val === '' && !this.parent.isFiltered) {
                             const id: string = getValue('id', details);
+                            this.parent.oldPath = this.parent.path;
                             const newPath: string = this.parent.path + (isNOU(id) ? text : id) + '/';
                             this.parent.setProperties({ path: newPath }, true);
                             this.parent.pathNames.push(text);

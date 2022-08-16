@@ -155,6 +155,7 @@ export class WorkbookFormula {
             for (let i: number = 0; i < Array.from(formulas.values()).length; i++) {
                 if (args.selectedList === Array.from(formulas.keys())[i]) {
                     args.description = formulaInfo[i].description;
+                    args.isCustom = formulaInfo[i].isCustom;
                 }
             }
             break;
@@ -220,7 +221,7 @@ export class WorkbookFormula {
             args.col = getAlphalabel(<number>args.col);
             break;
         case 'addCustomFunction':
-            this.addCustomFunction(<string | Function>args.functionHandler, <string>args.functionName);
+            this.addCustomFunction(<string | Function>args.functionHandler, <string>args.functionName, <string>args.formulaDescription );
             break;
         case 'computeExpression':
             args.calcValue = this.calculateInstance.computeExpression(<string>args.formula);
@@ -249,8 +250,8 @@ export class WorkbookFormula {
     private getSheetInfo(): { visibleName: string, sheet: string }[] {
         return this.sheetInfo;
     }
-    private addCustomFunction(functionHandler: string | Function, functionName: string): void {
-        this.calculateInstance.defineFunction(functionName, functionHandler);
+    private addCustomFunction(functionHandler: string | Function, functionName: string, formulaDescription: string): void {
+        this.calculateInstance.defineFunction(functionName, functionHandler,formulaDescription);
     }
     private updateSheetInfo(): void {
         this.sheetInfo = [];

@@ -489,7 +489,7 @@ export function removeRangeEle(content: Element, checkEle: HTMLElement, cls: str
             }
         } else {
             const ele: Element = content.querySelector('.' + cls);
-            if (ele) {
+            if (ele && !ele.classList.contains('e-multi-range')) {
                 detach(ele);
             }
         }

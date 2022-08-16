@@ -9659,5 +9659,55 @@ describe('MultiSelect', () => {
             expect(listObj.ulElement.querySelector('li').textContent === '6').toBe(true);
         });
     });
+    describe('Provide event details in open and close event arguments in dropdown components', () => {
+        let listObj: any;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ } };
+        let eventDetails : any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeEach(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({ dataSource: datasource2,  showDropDownIcon: true, open: (e: PopupEventArgs) => {
+                eventDetails = e.event;
+            },
+            close: (e: PopupEventArgs) => {
+                eventDetails = e.event;
+            }});
+            listObj.appendTo(element);
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Testing event details by keyboard action', (done) => {
+            (<any>listObj).showPopup(keyEventArgs);
+            setTimeout(() => {
+            expect(!isNullOrUndefined(eventDetails)).toBe(true);
+            eventDetails = null;
+            (<any>listObj).hidePopup(keyEventArgs);
+            expect(!isNullOrUndefined(eventDetails)).toBe(true);
+            eventDetails = null;
+            done();
+            }, 450);
+        });
+        it('mouse click on input', (done) => {
+            let dropEle: HTMLElement = listObj.element.parentElement.parentElement;
+            let iconEle: HTMLElement = (<HTMLElement>dropEle.querySelector('.e-ddl-icon'));
+            iconEle.innerHTML = 'Icon';
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            iconEle.dispatchEvent(clickEvent);
+            setTimeout(() => {
+            expect(!isNullOrUndefined(eventDetails)).toBe(true);
+            eventDetails = null;
+            clickEvent.initEvent('mousedown', true, true);
+            iconEle.dispatchEvent(clickEvent);
+            expect(!isNullOrUndefined(eventDetails)).toBe(true);
+            eventDetails = null;
+            done();
+            }, 450);
+        });
+    });
 });
 

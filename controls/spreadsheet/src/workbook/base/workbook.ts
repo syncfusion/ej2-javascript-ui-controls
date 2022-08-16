@@ -1585,13 +1585,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/addCustomFunction/index.md' %}{% endcodeBlock %}
      * @returns {void} - To add custom library function.
      */
-    public addCustomFunction(functionHandler: string | Function, functionName?: string): void {
+    public addCustomFunction(functionHandler: string | Function, functionName?: string, formulaDescription?: string ): void {
         functionName = functionName ? functionName : typeof functionHandler === 'string' ? functionHandler :
             functionHandler.name.replace('bound ', '');
         const eventArgs: { [key: string]: Object } = {
             action: 'addCustomFunction',
             functionHandler: functionHandler,
-            functionName: functionName
+            functionName: functionName,
+            formulaDescription: formulaDescription
         };
         this.notify(events.workbookFormulaOperation, eventArgs);
     }

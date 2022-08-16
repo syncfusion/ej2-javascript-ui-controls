@@ -314,7 +314,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property('Pages')
     public layoutType: LayoutType;
-
+    
     /**
      * Gets or sets the current user.
      *

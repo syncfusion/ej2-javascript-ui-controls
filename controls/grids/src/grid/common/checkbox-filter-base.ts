@@ -954,7 +954,10 @@ export class CheckBoxFilterBase {
             label.innerHTML = '';
             const isReactCompiler: boolean = this.parent.isReact && this.options.column.filter
                 && typeof (this.options.column.filter.itemTemplate) !== 'string';
-            if (isReactCompiler) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
+                (this.parent as any).parentDetails.parentInstObj.isReact;
+            if (isReactCompiler || isReactChild) {
                 this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
                 this.parent.renderTemplates();
             } else {

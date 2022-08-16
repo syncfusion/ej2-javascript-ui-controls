@@ -628,6 +628,7 @@ export interface IFileManager extends Component<HTMLElement> {
     refreshLayout(): void;
     isMac: boolean;
     oldView: string;
+    oldPath: string;
 }
 
 /** @hidden */

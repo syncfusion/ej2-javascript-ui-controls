@@ -27,7 +27,12 @@ export class DropDownButtons {
     public tableRowsDropDown: DropDownButton;
     public tableColumnsDropDown: DropDownButton;
     public tableCellVerticalAlignDropDown: DropDownButton;
-    protected parent: IRichTextEditor;
+    /**
+     *
+     * @hidden
+     * @private
+     */
+    public parent: IRichTextEditor;
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;

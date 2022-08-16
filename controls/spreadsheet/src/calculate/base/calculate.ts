@@ -2452,12 +2452,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {string} functionName - Custom function name.
      * @returns {void} - To add custom library formula.
      */
-    public defineFunction(formulaName: string, functionName: string | Function): void {
+     public defineFunction(formulaName: string, functionName: string | Function,formulaDescription: string): void {
         if (typeof functionName === 'string') {
             functionName = getValue(functionName, window);
         }
         formulaName = formulaName.toUpperCase();
-        this.libraryFormulas.set(formulaName, { handler: functionName as Function, isCustom: true });
+        this.libraryFormulas.set(formulaName, { handler: functionName as Function, isCustom: true, description:formulaDescription });
     }
 
     /**

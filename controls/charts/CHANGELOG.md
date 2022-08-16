@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.44 (2022-08-16)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I395538` - Shared tooltip template is not shown for two series has been fixed.
+
 ## 20.2.43 (2022-08-08)
 
 ### Chart

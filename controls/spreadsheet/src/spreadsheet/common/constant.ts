@@ -254,6 +254,8 @@ export const defaultLocale: object = {
     PickACategory: 'Pick a category',
     Description: 'Description',
     UnsupportedFile: 'Unsupported File',
+    DataLimitExceeded: 'File data is too large and it takes more time to process, do you want to continue?',
+    FileSizeLimitExceeded: 'File size is too large and it takes more time to process, do you want to continue?',
     InvalidUrl: 'Invalid URL',
     SUM: 'Adds a series of numbers and/or cells.',
     SUMIF: 'Adds the cells based on specified condition.',

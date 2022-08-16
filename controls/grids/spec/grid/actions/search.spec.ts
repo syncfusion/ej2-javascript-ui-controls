@@ -12,6 +12,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Column } from '../../../src/grid/models/column';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { select } from '@syncfusion/ej2-base';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 
 Grid.Inject(Search, Page, Toolbar, Edit);
 
@@ -330,4 +331,48 @@ describe('Search module=>', () => {
         });
     });
 
+    describe('EJ2-62074 - Header checkbox selected automatically while doing searching and filtering=>', () => {
+        let gridObj: Grid;
+        let dataStateChange: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    toolbar: ['Search'],
+                    dataSource: { result: data, count: data.length},
+                    allowFiltering: true,
+                    allowPaging: true,
+                    selectionSettings: { persistSelection: true },
+                    columns: [
+                        { type: "checkbox", width: "60" },
+                        { field: "OrderID", isPrimaryKey: true, headerText: "Order ID", width: "110" },
+                        { field: "ShipName", headerText: "Ship Name", width: "140" },
+                        { field: "Freight", headerText: "Freight", width: "110" },
+                        { field: "OrderDate", headerText: "Order Date", width: "180", type: "date", format: "yMd" }
+                    ],
+                    dataStateChange: dataStateChange,
+                },
+                done);
+        });
+        it('Rendering Grid with custom binding =>', (done: Function) => {
+            dataStateChange = (args?: any): void => {
+                var result = new DataManager(data).executeLocal(
+                    new Query().search(args.search[0].key, args.search[0].fields));
+                    gridObj.dataSource = {
+                      result: result,
+                      count: result.length,
+                    };
+                    done();
+            };
+            gridObj.dataStateChange = dataStateChange;
+            gridObj.searchModule.search('10249');
+        });
+        it('checking the header checkbox =>', () => {
+            let cBox: HTMLElement = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
+            expect(cBox.classList.contains('e-check')).toBeFalsy();
+            gridObj.dataStateChange = null;
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

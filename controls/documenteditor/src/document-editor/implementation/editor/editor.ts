@@ -56,7 +56,6 @@ import { CommentView } from '../comments';
 import { SelectionBorder } from '../selection/selection-format';
 import { Paragraph } from '../../../document-editor-container/properties-pane/paragraph-properties';
 
-
 /**
  * Editor module
  */
@@ -214,6 +213,7 @@ export class Editor {
      * @private
      */
     public isInsertField: boolean = false;
+   
 
     /**
      * Initialize the editor module
@@ -330,6 +330,10 @@ export class Editor {
         this.isInsertField = false;
     }
 
+    private isLinkedStyle(styleName: string): boolean {
+        const styleObj: Object = this.documentHelper.styles.findByName(styleName);
+        return !isNullOrUndefined((styleObj as WParagraphStyle).link);
+    }
     /**
      * To update style for paragraph
      *
@@ -348,7 +352,7 @@ export class Editor {
             startPosition = this.startOffset;
             endPosition = this.endOffset;
             const isSelectionEmpty: boolean = this.selection.isEmpty;
-            this.clearFormatting();
+            this.clearFormattingInternal(!this.isLinkedStyle(style));
             if (isSelectionEmpty && !this.selection.isEmpty) {
                 this.selection.end.setPositionInternal(this.selection.start);
             }
@@ -1944,12 +1948,15 @@ export class Editor {
             }
             isRemoved = this.removeSelectedContents(selection);
             this.skipReplace = false;
-            if (!isNullOrUndefined(endPosition)) {
-                if (this.owner.search.isRepalceTracking) {
-                    this.owner.search.isRepalceTracking = false;
-                }
+            if (!isNullOrUndefined(endPosition) && this.owner.search.isRepalceTracking) {
+                this.owner.search.isRepalceTracking = false;
                 this.selection.start.setPositionInternal(this.selection.start);
                 this.selection.end.setPositionInternal(endPosition);
+            } else {
+                if (!isNullOrUndefined(endPosition)) {
+                    this.selection.start.setPositionInternal(endPosition);
+                    this.selection.end.setPositionInternal(endPosition);
+                }
             }
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
@@ -3558,7 +3565,7 @@ export class Editor {
 
     private createHyperlinkElement(url: string, startPosition: TextPosition, endPosition: TextPosition, format: WCharacterFormat): FieldElementBox {
         let selection: Selection = this.selection;
-        //this.documentHelper.layout.allowLayout = false;
+        this.documentHelper.layout.allowLayout = false;
         this.appylingHyperlinkFormat(selection);
         //this.documentHelper.layout.allowLayout = true;
         // Adds the field end at the URL text end position.
@@ -3577,6 +3584,7 @@ export class Editor {
         let lineIndex: number = selection.start.paragraph.childWidgets.indexOf(begin.line);
         let index: number = begin.line.children.indexOf(begin);
         fieldEnd.linkFieldCharacter(this.documentHelper);
+        this.documentHelper.layout.allowLayout = true;
         this.documentHelper.layout.reLayoutParagraph(selection.start.paragraph, lineIndex, index);
         return fieldEnd;
     }
@@ -7186,7 +7194,7 @@ export class Editor {
         if (isNullOrUndefined(isSelectionChanged)) {
             isSelectionChanged = selection.isEmpty;
         }
-        if (this.owner.showRevisions && this.owner.revisions.length > 0) {
+        if (this.owner.showRevisions && this.owner.trackChangesPane.isUpdateTrackChanges(this.owner.revisions.length)) {
             this.owner.trackChangesPane.updateTrackChanges();
         }
         if (selection.owner.isShiftingEnabled) {
@@ -7835,18 +7843,13 @@ export class Editor {
         this.updateProperty(2, baseAlignment);
     }
 
-    /**
-     * Clears the formatting.
-     *
-     * @returns {void}
-     */
-    public clearFormatting(): void {
+    private clearFormattingInternal(isCompletePara?: boolean): void {
         let selection: Selection = this.documentHelper.selection;
         this.setPreviousBlockToLayout();
         this.initComplexHistory('ClearFormat');
         // let startIndex: string = selection.start.getHierarchicalIndexInternal();
         // let endIndex: string = selection.end.getHierarchicalIndexInternal();
-        if (selection.isEmpty) {
+        if (selection.isEmpty || (!isNullOrUndefined(isCompletePara) && isCompletePara)) {
             selection.start.moveToParagraphStartInternal(selection, false);
             selection.end.moveToParagraphEndInternal(selection, false);
         }
@@ -7878,6 +7881,14 @@ export class Editor {
         // }
     }
 
+     /**
+     * Clears the formatting.
+     *
+     * @returns {void}
+     */
+    public clearFormatting(): void {
+        this.clearFormattingInternal();
+    }
     private updateProperty(type: number, value: Object): void {
         let selection: Selection = this.selection;
         if (((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode()) || !selection.owner.isDocumentLoaded) {
@@ -13329,7 +13340,7 @@ export class Editor {
     }
     private checkAndRemoveComments(): CommentCharacterElementBox[] {
         let selection: Selection = this.selection;
-        if (selection.isEmpty) {
+        if (selection.isEmpty || this.owner.enableTrackChanges) {
             return [];
         }
         let initComplexHistory: boolean = false;

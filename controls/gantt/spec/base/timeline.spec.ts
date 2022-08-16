@@ -1000,5 +1000,15 @@ describe('Gantt-Timeline', () => {
             }
             ganttObj.refresh();
         });
+
+        it('Checking bottom tier weekStartDay after zooming action', () => {
+            ganttObj.timelineSettings.weekStartDay=1;
+            ganttObj.zoomIn();
+            ganttObj.actionComplete = (args: any):void => {
+                if(args.requestType === "ZoomIn"){
+                expect(ganttObj.timelineSettings.weekStartDay).toBe(1);
+                }
+            }
+        });
     });
 });

@@ -2189,3 +2189,135 @@ describe('Chart Control', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
+describe('Chart Multiple labels - label placement OnTicks', () => {
+    let chart: Chart;
+    let elemt: HTMLElement;
+    let svg: HTMLElement;
+    let text: HTMLElement;
+    let datalabel: HTMLElement;
+    let loaded: EmitType<ILoadedEventArgs>;
+    beforeAll(() => {
+        elemt = createElement('div', { id: 'MultiLevelcontainer' });
+        document.body.appendChild(elemt);
+        chart = new Chart(
+            {
+                primaryXAxis: {
+                    valueType: 'Category',
+                    border: { width: 1, type: 'Rectangle' },
+                    isIndexed: true,
+                    interval: 1,
+                    labelPlacement: 'OnTicks',
+                    edgeLabelPlacement: 'Shift',
+                    majorGridLines: { width: 0 },
+                    multiLevelLabels: Browser.isDevice
+                        ? [
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: -0.5, end: 2.5, text: 'In Season' },
+                                    { start: 2.5, end: 5.5, text: 'Out of Season' },
+                                    { start: 5.5, end: 7.5, text: 'In Season' },
+                                    { start: 7.5, end: 9.5, text: 'Out of Season' },
+                                ],
+                            },
+                            {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: -0.5, end: 5.5, text: 'Fruits' },
+                                    { start: 5.5, end: 9.5, text: 'Vegetables' },
+                                ],
+                            },
+                        ]
+                        : [
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: -0.5, end: 0.5, text: 'Seedless' },
+                                    { start: 0.5, end: 2.5, text: 'Seeded' },
+                                    { start: 2.5, end: 3.5, text: 'Seedless' },
+                                    { start: 3.5, end: 5.5, text: 'Seeded' },
+                                    { start: 5.5, end: 6.5, text: 'Seedless' },
+                                    { start: 6.5, end: 7.5, text: 'Seeded' },
+                                    { start: 7.5, end: 8.5, text: 'Seedless' },
+                                    { start: 8.5, end: 9.5, text: 'Seeded' },
+                                ],
+                            },
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: -0.5, end: 2.5, text: 'In Season' },
+                                    { start: 2.5, end: 5.5, text: 'Out of Season' },
+                                    { start: 5.5, end: 7.5, text: 'In Season' },
+                                    { start: 7.5, end: 9.5, text: 'Out of Season' },
+                                ],
+                            },
+                            {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: -0.5, end: 5.5, text: 'Fruits' },
+                                    { start: 5.5, end: 9.5, text: 'Vegetables' },
+                                ],
+                            },
+                        ],
+                },
+                chartArea: {
+                    border: {
+                        width: 0
+                    }
+                },
+                primaryYAxis: {
+                    minimum: 0,
+                    maximum: 120,
+                    interval: 30,
+                    majorTickLines: { width: 0 },
+                    lineStyle: { width: 0 },
+                    labelStyle: { color: 'transparent' },
+                },
+                width: Browser.isDevice ? '100%' : '80%',
+                //Initializing Chart Series
+                series: [
+                    {
+                        type: 'Column',
+                        xName: 'x',
+                        yName: 'y',
+                        dataSource: [
+                            { x: 'Apple', y: 28 },
+                            { x: 'Tomato', y: 87 },
+                            { x: 'Pears', y: 42 },
+                            { x: 'Grapes', y: 13 },
+                            { x: 'Apples', y: 13 },
+                            { x: 'Pears', y: 10 },
+                            { x: 'Tomato', y: 31 },
+                            { x: 'Potato', y: 96 },
+                            { x: 'Cucumber', y: 41 },
+                            { x: 'Onion', y: 59 },
+                        ],
+                        marker: {
+                            dataLabel: {
+                                visible: true,
+                                position: 'Outer',
+                            },
+                        },
+                    },
+                ],
+            },
+            '#MultiLevelcontainer');
+    });
+    afterAll((): void => {
+        elemt.remove();
+        chart.destroy();
+    });
+    it('checking edge label Placement is Shift', (done: Function) => {
+        loaded = (args: Object): void => {
+            let firstlabel = document.getElementById('MultiLevelcontainer0_Axis_MultiLevelLabel_Level_0_Text_0').getAttribute('x');
+            let lastlabel = document.getElementById('MultiLevelcontainer0_Axis_MultiLevelLabel_Level_0_Text_7').getAttribute('x');
+            done();
+        };
+        chart.loaded = loaded;
+        chart.primaryXAxis.labelPlacement = 'OnTicks';
+        chart.primaryXAxis.edgeLabelPlacement = 'Shift';
+        chart.refresh();
+    });
+});

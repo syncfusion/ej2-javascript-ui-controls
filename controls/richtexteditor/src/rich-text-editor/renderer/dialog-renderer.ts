@@ -10,6 +10,21 @@ export class DialogRenderer {
     private parent: IRichTextEditor;
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
+        this.addEventListener();
+    }
+    protected addEventListener(): void {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
+        this.parent.on(events.destroy, this.removeEventListener, this);
+    }
+    protected removeEventListener(): void {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     /**
      * dialog render method
@@ -62,5 +77,9 @@ export class DialogRenderer {
      */
     public close(args: Object): void {
         this.parent.trigger(events.dialogClose, args);
+    }
+
+    private moduleDestroy(): void {
+        this.parent = null;
     }
 }

@@ -1545,3 +1545,40 @@ console.log('cell with different backgroud validation');
         expect(() => { editor.selection.cellFormat.background = '#dd2626'; }).not.toThrowError();
     });
 });
+
+describe('Updating row height value and type validation', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Row height value and type  validation', () => {
+console.log('Row height value and type  validation');
+        editor.openBlank();
+        editor.editor.insertTable(3, 3);
+        let tablePropertiesDialog: TablePropertiesDialog = editor.tablePropertiesDialogModule;
+        tablePropertiesDialog.show();
+        (tablePropertiesDialog as any).rowHeightCheckBox.checked = true;
+        tablePropertiesDialog.changeTableRowCheckBox();
+        (tablePropertiesDialog as any).rowHeightBox.value = 1000;
+        tablePropertiesDialog.onRowHeightChange();
+        expect(() => { tablePropertiesDialog.applyTableProperties(); }).not.toThrowError();
+    });
+});

@@ -359,11 +359,16 @@ export class CollaborativeEditing {
     }
 
     private insertElements(start: TextPosition, end: TextPosition, endElements: ElementBox[], startElements?: ElementBox[]): void {
+        let isSamePara: boolean = start.paragraph.equals(end.paragraph);
         if (!isNullOrUndefined(startElements)) {
             this.insertElementsInternal(start, startElements);
         }
         if (!isNullOrUndefined(endElements)) {
             this.insertElementsInternal(end, endElements);
+        }
+        this.documentHelper.layout.reLayoutParagraph(startElements[0].paragraph, 0, 0);
+        if (!isSamePara) {
+            this.documentHelper.layout.reLayoutParagraph(endElements[0].paragraph, 0, 0);
         }
     }
 
@@ -373,7 +378,6 @@ export class CollaborativeEditing {
             const paragraph: ParagraphWidget = position.paragraph as ParagraphWidget;
             (paragraph.childWidgets[0] as LineWidget).children.push(elements[0]);
             elements[0].line = (paragraph.childWidgets[0] as LineWidget);
-            this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
         } else {
             const inlineObj: ElementInfo = position.currentWidget.getInline(position.offset, indexInInline);
             const curInline: ElementBox = inlineObj.element;

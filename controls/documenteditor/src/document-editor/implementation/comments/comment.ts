@@ -433,6 +433,7 @@ export class CommentReviewPane {
 
     public clear(): void {
         this.previousSelectedCommentInt = undefined;
+        this.isUserClosed = false;
         this.commentPane.clear();
     }
 

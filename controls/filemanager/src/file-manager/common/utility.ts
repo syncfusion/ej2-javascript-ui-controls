@@ -458,7 +458,7 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
         const imgId: string = getValue('id', item);
         imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
     } else if (!isNOU(fPath)) {
-        imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
+        imgUrl = baseUrl + '?path=' + encodeURIComponent(fPath.replace(/\\/g, '/')) + fileName;
     } else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }

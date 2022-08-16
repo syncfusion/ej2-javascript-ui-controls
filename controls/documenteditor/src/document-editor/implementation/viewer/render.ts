@@ -354,7 +354,7 @@ export class Renderer {
             this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
         }
         if (!isNullOrUndefined(shapeType)) {
-            if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
+            if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None')) {
                 this.pageContext.lineWidth = shape.lineFormat.weight;
                 this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
                 this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
@@ -1588,7 +1588,7 @@ export class Renderer {
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
         if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
-            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellWidget.margin.top, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         } else { 
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
                 let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
@@ -1664,7 +1664,7 @@ export class Renderer {
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
 
-            this.renderSingleBorder(border.color, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellWidget.margin.top, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
             // }
         }
         let nextRow: TableRowWidget = tableCell.ownerRow.nextWidget as TableRowWidget;

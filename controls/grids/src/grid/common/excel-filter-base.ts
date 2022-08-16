@@ -150,7 +150,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private createMenuElem(val: string, className?: string, iconName?: string, isSubMenu?: boolean): Element {
         const li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
         li.innerHTML = val;
-        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
+        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName, attrs:{ 'aria-hidden': 'true' } }), li.firstChild);
         if (isSubMenu) {
             li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
         }
@@ -788,8 +788,11 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
             const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
+                (this.parent as any).parentDetails.parentInstObj.isReact;
             const tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
-            if (isReactCompiler) {
+            if (isReactCompiler || isReactChild) {
                 (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
                 this.parent.renderTemplates();
             } else {

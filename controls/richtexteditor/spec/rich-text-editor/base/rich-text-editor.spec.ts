@@ -5311,38 +5311,6 @@ describe("keyConfig property testing", () => {
     });
 });
 
-describe('EJ2-26359 Clear Format is not working after applied selection and parent based tags', () => {
-    let innerHtml: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> of the content</p><p><strong>Table</strong></p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p><b>Toolbar</b></p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><ol><li><p>Toolbar is fully customizable</p></li></ol><p><b>Image.</b></p><p><span>Allows you to insert images from an online source as well as the local computer</span></p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
-    let rteObj: RichTextEditor;
-    let controlId: string;
-    let rteElement: HTMLElement;
-    beforeAll((done: Function) => {
-        rteObj = renderRTE({
-            value: innerHtml,
-            toolbarSettings: {
-                items: ['ClearFormat']
-            }
-        });
-        controlId = rteObj.element.id;
-        rteElement = rteObj.element;
-        done();
-    });
-
-    it(' Clear the inline and block nodes ', () => {
-        rteObj.selectAll();
-        let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
-        dispatchEvent(item, 'mousedown');
-        item.click();
-        setTimeout(() => {
-            let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
-            expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
-        });
-    });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-});
-
 describe('EJ2-26545 Empty P tag create while give the value with empty space in RichTextEditor', () => {
     let innerHtml: string = `<p class="e-one-paragraph">EJ2 RichTextEditor with HtmlEditor</p>
     <p class="e-one-paragraph">EJ2 RichTextEditor with Markdown</p>
@@ -5819,6 +5787,38 @@ describe('EJ2-46060: EJ2CORE-606: 8203 character not removed after start typing'
         destroy(rteObj);
     });
 });
+// describe('EJ2-26359 Clear Format is not working after applied selection and parent based tags', () => {
+//     let innerHtml: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> of the content</p><p><strong>Table</strong></p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p><b>Toolbar</b></p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><ol><li><p>Toolbar is fully customizable</p></li></ol><p><b>Image.</b></p><p><span>Allows you to insert images from an online source as well as the local computer</span></p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
+//     let rteObj: RichTextEditor;
+//     let controlId: string;
+//     let rteElement: HTMLElement;
+//     beforeAll((done: Function) => {
+//         rteObj = renderRTE({
+//             value: innerHtml,
+//             toolbarSettings: {
+//                 items: ['ClearFormat']
+//             }
+//         });
+//         controlId = rteObj.element.id;
+//         rteElement = rteObj.element;
+//         done();
+//     });
+
+//     it(' Clear the inline and block nodes ', (done) => {
+//         rteObj.selectAll();
+//         let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
+//         dispatchEvent(item, 'mousedown');
+//         item.click();
+//         setTimeout(() => {
+//             let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`;
+//             expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
+//             done();
+//         }, 300);
+//     });
+//     afterAll(() => {
+//         destroy(rteObj);
+//     });
+// });
 describe('EJ2-47075: Applying heading to the content in the Rich Text Editor applies heading to the next element', () => {
     let rteObj: RichTextEditor;
     let domSelection: NodeSelection = new NodeSelection();

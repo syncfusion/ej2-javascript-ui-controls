@@ -2974,4 +2974,60 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             comboBoxObj.destroy();
         });
     });
+    describe('Provide event details in open and close event arguments in dropdown components', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: null, type: null };
+        let list: any;
+        let ele: HTMLElement;
+        let eventDetails : any;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'autocomplete' });
+            document.body.appendChild(ele);
+            list = new ComboBox({
+                dataSource: languageData,
+                fields: { value: 'text' },
+                open: (e: PopupEventArgs) => {
+                    eventDetails = e.event;
+                },
+                close: (e: PopupEventArgs) => {
+                    eventDetails = e.event;
+                }
+            });
+            list.appendTo(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            list.destroy();
+            document.body.innerHTML = '';
+        });
+        it("Testing event details when popup close using press alt+up key", (done) => {
+            keyEventArgs.action = 'hide';
+            list.onInput(keyEventArgs);
+            list.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                keyEventArgs.action = 'down';
+                keyEventArgs.type = 'keydown';
+                list.keyActionHandler(keyEventArgs);
+                list.hidePopup(keyEventArgs);
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                done();
+            }, 450);
+        })
+
+        it("Testing eventdetails when popup open by click on popup button", (done) => {
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            setTimeout(() => {
+                mouseEventArgs.target = list.inputWrapper.buttons[0];
+                list.dropDownClick(mouseEventArgs);
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                list.focusOut(mouseEventArgs);
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                done();
+            }, 450);
+        })
+    });
 });

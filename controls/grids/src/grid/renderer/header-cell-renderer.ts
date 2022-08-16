@@ -19,7 +19,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         .createElement('TH', { className: 'e-headercell', attrs: { role: 'columnheader', tabindex: '-1' } });
     private ariaService: AriaService = new AriaService();
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
-    private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons' });
+    private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons', attrs: {'aria-hidden': 'true'} });
     private gui: Element = this.parent.createElement('div');
     private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox', 'aria-label': 'checkbox' } });
     /**
@@ -42,7 +42,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
         const node: Element = this.element.cloneNode() as Element;
-        const fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter' });
+        const fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter', attrs: {'aria-hidden': 'true'} });
         return this.prepareHeader(cell, node, fltrMenuEle);
     }
 
@@ -55,7 +55,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
      */
     public refresh(cell: Cell<Column>, node: Element): Element {
         this.clean(node);
-        const fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter' });
+        const fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter', attrs: {'aria-hidden': 'true'} });
         return this.prepareHeader(cell, node, fltrMenuEle);
     }
 
@@ -145,7 +145,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             const str: string = 'isStringTemplate';
             const col: Column = column;
             const isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
-            if (isReactCompiler) {
+            const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
+            if (isReactCompiler || isReactChild) {
                 const copied: Object = { 'index': colIndex };
                 node.firstElementChild.innerHTML = '';
                 column.getHeaderTemplate()(
@@ -187,7 +189,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
 
     private extendPrepareHeader(column: Column, node: Element): Element {
         if (this.parent.showColumnMenu && column.showColumnMenu && !isNullOrUndefined(column.field)) {
-            const element: Element = (this.parent.createElement('div', { className: 'e-icons e-columnmenu' }));
+            const element: Element = (this.parent.createElement('div', { className: 'e-icons e-columnmenu', attrs: {'aria-hidden': 'true'} }));
             const matchFilteredColumns: Object[] = [];
             if (this.parent.filterSettings.columns.length && this.parent.filterSettings.columns.length !== matchFilteredColumns.length) {
                 for (let i: number = 0; i < this.parent.columns.length; i++) {

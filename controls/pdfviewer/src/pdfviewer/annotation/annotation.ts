@@ -3650,8 +3650,11 @@ export class Annotation {
         } else if (eventTarget.parentElement && eventTarget.parentElement.classList.contains('foreign-object')) {
             eventTarget = eventTarget.parentElement.parentElement.parentElement.parentElement;
         }
-        else if (eventTarget.classList.contains('e-pdfviewer-formFields')) {
+        else if ((eventTarget.classList.contains('e-pdfviewer-formFields') && eventTarget.attributes[0].nodeValue!="text")|| eventTarget.classList.contains('e-pdfviewer-signatureformfields')) {
             eventTarget = eventTarget.parentElement;
+        }
+        else if (eventTarget.classList.contains('e-pdfviewer-formFields') && eventTarget.attributes[0].nodeValue=="text") {
+            eventTarget = eventTarget.parentElement.parentElement;
         }
         let pageString: any;
         if (eventTarget) {

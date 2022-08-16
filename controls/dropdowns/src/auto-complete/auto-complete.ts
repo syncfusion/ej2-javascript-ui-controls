@@ -9,9 +9,9 @@ import { AutoCompleteModel } from '../auto-complete/auto-complete-model';
 import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';
 import { Search } from '../common/incremental-search';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
-import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';
+import { FieldSettings, FilteringEventArgs, FilterType, ResultData } from '../drop-down-base/drop-down-base';
 import { FloatLabelType, Input } from '@syncfusion/ej2-inputs';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 
 dropDownListClasses.root = 'e-autocomplete';
 dropDownListClasses.icon = 'e-input-group-icon e-ddl-icon e-search-icon';
@@ -279,13 +279,13 @@ export class AutoComplete extends ComboBox {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
         if (isNullOrUndefined(this.list)) {
-            super.renderList(true);
+            super.renderList(e, true);
         }
         this.queryString = this.filterInput.value;
         if (e.type !== 'mousedown' && ((<KeyboardEventArgs>e).keyCode === 40 || (<KeyboardEventArgs>e).keyCode === 38)) {
             this.queryString = this.queryString === '' ? null : this.queryString;
             this.beforePopupOpen = true;
-            this.resetList(this.dataSource, this.fields);
+            this.resetList(this.dataSource, this.fields, null, e);
             return;
         }
         this.isSelected = false;
@@ -307,7 +307,7 @@ export class AutoComplete extends ComboBox {
         this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
             if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
                 this.searchList = true;
-                this.filterAction(this.dataSource, null, this.fields);
+                this.filterAction(this.dataSource, null, this.fields, e);
             }
         });
     }
@@ -330,12 +330,12 @@ export class AutoComplete extends ComboBox {
 
     private filterAction(
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
-        query?: Query, fields?: FieldSettingsModel): void {
+        query?: Query, fields?: FieldSettingsModel, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.beforePopupOpen = true;
         if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
-            this.resetList(dataSource, fields, query);
+            this.resetList(dataSource, fields, query, e);
         } else {
-            this.hidePopup();
+            this.hidePopup(e);
             this.beforePopupOpen = false;
         }
         this.renderReactTemplates();
@@ -425,9 +425,9 @@ export class AutoComplete extends ComboBox {
         return true;
     }
 
-    protected renderPopup(): void {
+    protected renderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.list.scrollTop = 0;
-        super.renderPopup();
+        super.renderPopup(e);
     }
 
     protected isEditTextBox(): boolean {
@@ -442,13 +442,39 @@ export class AutoComplete extends ComboBox {
     protected isSelectFocusItem(element: Element): boolean {
         return false;
     }
+
+    protected setInputValue(newProp?: any, oldProp?: any): void {
+        let oldValue = oldProp && oldProp.text ? oldProp.text : oldProp ? oldProp.value : oldProp;
+        let value = newProp && newProp.text ? newProp.text : newProp && newProp.value ? newProp.value : this.value;
+        if (value && this.typedString === '' && !this.allowCustom && !(this.dataSource instanceof DataManager)) {
+             let checkFields_1: string = this.typeOfData(this.dataSource).typeof === 'string' ? '' : this.fields.value;
+             const listLength: number = this.getItems().length;
+             let query: Query = new Query();
+             let _this = this;
+             new DataManager(this.dataSource).executeQuery(query.where(new Predicate(checkFields_1, 'equal', value)))
+                 .then(function (e: Object) {
+                 if ((e as ResultData).result.length > 0) {
+                     _this.value = checkFields_1 !== '' ? (e as ResultData).result[0][_this.fields.value].toString() : (e as ResultData).result[0].toString();
+                     _this.addItem((e as ResultData).result, listLength);
+                     _this.updateValues();
+                 }
+                 else {
+                     newProp && newProp.text ? _this.setOldText(oldValue) : newProp && newProp.value ? _this.setOldValue(oldValue) : _this.updateValues();
+                 }
+             });
+        }
+         else if (newProp) {
+             newProp.text ? this.setOldText(oldValue) : this.setOldValue(oldValue);
+         }
+     }
+     
     /**
      * Search the entered text and show it in the suggestion list if available.
      *
      * @returns {void}
      * @deprecated
      */
-    public showPopup(): void {
+    public showPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -459,9 +485,9 @@ export class AutoComplete extends ComboBox {
         this.beforePopupOpen = true;
         this.preventAutoFill = true;
         if (isNullOrUndefined(this.list)) {
-            this.renderList();
+            this.renderList(e);
         } else {
-            this.resetList(this.dataSource, this.fields);
+            this.resetList(this.dataSource, this.fields, null, e);
         }
     }
     /**
@@ -469,7 +495,7 @@ export class AutoComplete extends ComboBox {
      *
      * @returns {void}
      */
-    public hidePopup(e?: KeyboardEventArgs): void {
+    public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         super.hidePopup(e);
         this.activeIndex = -1;
     }

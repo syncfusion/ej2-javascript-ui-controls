@@ -2405,3 +2405,22 @@ describe(" EJ2-59527 - Floating toolbar testing", () => {
         }, 500);
     });
 });
+
+describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: '<p>Memory leak testing</p>'
+        });
+    });
+    it('When OffsetParent is null in toolbar', (done: Function) => {
+        ((rteObj as any).toolbarModule as any).moduleDestroy();
+        expect(((rteObj as any).toolbarModule as any).parent).toBe(null);
+        detach(rteObj.element);
+        let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+        for(let i: number = 0; i < allDropDownPopups.length; i++) {
+            detach(allDropDownPopups[i]);
+        }
+        done();
+    });
+});

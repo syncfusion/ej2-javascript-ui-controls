@@ -26,7 +26,8 @@ export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<C
     public render(cell: Cell<Column>, data: Object): Element {
         const nodeElement: Element = this.element.cloneNode() as Element;
         nodeElement.appendChild(this.parent.createElement('div', {
-            className: 'e-icons e-rowcelldrag e-dtdiagonalright e-icon-rowdragicon'
+            className: 'e-icons e-rowcelldrag e-dtdiagonalright e-icon-rowdragicon',
+            attrs: { 'aria-hidden': 'true' }
         }));
         if (cell.isSelected) {
             nodeElement.classList.add('e-selectionbackground');

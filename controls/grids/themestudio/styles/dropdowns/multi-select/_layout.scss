@@ -104,6 +104,9 @@
     display: none;
     flex-direction: row;
     margin-top: $ddl-clear-margin-top;
+    @if $ddl-multiselect-skin-name == 'tailwind' {
+      margin-top: -1.45em;
+    }
     outline: 0;
     padding: 0;
     position: absolute;
@@ -389,6 +392,7 @@
   }
   @if $ddl-multiselect-skin-name == 'tailwind' {
     height: $ddl-bigger-clear-icon-height;
+    margin-top: $ddl-clear-margin-top;
     width: $ddl-bigger-clear-icon-width;
   }
 }

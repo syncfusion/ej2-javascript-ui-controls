@@ -149,11 +149,13 @@ export class FullScreen {
     protected addEventListener(): void {
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     protected removeEventListener(): void {
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     /**
@@ -172,5 +174,9 @@ export class FullScreen {
             removeClass([elem[i]], ['e-rte-overflow']);
         }
         this.removeEventListener();
+    }
+
+    private moduleDestroy(): void {
+        this.parent = null;
     }
 }

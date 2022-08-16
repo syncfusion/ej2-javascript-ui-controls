@@ -1,5 +1,5 @@
 import { createElement } from './dom';
-import { getValue, containerObject, setValue, isNullOrUndefined } from './util'
+import { getValue, containerObject, setValue, isNullOrUndefined } from './util';
 
 const bypassKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105,
     111, 110, 46, 105, 115, 76, 105, 99, 86, 97, 108,
@@ -16,19 +16,19 @@ class LicenseValidator {
         noLicense: 'This application was built using a trial version of Syncfusion Essential Studio.' +
             ' Please include a valid license to permanently remove this license validation message.' +
             ' You can also obtain a free 30 day evaluation license to temporarily remove this message ' +
-            'during the evaluation period. Please refer to this <a style="color:yellow;text-decoration:none;"' +
+            'during the evaluation period. Please refer to this <a class="e-license"' +
             'href="https://help.syncfusion.com/common/essential-studio/licensing">help topic</a> for more information.',
         trailExpired: 'Your Syncfusion trial license has expired. Please refer to this ' +
-            '<a style="color:yellow;text-decoration:none;"' +
+            '<a class="e-license"' +
             'href="https://help.syncfusion.com/common/essential-studio/licensing/licensing-errors#trial-expired">help topic</a> for more information.',
         versionMismatched: 'The included Syncfusion license (v##LicenseVersion) is invalid for version ' +
-            '##Requireversion. Please refer to this <a style="color:yellow;text-decoration:none;" ' +
+            '##Requireversion. Please refer to this <a class="e-license" ' +
             'href="https://help.syncfusion.com/es/licensing/version-mismatch/">help topic</a> for more information.',
         platformMismatched: 'The included Syncfusion license is invalid (Platform mismatch). Please refer' +
-            ' to this <a style="color:yellow;text-decoration:none;" ' +
+            ' to this <a class="e-license" ' +
             'href="https://help.syncfusion.com/common/essential-studio/licensing/licensing-errors#platform-mismatch">help topic</a> for more information.',
         invalidKey: 'The included Syncfusion license is invalid. Please refer to this ' +
-            '<a style="color:yellow;text-decoration:none;" ' +
+            '<a class="e-license" ' +
             'href="https://help.syncfusion.com/common/essential-studio/licensing/licensing-errors#invalid-key">help topic</a> for more information.'
     };
 
@@ -53,7 +53,7 @@ class LicenseValidator {
      * To manage npx licensing operation.
      */
     private npxManager: { getKey: Function } = (() => {
-        let npxLicKey: string = "npxKeyReplace";
+        const npxLicKey: string = 'npxKeyReplace';
         function get(): string { return npxLicKey; }
         return {
             getKey: get
@@ -62,14 +62,14 @@ class LicenseValidator {
 
     /**
      * To validate the provided license key.
-     */
+    */
     public validate(): void {
         if (!this.isValidated && (containerObject && !getValue(convertToChar(bypassKey), containerObject) && !getValue('Blazor', containerObject))) {
             let validateMsg: string;
-            if ((this.manager && this.manager.getKey()) || (this.npxManager && this.npxManager.getKey() != 'npxKeyReplace')) {
-                let result: IValidator[] = this.getInfoFromKey();
+            if ((this.manager && this.manager.getKey()) || (this.npxManager && this.npxManager.getKey() !== 'npxKeyReplace')) {
+                const result: IValidator[] = this.getInfoFromKey();
                 if (result && result.length) {
-                    for (let res of result) {
+                    for (const res of result) {
                         if (!this.platform.test(res.platform) || res.invalidPlatform) {
                             validateMsg = this.errors.platformMismatched;
                         } else if (res.version.indexOf(this.version) === -1) {
@@ -77,8 +77,8 @@ class LicenseValidator {
                             validateMsg = validateMsg.replace('##LicenseVersion', res.version);
                             validateMsg = validateMsg.replace('##Requireversion', this.version + '.x');
                         } else if (res.expiryDate) {
-                            let expDate: Date = new Date(res.expiryDate);
-                            let currDate: Date = new Date();
+                            const expDate: Date = new Date(res.expiryDate);
+                            const currDate: Date = new Date();
                             if (expDate !== currDate && expDate < currDate) {
                                 validateMsg = this.errors.trailExpired;
                             } else {
@@ -92,11 +92,10 @@ class LicenseValidator {
             } else {
                 validateMsg = this.errors.noLicense;
             }
-            if (validateMsg && typeof document !== "undefined" && !isNullOrUndefined(document)) {
-                let errorDiv: HTMLElement = createElement('div', {
+            if (validateMsg && typeof document !== 'undefined' && !isNullOrUndefined(document)) {
+                const errorDiv: HTMLElement = createElement('div', {
                     innerHTML: validateMsg +
-                        '<span style="position:absolute;right: 10px;top:27%;cursor:pointer;"' +
-                        'onClick=this.parentElement.remove();>' +
+                        '<span id="license-banner-error" class=".e-license-banner">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">' +
                         '<line x1="5" y1="5" x2="15" y2="15" stroke="yellow" stroke-width="2.5" ' +
                         'stroke-miterlimit="10" stroke-linecap="round"></line><line x1="15" y1="5" ' +
@@ -108,9 +107,12 @@ class LicenseValidator {
                 });
                 errorDiv.setAttribute('id', 'js-licensing');
                 document.body.appendChild(errorDiv);
+                document.getElementById('license-banner-error').addEventListener('click', () => {
+                    document.getElementById('js-licensing').remove();
+                });
             }
             this.isValidated = true;
-            setValue(convertToChar(bypassKey), this.isValidated, containerObject)
+            setValue(convertToChar(bypassKey), this.isValidated, containerObject);
         }
     }
 
@@ -128,11 +130,11 @@ class LicenseValidator {
     private getInfoFromKey(): IValidator[] {
         try {
             let licKey: string = '';
-            let pkey: number[] = [5439488, 7929856, 5111808, 6488064, 4587520, 7667712, 5439488,
+            const pkey: number[] = [5439488, 7929856, 5111808, 6488064, 4587520, 7667712, 5439488,
                 6881280, 5177344, 7208960, 4194304, 4456448, 6619136, 7733248, 5242880, 7077888,
                 6356992, 7602176, 4587520, 7274496, 7471104, 7143424];
             let decryptedStr: string[] = [];
-            let resultArray: IValidator[] = [];
+            const resultArray: IValidator[] = [];
             let invalidPlatform: boolean = false;
             let isNpxKey: boolean =  false;
             if (this.manager.getKey()) {
@@ -141,9 +143,9 @@ class LicenseValidator {
                 isNpxKey = true;
                 licKey = this.npxManager.getKey().split('npxKeyReplace')[1];
             }
-            let licKeySplit: string[] = licKey.split(';');
-            for (let lKey of licKeySplit) {
-                let decodeStr: string = this.getDecryptedData(lKey);
+            const licKeySplit: string[] = licKey.split(';');
+            for (const lKey of licKeySplit) {
+                const decodeStr: string = this.getDecryptedData(lKey);
                 if (!decodeStr) {
                     continue;
                 }
@@ -152,12 +154,12 @@ class LicenseValidator {
                 if (!isNpxKey) {
                     for (let i: number = 0; i < decodeStr.length; i++, k++) {
                         if (k === pkey.length) { k = 0; }
-                        let c: number = decodeStr.charCodeAt(i);
+                        const c: number = decodeStr.charCodeAt(i);
                         buffr += String.fromCharCode(c ^ (pkey[k] >> 16));
                     }
                 } else {
-                    let charKey = decodeStr[decodeStr.length - 1];
-                    let decryptedKey: number[] = [];
+                    const charKey = decodeStr[decodeStr.length - 1];
+                    const decryptedKey: number[] = [];
                     for (let i: number = 0; i < decodeStr.length; i++) {
                         decryptedKey[i] = decodeStr[i].charCodeAt(0) - charKey.charCodeAt(0);
                     }
@@ -192,13 +194,14 @@ class LicenseValidator {
 let licenseValidator: LicenseValidator = new LicenseValidator();
 function convertToChar(cArr: number[]): string {
     let ret: string = '';
-    for (let arr of cArr) {
+    for (const arr of cArr) {
         ret += String.fromCharCode(arr);
     }
     return ret;
 }
 /**
  * To set license key.
+ *
  * @param {string} key - license key
  */
 export function registerLicense(key: string): void {

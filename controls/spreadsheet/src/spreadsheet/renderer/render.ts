@@ -48,6 +48,9 @@ export class Render {
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
             }
         }
+        if (this.parent.selectionSettings.mode === 'None') {
+            this.parent.allowAutoFill = false;
+        }
         this.setSheetPanelSize();
         this.renderSheet(sheetPanel);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

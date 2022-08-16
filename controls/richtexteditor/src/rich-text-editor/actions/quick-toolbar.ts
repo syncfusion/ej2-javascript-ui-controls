@@ -343,6 +343,10 @@ export class QuickToolbar {
         this.removeEventListener();
     }
 
+    private moduleDestroy(): void {
+        this.parent = null;
+    }
+
     private wireInlineQTBarEvents(): void {
         this.parent.on(events.mouseUp, this.mouseUpHandler, this);
         this.parent.on(events.mouseDown, this.inlineQTBarMouseDownHandler, this);
@@ -397,6 +401,7 @@ export class QuickToolbar {
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     private onKeyDown(e: NotifyArgs): void {
@@ -469,6 +474,7 @@ export class QuickToolbar {
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     /**

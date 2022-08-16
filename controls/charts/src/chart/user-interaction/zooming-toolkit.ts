@@ -268,7 +268,7 @@ export class Toolkit {
         let chart: Chart = this.chart;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
-        } else if (event.type == 'touchStart') {
+        } else if (event.type == 'touchstart') {
             event.stopPropagation();
         }
         let argsData: IZoomCompleteEventArgs;

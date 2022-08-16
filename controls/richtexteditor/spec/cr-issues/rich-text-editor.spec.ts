@@ -1392,4 +1392,44 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
         });
     });
+    describe( 'EJ2-62151 - Strikethrough and underline are removed when we select and press shift key on lists in RTE', () =>{
+        let defaultRTE: RichTextEditor;
+        let innerHTML = `<ol><li><p>Provide
+            the tool bar <span class='FocusNode1' style="text-decoration: line-through;">support </span >, its also customizable.</p></li><li><p>Options
+            to get the HTML elements with styles.</p></li><li><p>Support
+            to insert image from a defined path.</p></li><li><p>Footer
+            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+            the editor support.</p></li><li><p>Provide
+            efficient public methods and client side events.</p></li><li><p>Keyboard
+            navigation support.</p></li></ol>`;
+        beforeAll( () =>{
+            defaultRTE = renderRTE( {
+                height: 400,
+                toolbarSettings: {
+                    items: [ 'Undo', 'Redo', '|',
+                        'Underline', 'StrikeThrough', '|',
+                    ]
+                },
+                value: innerHTML
+            } );
+        } );
+        afterAll( () =>{
+            destroy( defaultRTE );
+        } );
+        it( 'should not remove current focus of selected text after pressing SHIFT key', () =>{
+            let startContainer: any = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).childNodes[ 0 ];
+            let endContainer: any = startContainer;
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'shift', stopPropagation: () => { }, shiftKey: true, which: 16 };
+            defaultRTE.formatter.editorManager.nodeSelection.setSelectionText( document, startContainer, endContainer, 0, endContainer.textContent.length )
+            keyBoardEvent.keyCode = 16;
+            keyBoardEvent.code = 'Shift';
+            let style = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).style.textDecoration;
+            expect( style == "line-through" ).toBe( true );
+            expect( defaultRTE.inputElement.textContent.length ).toBe( 423 );
+            ( defaultRTE as any ).keyDown( keyBoardEvent );
+            expect( defaultRTE.inputElement.textContent.length ).toBe( 423 );
+            style = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).style.textDecoration;
+            expect( style == "line-through" ).toBe( true );
+        } )
+    } );
 });

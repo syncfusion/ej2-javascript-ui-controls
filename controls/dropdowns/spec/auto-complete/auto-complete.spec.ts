@@ -3,7 +3,7 @@
  */
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
 import { AutoComplete } from '../../src/auto-complete/index';
-import { FilteringEventArgs } from '../../src/drop-down-base';
+import { FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
@@ -2185,6 +2185,7 @@ describe('EJ2-48321 - Need to trigger filtering event when clear the typed text 
         setTimeout(() => {
             expect(isPopupOpened).toBe(true);
             isPopupOpened = false;
+            atcObj.isInteracted = true;
             let clickEvent: MouseEvent = document.createEvent('MouseEvents');
             clickEvent.initEvent('mousedown', true, true);
             atcObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
@@ -2225,6 +2226,7 @@ describe('EJ2-48321 - Need to trigger filtering event when clear the typed text 
         atcObj.hidePopup();
         setTimeout(() => {
             expect(isPopupClosed).toBe(true);
+            atcObj.isInteracted = true;
             let clickEvent: MouseEvent = document.createEvent('MouseEvents');
             clickEvent.initEvent('mousedown', true, true);
             atcObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
@@ -2520,5 +2522,67 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
              expect(dropDowns.inputElement.value).toBe("@");
              expect(dropDowns.ulElement.childElementCount === 1).toBe(true);
         });
+    });
+    describe('Provide event details in open and close event arguments in dropdown components', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: null, type: null };
+        let list: any;
+        let ele: HTMLElement;
+        let eventDetails : any;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'autocomplete' });
+            document.body.appendChild(ele);
+            list = new AutoComplete({
+                dataSource: languageData,
+                fields: { value: 'text' },
+                showPopupButton: true,
+                open: (e: PopupEventArgs) => {
+                    eventDetails = e.event;
+                },
+                close: (e: PopupEventArgs) => {
+                    eventDetails = e.event;
+                }
+            });
+            list.appendTo(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            list.destroy();
+            document.body.innerHTML = '';
+        });
+        it("Testing event details when popup open using press down key", (done) => {
+            keyEventArgs.keyCode = 40;
+            list.onInput(keyEventArgs);
+            list.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                done();
+            },450);
+        })
+        it("Testing event details when popup close using press alt+up key", (done) => {
+            keyEventArgs.action = 'hide';
+            list.keyActionHandler(keyEventArgs);
+            list.onInput(keyEventArgs);
+            list.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                done();
+            },450);
+        })
+        it("Testing eventdetails when popup open by click on popup button", (done) => {
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            mouseEventArgs.target = list.inputWrapper.buttons[0];
+            list.dropDownClick(mouseEventArgs);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                mouseEventArgs.target = list.inputWrapper.buttons[0];
+                list.dropDownClick(mouseEventArgs);
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                done();
+            },450);
+        })
     });
 });

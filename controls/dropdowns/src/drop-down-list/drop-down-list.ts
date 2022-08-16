@@ -450,8 +450,8 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected renderList(isEmptyData?: boolean): void {
-        super.render(isEmptyData);
+    protected renderList(e?: MouseEvent | KeyboardEventArgs | TouchEvent, isEmptyData?: boolean): void {
+        super.render(e, isEmptyData);
         this.unWireListEvents();
         this.wireListEvents();
     }
@@ -485,7 +485,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected clearAll(e?: MouseEvent | KeyboardEventArgs, properties?: DropDownListModel): void {
+    protected clearAll(e?: MouseEvent | KeyboardEventArgs | TouchEvent, properties?: DropDownListModel): void {
         if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
             (isNullOrUndefined(properties.dataSource) ||
                 (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
@@ -956,7 +956,7 @@ export class DropDownList extends DropDownBase implements IInput {
             const isTabAction: boolean = e.action === 'tab' || e.action === 'close';
             if (this.list === undefined && !this.isRequested && !isTabAction && e.action !== 'escape') {
                 this.searchKeyEvent = e;
-                this.renderList();
+                this.renderList(e);
             }
             if (isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
                 isNavigation && this.liCollections.length === 0) || this.isRequested) {
@@ -995,7 +995,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 break;
             case 'open':
-                this.showPopup();
+                this.showPopup(e);
                 break;
             case 'hide':
                 this.preventAltUp = this.isPopupOpen;
@@ -1196,7 +1196,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (!this.readonly) {
             if (this.isPopupOpen) {
-                this.hidePopup();
+                this.hidePopup(e);
                 if (this.isFilterLayout()) {
                     this.focusDropDown(e);
                 }
@@ -1205,7 +1205,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.floatLabelChange();
                 this.queryString = this.inputElement.value.trim() === '' ? null : this.inputElement.value;
                 this.isDropDownClick = true;
-                this.showPopup();
+                this.showPopup(e);
             }
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: this = this;
@@ -1863,24 +1863,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 this.initial = false;
             }
-            else if (this.getModuleName() === 'autocomplete' && this.value && this.typedString === '' && !(this.dataSource instanceof DataManager)) {
-                const checkFields: string = this.typeOfData(this.dataSource).typeof === 'string' ? '' : this.fields.value;
-                const checkValue: boolean = list.some((x: {[key: string]: boolean | string | number}) => x[checkFields] === this.value);
-                let query: Query = new Query();
-                if (!checkValue) {
-                    new DataManager(this.dataSource).executeQuery(query.where(new Predicate(checkFields, 'equal', this.value)))
-                        .then((e: Object) => {
-                            if ((e as ResultData).result.length > 0) {
-                                this.value = checkFields !== '' ? (e as ResultData).result[0][this.fields.value].toString() : (e as ResultData).result[0].toString();
-                                this.addItem((e as ResultData).result, list.length);
-                                this.updateValues();
-                            } else {
-                                this.updateValues(); 
-                            }
-                        });
-                } else {
-                    this.updateValues(); 
-                }
+            else if (this.getModuleName() === 'autocomplete' && this.value) {
+                this.setInputValue();
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
@@ -1904,7 +1888,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             }
             if (this.beforePopupOpen) {
-                this.renderPopup();
+                this.renderPopup(e);
             }
         }
     }
@@ -1981,7 +1965,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected renderPopup(): void {
+    protected renderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent | Object): void {
         if (this.popupObj && document.body.contains(this.popupObj.element)) {
             this.refreshPopup();
             return;
@@ -2079,7 +2063,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 const animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
                 this.beforePopupOpen = true;
                 const popupInstance: Popup = this.popupObj;
-                const eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel };
+                const eventArgs: PopupEventArgs = { popup: popupInstance, event: e, cancel: false, animation: animModel };
                 this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
                     if (!eventArgs.cancel) {
                         addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
@@ -2313,7 +2297,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    private closePopup(delay: number, e: MouseEvent | KeyboardEventArgs): void {
+    private closePopup(delay: number, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.isTyped = false;
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
@@ -2495,7 +2479,11 @@ export class DropDownList extends DropDownBase implements IInput {
     private setFooterTemplate(popupEle: HTMLElement): void {
         let compiledString: Function;
         if (this.footer) {
-            this.footer.innerHTML = '';
+            if ((this as any).isReact) {
+                this.clearTemplate(['footerTemplate']);
+            } else {
+                this.footer.innerHTML = '';
+            }
         } else {
             this.footer = this.createElement('div');
             addClass([this.footer], dropDownListClasses.footer);
@@ -2671,6 +2659,8 @@ export class DropDownList extends DropDownBase implements IInput {
                                         this.setOldText(oldProp.text);
                                     }
                                 });
+                        } else if (this.getModuleName() === 'autocomplete') {
+                            this.setInputValue(newProp, oldProp);
                         } else {
                             this.setOldText(oldProp.text);
                         }
@@ -2707,6 +2697,8 @@ export class DropDownList extends DropDownBase implements IInput {
                                         this.setOldValue(oldProp.value);
                                     }
                                 });
+                        } else if (this.getModuleName() === 'autocomplete') {
+                            this.setInputValue(newProp, oldProp);
                         } else {
                             this.setOldValue(oldProp.value);
                         }
@@ -2815,6 +2807,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    protected setInputValue(newProp?: any, oldProp?: any): void {
+    }
+
     private setCssClass(newClass: string, oldClass: string): void {
         if (!isNullOrUndefined(oldClass)) {
             oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
@@ -2841,7 +2836,7 @@ export class DropDownList extends DropDownBase implements IInput {
      *
      * @returns {void}
      */
-    public showPopup(): void {
+    public showPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -2860,12 +2855,12 @@ export class DropDownList extends DropDownBase implements IInput {
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && (this.list.classList.contains(dropDownBaseClasses.noData) ||
             this.list.querySelectorAll('.' + dropDownBaseClasses.li).length <= 0)) {
-            this.renderList();
+            this.renderList(e);
         }
-        this.invokeRenderPopup();
+        this.invokeRenderPopup(e);
     }
 
-    private invokeRenderPopup(): void {
+    private invokeRenderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (Browser.isDevice && this.isFilterLayout()) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: this = this;
@@ -2876,7 +2871,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
 
         if (!isNullOrUndefined(this.list.children[0]) || this.list.classList.contains(dropDownBaseClasses.noData)) {
-            this.renderPopup();
+            this.renderPopup(e);
         }
         attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
     }
@@ -2890,7 +2885,7 @@ export class DropDownList extends DropDownBase implements IInput {
      *
      * @returns {void}
      */
-    public hidePopup(e?: MouseEvent | KeyboardEventArgs): void {
+    public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         /* eslint-enable valid-jsdoc, jsdoc/require-param */
         if (this.isEscapeKey && this.getModuleName() === 'dropdownlist') {
             Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);

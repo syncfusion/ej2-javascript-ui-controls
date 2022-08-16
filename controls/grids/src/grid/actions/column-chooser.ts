@@ -445,18 +445,19 @@ export class ColumnChooser implements IAction {
     }
 
     private checkstatecolumn(isChecked: boolean, coluid: string, selectAll: boolean = false): void {
+        const currentCol: Column = this.parent.getColumnByUid(coluid);
         if (isChecked) {
             if (this.hideColumn.indexOf(coluid) !== -1) {
                 this.hideColumn.splice(this.hideColumn.indexOf(coluid), 1);
             }
-            if (this.showColumn.indexOf(coluid) === -1) {
+            if (this.showColumn.indexOf(coluid) === -1 && !(currentCol && currentCol.visible)) {
                 this.showColumn.push(coluid);
             }
         } else {
             if (this.showColumn.indexOf(coluid) !== -1) {
                 this.showColumn.splice(this.showColumn.indexOf(coluid), 1);
             }
-            if (this.hideColumn.indexOf(coluid) === -1) {
+            if (this.hideColumn.indexOf(coluid) === -1 && (currentCol && currentCol.visible)) {
                 this.hideColumn.push(coluid);
             }
         }

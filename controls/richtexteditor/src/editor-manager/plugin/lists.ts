@@ -24,6 +24,7 @@ export class Lists {
     private saveSelection: NodeSelection;
     private domNode: DOMNode;
     private currentAction: string;
+    private commonLIParent: Element
     /**
      * Constructor for creating the Lists plugin
      *
@@ -39,6 +40,7 @@ export class Lists {
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.LIST_TYPE, this.applyListsHandler, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
+        this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.onKeyUp, this);
         this.parent.observer.on(EVENTS.SPACE_ACTION, this.spaceKeyAction, this);
     }
     private testList(elem: Element): boolean {
@@ -185,9 +187,10 @@ export class Lists {
             }
         }
         this.removeList(range, e);
+        this.firstListBackSpace(range, e);
     }
     
-    private removeList(range: Range, e: IHtmlKeyboardEvent) {
+    private removeList(range: Range, e: IHtmlKeyboardEvent): void {
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
@@ -207,6 +210,34 @@ export class Lists {
                 detach(range.commonAncestorContainer);
             }
             e.event.preventDefault();
+        }
+    }
+    
+    private onKeyUp(): void {
+        if (!isNOU(this.commonLIParent) && !isNOU(this.commonLIParent.querySelector('.removeList'))) {
+            let currentLIElem: Element = this.commonLIParent.querySelector('.removeList')
+            while (!isNOU(currentLIElem.firstChild)) {
+                this.parent.domNode.insertAfter((currentLIElem.firstChild as Element), currentLIElem);
+            }
+            detach(currentLIElem);
+        }
+    }
+
+    private firstListBackSpace(range: Range, e: IHtmlKeyboardEvent): void {
+        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        if (!isNOU(startNode.closest('OL'))) {
+            this.commonLIParent = startNode.closest('OL');
+        } else if (!isNOU(startNode.closest('UL'))) {
+            this.commonLIParent = startNode.closest('UL');
+        }
+        if (startNode.nodeName === 'LI' && range.startOffset === 0 && range.endOffset === 0 &&
+        isNOU(startNode.previousSibling) && !isNOU(this.commonLIParent) && isNOU(this.commonLIParent.previousSibling) &&
+        (isNOU(this.commonLIParent.parentElement.closest('OL')) && isNOU(this.commonLIParent.parentElement.closest('UL')) &&
+        isNOU(this.commonLIParent.parentElement.closest('LI')))) {
+            let currentElem = createElement('P');
+            currentElem.innerHTML = '&#8203;';
+            startNode.classList.add('removeList');
+            this.commonLIParent.parentElement.insertBefore(currentElem, this.commonLIParent);
         }
     }
 

@@ -168,6 +168,10 @@ export interface OpenOptions {
     /** Defines the sheetIndex. */
     sheetIndex?: number;
 }
+/** @hidden */
+export interface OpenArgs extends OpenOptions {
+    guid?: string;
+}
 
 /**
  * BeforeOpenEventArgs

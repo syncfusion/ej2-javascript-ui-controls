@@ -11,6 +11,7 @@
   $background: #e82824;
 
   $warning: #ffd800;
+  $yellow:  rgb(255, 255, 0);
 
   .e-error {
     color: $error-font-color;
@@ -83,4 +84,17 @@
   .e-block-touch {
     touch-action: pinch-zoom;
   }
+
+  .e-license {
+    color: $yellow;
+    text-decoration: none;
+  }
+
+  .e-license-banner {
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 27%;
+  }
+
 }

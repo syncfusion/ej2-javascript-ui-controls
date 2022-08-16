@@ -544,10 +544,11 @@ export class FormulaBar {
     }
     private updateFormulaDescription(): void {
         let selectedFormula: string | string[] | number | number[] = this.formulaList.getSelectedItems().text;
-        const descriptionArgs: { action: string, description: string, selectedList: string | string[] | number | number[] } = {
+        const descriptionArgs: { action: string, description: string, selectedList: string | string[] | number | number[] , isCustom:boolean } = {
             action: 'getFormulaDescription',
             description: '',
-            selectedList: selectedFormula
+            selectedList: selectedFormula,
+            isCustom:false
         };
         this.parent.notify(workbookFormulaOperation, descriptionArgs);
         const okBtn: HTMLElement = this.dialog.dialogInstance.element.querySelector('.e-footer-content .e-primary');
@@ -557,7 +558,7 @@ export class FormulaBar {
         focus(okBtn);
         const descriptionArea: Element = document.getElementById(this.parent.element.id + '_description_content');
         selectedFormula = (selectedFormula === 'AND') ? 'CalculateAND' : (selectedFormula === 'OR') ? 'CalculateOR' : selectedFormula;
-        descriptionArea.innerHTML = (this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
+        descriptionArea.textContent = descriptionArgs.isCustom?descriptionArgs.description:(this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
     }
     private formulaClickHandler(args: MouseEvent & TouchEvent): void {
         const trgtElem: HTMLElement = <HTMLElement>args.target;

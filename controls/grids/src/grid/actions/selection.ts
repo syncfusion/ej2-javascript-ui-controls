@@ -3014,7 +3014,7 @@ export class Selection implements IAction {
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
                 setChecked(input, false);
                 input.indeterminate = false;
-                if ((checkToSelectAll && isFiltered) || (!isFiltered && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
+                if ((checkToSelectAll && isFiltered && this.getData().length) || (!isFiltered && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
                     && !this.isPartialSelection && !this.parent.enableVirtualization) ||
                     (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling
                     && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen) || this.isHdrSelectAllClicked))
@@ -3098,7 +3098,11 @@ export class Selection implements IAction {
             (Browser.info.name === 'opera' && e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
             this.cmdKeyPressed = true;
         }
-        if (e.keyCode === 32) {
+        const targetHeadCell: Element = parentsUntil(e.target as HTMLElement, 'e-headercell');
+        const targetRowCell: Element = parentsUntil(e.target as HTMLElement, literals.rowCell);
+        const isCheckBox: boolean = targetHeadCell ? targetHeadCell.children[0].classList.contains('e-headerchkcelldiv') :
+            targetRowCell ? targetRowCell.classList.contains('e-gridchkbox') : false;
+        if (isCheckBox && !this.parent.allowKeyboard && e.keyCode === 32) {
             e.preventDefault();
         }
     }

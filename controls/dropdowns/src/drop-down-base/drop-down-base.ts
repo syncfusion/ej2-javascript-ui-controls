@@ -692,7 +692,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *
      * @returns {void}
      */
-    private initialize(): void {
+    private initialize(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.bindEvent = true;
         this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE_PROPERTY}`;
         if (this.element.tagName === 'UL') {
@@ -708,7 +708,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 this.setListData(this.dataSource, this.fields, this.query);
             }
         } else {
-            this.setListData(this.dataSource, this.fields, this.query);
+            this.setListData(this.dataSource, this.fields, this.query, e);
         }
     }
     /**
@@ -823,7 +823,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     private setListData(
         dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager | boolean[],
-        fields: FieldSettingsModel, query: Query): void {
+        fields: FieldSettingsModel, query: Query, event?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         fields = fields ? fields : this.fields;
         let ulElement: HTMLElement;
         this.isActive = true;
@@ -869,7 +869,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
                         if (!localDataArgs.cancel) {
                             ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);                            
-                            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[]);
+                            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[], event);
                             if (this.groupTemplate) {
                                 this.renderGroupTemplate(ulElement);
                             }
@@ -1302,7 +1302,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected resetList(
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
-        fields?: FieldSettingsModel, query?: Query): void {
+        fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (this.list) {
             if ((this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options.length > 0)
                 || (this.element.tagName === 'UL' && (<HTMLUListElement>this.element).childNodes.length > 0)) {
@@ -1313,7 +1313,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
             }
             dataSource = this.getModuleName() === 'combobox' && this.selectData && dataSource instanceof Array && dataSource.length < this.selectData.length ? this.selectData : dataSource;
-            this.setListData(dataSource, fields, query);
+            this.setListData(dataSource, fields, query, e);
         }
     }
 
@@ -1407,7 +1407,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      * @returns {void}
      */
-    public render(isEmptyData?: boolean): void {
+    public render( e?: MouseEvent | KeyboardEventArgs | TouchEvent, isEmptyData?: boolean): void {
         this.list = this.createElement('div', { className: dropDownBaseClasses.content, attrs: { 'tabindex': '0' } });
         this.list.classList.add(dropDownBaseClasses.root);
         this.setFields();
@@ -1431,7 +1431,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.setEnableRtl();
         this.setEnabled();
         if (!isEmptyData) {
-            this.initialize();
+            this.initialize(e);
         }
     }
     /**
@@ -1703,7 +1703,7 @@ export interface PopupEventArgs {
     /**
      * Specifies the event.
      */
-    event?: MouseEvent | KeyboardEventArgs
+    event?: MouseEvent | KeyboardEventArgs | TouchEvent | Object
 }
 export interface FocusEventArgs {
     /**

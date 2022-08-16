@@ -236,6 +236,25 @@ describe('Spreadsheet context menu module ->', () => {
                 done();
             });
         });
+        it('Protect workbook does not prevent rename and moving the sheets', function (done) {
+            helper.getElement('#' + helper.id + '_sheet_tab_panel button:nth-child(1)').click();
+            helper.switchRibbonTab(4);
+            helper.getElement('#' + helper.id + '_protectworkbook').click();
+            (helper.getElementFromSpreadsheet('.e-protectworkbook-dlg input') as HTMLInputElement).value = '123';
+            (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = '123';
+            helper.click('.e-protectworkbook-dlg .e-primary');
+
+            var cElem:HTMLElement = helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-item:nth-child(3)');
+            var cMenu: DOMRect = <DOMRect>cElem.getBoundingClientRect()
+            helper.triggerMouseAction('contextmenu', { x:  cMenu.left + 1, y: cMenu.top + 1 }, null, cElem);
+
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').classList).toContain('e-disabled');
+                expect(helper.getInstance().sheets[1].name).toBe('Sheet2');
+                done();
+            });
+        });
     });
     describe('CR-Issues->', () => {
         describe('EJ2-51327', () => {

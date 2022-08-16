@@ -5,32 +5,38 @@
     display: block;
     user-select: none;
 
-    & .e-delete-sheet-dlg {
+    & .e-delete-sheet-dlg.e-dialog {
       @if $skin-name == 'FluentUI' {
         height: 211px !important; // sass-lint:disable-line no-important
       }
     }
 
-    & .e-protect-dlg {
+    & .e-protect-dlg.e-dialog {
       height: $protect-dlg-height;
       width: $protect-dlg-width;
 
-      & .e-sheet-password-content {
-        & .e-header {
-          font-size: 14px;
-          line-height: 28px;
-          margin-bottom: 4px;
-          }
-        }
+      & .e-sheet-password-content .e-header {
+        font-size: 14px;
+        line-height: 28px;
+        margin-bottom: 4px;
       }
+    }
 
-    & .e-custom-format-dlg {
-
+    & .e-custom-format-dlg.e-dialog {
       @if $sheet-skin != 'material' {
         height: 510px !important; // sass-lint:disable-line no-important
         width: 530px !important; // sass-lint:disable-line no-important
-        }
-     }
+      }
+
+      & .e-footer-content {
+        padding: 0;
+      }
+
+      & .e-dlg-content {
+        display: inline-table;
+        padding-top: 3px;
+      }
+    }
 
     @if $sheet-skin == 'FluentUI' {
       display: inline;
@@ -47,14 +53,12 @@
         }
       }
 
-    & .e-unprotectworksheet-dlg {
+    & .e-unprotectworksheet-dlg.e-dialog {
       left: 0 !important; // sass-lint:disable-line no-important
 
-      & .e-dlg-header-content {
-        & .e-dlg-header {
-          font-size: 18px;
-          line-height: 21px;
-        }
+      & .e-dlg-header-content .e-dlg-header {
+        font-size: 18px;
+        line-height: 21px;
       }
 
       & .e-dlg-content {
@@ -75,16 +79,14 @@
           }
         }
       }
-   }
+    }
 
-    & .e-reenterpwd-dlg {
+    & .e-reenterpwd-dlg.e-dialog {
       left: 0 !important; // sass-lint:disable-line no-important
 
-      & .e-dlg-header-content {
-        & .e-dlg-header {
-          font-size: 18px;
-          line-height: 21px;
-        }
+      & .e-dlg-header-content .e-dlg-header {
+        font-size: 18px;
+        line-height: 21px;
       }
 
       & .e-dlg-content {
@@ -107,14 +109,12 @@
       }
     }
 
-    & .e-goto-dlg {
+    & .e-goto-dlg.e-dialog {
       height: auto;
 
-      & .e-dlg-content {
-        & .e-goto-alert-span {
-          font-weight: bold;
-          padding-top: 7px;
-        }
+      & .e-dlg-content .e-goto-alert-span {
+        font-weight: bold;
+        padding-top: 7px;
       }
     }
 
@@ -185,15 +185,6 @@
       width: 80%;
     }
 
-    & .e-custom-format-dlg .e-footer-content {
-      padding: 0;
-    }
-
-    & .e-custom-format-dlg .e-dlg-content {
-      display: inline-table;
-      padding-top: 3px;
-    }
-
     & .e-dlg-content .e-custom-dialog .e-custom-sample {
       margin: 10px 10px 10px 0;
     }
@@ -206,7 +197,7 @@
 
     & .e-protect-content {
       font-size: 13px;
-      height: 30px;
+      height: 37px;
       padding-top: 20px;
       width: 100%;
     }
@@ -484,7 +475,7 @@
           }
 
           & .e-hyperlink-style {
-            color: $hyper-link-color;
+            color: inherit;
             text-decoration: underline;
           }
 
@@ -625,8 +616,8 @@
     & .e-sheet .e-ss-overlay-active .e-ss-overlay-t {
       background-color: $selection-border-color;
       cursor: ns-resize;
+      left: 50%;
       position: absolute;
-      right: 50%;
       top: 0;
       transform: translate(-50%, -50%);
     }
@@ -643,8 +634,8 @@
     & .e-sheet .e-ss-overlay-active .e-ss-overlay-b {
       background-color: $selection-border-color;
       cursor: ns-resize;
+      left: 50%;
       position: absolute;
-      right: 50%;
       top: 100%;
       transform: translate(-50%, -50%);
     }
@@ -1043,26 +1034,11 @@
     }
 
     .e-filloption {
-      height: 30px;
       position: absolute;
-      width: 47px;
       z-index: 3;
 
       @if $skin-name == 'material' {
         background-color: $cell-border-color;
-      }
-
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
-        width: 65px;
-      }
-
-      @else if $skin-name == 'bootstrap5' {
-        width: 56px;
-      }
-
-      @else if $skin-name == 'FluentUI' {
-        height: 32px;
-        width: 62px;
       }
     }
 
@@ -1521,7 +1497,7 @@
       }
     }
 
-    & .e-customsort-dlg {
+    & .e-customsort-dlg.e-dialog {
       @if $skin-name == 'material' {
         height: 360px !important; // sass-lint:disable-line no-important
       }
@@ -1634,14 +1610,14 @@
           & .e-header {
             font-size: 14px;
             line-height: 16px;
-        }
+          }
 
           & .e-input {
             font-size: 14px;
             height: 32px;
             margin-top: 5px;
-            }
           }
+        }
 
         & .e-allowdata {
           margin-bottom: 24px;
@@ -1654,13 +1630,13 @@
             & .e-header {
               font-size: 14px;
               line-height: 16px;
-              }
+            }
 
             & .e-valid-input {
               height: 34px;
               margin-top: 5px;
-              }
             }
+          }
 
           & .e-data {
             display: inline-block;
@@ -1670,14 +1646,14 @@
             & .e-header {
               font-size: 14px;
               line-height: 16px;
-              }
+            }
 
             & .e-valid-input {
               height: 34px;
               margin-top: 5px;
-              }
             }
           }
+        }
 
         & .e-values {
           margin-bottom: 24px;
@@ -1690,14 +1666,14 @@
             & .e-header {
               font-size: 14px;
               line-height: 16px;
-              }
+            }
 
             & .e-input {
               font-size: 14px;
               height: 32px;
               margin-top: 5px;
-              }
             }
+          }
 
           & .e-maximum {
             display: inline-block;
@@ -1707,14 +1683,14 @@
             & .e-header {
               font-size: 14px;
               line-height: 16px;
-              }
+            }
 
             & .e-input {
               font-size: 14px;
               height: 32px;
               margin-top: 5px;
-              }
             }
+          }
 
           & .e-dlg-error {
             font-size: 12px;
@@ -1724,36 +1700,31 @@
           & .e-header {
             font-size: 14px;
             line-height: 16px;
-            }
+          }
 
           & .e-input {
             font-size: 14px;
             height: 32px;
-            }
           }
+        }
 
         & .e-ignoreblank {
           margin-bottom: 5px;
-          }
-        }
-
-      & .e-footer-content {
-
-        & .e-clearall-btn {
-          float: left;
-          }
         }
       }
 
-    & .e-validationerror-dlg {
-      & .e-dlg-content {
-        font-size: 14px;
-        line-height: 28px;
-        }
+      & .e-footer-content .e-clearall-btn {
+        float: left;
+      }
     }
 
-    & .e-hyperlink-dlg,
-    .e-edithyperlink-dlg {
+    & .e-validationerror-dlg .e-dlg-content {
+      font-size: 14px;
+      line-height: 28px;
+    }
+
+    & .e-hyperlink-dlg.e-dialog,
+    .e-edithyperlink-dlg.e-dialog {
       max-height: 640px !important; // sass-lint:disable-line no-important
 
       & .e-dlg-header-content {
@@ -1768,7 +1739,7 @@
           font-size: 18px;
           line-height: 21px;
         }
-    }
+      }
 
       & .e-dlg-content {
         padding-bottom: 0;
@@ -1795,9 +1766,9 @@
               & .e-tab-text {
                 font-size: 13px;
                 line-height: 15px;
+              }
             }
-        }
-    }
+          }
 
           & .e-content {
             @if $skin-name == 'bootstrap5' {
@@ -1809,13 +1780,13 @@
 
             & .e-cont {
               @if $skin-name == 'bootstrap5' {
-                margin:  12px 12px 15.5px;
+                margin: 12px 12px 15.5px;
               }
               @else if $skin-name == 'FluentUI' {
-                margin:  0 0 12px 24px;
+                margin: 0 0 12px 24px;
               }
               @else {
-                margin:  0 0 15.5px 24px;
+                margin: 0 0 15.5px 24px;
               }
 
               & .e-header {
@@ -1834,7 +1805,7 @@
                 @if $skin-name == 'FluentUI'  {
                   padding-bottom: 4px;
                 }
-                }
+              }
 
               & .e-text.e-disabled {
                 border-bottom-width: 2px;
@@ -1846,18 +1817,18 @@
                 margin: 8px 24px 0 0;
                 overflow: auto;
                 width: 273px;
-                }
               }
             }
+          }
         }
-    }
+      }
 
       & .e-footer-content {
         margin: 4px 0;
       }
     }
 
-    & .e-open-dlg {
+    & .e-open-dlg.e-dialog {
       width: $open-dlg-width;
 
       & .e-dlg-content {
@@ -1876,7 +1847,7 @@
       }
     }
 
-    & .e-find-dlg {
+    & .e-find-dlg.e-dialog {
       height: auto;
       width: $find-dlg-width;
 
@@ -1892,6 +1863,14 @@
           font-size: 12px;
           padding-top: 7px;
         }
+
+        & .e-findnreplace-casecheckbox {
+          padding-right: 12px;
+        }
+
+        & .e-findnreplace-exactmatchcheckbox {
+          padding: 12px 0;
+        }
       }
 
       & p.e-header {
@@ -1905,14 +1884,12 @@
       }
     }
 
-    & .e-protectworkbook-dlg {
+    & .e-protectworkbook-dlg.e-dialog {
       left: 0 !important; // sass-lint:disable-line no-important
 
-      & .e-dlg-header-content {
-        & .e-dlg-header {
-          font-size: 18px;
-          line-height: 31px;
-        }
+      & .e-dlg-header-content .e-dlg-header {
+        font-size: 18px;
+        line-height: 31px;
       }
 
       & .e-dlg-content {
@@ -1931,48 +1908,44 @@
             margin-bottom: 4px;
           }
         }
+      }
     }
-}
 
-    & .e-unprotectworkbook-dlg {
+    & .e-unprotectworkbook-dlg.e-dialog {
       left: 0 !important; // sass-lint:disable-line no-important
 
-      & .e-dlg-header-content {
-        & .e-dlg-header {
-          font-size: 18px;
-          line-height: 21px;
-    }
-}
+      & .e-dlg-header-content .e-dlg-header {
+        font-size: 18px;
+        line-height: 21px;
+      }
 
       & .e-dlg-content {
         & .e-unprotectpwd-alert-span {
           color: $dlg-error-color;
           font-size: 12px;
           padding-top: 7px;
-    }
+        }
 
         & .e-unprotectpwd-content {
           & .e-header {
             font-size: 14px;
             line-height: 16px;
-        }
+          }
 
           & .e-input {
             margin-top: 10px;
+          }
         }
+      }
     }
-}
-}
 
-    & .e-importprotectworkbook-dlg {
+    & .e-importprotectworkbook-dlg.e-dialog {
       left: 0 !important; // sass-lint:disable-line no-important
 
-      & .e-dlg-header-content {
-        & .e-dlg-header {
-          font-size: 18px;
-          line-height: 21px;
-    }
-}
+      & .e-dlg-header-content .e-dlg-header {
+        font-size: 18px;
+        line-height: 21px;
+      }
 
       & .e-dlg-content {
         & .e-importprotectpwd-alert-span {
@@ -1985,14 +1958,14 @@
           & .e-header {
             font-size: 14px;
             line-height: 16px;
-      }
+          }
 
           & .e-input {
             margin-top: 10px;
           }
-  }
-}
-}
+        }
+      }
+    }
 
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
@@ -2015,12 +1988,16 @@
       height: 18px;
       margin-right: -1px;
       padding: 0;
-      position: relative;
+      position: absolute;
       right: 0;
       width: 20px;
       z-index: 2;
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         bottom: 1px;
+      }
+      @if $sheet-skin == 'material' or $sheet-skin == 'material-dark' {
+        bottom: .5px;
+        right: .5px;
       }
     }
   }
@@ -2047,12 +2024,16 @@
     }
 
   .e-dropdown-popup {
-    &.e-numformat-ddb ul .e-numformat-preview-text {
-      font-size: 13px;
-      max-width: 200px;
-      overflow: hidden;
-      text-align: right;
-      text-overflow: ellipsis;
+    &.e-numformat-ddb ul {
+      max-width: initial;
+
+      & .e-numformat-preview-text {
+        font-size: 13px;
+        max-width: 200px;
+        overflow: hidden;
+        text-align: right;
+        text-overflow: ellipsis;
+      }
     }
 
     &.e-font-size-ddb ul {
@@ -2149,94 +2130,31 @@
       }
     }
 
-    &.e-popup.e-menu-popup.e-cf-menu ul {
+    &.e-databars .e-ul,
+    &.e-colorscales .e-ul {
+      overflow: visible;
       padding: 0;
+
+      & .e-menu-item {
+        height: auto;
+        line-height: 0;
+        padding: 0;
+
+        & .e-cf-icon {
+          display: inline-block;
+          height: 40px;
+          width: 40px;
+        }
+      }
     }
 
-    &.e-popup.e-menu-popup.e-databars ul {
+    &.e-databars .e-ul {
       min-width: 110px;
-      overflow: visible;
-      padding: 0;
-
-      & .e-menu-item,
-      & .e-menu-item.e-focused {
-        height: auto;
-        line-height: 0;
-        padding: 0;
-
-        & .e-db {
-          height: auto;
-          width: auto;
-
-          & .e-bdatabar,
-          & .e-gdatabar,
-          & .e-rdatabar,
-          & .e-odatabar,
-          & .e-lbdatabar,
-          & .e-pdatabar {
-            height: 40px;
-            width: 40px;
-          }
-
-          & .e-databar-icon {
-            background-position: center;
-            float: left;
-          }
-
-          & .e-db1,
-          & .e-db2 {
-            display: flex;
-            height: 40px;
-          }
-        }
-      }
     }
 
-    &.e-popup.e-menu-popup.e-colorscales ul {
+    &.e-colorscales .e-ul {
       min-width: 150px;
-      overflow: visible;
-      padding: 0;
-
-      & .e-menu-item,
-      & .e-menu-item.e-focused {
-        height: auto;
-        line-height: 0;
-        padding: 0;
-
-        & .e-cs {
-          height: auto;
-          width: auto;
-
-          & .e-gyr,
-          & .e-ryg,
-          & .e-gwr,
-          & .e-rwg,
-          & .e-bwr,
-          & .e-rwb,
-          & .e-wr,
-          & .e-rw,
-          & .e-gw,
-          & .e-wg,
-          & .e-gy,
-          & .e-yg {
-            height: 40px;
-            width: 40px;
-          }
-
-          & .e-colorscale-icon {
-            background-position: center;
-            float: left;
-          }
-
-          & .e-cs1,
-          & .e-cs2,
-          & .e-cs3 {
-            display: flex;
-            height: 40px;
-            }
-          }
-        }
-      }
+    }
 
     &.e-popup.e-menu-popup.e-iconsets ul {
       min-width: 250px;
@@ -2350,6 +2268,14 @@
 
         & .e-container .e-slider-preview .e-colorpicker-slider .e-slider-container {
           display: block;
+        }
+      }
+    }
+
+    &.e-popup.e-menu-popup.e-addchart-menu ul {
+      @if $sheet-skin == 'bootstrap' or $sheet-skin == 'bootstrap4' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'bootstrap5-dark' {
+        & .e-menu-item {
+          height: 35px;
         }
       }
     }
@@ -2523,7 +2449,7 @@
     }
    }
 
-  .e-spreadsheet-function-dlg {
+  .e-spreadsheet-function-dlg.e-dialog {
     min-height: $dlg-min-height;
     user-select: none;
 
@@ -2583,6 +2509,10 @@
       & .e-xlfl-maindiv {
         padding-top: 10px;
       }
+    }
+
+    & .e-xlfl-maindiv .e-xlfl-radiodiv {
+      width: auto;
     }
   }
 
@@ -2666,30 +2596,41 @@
 
   .e-bigger .e-spreadsheet,
   .e-bigger.e-spreadsheet {
-
     @if $skin-name == 'FluentUI' {
-      & .e-protect-dlg {
+      & .e-protect-dlg.e-dialog {
         height: 790px !important; // sass-lint:disable-line no-important
       }
 
-      & .e-delete-sheet-dlg {
+      & .e-delete-sheet-dlg.e-dialog {
         height: 240px !important; // sass-lint:disable-line no-important
       }
 
-      & .e-merge-alert-dlg {
+      & .e-merge-alert-dlg.e-dialog {
         height: 215px;
-      }
 
-      .e-filloption {
-        height: 40px;
-        width: 76px;
-      }
-
-      & .e-validation-list {
-        & .e-ddl-icon {
-          min-height: 0 !important; // sass-lint:disable-line no-important
-          min-width: 0 !important; // sass-lint:disable-line no-important
+        .e-dlg-content {
+          padding-bottom: 0;
         }
+      }
+
+      .e-validationerror-dlg .e-dlg-content {
+        padding-bottom: 0;
+      }
+
+      .e-spreadsheet-function-dlg.e-dialog {
+        height: 515px !important; // sass-lint:disable-line no-important
+      }
+    }
+
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+      & .e-validation-list .e-ddl-icon {
+        min-height: 0;
+        min-width: 0;
+        padding: 0;
+      }
+
+      & .e-findtool-dlg .e-dlg-content .e-find-toolbar .e-input {
+        width: calc(100% - 70px);
       }
     }
 
@@ -2739,6 +2680,11 @@
       & .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn .e-selected-color {
         height: auto;
         width: auto;
+      }
+
+      & .e-content .e-hscroll-bar {
+        height: auto;
+        overflow: hidden;
       }
     }
 
@@ -2837,9 +2783,9 @@
       }
     }
 
-    & .e-customsort-dlg {
+    & .e-customsort-dlg.e-dialog {
       width: 590px !important; // sass-lint:disable-line no-important
-      @if $skin-name == 'FluentUI' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
         width: 630px !important; // sass-lint:disable-line no-important
       }
     }
@@ -2857,12 +2803,9 @@
       }
     }
 
-    & .e-find-dlg {
-      & .e-footer-content {
-        & .e-btn {
-          font-size: 11px;
-        }
-      }
+    & .e-find-dlg .e-footer-content .e-btn {
+      font-size: 11px;
+      margin-top: 6px;
     }
 
     & .e-findtool-dlg {
@@ -2870,7 +2813,7 @@
       width: $bigger-find-tool-dlg-width;
     }
 
-    & .e-goto-dlg {
+    & .e-goto-dlg.e-dialog {
       height: auto;
 
       & .e-btn {
@@ -2878,22 +2821,20 @@
       }
     }
 
-    & .e-protectworkbook-dlg {
-      & .e-dlg-content {
-        & .e-pwd-alert-span {
-          color: $dlg-error-color;
+    & .e-protectworkbook-dlg.e-dialog .e-dlg-content {
+      & .e-pwd-alert-span {
+        color: $dlg-error-color;
+        font-size: 14px;
+        padding-top: 16px;
+      }
+
+      & .e-password-content {
+        padding-top: 16px;
+
+        & .e-header {
           font-size: 14px;
-          padding-top: 16px;
-        }
-
-        & .e-password-content {
-          padding-top: 16px;
-
-          & .e-header {
-            font-size: 14px;
-            line-height: 28px;
-            margin-bottom: 4px;
-          }
+          line-height: 28px;
+          margin-bottom: 4px;
         }
       }
     }
@@ -2925,17 +2866,24 @@
     &.e-font-size-ddb ul {
       min-width: 70px;
     }
-  }
 
-  .e-bigger .e-spreadsheet .e-hyperlink-dlg .e-dlg-content .e-link-dialog .e-content .e-cont {
-    @if $skin-name == 'FluentUI' {
-      margin:  0 0 16px 24px;
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
+      &.e-dragfill-ddb ul,
+      &.e-numformat-ddb ul {
+        max-width: initial;
+      }
     }
   }
 
-  .e-bigger .e-spreadsheet .e-hyperlink-dlg .e-dlg-header-content {
+  .e-bigger .e-spreadsheet .e-hyperlink-dlg.e-dialog {
     @if $skin-name == 'FluentUI' {
-      padding:  24px 24px 16px;
+      & .e-dlg-content .e-link-dialog .e-content .e-cont {
+        margin:  0 0 16px 24px;
+      }
+
+      & .e-dlg-header-content {
+        padding:  24px 24px 16px;
+      }
     }
   }
 

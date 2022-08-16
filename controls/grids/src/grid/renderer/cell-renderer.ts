@@ -65,11 +65,13 @@ export class CellRenderer implements ICellRenderer<Column> {
         let result: Element[];
         if (cell.column.template) {
             const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string';
+            const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
             const literals: string[] = ['index'];
             const dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             const templateID: string = this.parent.element.id + cell.column.uid;
             const str: string = 'isStringTemplate';
-            if (isReactCompiler) {
+            if (isReactCompiler || isReactChild) {
                 const copied: Object = { 'index': attributes[literals[0]] };
                 cell.column.getColumnTemplate()(
                     extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
@@ -78,7 +80,7 @@ export class CellRenderer implements ICellRenderer<Column> {
                 result = cell.column.getColumnTemplate()(
                     extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], undefined, undefined, this.parent['root']);
             }
-            if (!isReactCompiler) {
+            if (!isReactCompiler && !isReactChild) {
                 appendChildren(node, result);
             }
             this.parent.notify('template-result', { template: result });

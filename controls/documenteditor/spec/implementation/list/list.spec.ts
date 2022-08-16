@@ -476,3 +476,85 @@ describe('Undo and Redo validation for list', () => {
         expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(indentedFirstLineIndent);
     });
 });
+let file : any = {"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false,"pageNumberStyle":"Arabic"},"blocks":[{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":0}},"characterFormat":{"bold":true,"boldBidi":true},"inlines":[{"characterFormat":{"bold":true,"boldBidi":true},"text":"Mammals"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":1}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"body covered by hair or fur"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":1}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"warm-blooded"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":1}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"have a backbone"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":1}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"produce milk"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":1}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"Examples"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":2}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"Tiger"}]},{"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":2}},"characterFormat":{},"inlines":[{"characterFormat":{},"text":"Bat"}]}],"headersFooters":{}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#00000000","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri","allCaps":false},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","listFormat":{},"bidi":false,"keepLinesTogether":false,"keepWithNext":false,"widowControl":true},"defaultTabWidth":36,"trackChanges":false,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"NoProtection","dontUseHTMLParagraphAutoSpacing":false,"formFieldShading":true,"compatibilityMode":"Word2013","styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Notes","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"afterSpacing":6,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{}},"characterFormat":{"bold":true,"boldBidi":true},"basedOn":"Normal","next":"Normal"},{"name":"List Paragraph","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":36,"listFormat":{}},"characterFormat":{},"basedOn":"Normal","next":"List Paragraph"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496","fontSizeBidi":13,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763","fontSizeBidi":12,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496","italicBidi":true,"fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763","fontFamilyBidi":"Calibri Light"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763","fontFamilyBidi":"Calibri Light"},"basedOn":"Default Paragraph Font"}],"lists":[{"abstractListId":0,"levelOverrides":[],"listId":0}],"abstractLists":[{"abstractListId":0,"levels":[{"characterFormat":{"bold":true,"italic":false,"boldBidi":true,"italicBidi":false},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":18,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.","restartLevel":0,"startAt":1},{"characterFormat":{"bold":false,"italic":true,"boldBidi":false,"italicBidi":true},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":39.599998474121094,"firstLineIndent":-21.600000381469727,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.","restartLevel":1,"startAt":1},{"characterFormat":{"fontFamily":"Symbol","fontFamilyBidi":"Symbol"},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":61.20000076293945,"firstLineIndent":-25.200000762939453,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Bullet","numberFormat":"","restartLevel":0,"startAt":0},{"characterFormat":{},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":86.4000015258789,"firstLineIndent":-32.400001525878906,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.","restartLevel":3,"startAt":1},{"characterFormat":{},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":111.5999984741211,"firstLineIndent":-39.599998474121094,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.","restartLevel":4,"startAt":1},{"characterFormat":{},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":136.8000030517578,"firstLineIndent":-46.79999923706055,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.","restartLevel":5,"startAt":1},{"characterFormat":{},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":162,"firstLineIndent":-54,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.%7.","restartLevel":6,"startAt":1},{"characterFormat":{},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":187.1999969482422,"firstLineIndent":-61.20000076293945,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.%7.%8.","restartLevel":7,"startAt":1},{"characterFormat":{},"paragraphFormat":{"borders":{"top":{},"left":{},"right":{},"bottom":{},"horizontal":{},"vertical":{}},"leftIndent":216,"firstLineIndent":-72,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.%2.%3.%4.%5.%6.%7.%8.%9.","restartLevel":8,"startAt":1}]}],"comments":[],"revisions":[],"customXml":[]}
+describe('Checking the numbering applied properly', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Checking the numbering applied properly after indenting',() => {
+        console.log('Checking the numbering applied properly after indenting');
+        container.openBlank();
+        container.open(file);
+        container.selection.select('0;1;0','0;1;28');
+        for(let i : number = 0; i < 4; i++)
+        {
+            container.editor.increaseIndent();
+        }
+        container.selection.moveToParagraphEnd();
+        container.editor.onEnter();
+        container.editor.decreaseIndent();
+        expect(((container.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as ListTextElementBox).text).toBe("1.1..1.2.");
+        });
+});
+describe('Applying and removing the list and checking the indentation value', () => {
+let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Applying and removing the list and checking the indentation value for bulleted list',() => {
+        console.log('Applying and removing the list and checking the indentation value for bulleted list');
+        container.openBlank();
+        container.editor.insertText('This is a bullet');
+        container.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(36);
+        container.editor.applyBullet('\uf0b7', 'Symbol');
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(0);
+    });
+    it('Applying and removing the list and checking the indentation value for numbered numbered list',() => {
+        console.log('Applying and removing the list and checking the indentation value for numbered list');
+        container.openBlank();
+        container.openBlank();
+        container.editor.insertText('This is a bullet');
+        container.editor.applyNumbering('%1.', 'Arabic');
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(36);
+        container.editor.applyNumbering('%1.', 'Arabic');
+        expect(container.selection.start.paragraph.paragraphFormat.leftIndent).toBe(0);
+    });
+});

@@ -173,6 +173,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     //Specifies whether the operating system is MAC or not 
     public isMac : boolean = false;
     public oldView: string;
+    public oldPath: string;
 
     /**
      * Specifies the AJAX settings of the file manager.

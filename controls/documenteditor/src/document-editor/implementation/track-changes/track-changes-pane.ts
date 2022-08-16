@@ -321,25 +321,21 @@ export class TrackChangesPane {
             let singleChangesDiv: HTMLElement = changes.outerSingleDiv;
             if (this.selectedUser === this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
                 singleChangesDiv.style.display = 'block';
-                isRevisionVisible = true;
             } else if (this.selectedUser === this.locale.getConstant('All') && this.selectedType !== this.locale.getConstant('All')) {
                 if (changes.revisionType === this.selectedType) {
                     singleChangesDiv.style.display = 'block';
-                    isRevisionVisible = true;
                 } else {
                     singleChangesDiv.style.display = 'none';
                 }
             } else if (this.selectedUser !== this.locale.getConstant('All') && this.selectedType === this.locale.getConstant('All')) {
                 if (changes.user === this.selectedUser) {
                     singleChangesDiv.style.display = 'block';
-                    isRevisionVisible = true;
                 } else {
                     singleChangesDiv.style.display = 'none';
                 }
             } else {
                 if (changes.user === this.selectedUser && changes.revisionType === this.selectedType) {
                     singleChangesDiv.style.display = 'block';
-                    isRevisionVisible = true;
                 } else {
                     singleChangesDiv.style.display = 'none';
                 }
@@ -347,6 +343,7 @@ export class TrackChangesPane {
             if (singleChangesDiv.style.display === 'block') {
                 this.sortedRevisions.push(this.revisions[i]);
             }
+            isRevisionVisible = true;
         }
         this.setNoChangesVisibility = !isRevisionVisible;
     }
@@ -355,7 +352,22 @@ export class TrackChangesPane {
         this.enableButtons = enableButton;
         this.updateTrackChanges();
     }
-
+    public isUpdateTrackChanges(revisionCount: number): boolean {
+        let isUpdate: boolean = false;
+        let isNoChangeDiv: boolean = false;
+        if (this.changesInfoDiv.childNodes.length === 1 && (this.changesInfoDiv.childNodes[0] as HTMLDivElement).className === 'e-de-tc-no-chng') {
+            isNoChangeDiv = true;
+        }
+        else {
+            if (revisionCount !== this.changesInfoDiv.childNodes.length) {
+                isUpdate = true;
+            }
+        }
+        if (isNoChangeDiv && revisionCount > 0) {
+            isUpdate = true;
+        }
+        return isUpdate;
+    }
     public updateTrackChanges(show?: boolean): void {
         if (show || isNullOrUndefined(show)) {
             this.tableRevisions.clear();

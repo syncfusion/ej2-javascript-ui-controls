@@ -1026,6 +1026,16 @@ export class Layout {
                     }
                 }
             }
+            if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline' && paragraph.floatingElements.indexOf(element) == -1) {
+                if (element instanceof ShapeElementBox) {
+                    if (paragraph.floatingElements.indexOf(element) === -1) {
+                        paragraph.floatingElements.push(element);
+                    }
+                    if (paragraph.bodyWidget.floatingElements.indexOf(element) === -1) {
+                        paragraph.bodyWidget.floatingElements.push(element);
+                    }
+                }
+            }
             if (element instanceof ContentControl && this.documentHelper.contentControlCollection.indexOf(element) === -1) {
                 if (element.type === 0) {
                     this.documentHelper.contentControlCollection.push(element);
@@ -2012,15 +2022,10 @@ export class Layout {
             this.viewer.clientActiveArea.y = clientActiveArea.y;
             for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
                 let block: BlockWidget = element.bodyWidget.childWidgets[i] as BlockWidget;
-                //TODO: Ensure this case.
-                if (this.isLayoutWhole) {
-                    block.containerWidget = undefined;
-                } else {
-                    block.containerWidget = body;
-                    body.page = bodyWidget.page;
-                    body.sectionFormat = footnote.sectionFormat;
-                    block.containerWidget.containerWidget = footnote;
-                }
+                block.containerWidget = body;
+                body.page = bodyWidget.page;
+                body.sectionFormat = footnote.sectionFormat;
+                block.containerWidget.containerWidget = footnote;
                 this.viewer.updateClientAreaForBlock(block, true);
                 if (block instanceof TableWidget) {
                     this.clearTableWidget(block, true, true);
@@ -2078,6 +2083,7 @@ export class Layout {
                     endNote.page = bodyWidget.page;
                 }
                 let body: BlockContainer = foot.bodyWidget;
+                body.page = endNote.page;
                 for (let j: number = 0; j < foot.bodyWidget.childWidgets.length; j++) {
                     let block: BlockWidget = foot.bodyWidget.childWidgets[j] as BlockWidget;
                     block.containerWidget = body;
@@ -4980,7 +4986,7 @@ export class Layout {
         } 
     }
 
-    public updateWidgetsToTable(tableWidgets: TableWidget[], rowWidgets: TableRowWidget[], row: TableRowWidget): void {
+    public updateWidgetsToTable(tableWidgets: TableWidget[], rowWidgets: TableRowWidget[], row: TableRowWidget, rearrangeRow: boolean): void {
         let startRowIndex: number = row.bodyWidget.page.index;
         let rowHeight: number = this.getRowHeight(row, [row]);
         let viewer: LayoutViewer = this.viewer;
@@ -5118,7 +5124,7 @@ export class Layout {
                     if (splittedWidget !== tableRowWidget) {
                         this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, tableRowWidget.nextRow);
                         //Updates the fitted table rows to current page.
-                        this.updateWidgetsToPage(tableWidgets, rowWidgets, row.ownerTable, tableRowWidget.nextRow);
+                        this.updateWidgetsToPage(tableWidgets, rowWidgets, row.ownerTable, rearrangeRow, tableRowWidget.nextRow);
                         let index: number = tableWidgets.indexOf(tableRowWidget.containerWidget as TableWidget);
                         if (index + 1 >= tableWidgets.length) {
                             //Creates new table widget for splitted rows.
@@ -5128,7 +5134,7 @@ export class Layout {
                     } else {
                         if (row.index > 0) {
                             //Updates the fitted table rows to current page.
-                            this.updateWidgetsToPage(tableWidgets, rowWidgets, row.ownerTable, row);
+                            this.updateWidgetsToPage(tableWidgets, rowWidgets, row.ownerTable, rearrangeRow, row);
                             // Need to update on this further
                             if (row.previousRenderedWidget instanceof TableRowWidget) {
                                 // Need to update on this further
@@ -6738,7 +6744,7 @@ export class Layout {
             this.updateTableFloatPoints(table);
             this.updateChildLocationForTable(table.y, table);
         }
-        this.updateWidgetsToPage(tableView, [], table);
+        this.updateWidgetsToPage(tableView, [], table, true);
         if (wrapDiff > 0) {
             this.viewer.clientArea.x = this.viewer.clientArea.x - wrapDiff;
         }
@@ -6828,7 +6834,7 @@ export class Layout {
         return tableWidget;
     }
 
-    public updateWidgetsToPage(tables: TableWidget[], rows: TableRowWidget[], table: TableWidget, endRowWidget?: TableRowWidget): void {
+    public updateWidgetsToPage(tables: TableWidget[], rows: TableRowWidget[], table: TableWidget, rearrangeRow:boolean, endRowWidget?: TableRowWidget, ): void {
         const viewer: LayoutViewer = this.viewer;
         const tableWidget: TableWidget = tables[tables.length - 1] as TableWidget;
         if (!table.isInsideTable) {
@@ -6845,7 +6851,7 @@ export class Layout {
             // (viewer.renderedElements.get(table.associatedCell)[viewer.renderedElements.get(table.associatedCell).length - 1] as TableCellWidget).height = (viewer.renderedElements.get(table.associatedCell)[viewer.renderedElements.get(table.associatedCell).length - 1] as TableCellWidget).height + tableWidget.height;
         }
         // Shift the widgets for Right to left directed table.
-        if (table.isBidiTable) {
+        if (table.isBidiTable && rearrangeRow) {
             for (let i: number = 0; i < tables.length; i++) {
                 let layoutedTable: TableWidget = tables[i];
                 for (let j: number = 0; j < layoutedTable.childWidgets.length; j++) {
@@ -6909,7 +6915,7 @@ export class Layout {
         viewer.updateClientAreaForRow(row, false);
         const rows: TableRowWidget[] = [row];
         if (!isRowLayout) {
-            this.updateWidgetsToTable(tableWidget, rows, row);
+            this.updateWidgetsToTable(tableWidget, rows, row, false);
         }
         if (!isNestedTable) {
             this.layoutedFootnoteElement = [];
@@ -6924,63 +6930,81 @@ export class Layout {
             this.existFootnoteHeight = 0;
         }
     }
+    private isIntersecting(startPosition: number, endPosition: number, adjacentStartPosition: number, adjacentEndPosition: number): boolean {
+        return ((HelperMethods.round(adjacentStartPosition, 2) <= HelperMethods.round(startPosition, 2) || HelperMethods.round(adjacentStartPosition, 2) < HelperMethods.round(endPosition, 2))
+           && HelperMethods.round(adjacentEndPosition, 2) > HelperMethods.round(startPosition, 2));
+    }
     private getAdjacentRowCell(cell: TableCellWidget, cellStartPos: number, cellEndPos: number, rowIndex: number): TableCellWidget[] {
         const adjCells: TableCellWidget[] = [];
-        let adjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
-        let previouRow: boolean = false;
-        if (adjRow) {
-            if ((adjRow.childWidgets[0] as TableCellWidget).x > cell.x && rowIndex !== 0) {
-                adjRow = cell.ownerRow.ownerTable.childWidgets[rowIndex - 1] as TableRowWidget;
-                previouRow = true;
+        const columnLength: number = cell.ownerTable.tableHolder.columns.length;
+        let adjRow: TableRowWidget = cell.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+        if (isNullOrUndefined(adjRow)) {
+            return adjCells;
+        }
+        let prevCellEndPos: number = 0;
+        let prevCellEndIndex: number = 0;
+        let colSpan: number = cell.cellFormat.columnSpan;
+        let columnIndex: number = cell.columnIndex;
+        if (adjRow.rowFormat.gridBefore > 0) {
+            if (adjRow.rowFormat.gridBefore > columnIndex + colSpan) {
+                //When previous rows Grid before occupies more than cell width, returns empty collection.
+                return adjCells;
             }
-            for (let i: number = 0; i < adjRow.childWidgets.length; i++) {
-                let addAdjCell: boolean = true;
-                const adjCell: TableCellWidget = adjRow.childWidgets[i] as TableCellWidget;
-                const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
-                if(previouRow) {
-                    let prevAdjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
-                    for (let j: number = 0; j < prevAdjRow.childWidgets.length; j++) {
-                        var prevAdjCell: TableCellWidget = prevAdjRow.childWidgets[j] as TableCellWidget;
-                        var prevAdjCellStartPos: number = prevAdjCell.x - prevAdjCell.margin.left;
-                        if(adjCellStartPos === prevAdjCellStartPos) {
-                            adjRow = prevAdjRow;
-                            i = j;
-                            i--;
-                            previouRow = false;
-                            addAdjCell = false;
+            prevCellEndPos = adjRow.rowFormat.beforeWidth;
+            prevCellEndIndex = adjRow.rowFormat.gridBefore;
+        }
+        for (let i: number = 0; i < adjRow.childWidgets.length; i++) {
+            const adjCell: TableCellWidget = adjRow.childWidgets[i] as TableCellWidget;
+            const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
+            const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
+            const adjCellEndIndex = adjCell.columnIndex + adjCell.cellFormat.columnSpan;
+            if (i == adjRow.childWidgets.length - 1 ||
+                (HelperMethods.round(adjCellStartPos, 2) > HelperMethods.round(prevCellEndPos, 2)
+                && HelperMethods.round(adjCellStartPos, 2) > HelperMethods.round(cellStartPos, 2))) {
+                if (i == adjRow.childWidgets.length - 1 && adjRow.rowFormat.gridAfter > 0
+                    && adjCellEndIndex + adjRow.rowFormat.gridAfter === columnLength) {
+                    //Only grid after present after this adjacent cell, no need to continue next.
+                    return adjCells;
+                }
+                //When there is difference in adjacent cell start position and previous cell end position, there is an vertical merge continued cell.
+                //Iterates with the previous end cell column index till adjacent cell's column index to retrieve the vertical merge start cell in that region.
+                if (this.isIntersecting(cellStartPos, cellEndPos, prevCellEndPos, adjCellStartPos)) {
+                    while (colSpan > 0) {
+                        let prevRowAdjCell: TableCellWidget = adjRow.getVerticalMergeStartCell(columnIndex, colSpan);
+                        let prevRowAdjCellEndPos: number = 0;
+                        if (!isNullOrUndefined(prevRowAdjCell)) {
+                            let adjCellColumnSpan: number = prevRowAdjCell.cellFormat.columnSpan;
+                            adjCells.push(prevRowAdjCell);
+                            prevRowAdjCellEndPos = prevRowAdjCell.x + prevRowAdjCell.width + prevRowAdjCell.margin.right;
+                            cellStartPos = prevRowAdjCellEndPos;
+                            prevCellEndIndex = prevRowAdjCell.columnIndex + adjCellColumnSpan;
+                            colSpan -= prevCellEndIndex - columnIndex;
+                            columnIndex = prevCellEndIndex;
+                            if (HelperMethods.round(prevRowAdjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
+                                break;
+                            }
+                        }
+                        else {
                             break;
                         }
                     }
                 }
-                const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
-                /* eslint-disable-next-line max-len */
-                if ((HelperMethods.round(adjCellEndPos, 2) > HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2))
-                    /* eslint-disable-next-line max-len */
-                    || (HelperMethods.round(adjCellStartPos, 2) >= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellStartPos, 2) < HelperMethods.round(cellEndPos, 2))
-                    /* eslint-disable-next-line max-len */
-                    || (HelperMethods.round(adjCellStartPos, 2) <= HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2))) {
-                    //Skipped adding the Horizontal merge start cell multiple times.
-                    if (adjCells.indexOf(adjCell) === -1 && addAdjCell) {
-                        adjCells.push(adjCell);
-                    }
-                }
-                if (HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
-                    if (previouRow) {
-                        adjRow = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
-                        previouRow = false;
-                    } else {
-                        break;
-                    }
-                }
-                if (i === adjRow.childWidgets.length - 1 && previouRow) {
-                    adjRow = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
-                    previouRow = false;
-                }
             }
+            if (this.isIntersecting(cellStartPos, cellEndPos, adjCellStartPos, adjCellEndPos)) {
+                adjCells.push(adjCell);
+                cellStartPos = adjCellEndPos;
+                colSpan -= adjCellEndIndex - columnIndex;
+                columnIndex = adjCellEndIndex;
+            }
+            if (HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
+                //Once Adjacent cell end position reaches the current cell end position, no need to iterate next.
+                break;
+            }
+            prevCellEndPos = adjCellEndPos;
+            prevCellEndIndex = adjCellEndIndex;
         }
         return adjCells;
     }
-
     private addTableRowWidget(area: Rect, row: TableRowWidget[]): Widget {
         const rowWidget: TableRowWidget = row[row.length - 1];
         if ((rowWidget.rowFormat.beforeWidth !== 0 || rowWidget.rowFormat.gridBeforeWidth !== 0) && ((this.documentHelper.alignTablesRowByRow) ? rowWidget.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
@@ -7610,7 +7634,7 @@ export class Layout {
             row = this.shiftRowWidget(tables, row, isClearHeight);
             row = row.nextRow as TableRowWidget;
         }
-        this.updateWidgetsToPage(tables, [], table);
+        this.updateWidgetsToPage(tables, [], table, true);
         if (table.wrapTextAround && table.bodyWidget) {
             this.updateClientAreaForWrapTable(tables, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
@@ -7643,7 +7667,7 @@ export class Layout {
             this.updateFootnoteToBody(row, this.layoutedFootnoteElement);
             this.footnoteHeight = footheight;
         }
-        this.updateWidgetsToTable(tables, rows, row);
+        this.updateWidgetsToTable(tables, rows, row, false);
         if (!isNestedTable) {
             this.layoutedFootnoteElement = [];
         }

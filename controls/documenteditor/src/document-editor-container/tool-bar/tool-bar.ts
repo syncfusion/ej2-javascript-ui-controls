@@ -933,15 +933,24 @@ export class Toolbar {
             this.formFieldDropDown = undefined;
         }
         if (this.toolbar) {
+            const toolbarElement: HTMLElement = this.toolbar.element;
             this.toolbar.destroy();
             this.toolbar = undefined;
+            toolbarElement.parentElement.removeChild(toolbarElement);
+        }
+        if (this.container.toolbarContainer) {
+            this.container.containerTarget.removeChild(this.container.toolbarContainer);
+            this.container.toolbarContainer = undefined;
+        }
+        if (this.container.toolbarModule) {
+            this.container.toolbarModule = undefined;
         }
         if (this.propertiesPaneButton) {
             this.propertiesPaneButton.destroy();
         }
         this.propertiesPaneButton = undefined;
-        this.container = undefined;
         this.toolbarItems = [];
         this.toolbarItems = undefined;
+        this.container = undefined;
     }
 }

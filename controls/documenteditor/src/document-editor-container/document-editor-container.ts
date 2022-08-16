@@ -1115,7 +1115,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
         let allowFormatting: boolean = isProtectedDocument && this.documentEditor.documentHelper.restrictFormatting;
         let isSelectionInProtectecRegion: boolean = this.documentEditor.editor.restrictEditing;
-
+        
         if (isProtectedDocument) {
             if (this.toolbarModule) {
                 this.toolbarModule.enableDisableToolBarItem(!isSelectionInProtectecRegion, true);

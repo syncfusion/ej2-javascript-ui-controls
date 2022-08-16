@@ -104,9 +104,9 @@ export class HelperMethods {
         if (colorCode) {
             colorCode = colorCode.replace(/[^0-9A-â€Œâ€‹F]/gi, '');   // To remove # from color code string.
             const colCodeNo: number = parseInt(colorCode, 16);
-            const r: number = (colCodeNo >> 16) & 255;
-            const g: number = (colCodeNo >> 8) & 255;
-            const b: number = colCodeNo & 255;
+            const r: number = (colCodeNo >> 32) & 255;
+            const g: number = (colCodeNo >> 16) & 255;
+            const b: number = (colCodeNo >> 8) & 255;
             return { 'r': r, 'g': g, 'b': b };
         }
         return undefined;

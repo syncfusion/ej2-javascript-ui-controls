@@ -2466,11 +2466,13 @@ export class TableRowWidget extends BlockWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             cell.combineWidget(viewer);
-            if (cell.cellFormat.rowSpan === 1) {
+            if (!isNullOrUndefined(cell.cellFormat) && cell.cellFormat.rowSpan === 1) {
                 let cellHeight: number = cell.height + cell.margin.top + cell.margin.bottom;
                 if ((this.height - this.ownerTable.tableFormat.cellSpacing) < cell.height) {
                     this.height = this.ownerTable.tableFormat.cellSpacing + cell.height;
                 }
+            } else if(isNullOrUndefined(cell.cellFormat)) {
+                i--;
             }
         }
     }
@@ -2666,6 +2668,62 @@ export class TableRowWidget extends BlockWidget {
             }
         }
         return cellWidget;
+    }
+    /**
+     * @private
+     */
+    public getCellWidget(columnIndex: number, columnSpan: number): TableCellWidget {
+        let tableHolder: WTableHolder = this.ownerTable.tableHolder;
+        let index: number = tableHolder.getValidColumnIndex(columnIndex);
+        if (index > columnIndex) {
+            columnSpan -= index - columnIndex;
+            columnIndex = index;
+        }
+        let colIndex: number = 0;
+        if (this.rowFormat.gridBefore > 0) {
+            colIndex += this.rowFormat.gridBefore;
+        }
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
+            let colSpan: number = cell.cellFormat.columnSpan;
+            if (colIndex < cell.columnIndex && (colIndex <= columnIndex || colIndex < columnIndex + columnSpan)
+                && cell.columnIndex > columnIndex) {
+                return null;
+            }
+            if ((cell.columnIndex <= columnIndex || cell.columnIndex < columnIndex + columnSpan)
+                && cell.columnIndex + colSpan > columnIndex) {
+                return cell;
+            }
+            else if (cell.columnIndex > columnIndex) {
+                break;
+            }
+            colIndex += colSpan;
+        }
+        return null;
+    }
+
+    public getVerticalMergeStartCell(columnIndex: number, columnSpan: number): TableCellWidget {
+        let columns: WColumn[] = this.ownerTable.tableHolder.columns;
+        if (this.rowFormat.gridBefore > 0 && this.rowFormat.gridBefore > columnIndex + columnSpan) {
+            return null;
+        }
+        var matchedCell = this.getCellWidget(columnIndex, columnSpan);
+        if (!isNullOrUndefined(matchedCell)) {
+            return matchedCell;
+        }
+        if (columnIndex + this.rowFormat.gridAfter === columns.length) {
+            return null;
+        }
+        var cell: TableCellWidget;
+        let previousRow: TableRowWidget = this.previousWidget as TableRowWidget;
+        if (!isNullOrUndefined(previousRow)) {
+            //Gets the First intersecting cell from previous row
+            cell = previousRow.getVerticalMergeStartCell(columnIndex, columnSpan);
+        }
+        if (!isNullOrUndefined(cell) && cell.cellFormat.rowSpan > 1 && this.index === cell.rowIndex + cell.cellFormat.rowSpan - 1) {
+            return cell;
+        }
+        return null;
     }
     /**
      * @private
@@ -3055,32 +3113,27 @@ export class TableCellWidget extends BlockWidget {
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0) {
             leftBorder = tableCell.getLeftBorderToRenderByHierarchy(leftBorder, rowBorders, tableBorders);
         } else {
-            let prevCell: TableCellWidget = undefined;
-            if (!isNullOrUndefined(tableCell.previousWidget)) {
-                // if the border is shared then choose the border based on Conflict Resolution algorithm.
-                prevCell = tableCell.previousWidget as TableCellWidget;
-            } else if ((tableCell.cellFormat.columnSpan > 1 || tableCell.columnIndex >= 1) && tableCell.ownerRow.rowIndex > 0) {
-                let previousRow: TableRowWidget = tableCell.ownerRow.previousWidget as TableRowWidget;
-                while (!isNullOrUndefined(previousRow) && previousRow.childWidgets.length > 0) {
-                    for (let i: number = 0; i < previousRow.childWidgets.length; i++) {
-                        let prevRowCell: TableCellWidget = previousRow.childWidgets[i] as TableCellWidget;
-                        if (prevRowCell.columnIndex + prevRowCell.cellFormat.columnSpan === tableCell.columnIndex) {
-                            prevCell = previousRow.childWidgets[i] as TableCellWidget;
-                            break;
-                        }
-                    }
-                    if (!isNullOrUndefined(prevCell)) {
-                        break;
-                    }
-                    previousRow = previousRow.previousWidget as TableRowWidget;
-                }
-            }
+            let prevCell: TableCellWidget = this.getPreviousCell(tableCell);
+            // if the border is shared then choose the border based on Conflict Resolution algorithm.
             leftBorder = tableCell.getPreviousCellLeftBorder(leftBorder, prevCell);
         }
         if (isNullOrUndefined(leftBorder)) {
             leftBorder = new WBorder(tableCell.cellFormat.borders);
         }
         return leftBorder;
+    }
+    private static getPreviousCell(tableCell: TableCellWidget): TableCellWidget {
+        let prevCell: TableCellWidget = undefined;
+        if (!isNullOrUndefined(tableCell.previousWidget)) {
+            //Validates whether the previous cell in same row is adjacent left cell and sets to prevCell.
+            //If the previous cell is not in the same row and it is vertically merged, we have handled in serverside
+            //to copy border based on priority of current cell left border and previous cell right border.
+            let cell: TableCellWidget = tableCell.previousWidget as TableCellWidget;
+            if (cell.columnIndex + cell.cellFormat.columnSpan === tableCell.columnIndex) {
+                prevCell = cell;
+            }
+        }
+        return prevCell;
     }
     /**
      * @private
@@ -3304,10 +3357,7 @@ export class TableCellWidget extends BlockWidget {
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0) {
             rightBorder = tableCell.getRightBorderToRenderByHierarchy(rightBorder, rowBorders, tableBorders);
         } else {
-            let nextCell: TableCellWidget = undefined;
-            if (!isNullOrUndefined(tableCell.nextWidget)) {
-                nextCell = tableCell.nextWidget as TableCellWidget;
-            }
+            let nextCell: TableCellWidget = this.getNextCell(tableCell);
             // if the border is shared then choose the border based on Conflict Resolution algorithm.
             rightBorder = tableCell.getAdjacentCellRightBorder(rightBorder, nextCell);
         }
@@ -3315,6 +3365,20 @@ export class TableCellWidget extends BlockWidget {
             rightBorder = new WBorder(tableCell.cellFormat.borders);
         }
         return rightBorder;
+    }
+    private static getNextCell(tableCell: TableCellWidget): TableCellWidget {
+        let nextCell: TableCellWidget = undefined;
+        let columnSpan: number = tableCell.cellFormat.columnSpan;
+        if (!isNullOrUndefined(tableCell.nextWidget)) {
+            //Validates whether the next cell in same row is adjacent right cell and sets to nextCell.
+            //If the next cell is not in the same row and it is vertically merged, we have handled in serverside
+            //to copy border based on priority of current cell right border and next cell left border.
+            let cell: TableCellWidget = tableCell.nextWidget as TableCellWidget;
+            if (tableCell.columnIndex + columnSpan === cell.columnIndex) {
+                nextCell = cell;
+            }
+        }
+        return nextCell;
     }
     /**
      * @private
@@ -3386,39 +3450,7 @@ export class TableCellWidget extends BlockWidget {
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0) {
             topBorder = tableCell.getTopBorderToRenderByHierarchy(topBorder, rowBorders, tableBorders);
         } else {
-            let prevTopCell: TableCellWidget = undefined;
-            //ToDo: Need to analyze more to get the previous cell.
-            let prevRow: TableRowWidget = tableCell.ownerRow.previousWidget as TableRowWidget;
-            while (!isNullOrUndefined(prevRow) && prevRow.childWidgets.length > 0) {
-                for (let i: number = 0; i < prevRow.childWidgets.length; i++) {
-                    let prevRowCell: TableCellWidget = prevRow.childWidgets[i] as TableCellWidget;
-                    if (prevRowCell.columnIndex + prevRowCell.cellFormat.columnSpan - 1 >= tableCell.columnIndex) {
-                        prevTopCell = prevRow.childWidgets[i] as TableCellWidget;
-                        break;
-                    }
-                }
-                if (!isNullOrUndefined(prevTopCell)) {
-                    break;
-                }
-                prevRow = prevRow.previousWidget as TableRowWidget;
-                //If all the previous rows checked and the previous top cell is null
-                // then TableCell previus row matched column index cell is taken for border calculation.
-                if (isNullOrUndefined(prevRow) && isNullOrUndefined(prevTopCell)) {
-                    prevRow = tableCell.ownerRow.previousWidget as TableRowWidget;
-                    if (tableCell.columnIndex < prevRow.childWidgets.length) {
-                        for (let i: number = 0; i < prevRow.childWidgets.length; i++) {
-                            let prevRowCell: TableCellWidget = prevRow.childWidgets[i] as TableCellWidget;
-                            if (prevRowCell.columnIndex === tableCell.columnIndex) {
-                                prevTopCell = prevRow.childWidgets[i] as TableCellWidget;
-                                break;
-                            }
-                        }
-                        //If table cell Column index is greater than previous row cells count then last cell is taken as previous top cell.
-                    } else {
-                        prevTopCell = (tableCell.ownerRow.previousWidget as TableRowWidget).childWidgets[(tableCell.ownerRow.previousWidget as TableRowWidget).childWidgets.length - 1] as TableCellWidget;
-                    }
-                }
-            }
+            let prevTopCell: TableCellWidget = tableCell.getTopAdjacentCell();
             //If the border is shared then choose the border based on Conflict Resolution algorithm.
             topBorder = tableCell.getPreviousCellTopBorder(topBorder, prevTopCell);
         }
@@ -3426,6 +3458,14 @@ export class TableCellWidget extends BlockWidget {
             topBorder = new WBorder(tableCell.cellFormat.borders);
         }
         return topBorder;
+    }
+    private getTopAdjacentCell(): TableCellWidget {
+        let previousRow: TableRowWidget = this.ownerRow.previousWidget as TableRowWidget;
+        let cell: TableCellWidget;
+        if (!isNullOrUndefined(previousRow)) {
+            cell = previousRow.getVerticalMergeStartCell(this.columnIndex, this.cellFormat.columnSpan);
+        }
+        return cell;
     }
     /**
      * @private
@@ -3492,9 +3532,24 @@ export class TableCellWidget extends BlockWidget {
             bottomBorder = tableCell.getBottomBorderToRenderByHierarchy(bottomBorder, rowBorders, tableBorders);
         } else {
             let nextBottomCell: TableCellWidget = undefined;
-            let nextRow: TableRowWidget = tableCell.ownerRow.nextWidget as TableRowWidget;
-            if (!isNullOrUndefined(nextRow) && tableCell.columnIndex < nextRow.childWidgets.length) {
-                nextBottomCell = nextRow.childWidgets[tableCell.columnIndex] as TableCellWidget;
+            let nextRow: TableRowWidget = undefined;
+            let rowSpan: number = tableCell.cellFormat.rowSpan;
+            if (rowSpan === 1) {
+                nextRow = tableCell.ownerRow.nextWidget as TableRowWidget
+            } else if (rowSpan > 1) {
+                let row: TableRowWidget = tableCell.containerWidget as TableRowWidget;
+                do {
+                    row = row.nextWidget as TableRowWidget;
+                    if (isNullOrUndefined(row)) {
+                        break;
+                    } else if (row.index === tableCell.rowIndex + rowSpan) {
+                        nextRow = row;
+                        break;
+                    }
+                } while (row);
+            }
+            if (!isNullOrUndefined(nextRow)) {
+                nextBottomCell = nextRow.getCellWidget(tableCell.columnIndex, tableCell.cellFormat.columnSpan);
             }
             //If the border is shared then choose the border based on Conflict Resolution algorithm.
             bottomBorder = tableCell.getAdjacentCellBottomBorder(bottomBorder, nextBottomCell);
@@ -3886,11 +3941,11 @@ export class LineWidget implements IWidget {
                 isStarted = true;
             }
             if (isStarted && offset <= count + inlineElement.length) {
-                //if (inlineElement instanceof BookmarkElementBox) {
-                //    offset += inlineElement.length;
-                //    count += inlineElement.length;
-                //    continue;
-                //}
+                if (inlineElement instanceof BookmarkElementBox) {
+                    offset += inlineElement.length;
+                    count += inlineElement.length;
+                    continue;
+                }
                 if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                     let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
                     inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
@@ -8131,7 +8186,7 @@ export class Page {
         this.bodyWidgets = undefined;
         if (!isNullOrUndefined(this.documentHelper)) {
             if (!isNullOrUndefined(this.documentHelper.pages)) {
-                this.documentHelper.removePage(this,true);
+                this.documentHelper.removePage(this);
             }
         }
         this.documentHelper = undefined;
@@ -8370,7 +8425,26 @@ export class WTableHolder {
         this.tableWidth = this.getTotalWidth(0);
 
     }
-
+    /**
+     * @private
+     */
+     public getValidColumnIndex(index: number): number {
+        let endOffset: number = 0;
+        for (let i: number = 0; i < this.columns.length; i++) {
+            let column: WColumn = this.columns[i];
+            if (i < index) {
+                endOffset = column.endOffset;
+            }
+            else if (endOffset === column.endOffset) {
+                //Increment the columnIndex if next column has zero width.
+                index++;
+            }
+            else {
+                break;
+            }
+        }
+        return index;
+    }
     /**
      * @private
      */

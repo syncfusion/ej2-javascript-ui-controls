@@ -234,8 +234,10 @@ export class FilterMenuRenderer {
             const col: string = 'column';
             fltrData[col] = column;
             const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
+            const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
             const tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
-            if (isReactCompiler) {
+            if (isReactCompiler || isReactChild) {
                 column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
                 this.parent.renderTemplates();
             } else {

@@ -763,7 +763,7 @@ export class GanttChart {
      * @private
      */
     public expandedGanttRow(args: object): void {
-        if (isNullOrUndefined(args['gridRow']) && this.parent.enableVirtualization) {
+        if ((isNullOrUndefined(args['gridRow']) || isNullOrUndefined(args['chartRow'])) && this.parent.enableVirtualization) {
             return;
         }
         const record: IGanttData = getValue('data', args);
@@ -1011,7 +1011,7 @@ export class GanttChart {
                 if (isTab) {
                     if (this.parent.editSettings.allowNextRowEdit) {
                         const rowData: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
-                        const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('aria-colindex')].field;
+                        const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('data-colindex')].field;
                         if (rowData.hasChildRecords) {
                             if (columnName === this.parent.taskFields.endDate || columnName ===
                                      this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
@@ -1023,7 +1023,9 @@ export class GanttChart {
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                             } else {
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
-                                this.parent.treeGrid.editCell(this.focusedRowIndex,columnName);   // eslint-disable-line
+                                if (isInEditedState) {
+                                    this.parent.treeGrid.editCell(this.focusedRowIndex,columnName);   // eslint-disable-line
+                                }
                             }
                         } else {
                             this.parent.treeGrid.grid.notify('key-pressed', e);
@@ -1223,6 +1225,17 @@ export class GanttChart {
                 childElement = element.getElementsByClassName(className)[0];
                 if (isNullOrUndefined(childElement)) {
                     childElement = element;
+                }
+            }
+            if (element.classList.contains('e-right-label-temp-container') || element.classList.contains('e-left-label-temp-container') || element.classList.contains('e-indicator-span')) {
+                if (focus === 'add') {
+                    element.setAttribute('tabIndex', '0');
+                    addClass([element], 'e-active-container');
+                    element.focus();
+                } else {
+                    removeClass([element], 'e-active-container');
+                    element.setAttribute('tabIndex', '-1');
+                    element.blur();
                 }
             }
             if (focus === 'add' && !isNullOrUndefined(childElement)) {

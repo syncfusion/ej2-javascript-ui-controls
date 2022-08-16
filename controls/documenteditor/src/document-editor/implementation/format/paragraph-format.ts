@@ -255,6 +255,16 @@ export class WParagraphFormat {
             } else {
                 return undefined;
             }
+        } else if (this.listFormat.hasValue('listId') && this.listFormat.listId === -1
+            && (property === 'leftIndent' || property === 'firstLineIndent')) {
+            const paraFormat: WParagraphFormat = new WParagraphFormat();
+            if (!this.hasValue('leftIndent')) {
+                paraFormat.leftIndent = 0;
+            }
+            if (!this.hasValue('firstLineIndent')) {
+                paraFormat.firstLineIndent = 0;
+            }
+            return paraFormat
         }
         return undefined;
     }
@@ -281,7 +291,7 @@ export class WParagraphFormat {
                     }
                 }
                 if (!isNullOrUndefined(baseStyle)) {
-                    if (!isNullOrUndefined(formatInList) && this.listFormat.listId !== -1
+                    if (!isNullOrUndefined(formatInList) && this.listFormat.hasValue('listId')
                         && currentFormat.listFormat.listId === -1 && currentFormat.listFormat.listLevelNumber <= 1
                         || !isNullOrUndefined(formatInList) && this.listFormat.listId !== currentFormat.listFormat.listId
                         && currentFormat.listFormat.listLevelNumber <= 1) {

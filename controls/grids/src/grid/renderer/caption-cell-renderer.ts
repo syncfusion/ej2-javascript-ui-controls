@@ -56,7 +56,9 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         }
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
             const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
-            if (isReactCompiler) {
+            const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
+            if (isReactCompiler || isReactChild) {
                 const tempID: string = gObj.element.id + 'captionTemplate';
                 templateCompiler(gObj.groupSettings.captionTemplate as string)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                 this.parent.renderTemplates();
@@ -65,7 +67,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             } else {
                 result = templateCompiler(gObj.groupSettings.captionTemplate as string)(data);
             }
-            if (!isReactCompiler) {
+            if (!isReactCompiler && !isReactChild) {
                 appendChildren(node, result);
             }
         } else {

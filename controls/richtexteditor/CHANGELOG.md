@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 20.2.44 (2022-08-16)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I390850` - Now, the first list item will be removed properly when placing the cursor at the start of the first list item and pressing the backspace key.
+
+- `#I386938` - Now, resizing the image works properly even after resizing the Rich Text Editor using the browser window.
+
+## 20.2.43 (2022-08-08)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#FB36307` - Now, pressing the tab key to focus out of the Rich Text Editor when Iframe mode is enabled and `saveInterval` is set as 0, the change event will be triggered properly.
+
 ## 20.2.40 (2022-07-26)
 
 ### RichTextEditor

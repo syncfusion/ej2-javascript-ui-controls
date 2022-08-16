@@ -475,6 +475,16 @@ describe('Tab Key allow editing false', () => {
             let progress:HTMLElement=ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
             expect(progress.classList.contains('e-editedbatchcell')).toBe(true);
         });
-
+        it('Editing and tab navigation', () => {
+            ganttObj.dataBind();
+            let Predecessor: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(6)') as HTMLElement;
+            triggerMouseEvent(Predecessor, 'dblclick');
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            let args2: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement };
+            ganttObj.keyboardModule.keyAction(args2);
+            let label = document.getElementsByClassName("e-label e-active-container");
+            expect(label[0]['innerText']).toBe('Perform soil test');
+        });
     });
  });

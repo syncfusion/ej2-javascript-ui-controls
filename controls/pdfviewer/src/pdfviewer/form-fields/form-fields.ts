@@ -1019,8 +1019,8 @@ export class FormFields {
                 const currentHeight: number = this.pdfViewerBase.drawSignatureWithTool ? targetBounds.height / zoomvalue : parseFloat(currentField.style.height) / zoomvalue;
                 const currentLeft: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.left - parentElementBounds.left)) / zoomvalue : parseFloat(currentField.style.left) / zoomvalue;
                 const currentTop: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.top - parentElementBounds.top)) / zoomvalue : parseFloat(currentField.style.top) / zoomvalue;
-                const currentPage: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split("_")[0].charAt(target.nextElementSibling.id.split("_")[0].length - 1)) : parseFloat(currentField.id.split('_')[1]) : parseFloat(currentField.id.split('_')[1]);
-                const currentIndex: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split('_')[1]) : parseFloat(currentField.id.split('_')[2]) : parseFloat(currentField.id.split('_')[2]);
+                const currentPage: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split("_")[1]) : parseFloat(currentField.id.split('_')[1]) : parseFloat(currentField.id.split('_')[1]);
+                const currentIndex: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split('_')[2]) : parseFloat(currentField.id.split('_')[2]) : parseFloat(currentField.id.split('_')[2]);
                 let signString: string = this.pdfViewerBase.signatureModule.saveImageString;
                 let signatureFontFamily: string;
                 let signatureFontSize: number;
@@ -1244,7 +1244,7 @@ export class FormFields {
         // eslint-disable-next-line
         let bounds: any;
         let signatureId: string = this.pdfViewer.isInitialFieldToolbarSelection ? 'initialIcon' : 'signIcon';
-        let signIcon: HTMLElement = document.getElementById(signatureId + currentPage + '_' + currentIndex);
+        let signIcon: HTMLElement = document.getElementById(signatureId + '_' + currentPage + '_' + currentIndex);
         let signLeft: number = signIcon ? parseFloat(signIcon.style.left) * zoomvalue : 0;
         let difference: number = (currentLeft * zoomvalue) - (signLeft / zoomvalue);
         if (rotateAngle === 90 || rotateAngle === 270) {
@@ -1715,7 +1715,7 @@ export class FormFields {
             inputField.remove();
         }
         // eslint-disable-next-line
-        let signIcon: HTMLElement = document.getElementById('signIcon' + pageIndex + '_' + pageIndex);
+        let signIcon: HTMLElement = document.getElementById('signIcon_' + pageIndex + '_' + index);
         let left: number = parseFloat(inputdiv.style.left);
         let top: number = parseInt(inputdiv.style.top);
         let width: number = parseFloat(inputdiv.style.width);
@@ -2155,7 +2155,7 @@ export class FormFields {
         inputField.type = 'text';
         inputField.name = data.FieldName;
         // eslint-disable-next-line
-        let previousField: any = document.getElementById('signIcon' + pageIndex + '_' + index);
+        let previousField: any = document.getElementById('signIcon_' + pageIndex + '_' + index);
         if (previousField && !printContainer) {
             previousField.remove();
         }
@@ -2179,7 +2179,7 @@ export class FormFields {
         // eslint-disable-next-line max-len
         const fontSize: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize;
         span.style.position = 'absolute';
-        span.id = 'signIcon' + pageIndex + '_' + index;
+        span.id = 'signIcon_' + pageIndex + '_' + index;
         const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         const rotation: number = this.getAngle(pageIndex);
         // eslint-disable-next-line

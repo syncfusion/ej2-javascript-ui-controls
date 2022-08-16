@@ -22,7 +22,12 @@ import { hasClass } from '../base/util';
 export class ToolbarRenderer implements IRenderer {
     private mode: OverflowMode;
     private toolbarPanel: Element;
-    protected parent: IRichTextEditor;
+    /**
+     *
+     * @hidden
+     * @private
+     */
+    public parent: IRichTextEditor;
     private popupContainer: HTMLElement;
     private currentElement: HTMLElement;
     private currentDropdown: DropDownButton;

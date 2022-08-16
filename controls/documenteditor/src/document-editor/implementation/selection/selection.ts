@@ -5429,10 +5429,10 @@ export class Selection {
         element = this.getElementBox(inline, index, moveNextLine).element;
         let lineWidget: LineWidget = undefined;
         if (isNullOrUndefined(element) || isNullOrUndefined(element.line)) {
-            if (inline instanceof FieldElementBox && inline.fieldType === 1 || inline instanceof CommentCharacterElementBox) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
                 element = inline;
             } else {
-                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
+                if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox || inline instanceof CommentCharacterElementBox) {
                     return this.getFieldCharacterPosition(inline);
                 }
                 return new Point(0, 0);
@@ -5463,7 +5463,7 @@ export class Selection {
             if (element.margin.top + element.height - measureObj.BaselineOffset > 0) {
                 top += element.margin.top + element.height - measureObj.BaselineOffset;
             }
-        } else if (!(element instanceof FieldElementBox || inline instanceof CommentCharacterElementBox)) {
+        } else if (!(element instanceof FieldElementBox)) {
             top += margin.top > 0 ? margin.top : 0;
         }
         left = (isNullOrUndefined(element) || isNullOrUndefined(lineWidget)) ? 0 : this.getLeftInternal(lineWidget, element, index);

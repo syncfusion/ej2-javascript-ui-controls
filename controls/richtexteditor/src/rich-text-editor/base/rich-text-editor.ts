@@ -1524,7 +1524,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const currentEndContainer: Node = range.endContainer;
         const currentStartOffset: number = range.startOffset;
         const isSameContainer: boolean = currentStartContainer === currentEndContainer ? true : false;
-        let currentEndOffset: number;
+        const currentEndOffset: number = currentEndContainer.textContent.length;
         const endNode: Element = range.endContainer.nodeName === '#text' ? range.endContainer.parentElement :
             range.endContainer as Element;
         const closestLI: Element = closest(endNode, 'LI');
@@ -1542,10 +1542,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.formatter.editorManager.nodeSelection.setSelectionText(
                 this.contentModule.getDocument(), 
-                isSameContainer ? (currentLastElem.nodeName === 'BR' && !isNOU(currentLastElem.previousSibling) ? currentLastElem.previousSibling : currentLastElem) : currentStartContainer, 
-                currentLastElem,
+                isSameContainer ? currentStartContainer : ( currentLastElem.nodeName === 'BR' && !isNOU( currentLastElem.previousSibling ) ? currentLastElem.previousSibling : currentStartContainer ),
+                currentEndContainer,
                 currentStartOffset,
-                (currentLastElem.nodeName === 'BR' ? 0 : currentLastElem.textContent.length));
+                ( currentLastElem.nodeName === 'BR' ? 0 : currentEndOffset ) );
         }
     }
 
@@ -1893,9 +1893,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.element.offsetParent === null) {
             if(!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
-            if(!isNOU(this.imageModule)) { this.imageModule.moduleDestroy(); }
-            if(!isNOU(this.linkModule)) { this.linkModule.moduleDestroy(); }
-            if(!isNOU(this.renderModule)) { this.renderModule.moduleDestroy(); }
+            this.notify(events.moduleDestroy, {});
             return;
         }
         this.notify(events.destroy, {});
@@ -3127,7 +3125,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private restrict(e: MouseEvent | KeyboardEvent): void {
         if (this.maxLength >= 0 ) {
             const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
-                ((e as MouseEvent).currentTarget as HTMLElement).textContent;
+                ((e as MouseEvent) && ((e as MouseEvent).currentTarget as HTMLElement).textContent);
+            if (!element) { return; }
             const array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {

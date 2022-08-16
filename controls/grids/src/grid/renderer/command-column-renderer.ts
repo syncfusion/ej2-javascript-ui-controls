@@ -40,7 +40,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
                 }
             }
         }
-        if (args.type === 'paging') {
+        if (args.type === 'refreshCommandColumn') {
             let elem: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-unboundcell');
             if (elem.length) {
                 for (let i: number = 0; i < elem.length; i++) {

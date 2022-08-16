@@ -915,14 +915,24 @@ export class LayoutRender extends MobileLayout {
     public updateScrollPosition(): void {
         const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         if (content) {
-            content.scrollTo(this.parent.scrollPosition.content.left, this.parent.scrollPosition.content.top);
+            if (!Browser.isIE) {
+                content.scrollTo(this.parent.scrollPosition.content.left, this.parent.scrollPosition.content.top);
+            } else {
+                content.scrollTop = this.parent.scrollPosition.content.top;
+                content.scrollLeft = this.parent.scrollPosition.content.left;
+            }
         }
         const cardWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
         cardWrapper.forEach((wrapper: HTMLElement) => {
             if (wrapper.offsetParent) {
                 const scrollData: ScrollOffset = this.parent.scrollPosition.column[wrapper.offsetParent.getAttribute('data-key')];
                 if (scrollData) {
-                    wrapper.scrollTo(scrollData.left, scrollData.top);
+                    if (!Browser.isIE) {
+                        wrapper.scrollTo(scrollData.left, scrollData.top);
+                    } else {
+                        wrapper.scrollTop = scrollData.top;
+                        wrapper.scrollLeft = scrollData.left;
+                    }
                 }
             }
         });

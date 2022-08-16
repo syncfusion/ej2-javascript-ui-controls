@@ -1605,6 +1605,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
+        this.parentCheckData = [];
     }
 
     private beforeNodeCreate(e: ItemCreatedArgs): void {

@@ -168,7 +168,7 @@ export class DateProcessor {
             const cloneDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneDate);
             if (hour < this.parent.defaultStartTime) {
                 this.setTime(this.parent.defaultStartTime, cloneDate);
-            } else if (hour >= this.parent.defaultEndTime) {
+            } else if (hour > this.parent.defaultEndTime) {
                 cloneDate.setDate(cloneDate.getDate() + 1);
                 this.setTime(this.parent.defaultStartTime, cloneDate);
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {

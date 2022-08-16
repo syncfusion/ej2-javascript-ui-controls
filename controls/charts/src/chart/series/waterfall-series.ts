@@ -205,8 +205,8 @@ export class WaterfallSeries extends ColumnBase {
                             } else {
                                 index = subArraySum(data, sumIndex[k - 1], sumIndex[k], null, series);
                             }
-                            sumValue += index;
                         }
+                        sumValue += index;
                         data[j][series.yName] = sumValue;
                     }
                 }

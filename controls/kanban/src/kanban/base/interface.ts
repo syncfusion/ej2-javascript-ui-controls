@@ -148,10 +148,13 @@ export interface DragArgs extends BaseEventArgs {
     modifiedData?: Record<string, any>[];
 }
 
-/** @private */
+/** Provide information about Swimlane HeaderArgs */ 
 export interface HeaderArgs {
+    /** Defines the Swimlane key field */
     keyField: string | number;
+    /** Defines the Swimlane header text field */
     textField: string;
+    /** Defines the number of Cards */
     count?: number;
 }
 
@@ -175,8 +178,9 @@ export interface ScrollOffset {
     top?: number;
 }
 
-/** @private */
+/** Custom Sort Compare Function to sort Swimlane rows */
 export interface SortComparerFunction {
+    /** Defines the Swimlane Header Arguments */
     (param: HeaderArgs[]): HeaderArgs[];
 }
 

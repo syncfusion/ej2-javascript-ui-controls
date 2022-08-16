@@ -55,7 +55,9 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
         const isReactCompiler: boolean = this.parent.isReact && (column.footerTemplate ?
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
                 : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
-        if (isReactCompiler) {
+        const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+            this.parent.parentDetails.parentInstObj.isReact;
+        if (isReactCompiler || isReactChild) {
             const prop: object = data[column.columnName];
             if (tempObj.property === 'groupCaptionTemplate' || tempObj.property === 'groupFooterTemplate') {
                 const groupKey: string = 'groupKey'; const key: string = 'key';

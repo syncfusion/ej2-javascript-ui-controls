@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.44 (2022-08-16)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#F176236` - Now, the drag and drop functionality will work fine in the Internet Explorer V11.
+
 ## 20.2.43 (2022-08-08)
 
 ### Kanban

@@ -1938,21 +1938,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private triggerEvents(args?: Object): void {
         this.trigger(getObject('name', args), args);
     }
-	private IsExpandCollapseClicked(args: RowDeselectEventArgs): void {
-		if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
-			|| args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
-			args.cancel = true;
-			return;
-		}
-	}
+    private IsExpandCollapseClicked(args: RowDeselectEventArgs): void {
+        if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+        || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
+            args.cancel = true;
+            return;
+        }
+    }
     private bindGridEvents(): void {
         this.grid.rowSelecting = (args: RowDeselectEventArgs): void => {
-			this.IsExpandCollapseClicked(args);
-			this.trigger(events.rowSelecting, args);
+            this.IsExpandCollapseClicked(args);
+            this.trigger(events.rowSelecting, args);
         };
-		this.grid.rowDeselecting = (args: RowDeselectEventArgs): void => {
-			this.IsExpandCollapseClicked(args);
-			this.trigger(events.rowDeselecting, args);
+        this.grid.rowDeselecting = (args: RowDeselectEventArgs): void => {
+            this.IsExpandCollapseClicked(args);
+            this.trigger(events.rowDeselecting, args);
         };
         this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
             if (this.enableVirtualization && args.isHeaderCheckboxClicked &&

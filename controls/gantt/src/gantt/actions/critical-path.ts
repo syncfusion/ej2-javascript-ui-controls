@@ -657,10 +657,7 @@ export class CriticalPath {
     /* eslint-disable-next-line */
     public criticalConnectorLine(criticalPathIds: number[], collection: object[], condition: boolean, collectionTaskId: number[]) {
         const ganttChartElement: HTMLElement = this.parent.ganttChartModule.chartElement;
-        removeClass(ganttChartElement.querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
-        removeClass(ganttChartElement.querySelectorAll('.e-gantt-child-progressbar-inner-div'), cls.criticalChildProgressBarInnerDiv);
-        removeClass(ganttChartElement.querySelectorAll('.e-milestone-top'), cls.criticalMilestoneTop);
-        removeClass(ganttChartElement.querySelectorAll('.e-milestone-bottom'), cls.criticalMilestoneBottom);
+        this.parent.removeCriticalPathStyles();
         for (let i: number = 0; i < criticalPathIds.length; i++) {
             let criticalData: ITaskData;
             if (this.parent.viewType === 'ProjectView') {
@@ -695,9 +692,6 @@ export class CriticalPath {
                 }
             }
         }
-        removeClass(this.parent.element.querySelectorAll('.e-line'), cls.criticalConnectorLine);
-        removeClass(this.parent.element.querySelectorAll('.e-connector-line-right-arrow'), cls.criticalConnectorLineRightArrow);
-        removeClass(this.parent.element.querySelectorAll('.e-connector-line-left-arrow'), cls.criticalConnectorLineLeftArrow);
         if (collection.length !== 0) {
             let index: number = 0;
             let currentdata: object;

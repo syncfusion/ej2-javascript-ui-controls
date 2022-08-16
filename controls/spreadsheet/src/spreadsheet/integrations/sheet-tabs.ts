@@ -289,7 +289,7 @@ export class SheetTabs {
             if (disableItems.indexOf(`${id}_delete_sheet`) > -1) {
                 disableItems.push(`${id}_delete_sheet`);
             }
-            disableItems.push(`${id}_duplicate`, `${id}_rename`,`${id}_hide_sheet`, `${id}_delete_sheet`,`${id}_insert_sheet`);
+            disableItems.push(`${id}_duplicate`, `${id}_rename`,`${id}_hide_sheet`, `${id}_delete_sheet`,`${id}_insert_sheet`,`${id}_move_left`,`${id}_move_right`);
         }
         this.parent.enableContextMenuItems(disableItems, false, true);
     }
@@ -314,7 +314,7 @@ export class SheetTabs {
                 action: 'renameSheet', cancel: false
             };
             this.parent.trigger('actionBegin', args);
-            if (args.cancel) { return; }
+            if (args.cancel || this.parent.isProtected) { return; }
             const input: HTMLElement = this.parent.createElement('input', {
                 id: this.parent.element.id + '_rename_input',
                 className: 'e-input e-sheet-rename', styles: `width: ${target.getBoundingClientRect().width}px`, attrs: {

@@ -1627,7 +1627,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let evnArg: any = { args, self: (<any>rteObj).imageModule, selection: save, selectNode: [''], link: null, target: '' };
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
@@ -1781,7 +1781,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Image', 'Bold']
                 },
-                value: innerHTML1,
+                value: `<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>`,
                 insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 }
             });
             rteEle = rteObj.element;
@@ -2419,7 +2419,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
                 done();
-            }, 3500);
+            }, 4500);
         });
     });
     describe(' EJ2-20297: RTE Image insert link  - ', () => {
@@ -4147,6 +4147,29 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
+        });
+    });
+
+    describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Memory leak testing</p>'
+            });
+        });
+        it('When OffsetParent is null', (done: Function) => {
+            (rteObj as any).element.style.display = 'none';
+            (rteObj as any).destroy();
+            expect(((rteObj as any).imageModule as any).parent).toBe(null);
+            rteObj.element.style.display = 'block';
+            done();
+        });
+        afterAll(() => {
+            detach(rteObj.element);
+            let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
+            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+                detach(allDropDownPopups[i]);
+            }
         });
     });
 });

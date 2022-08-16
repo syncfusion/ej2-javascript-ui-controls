@@ -1376,4 +1376,50 @@
             expect(ganttObj.flatData[12].isCritical).toBe(false);
         });
     });
+  describe('critical path rendering', () => {
+        Gantt.Inject(CriticalPath, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                allowSelection: true,
+                allowResizing: true,
+                allowSorting: true,
+                enableContextMenu: true,
+                enableCriticalPath: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['ZoomToFit', 'CriticalPath'],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+            }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('Initial rendering critical path ', () => {
+            ganttObj.dataBind();
+            ganttObj.fitToProject();
+            expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(25);
+            let criticalpath: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_critical-path') as HTMLElement;
+            triggerMouseEvent(criticalpath, 'click');
+            expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(25);     
+        });
+    });
  });

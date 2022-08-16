@@ -193,8 +193,10 @@ export class Toolbar {
                 this.element = this.toolbar.element;
             } else {
                 const isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
+                const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                    this.parent.parentDetails.parentInstObj.isReact;
                 const ID: string = this.parent.element.id + 'toolbarTemplate';
-                if (isReactCompiler) {
+                if (isReactCompiler || isReactChild) {
                     templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
                     this.parent.renderTemplates();
                 } else {

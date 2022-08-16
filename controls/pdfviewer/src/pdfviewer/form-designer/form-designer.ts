@@ -921,14 +921,16 @@ export class FormDesigner {
                     } else {
                         if (formFieldsData[i].Key === element.id) {
                             formFieldsData[i].FormField.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
-                            let x = (point.x * zoomValue) + (element.actualSize.width * zoomValue)/2;
-                            x=  x - formFieldsData[i].FormField.signatureBound.width/2;
-                            let y = (point.y * zoomValue) + (element.actualSize.height * zoomValue)/2;
-                            y = y - formFieldsData[i].FormField.signatureBound.height/2;
-                            formFieldsData[i].FormField.signatureBound.x =  x;
-                            formFieldsData[i].FormField.signatureBound.y =  y;
+                            if (formFieldsData[i].FormField.signatureBound) {
+                                let x = (point.x * zoomValue) + (element.actualSize.width * zoomValue) / 2;
+                                x = x - formFieldsData[i].FormField.signatureBound.width / 2;
+                                let y = (point.y * zoomValue) + (element.actualSize.height * zoomValue) / 2;
+                                y = y - formFieldsData[i].FormField.signatureBound.height / 2;
+                                formFieldsData[i].FormField.signatureBound.x = x;
+                                formFieldsData[i].FormField.signatureBound.y = y;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = formFieldsData[i].FormField.signatureBound;
+                            }
                             this.pdfViewerBase.formFieldCollection[i].FormField.lineBound = formFieldsData[i].FormField.lineBound;
-                            this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = formFieldsData[i].FormField.signatureBound;
                         }
 
                     }
@@ -1087,12 +1089,12 @@ export class FormDesigner {
         }
         let fieldText: string = signatureField.signatureIndicatorSettings ? signatureField.signatureIndicatorSettings.text : null;
         if (signatureField.isInitialField) {
-            spanElement.id = "initialIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
+            spanElement.id = "initialIcon_" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.initialFieldSettings.initialIndicatorSettings.text, "Initial");
         } else {
             spanElement.style.height = '';
             spanElement.style.width = '';
-            spanElement.id = "signIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
+            spanElement.id = "signIcon_" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text, "Sign");
         }
         spanElement.style.overflow = "hidden";
@@ -1150,37 +1152,39 @@ export class FormDesigner {
             let indicatorSettings : SignatureIndicatorSettings = options.signatureIndicatorSettings;
             spanElement.style.width = '';
             spanElement.style.height = '';
-            if(indicatorSettings.text !== undefined){
-                this.setIndicatorText(spanElement, indicatorSettings.text, indicatorSettings.text, "Sign");
-                objIndicatorSettings.text = indicatorSettings.text;
+            if(indicatorSettings && objIndicatorSettings){
+                if(indicatorSettings.text !== undefined){
+                    this.setIndicatorText(spanElement, indicatorSettings.text, indicatorSettings.text, "Sign");
+                    objIndicatorSettings.text = indicatorSettings.text;
+                }
+                if(indicatorSettings.fontSize){
+                    spanElement.style.fontSize = indicatorSettings.fontSize >  formFieldObject.height / 2 ? 10 : indicatorSettings.fontSize * zoomValue + "px"; 
+                    objIndicatorSettings.fontSize = indicatorSettings.fontSize;
+                }
+                let bounds = this.getBounds(spanElement);
+                if(indicatorSettings.color){
+                    spanElement.style.color = indicatorSettings.color;
+                    objIndicatorSettings.color = this.nameToHash(indicatorSettings.color);
+                }
+                if(indicatorSettings.backgroundColor){
+                    spanElement.style.backgroundColor = indicatorSettings.backgroundColor;
+                    objIndicatorSettings.backgroundColor = this.nameToHash(indicatorSettings.backgroundColor);
+                }
+                if(indicatorSettings.opacity){
+                    spanElement.style.opacity = indicatorSettings.opacity;
+                    objIndicatorSettings.opacity = indicatorSettings.opacity;
+                }
+                if(indicatorSettings.width || options.width || indicatorSettings.text){
+                    let width :number = this.setHeightWidth(fieldBounds.width,indicatorSettings.width,bounds.width,zoomValue);
+                    spanElement.style.width = width +(objIndicatorSettings.fontSize*zoomValue)+ "px";
+                    objIndicatorSettings.width = width;
+                }
+                if(indicatorSettings.height || options.height|| indicatorSettings.text){
+                    let height : number = this.setHeightWidth(fieldBounds.height,indicatorSettings.height,bounds.height, zoomValue);
+                    spanElement.style.height = height + "px";
+                    objIndicatorSettings.height = height;
+                }   
             }
-            if(indicatorSettings.fontSize){
-                spanElement.style.fontSize = indicatorSettings.fontSize >  formFieldObject.height / 2 ? 10 : indicatorSettings.fontSize * zoomValue + "px"; 
-                objIndicatorSettings.fontSize = indicatorSettings.fontSize;
-        }
-            let bounds = this.getBounds(spanElement);
-            if(indicatorSettings.color){
-                spanElement.style.color = indicatorSettings.color;
-                objIndicatorSettings.color = this.nameToHash(indicatorSettings.color);
-            }
-            if(indicatorSettings.backgroundColor){
-                spanElement.style.backgroundColor = indicatorSettings.backgroundColor;
-                objIndicatorSettings.backgroundColor = this.nameToHash(indicatorSettings.backgroundColor);
-            }
-            if(indicatorSettings.opacity){
-                spanElement.style.opacity = indicatorSettings.opacity;
-                objIndicatorSettings.opacity = indicatorSettings.opacity;
-            }
-            if(indicatorSettings.width || options.width || indicatorSettings.text){
-                let width :number = this.setHeightWidth(fieldBounds.width,indicatorSettings.width,bounds.width,zoomValue);
-                spanElement.style.width = width +(objIndicatorSettings.fontSize*zoomValue)+ "px";
-                objIndicatorSettings.width = width;
-            }
-            if(indicatorSettings.height || options.height|| indicatorSettings.text){
-                let height : number = this.setHeightWidth(fieldBounds.height,indicatorSettings.height,bounds.height, zoomValue);
-                spanElement.style.height = height + "px";
-                objIndicatorSettings.height = height;
-            }   
             this.updateSignatureFieldProperties(formFieldObject, htmlElement, formFieldObject.isPrint);
             formFieldObject.signatureIndicatorSettings = objIndicatorSettings;
             return formFieldObject;
@@ -1486,6 +1490,7 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
     }
     private dropdownChange(event: Event) {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
@@ -1520,12 +1525,13 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
     }
 
     private setCheckBoxState(event: Event) {
         let minCheckboxWidth: number = 20;
         let isChecked: boolean = false;
-        if (!(this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].isReadonly) {
+        if ((event.target as Element).id !=='undefined_input' && !(this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].isReadonly) {
             if (event.target && (event.target as Element).firstElementChild && (event.target as any).firstElementChild.className === "e-pv-checkbox-span e-pv-cb-checked") {
                 (event.target as Element).firstElementChild.classList.remove("e-pv-cb-checked");
                 (event.target as Element).firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
@@ -1582,6 +1588,7 @@ export class FormDesigner {
                 }
             }
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
         }
     }
 
@@ -1636,6 +1643,7 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
     }
 
     private getTextboxValue(event: Event): void {
@@ -1665,12 +1673,12 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
     }
-
     private inputElementClick(event: any): void {
         event.target.focus();
     }
-
+    
     /**
      * Adds form field to the PDF page.
      * 

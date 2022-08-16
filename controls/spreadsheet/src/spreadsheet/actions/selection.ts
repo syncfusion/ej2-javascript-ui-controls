@@ -359,7 +359,7 @@ export class Selection {
                 }
             }
         }
-        if (isFormulaEdit && ((e.target as HTMLElement).classList.contains('e-cell') ||
+        if (isFormulaEdit && ((e.target as HTMLElement).classList.contains('e-cell') || (e.target as HTMLElement).classList.contains('e-wrap-content') ||
             (e.target as HTMLElement).classList.contains('e-header-cell')) && this.parent.isEdit) {
             let range: string = this.parent.getActiveSheet().selectedRange;
             range = isSingleCell(getIndexesFromAddress(range)) ? range.split(':')[0] : range;
@@ -875,8 +875,8 @@ export class Selection {
     }
 
     private getSelectionElement(e?: MouseEvent, selectedRowColIdx?: number): HTMLElement {
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (e && e.ctrlKey) {
-            const sheet: SheetModel = this.parent.getActiveSheet();
             if (isMouseUp(e) || isMouseMove(e)) {
                 if (sheet.frozenColumns || sheet.frozenRows) {
                     let ele: HTMLElement = this.parent.getMainContent().querySelector('.e-cur-selection');
@@ -908,7 +908,9 @@ export class Selection {
                 }
             }
         } else if (selectedRowColIdx > -1) {
-            return this.parent.getMainContent().getElementsByClassName('e-selection')[selectedRowColIdx] as HTMLElement;
+            return (sheet.frozenRows || sheet.frozenColumns) ?
+            this.parent.element.querySelector('.e-sheet').getElementsByClassName('e-selection')[selectedRowColIdx] as HTMLElement :
+            this.parent.getMainContent().getElementsByClassName('e-selection')[selectedRowColIdx] as HTMLElement;
         } else {
             const elems: NodeListOf<Element> = [].slice.call(this.parent.element.getElementsByClassName('e-multi-range'));
             elems.forEach((ele: Element) => {

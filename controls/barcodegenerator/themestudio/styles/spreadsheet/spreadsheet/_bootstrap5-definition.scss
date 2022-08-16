@@ -56,7 +56,7 @@ $dlg-list-border: $spreadsheet-border !default;
 $dlg-description-font-weight: 500 !default;
 $dlg-content-padding: 18px !default;
 $dlg-category-margin-bottom: 5px !default;
-$dlg-min-height: 480px !default;
+$dlg-min-height: 518px !default;
 //End Insert dialogbox
 //Ribbon
 $fontsize-btn-width: 52px !default;
@@ -76,7 +76,7 @@ $bigger-cpicker-btn-width: 36px !default;
 $menu-extension-padding: 12px !default;
 $ribbon-item-hover-border-color: transparent !default;
 $ribbon-item-active-border-color: transparent !default;
-$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
+$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 8px !default;
 //End Ribbon
 //Sorting
@@ -84,7 +84,6 @@ $sort-error-bg-color: $danger-light;
 $sort-error-font-color: $danger-bg-color;
 //End Sorting
 //Hyperlink
-$hyper-link-color: $info !default;
 $hyper-doc-border-color:  $border-light !default;
 //End Hyperlink
 //Filtering

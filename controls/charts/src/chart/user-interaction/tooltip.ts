@@ -285,8 +285,20 @@ export class Tooltip extends BaseTooltip {
         return this.parseTemplate(pointData.point, series, this.getFormat(this.chart, series), series.xAxis, series.yAxis);
     }
 
-    private getTemplateText(data : PointData) : Points {
-        if (this.template) {
+    private getTemplateText(data: any): Points {
+        if (this.template && this.chart.tooltip.shared) {
+            const point: Points = extend({}, data[0].point) as Points;
+            point.x = this.formatPointValue(data[0].point, data[0].series.xAxis, 'x', true, false);
+            for (let i: number = 0; i < data.length; i++) {
+                if ((data[i].series.seriesType === 'XY')) {
+                    point.y = this.formatPointValue(data[i].point, data[i].series.yAxis, 'y', false, true);
+                } else {
+                    point.low = this.formatPointValue(data[i].point, data[i].series.yAxis, 'low', false, true);
+                    point.high = this.formatPointValue(data[i].point, data[i].series.yAxis, 'high', false, true);
+                }
+            }
+            return point;
+        } else if (this.template) {
             const point: Points = extend({}, data.point) as Points;
             point.x = this.formatPointValue(data.point, data.series.xAxis, 'x', true, false);
             if ((data.series.seriesType === 'XY')) {
@@ -413,7 +425,7 @@ export class Tooltip extends BaseTooltip {
                     this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
                     new Rect(borderWidth, borderWidth, this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
                     this.chart.crosshair.enable, extraPoints,
-                    this.template ? this.getTemplateText(dataCollection[0]) : null,
+                    this.template ? this.getTemplateText(dataCollection) : null,
                     this.template ? argsData.template : ''
                 );
                 point = null;

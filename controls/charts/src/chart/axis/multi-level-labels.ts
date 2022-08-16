@@ -124,6 +124,11 @@ export class MultiLevelLabel {
         let labelSize: Size; const isOutside: boolean = axis.labelPosition === 'Outside';
         let gap: number; let anchor: string; const isInversed: boolean = axis.isAxisInverse;
         let argsData: IAxisMultiLabelRenderEventArgs; const opposedPosition: boolean = axis.isAxisOpposedPosition;
+        const angle: number = axis.angle % 360;
+        let len: number;
+        let intervalLength: number;
+        let width: number;
+        let labelWidth: number;
         const scrollBarHeight: number = axis.scrollbarSettings.enable || (isOutside && isNullOrUndefined(axis.crossesAt)) ?
             axis.scrollBarHeight : 0;
         const clipY: number = ((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ?
@@ -136,6 +141,8 @@ export class MultiLevelLabel {
             pointIndex = 0;
             this.labelElement = this.chart.renderer.createGroup({ id: this.chart.element.id + index + '_MultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
+                len = multiLevel.categories.length;
+                intervalLength = axisRect.width / len;
                 pathRect = '';
                 start = typeof categoryLabel.start === 'string' ? Number(new Date(categoryLabel.start)) : categoryLabel.start;
                 end = typeof categoryLabel.end === 'string' ? Number(new Date(categoryLabel.end)) : categoryLabel.end;
@@ -148,6 +155,9 @@ export class MultiLevelLabel {
                     endX = isInversed ? [startX, startX = endX][0] : endX;
                     labelSize = measureText(<string>argsData.text, argsData.textStyle);
                     gap = ((categoryLabel.maximumTextWidth === null) ? endX - startX : categoryLabel.maximumTextWidth) - padding;
+                    labelWidth = labelSize.width;
+                    width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
+                        labelWidth > gap) ? gap : labelWidth;
                     x = startX + axisRect.x + padding;
                     y = (((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ? (startY + axisRect.y +
                             labelSize.height / 2 + padding + this.xAxisPrevHeight[level]) : (axisRect.y - startY + labelSize.height / 2 -
@@ -166,6 +176,28 @@ export class MultiLevelLabel {
                         anchor, argsData.text
                     );
                     if (multiLevel.overflow !== 'None') {
+                        if (axis.edgeLabelPlacement && axis.labelPlacement == 'OnTicks') {
+                            switch (axis.edgeLabelPlacement) {
+                                case 'None':
+                                    break;
+                                case 'Shift':
+                                    if ((i === 0 || (isInversed && i === len - 1)) && options.x < axisRect.x + padding) {
+                                        options.x += options.x / 2;
+                                        gap = gap / 2;
+                                    }
+                                    else if ((i === len - 1 || (isInversed && i === 0)) && ((options.x) > axisRect.x + axisRect.width)) {
+                                        if (labelSize.width > gap && axis.labelIntersectAction === 'Trim') {
+                                            gap = intervalLength - (options.x + width - (axisRect.x + axisRect.width));
+                                            options.x -= gap;
+                                        }
+                                        else {
+                                            gap = width;
+                                            options.x -= gap / 2;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         options.text = (multiLevel.overflow === 'Wrap') ?
                             textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
                         options.x = options.x - padding / 2;

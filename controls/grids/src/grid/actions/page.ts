@@ -229,23 +229,23 @@ export class Page implements IAction {
         gObj.pageSettings.pageSize = this.pagerObj.pageSize;
         gObj.prevPageMoving = false;
         const prevPage: number = this.pageSettings.currentPage;
-        this.pageSettings.currentPage = e.currentPage;
         const args: Object = {
             cancel: false, requestType: 'paging', previousPage: prevPage,
             currentPage: e.currentPage, type: events.actionBegin
         };
         if (!this.isCancel) {
+            this.pageSettings.currentPage = e.currentPage;
             this.parent.notify(events.modelChanged, args);
         }
         if ((<{ cancel?: boolean }>args).cancel) {
             e.cancel = true;
+            this.pageSettings.currentPage = prevPage;
             this.pagerObj.currentPage = prevPage;
             this.isCancel = true;
             return;
         }
         this.isCancel = false;
         this.parent.requestTypeAction = 'paging';
-        this.parent.notify(events.commandColumnDestroy, { type : 'paging' } );
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {

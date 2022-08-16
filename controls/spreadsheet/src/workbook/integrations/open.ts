@@ -61,9 +61,13 @@ export class WorkbookOpen {
             },
             password: args.passWord
         };
-        if (isNullOrUndefined(options.sheetPassword)) {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const guid: string = (options as any).guid;
+        if (isNullOrUndefined(options.sheetPassword) && !guid) {
             this.parent.trigger('beforeOpen', eventArgs);
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
+        } else if (guid) {
+            formData.append('guid', guid);
         }
         if (eventArgs.cancel) {
             this.parent.isOpen = false;
@@ -94,13 +98,16 @@ export class WorkbookOpen {
     }
 
     private fetchSuccess(data: string, eventArgs: OpenOptions, isOpenFromJson?: boolean): void {
-        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword', 'CorrectSheetPassword'];
-        let workbookData: string = data;
-        workbookData = (typeof data === 'string') ? JSON.parse(data) : data;
+        const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
+            'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const impData: WorkbookModel = (<any>workbookData).Workbook;
+        let workbookData: { Workbook?: WorkbookModel, Guid?: string } = <any>data;
+        workbookData = (typeof data === 'string') ? JSON.parse(data) : data;
+        const impData: WorkbookModel = workbookData.Workbook;
         if (openError.indexOf(impData as string) > -1) {
-            this.parent.notify(openSuccess, { context: this, data: <string>impData, eventArgs: eventArgs, isOpenFromJson: isOpenFromJson });
+            this.parent.notify(
+                openSuccess, { context: this, data: <string>impData, guid: workbookData.Guid, eventArgs: eventArgs,
+                    isOpenFromJson: isOpenFromJson });
             return;
         }
         this.updateModel(impData, isOpenFromJson);

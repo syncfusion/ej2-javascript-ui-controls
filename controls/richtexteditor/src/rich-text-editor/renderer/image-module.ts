@@ -92,6 +92,7 @@ export class Image {
         this.parent.on(events.paste, this.imagePaste, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     protected removeEventListener(): void {
@@ -120,6 +121,7 @@ export class Image {
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
         dropElement.removeEventListener('drop', this.dragDrop.bind(this), true);
@@ -483,7 +485,10 @@ export class Image {
     private resizing(e: PointerEvent | TouchEvent): void {
         if (this.imgEle.offsetWidth >= this.parent.getInsertImgMaxWidth()) {
             this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
+        } else if (isNOU(this.parent.insertImageSettings.maxHeight)) {
+            this.imgEle.style.maxHeight = '';
         }
+        this.imgEle.style.maxWidth = this.parent.getInsertImgMaxWidth() + 'px';
         const pageX: number = this.getPointX(e);
         const pageY: number = this.getPointY(e);
         const mouseX: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
@@ -1432,6 +1437,7 @@ export class Image {
         if (target.nodeName === 'IMG') {
             this.imgEle = target as HTMLImageElement;
         }
+        if (!this.parent) { return; }
         if (target.nodeName !== '#document') {
             this.parent.currentTarget = <HTMLElement>e.target;
         }
@@ -2305,16 +2311,8 @@ export class Image {
         this.prevSelectedImgEle = undefined;
         this.removeEventListener();
     }
-    /* eslint-disable */
-    /**
-     * Clears the ImageModule.
-     * 
-     * @returns {void}
-     * @hidden
-     * @deprecated
-     */
-    /* eslint-enable */
-    public moduleDestroy(): void {
+
+    private moduleDestroy(): void {
         this.parent = null;
     }
     /**

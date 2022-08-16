@@ -75,6 +75,34 @@
       iframe {
         height: calc(100% - 56px);
       }
+
+      .e-rte-edit-table {
+        max-height: $rte-big-table-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-edit-table-prop-dialog {
+        max-height: $rte-big-edit-table-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-link-dialog {
+        max-height: $rte-big-link-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-dialog {
+        min-height: $rte-big-img-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-link-dialog {
+        max-height: $rte-big-img-link-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-size-dialog {
+        max-height: $rte-big-img-size-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-alt-dialog {
+        min-height: $rte-big-img-alt-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
     }
   }
 
@@ -119,6 +147,34 @@
 
       iframe {
         height: calc(100% - 42px);
+      }
+
+      .e-rte-edit-table {
+        max-height: $rte-table-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-edit-table-prop-dialog {
+        max-height: $rte-edit-table-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-link-dialog {
+        max-height: $rte-link-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-dialog {
+        max-height: $rte-img-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-link-dialog {
+        max-height: $rte-img-link-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-size-dialog {
+        max-height: $rte-img-size-dlg-max-height !important; // sass-lint:disable-line no-important
+      }
+
+      .e-rte-img-alt-dialog {
+        max-height: $rte-img-alt-dlg-max-height !important; // sass-lint:disable-line no-important
       }
     }
 
@@ -995,6 +1051,9 @@
     }
 
     .e-rte-table-popup.e-popup-open .e-insert-table-btn {
+      @if $skin-name == 'FluentUI' {
+        margin-top: $rte-table-popup-btn-margin-top;
+      }
       width: 100%;
     }
 

@@ -226,7 +226,9 @@ export class EditRender {
                 const tempID: string = this.parent.element.id + col.uid + 'editTemplate';
                 const tempData: object = extendObjWithFn({}, args.rowData, { column: col });
                 const isReactCompiler: boolean = this.parent.isReact && typeof (col.editTemplate) !== 'string';
-                if (isReactCompiler) {
+                const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                    this.parent.parentDetails.parentInstObj.isReact;
+                if (isReactCompiler || isReactChild) {
                     col.getEditTemplate()(
                         extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID, null, null, input);
                     this.parent.renderTemplates();

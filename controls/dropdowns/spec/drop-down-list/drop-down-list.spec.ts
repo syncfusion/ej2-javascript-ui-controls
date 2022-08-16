@@ -5689,4 +5689,55 @@ describe('DDList', () => {
             dropDowns.showPopup();
             });
         });
+        describe('Provide event details in open and close event arguments in dropdown components', () => {
+            let listObj: any;
+            let mouseEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                target: null
+            };
+            let eventDetails : any;
+            let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            beforeEach(() => {
+                document.body.appendChild(element);
+                listObj = new DropDownList({ dataSource: datasource2,  open: (e: PopupEventArgs) => {
+                    eventDetails = e.event;
+                },
+                close: (e: PopupEventArgs) => {
+                    eventDetails = e.event;
+                }});
+                listObj.appendTo(element);
+            });
+            afterEach(() => {
+                if (element) {
+                    element.remove();
+                    document.body.innerHTML = '';
+                }
+            });
+            it('open popup by alt+down key ', (done) => {
+                let keyEventArgs: any = {
+                    preventDefault: (): void => { /** NO Code */ },
+                    keyCode: 74,
+                    action: 'open',
+                    type: 'keydown'
+                };
+                listObj.keyActionHandler(keyEventArgs);
+                setTimeout(() => {
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                keyEventArgs.action = 'hide';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                eventDetails = null;
+                done();
+               }, 450);
+            });
+            it('mouse click on input', (done) => {
+                mouseEventArgs.target = listObj.inputWrapper.buttons[0];
+                listObj.dropDownClick(mouseEventArgs);
+                setTimeout(() => {
+                expect(!isNullOrUndefined(eventDetails)).toBe(true);
+                done();
+                }, 250);
+            });
+        });
     });

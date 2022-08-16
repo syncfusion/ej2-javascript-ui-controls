@@ -1754,6 +1754,16 @@ export class Gantt extends Component<HTMLElement>
             this.renderChartVerticalLines();
         }
     }
+    public removeCriticalPathStyles(): void {
+        const ganttChartElement: HTMLElement = this.ganttChartModule.chartElement;
+        removeClass(ganttChartElement.querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
+        removeClass(ganttChartElement.querySelectorAll('.e-gantt-child-progressbar-inner-div'), cls.criticalChildProgressBarInnerDiv);
+        removeClass(ganttChartElement.querySelectorAll('.e-milestone-top'), cls.criticalMilestoneTop);
+        removeClass(ganttChartElement.querySelectorAll('.e-milestone-bottom'), cls.criticalMilestoneBottom);
+        removeClass(this.element.querySelectorAll('.e-line'), cls.criticalConnectorLine);
+        removeClass(this.element.querySelectorAll('.e-connector-line-right-arrow'), cls.criticalConnectorLineRightArrow);
+        removeClass(this.element.querySelectorAll('.e-connector-line-left-arrow'), cls.criticalConnectorLineLeftArrow);
+    }
     private wireEvents(): void {
         if (this.allowKeyboard) {
             this.keyboardModule = new KeyboardEvents(
@@ -1912,139 +1922,140 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public getZoomingLevels(): ZoomTimelineSettings[] {
+        const _WeekStartDay :number = this.timelineSettings.weekStartDay;
         const zoomingLevels: ZoomTimelineSettings[] = [
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 50 },
                 bottomTier: { unit: 'Year', format: 'yyyy', count: 10 }, timelineUnitSize: 99, level: 0,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 20 },
                 bottomTier: { unit: 'Year', format: 'yyyy', count: 5 }, timelineUnitSize: 99, level: 1,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 5 },
                 bottomTier: { unit: 'Year', format: 'yyyy', count: 1 }, timelineUnitSize: 99, level: 2,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayHalfValue, count: 6
                 }, timelineUnitSize: 66, level: 3,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayHalfValue, count: 6
                 }, timelineUnitSize: 99, level: 4,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayQuarterValue, count: 3
                 }, timelineUnitSize: 66, level: 5,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayQuarterValue, count: 3
                 }, timelineUnitSize: 99, level: 6,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 1 },
                 bottomTier: { unit: 'Month', format: 'MMM yyyy', count: 1 }, timelineUnitSize: 99, level: 7,
-                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Month', format: 'MMM, yy', count: 1 },
                 bottomTier: { unit: 'Week', format: 'dd', count: 1 }, timelineUnitSize: 33, level: 8,
-                timelineViewMode: 'Month', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
                 bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 66, level: 9,
-                timelineViewMode: 'Month', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
                 bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 99, level: 10,
-                timelineViewMode: 'Month', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
                 bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 33, level: 11,
-                timelineViewMode: 'Week', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
                 bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 66, level: 12,
-                timelineViewMode: 'Week', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
                 bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 99, level: 13,
-                timelineViewMode: 'Week', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 66, level: 14,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 99, level: 15,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 66, level: 16,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 99, level: 17,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 2 }, timelineUnitSize: 66, level: 18,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 2 }, timelineUnitSize: 99, level: 19,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }, timelineUnitSize: 66, level: 20,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }, timelineUnitSize: 99, level: 21,
-                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 30 }, timelineUnitSize: 66, level: 22,
-                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 15 }, timelineUnitSize: 66, level: 23,
-                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 1 }, timelineUnitSize: 66, level: 24,
-                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             }
 
         ];
@@ -2285,9 +2296,18 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'timezone':
-            case 'enableCriticalPath':        
                 this.dataOperation.checkDataBinding(true);
                 break;
+            case 'enableCriticalPath':
+                if (this.enableCriticalPath && this.criticalPathModule) {
+                    this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
+                    let criticalModule: CriticalPath = this.criticalPathModule;
+                    this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection, criticalModule.detailPredecessorCollection, true, criticalModule.predecessorCollectionTaskIds);
+                 }
+                 else {
+                     this.removeCriticalPathStyles();
+                 }
+                 break;
             case 'filterSettings':
                 this.treeGrid.filterSettings = getActualProperties(this.filterSettings) as TreeGridFilterSettingModel;
                 this.treeGrid.dataBind();

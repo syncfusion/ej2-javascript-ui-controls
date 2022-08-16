@@ -441,183 +441,183 @@ describe('Spreadsheet sorting module ->', () => {
                 });
             });
         });
-        describe('EJ2-49332->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    beforeDataBound: function () {
-                        helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
-                    } 
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Data gets duplicated while apply the sorting for hidden columns in spreadsheet', (done: Function) => {
-                helper.invoke('hideColumn', [1]);
-                expect(helper.getInstance().sheets[0].columns[1].hidden).toBeTruthy();
-                var spreadsheet = helper.getInstance();
-                expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('Casual Shoes');
-                expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('Sports Shoes');
-                expect(spreadsheet.sheets[0].rows[3].cells[0].value.toString()).toEqual('Formal Shoes');
-                helper.getElement('#' + helper.id + '_sorting').click();
-                helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
-                setTimeout(() => {
-                    expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('Item Name');
-                    expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('Casual Shoes');
-                    expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('Cricket Shoes');
-                    done();
-                }, 10);
-            });
-        });
-        describe('EJ2-51133->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('When sorting empty cells by ascending/descending, a script error occurs', (done: Function) => {
-                helper.invoke('selectRange', ['A1:A6']);
-                helper.getElement('#' + helper.id + '_sorting').click();
-                helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
-                setTimeout(() => {
-                    done();
-                }, 10);
-            });
-        });
-        describe('EJ2-51376', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Sorting Doesnot Work if the selected column contains an empty value', (done: Function) => {
-                helper.invoke('selectRange', ['A2:A11']);
-                helper.getElement('#' + helper.id + '_clear').click();
-                helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
-                helper.invoke('selectRange', ['A1']);
-                helper.getElement('#' + helper.id + '_sorting').click();
-                helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
-                setTimeout(() => {  
-                    expect(helper.getInstance().sheets[0].rows[0].cells[0].value.toString()).toEqual('Item Name');
-                    done();
-                }, 10);
-            });
-        });
-        describe('EJ2-53804->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ value: '' }, { value: 'Yes'}] }, { cells: [{ value: '1' }, { value: 'Yes'}] },
-                    { cells: [{ value: '2' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }, { cells: [{ value: '3' }, { value: 'Yes'}] },
-                    { cells: [{ value: '4' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }, { cells: [{ value: '' }, { value: 'Yes'}] },
-                    { cells: [{ value: '5' }, { value: 'No'}] }, { cells: [{ value: '' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }], selectedRange: 'A1'}]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Empty cell sorting issue in Spreadsheet->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_sorting').click();
-                helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
-                setTimeout(() => {
-                    const spreadsheet: Spreadsheet = helper.getInstance();
-                    expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('1');
-                    expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('2');
-                    expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('3');
-                    expect(spreadsheet.sheets[0].rows[3].cells[0].value.toString()).toEqual('4');
-                    expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('5');
-                    done();
-                }, 10);
-            });
-        });
-        describe('EJ2-55120->', () => {
-            beforeEach((done: Function) => {
-                model = {
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B200' }],
-                    created: (): void => {
-                        helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
-                        helper.invoke('numberFormat', ['dd/MM/yyyy', 'B2:B11']);
-                    }
-                }
-               helper.initializeSpreadsheet(model, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the sorting issue with the date formatted value which contains header->', (done: Function) => {
-                helper.click('#' + helper.id + '_sorting');
-                helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
-                setTimeout(() => {
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
-                        expect(helper.invoke('getCell', [1, 1]).textContent).toBe('04/02/2014');
-                        expect(helper.invoke('getCell', [10, 1]).textContent).toBe('30/11/2014');
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-55397->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    beforeDataBound: () => {
-                        helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the sorting and filtering related issues->', (done: Function) => {
-                helper.invoke('numberFormat', ['@', 'G2:G11']);
-                helper.invoke('selectRange', ['G5']);
-                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(4, 6, [7, 1], false, false);
-                setTimeout(() => {
-                    expect(helper.invoke('getCell', [1, 6]).textContent).toBe('1');
-                    expect(helper.invoke('getCell', [10, 6]).textContent).toBe('13');
-                    done();
-                }, 10);
-            });
-        });
-        describe('EJ2-56132->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    beforeDataBound: () => {
-                        helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Problem with headers while sorting with select all operation->', (done: Function) => {
-                const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
-                helper.triggerMouseAction(
-                    'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
-                selectAl);
-                helper.triggerMouseAction(
-                    'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
-                    selectAl);
-                setTimeout(() => {
-                    helper.getElement('#' + helper.id + '_sorting').click();
-                    helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
-                        expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
-                        expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
-                        done();
-                    }, 2000);
-                });
-            });
-        });
+        // describe('EJ2-49332->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //             beforeDataBound: function () {
+        //                 helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
+        //             } 
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Data gets duplicated while apply the sorting for hidden columns in spreadsheet', (done: Function) => {
+        //         helper.invoke('hideColumn', [1]);
+        //         expect(helper.getInstance().sheets[0].columns[1].hidden).toBeTruthy();
+        //         var spreadsheet = helper.getInstance();
+        //         expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('Casual Shoes');
+        //         expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('Sports Shoes');
+        //         expect(spreadsheet.sheets[0].rows[3].cells[0].value.toString()).toEqual('Formal Shoes');
+        //         helper.getElement('#' + helper.id + '_sorting').click();
+        //         helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
+        //         setTimeout(() => {
+        //             expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('Item Name');
+        //             expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('Casual Shoes');
+        //             expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('Cricket Shoes');
+        //             done();
+        //         }, 10);
+        //     });
+        // });
+        // describe('EJ2-51133->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('When sorting empty cells by ascending/descending, a script error occurs', (done: Function) => {
+        //         helper.invoke('selectRange', ['A1:A6']);
+        //         helper.getElement('#' + helper.id + '_sorting').click();
+        //         helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
+        //         setTimeout(() => {
+        //             done();
+        //         }, 10);
+        //     });
+        // });
+        // describe('EJ2-51376', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Sorting Doesnot Work if the selected column contains an empty value', (done: Function) => {
+        //         helper.invoke('selectRange', ['A2:A11']);
+        //         helper.getElement('#' + helper.id + '_clear').click();
+        //         helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
+        //         helper.invoke('selectRange', ['A1']);
+        //         helper.getElement('#' + helper.id + '_sorting').click();
+        //         helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
+        //         setTimeout(() => {  
+        //             expect(helper.getInstance().sheets[0].rows[0].cells[0].value.toString()).toEqual('Item Name');
+        //             done();
+        //         }, 10);
+        //     });
+        // });
+        // describe('EJ2-53804->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ rows: [{ cells: [{ value: '' }, { value: 'Yes'}] }, { cells: [{ value: '1' }, { value: 'Yes'}] },
+        //             { cells: [{ value: '2' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }, { cells: [{ value: '3' }, { value: 'Yes'}] },
+        //             { cells: [{ value: '4' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }, { cells: [{ value: '' }, { value: 'Yes'}] },
+        //             { cells: [{ value: '5' }, { value: 'No'}] }, { cells: [{ value: '' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }], selectedRange: 'A1'}]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Empty cell sorting issue in Spreadsheet->', (done: Function) => {
+        //         helper.getElement('#' + helper.id + '_sorting').click();
+        //         helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
+        //         setTimeout(() => {
+        //             const spreadsheet: Spreadsheet = helper.getInstance();
+        //             expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('1');
+        //             expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('2');
+        //             expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('3');
+        //             expect(spreadsheet.sheets[0].rows[3].cells[0].value.toString()).toEqual('4');
+        //             expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('5');
+        //             done();
+        //         }, 10);
+        //     });
+        // });
+        // describe('EJ2-55120->', () => {
+        //     beforeEach((done: Function) => {
+        //         model = {
+        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B200' }],
+        //             created: (): void => {
+        //                 helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
+        //                 helper.invoke('numberFormat', ['dd/MM/yyyy', 'B2:B11']);
+        //             }
+        //         }
+        //        helper.initializeSpreadsheet(model, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to fix the sorting issue with the date formatted value which contains header->', (done: Function) => {
+        //         helper.click('#' + helper.id + '_sorting');
+        //         helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+        //         setTimeout(() => {
+        //             setTimeout(() => {
+        //                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
+        //                 expect(helper.invoke('getCell', [1, 1]).textContent).toBe('04/02/2014');
+        //                 expect(helper.invoke('getCell', [10, 1]).textContent).toBe('30/11/2014');
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-55397->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //             beforeDataBound: () => {
+        //                 helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to fix the sorting and filtering related issues->', (done: Function) => {
+        //         helper.invoke('numberFormat', ['@', 'G2:G11']);
+        //         helper.invoke('selectRange', ['G5']);
+        //         helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+        //         helper.openAndClickCMenuItem(4, 6, [7, 1], false, false);
+        //         setTimeout(() => {
+        //             expect(helper.invoke('getCell', [1, 6]).textContent).toBe('1');
+        //             expect(helper.invoke('getCell', [10, 6]).textContent).toBe('13');
+        //             done();
+        //         }, 10);
+        //     });
+        // });
+        // describe('EJ2-56132->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //             beforeDataBound: () => {
+        //                 helper.invoke('cellFormat', [{ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1']);
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Problem with headers while sorting with select all operation->', (done: Function) => {
+        //         const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+        //         helper.triggerMouseAction(
+        //             'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
+        //         selectAl);
+        //         helper.triggerMouseAction(
+        //             'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
+        //             selectAl);
+        //         setTimeout(() => {
+        //             helper.getElement('#' + helper.id + '_sorting').click();
+        //             helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
+        //             setTimeout(() => {
+        //                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+        //                 expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+        //                 expect(helper.invoke('getCell', [10, 0]).textContent).toBe('T-Shirts');
+        //                 done();
+        //             }, 2000);
+        //         });
+        //     });
+        // });
         describe('EJ2-55988, SF-373280 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({

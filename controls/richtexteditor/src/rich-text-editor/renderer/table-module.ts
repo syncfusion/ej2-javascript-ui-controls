@@ -79,6 +79,7 @@ export class Table {
         this.parent.on(events.mouseUp, this.selectionTable, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     protected removeEventListener(): void {
@@ -101,6 +102,7 @@ export class Table {
         this.parent.off(events.mouseUp, this.selectionTable);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     private updateCss(currentObj: Button | Dialog | NumericTextBox, e: ICssClassArgs) : void {
@@ -1407,6 +1409,10 @@ export class Table {
      */
     public destroy(): void {
         this.removeEventListener();
+    }
+
+    private moduleDestroy(): void {
+        this.parent = null;
     }
 
     /**

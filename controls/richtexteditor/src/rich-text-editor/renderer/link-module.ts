@@ -56,6 +56,7 @@ export class Link {
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private onToolbarAction(args: NotifyArgs): void {
         const item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
@@ -89,6 +90,7 @@ export class Link {
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     private onIframeMouseDown(): void {
         if (this.dialogObj) {
@@ -544,14 +546,8 @@ export class Link {
     public destroy(): void {
         this.removeEventListener();
     }
-    /**
-     * Clears the Link Module.
-     *
-     * @returns {void}
-     * @hidden
-     * @deprecated
-     */
-     public moduleDestroy(): void {
+
+    private moduleDestroy(): void {
         this.parent = null;
     }
     

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 20.2.44 (2022-08-16)
+
+- `#SF-394274`,`#SF-394827` -  Now ,The signature and initial is updated after the 10th page.
+- `#SF-395889` -  Now ,script error occurs without injecting annotation has been fixed.
+- `#F173061` - Now, we can able to zoom to specific annotation if the annotation is not visible in the viewport.
+- `#SF-396556` -  Now ,import and export for JSON and XFDF is document working properly.
+
 ## 20.2.43 (2022-08-08)
 
 ### PDF Viewer
@@ -47,6 +54,7 @@
 - `#SF-383430` - Now copy, cut and paste does not generate any duplicates while using key short cut.
 - `#SF-376526` - Now, Mobile device resizing of the Signature Form Field has been improved.
 - `#SF-392270` - Now Signature is not drawn few inches away from the cursor on signature dialog.
+- `#SF-389178` - If the target position is within the document, a form field will be added. As a result, adding Inaccessible Form fields is prevented.
 
 ## 20.2.40 (2022-07-26)
 

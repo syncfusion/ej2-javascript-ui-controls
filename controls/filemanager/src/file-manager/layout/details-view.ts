@@ -618,6 +618,7 @@ export class DetailsView {
                     const val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
                     if (val === '' && !this.parent.isFiltered) {
                         const id: string = getValue('id', data);
+                        this.parent.oldPath = this.parent.path;
                         const newPath: string = this.parent.path + (isNOU(id) ? name : id) + '/';
                         this.parent.setProperties({ path: newPath }, true);
                         this.parent.pathNames.push(name);

@@ -1765,6 +1765,7 @@ export interface ParentDetails {
     parentKeyField?: string;
     parentKeyFieldValue?: string;
     parentRowData?: Object;
+    parentInstObj?: IGrid
 }
 
 /**
@@ -2242,7 +2243,7 @@ export interface DataStateChangeEventArgs {
     /** Defines the aggregates object */
     aggregates?: Object[];
     /** Defines the search criteria */
-    search?: PredicateModel[];
+    search?: SearchSettingsModel[];
     /** Defines the grid action details performed by paging, grouping, filtering, searching, sorting */
     action?: PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs;
     /** Defines the remote table name */

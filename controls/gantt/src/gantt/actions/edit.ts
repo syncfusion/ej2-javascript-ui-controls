@@ -2710,7 +2710,7 @@ export class Edit {
                     } else {
                         if (this.parent.viewType === 'ProjectView') {
                             if ((rowPosition === 'Top' || rowPosition === 'Bottom') ||
-                                ((rowPosition === 'Above' || rowPosition === 'Below' || rowPosition === 'Child') && !(args.data as IGanttData).parentItem)) {
+                                ((rowPosition === 'Above' || rowPosition === 'Below' || rowPosition === 'Child') || isNullOrUndefined(rowPosition) && !(args.data as IGanttData).parentItem)) {
                                     if (args.data instanceof Array) {
                                         this.updateRealDataSource(args.data as IGanttData, rowPosition);
                                     } else {

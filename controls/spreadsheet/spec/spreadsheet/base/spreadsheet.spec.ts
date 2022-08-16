@@ -1522,587 +1522,587 @@ describe('Spreadsheet base module ->', () => {
                 done();
             });
         });
-        describe('EJ2-47897->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the issue with Copy paste(values only) option with the formula values', (done: Function) => {
-                helper.edit('J4', '=SUM(F2:F8)');
-                helper.invoke('selectRange', ['J4']);
-                helper.getElement('#' + helper.id + '_copy').click();
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['L4']);
-                    helper.getElement('#' + helper.id + '_paste_dropdownbtn').click();
-                    helper.getElement('#' + helper.id + '_paste_dropdownbtn-popup .e-item:nth-child(2)').click();
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[3].cells[11].value).toBe(2700);
-                        expect(helper.getInstance().sheets[0].rows[3].cells[11].value).toBeUndefined;
-                        done();
-                    });
-                });
-            });
-        });
-        describe('fb24579 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Gridlines disappear when "Hide Headers" option is selected and sheet is scrolled to right', (done: Function) => {
-                helper.switchRibbonTab(5);
-                helper.getElement('#' + helper.id + '_headers').click();
-                setTimeout(() => {
-                    expect(helper.getElement('#' + helper.id + '_sheet').classList).toContain('e-hide-headers');
-                    helper.invoke('goTo', ['Z10']);
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].topLeftCell).toBe('Z10');
-                        expect(helper.invoke('getScrollElement').scrollLeft).toBeGreaterThan(0);
-                        expect(helper.invoke('getMainContent').scrollLeft).toBeGreaterThan(0);
-                        expect(helper.invoke('getCell', [9, 25])).toBeDefined(0);
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-47751->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Formula not updated properly for copy paste action', (done: Function) => {
-                helper.edit('I4', '=SUM(H2:H8)');
-                expect(helper.getInstance().sheets[0].rows[3].cells[8].value).toBe(304);
-                helper.invoke('copy', ['I4']).then(() => {
-                    helper.invoke('paste', ['K4']);
-                    setTimeout(function () {
-                        expect(helper.getInstance().sheets[0].rows[3].cells[10].value).toBe(0);
-                        expect(helper.getInstance().sheets[0].rows[3].cells[10].formula).toBe('=SUM(J2:J8)');
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-47580->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
-                    [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A5)' }] }], selectedRange: 'A5' }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it(' Need to fix the sheets property onPropertychange action', (done: Function) => {
-                expect(helper.getInstance().sheets.length).toBe(1);
-                helper.getInstance().sheets = [{}, {}, {}, {}];
-                helper.getInstance().dataBind() 
-                setTimeout(function () {
-                    expect(helper.getInstance().sheets.length).toBe(4);
-                    expect(helper.getInstance().sheets[0].rows.length).toBe(0);
-                    helper.click('.e-sheets-list');
-                    let popUpElem = helper.getElement('.e-dropdown-popup.e-sheets-list');
-                    expect(popUpElem.firstElementChild.childElementCount).toBe(4);
-                    done();
-                });
-            });
-        });
-        describe('EJ2-49470->', () => {
-            beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ topLeftCell: 'C50'}], scrollSettings: {enableVirtualization: false}
-                }, done);
-            });
-            afterAll(() => {
-                helper.invoke('destroy');
-            });
-            it('TopLeftCell not set properly when enableVirtualization is false in spreadsheet', (done: Function) => {
-                expect(helper.getInstance().sheets[0].topLeftCell).toBe('C50');
-                done();
-            });
-        });
-        describe('EJ2-49474->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ colCount: 10, rowCount: 120, columns:[{ width: 90}, { width: 90}, { width: 90}, { width: 60}, { width: 90}, { width: 90}, { width: 60}], ranges: [{ dataSource: defaultData }], 
-                    rows:[
-                        {index: 90, cells: [{ value: 'Casual Shoes' }, { value: '2/14/2014' }, { value: '11:34:32 AM' }, { value: '10' }, { value: '20' }, { value: '200' },{ value: '1' }, { value: '10' }] },
-                        {cells: [{ value: 'Sports Shoes' }, { value: '6/11/2014' }, { value: '5:56:32 AM' }, { value: '20' }, { value: '30' }, { value: '600' },{ value: '5' }, { value: '50' }] },
-                        {cells: [{ value: 'Formal Shoes' }, { value: '7/27/2014' }, { value: '3:32:44 AM' }, { value: '20' }, { value: '15' }, { value: '300' },{ value: '7' }, { value: '27' }] },
-                        {cells: [{ value: 'Sandals & Floaters' }, { value: '11/21/2014' }, { value: '6:23:54 AM' }, { value: '15' }, { value: '20' }, { value: '300' },{ value: '11' }, { value: '67' }] },
-                        {cells: [{ value: 'Flip- Flops & Slippers' }, { value: '6/23/2014' }, { value: '12:43:59 AM' }, { value: '40' }, { value: '10' }, { value: '300' },{ value: '10' }, { value: '70' }] },
-                        {cells: [{ value: 'Sneakers' }, { value: '7/22/2014' }, { value: '10:55:53 AM' }, { value: '30' }, { value: '20' }, { value: '800' },{ value: '13' }, { value: '66' }] },
-                        {cells: [{ value: 'Running Shoes' }, { value: '2/4/2014' }, { value: '3:44:34 AM' }, { value: '20' }, { value: '10' }, { value: '200' },{ value: '3' }, { value: '14' }] },
-                        {cells: [{ value: 'Loafers' }, { value: '2/4/2014' }, { value: '3:12:52 AM' }, { value: '30' }, { value: '10' }, { value: '300' },{ value: '6' }, { value: '29' }] },
-                        {cells: [{ value: 'Cricket Shoes' }, { value: '11/30/2014' }, { value: '11:32:14 AM' }, { value: '40' }, { value: '30' }, { value: '1200' },{ value: '12' }, { value: '166' }] },
-                        {cells: [{ value: 'T-Shirts' }, { value: '7/9/2014' }, { value: '12:01:44 AM' }, { value: '50' }, { value: '10' }, { value: '500' },{ value: '9' }, { value: '55' }] },
-                        {cells: [{ value: 'Casual Shoes' }, { value: '2/14/2014' }, { value: '11:34:32 AM' }, { value: '10' }, { value: '20' }, { value: '200' },{ value: '1' }, { value: '10' }] },
-                        {cells: [{ value: 'Sports Shoes' }, { value: '6/11/2014' }, { value: '5:56:32 AM' }, { value: '20' }, { value: '30' }, { value: '600' },{ value: '5' }, { value: '50' }] },
-                        {cells: [{ value: 'Formal Shoes' }, { value: '7/27/2014' }, { value: '3:32:44 AM' }, { value: '20' }, { value: '15' }, { value: '300' },{ value: '7' }, { value: '27' }] },
-                        {cells: [{ value: 'Sandals & Floaters' }, { value: '11/21/2014' }, { value: '6:23:54 AM' }, { value: '15' }, { value: '20' }, { value: '300' },{ value: '11' }, { value: '67' }] },
-                        {cells: [{ value: 'Flip- Flops & Slippers' }, { value: '6/23/2014' }, { value: '12:43:59 AM' }, { value: '40' }, { value: '10' }, { value: '300' },{ value: '10' }, { value: '70' }] },
-                        {cells: [{ value: 'Sneakers' }, { value: '7/22/2014' }, { value: '10:55:53 AM' }, { value: '30' }, { value: '20' }, { value: '800' },{ value: '13' }, { value: '66' }] },
-                        {cells: [{ value: 'Running Shoes' }, { value: '2/4/2014' }, { value: '3:44:34 AM' }, { value: '20' }, { value: '10' }, { value: '200' },{ value: '3' }, { value: '14' }] },
-                        {cells: [{ value: 'Loafers' }, { value: '2/4/2014' }, { value: '3:12:52 AM' }, { value: '30' }, { value: '10' }, { value: '300' },{ value: '6' }, { value: '29' }] },
-                        {cells: [{ value: 'Cricket Shoes' }, { value: '11/30/2014' }, { value: '11:32:14 AM' }, { value: '40' }, { value: '30' }, { value: '1200' },{ value: '12' }, { value: '166' }] },
-                        {cells: [{ value: 'T-Shirts' }, { value: '7/9/2014' }, { value: '12:01:44 AM' }, { value: '50' }, { value: '10' }, { value: '500' },{ value: '9' }, { value: '55' }] },
-                        {cells: [{ value: 'Casual Shoes' }, { value: '2/14/2014' }, { value: '11:34:32 AM' }, { value: '10' }, { value: '20' }, { value: '200' },{ value: '1' }, { value: '10' }] },
-                        {cells: [{ value: 'Sports Shoes' }, { value: '6/11/2014' }, { value: '5:56:32 AM' }, { value: '20' }, { value: '30' }, { value: '600' },{ value: '5' }, { value: '50' }] },
-                        {cells: [{ value: 'Formal Shoes' }, { value: '7/27/2014' }, { value: '3:32:44 AM' }, { value: '20' }, { value: '15' }, { value: '300' },{ value: '7' }, { value: '27' }] },
-                        {cells: [{ value: 'Sandals & Floaters' }, { value: '11/21/2014' }, { value: '6:23:54 AM' }, { value: '15' }, { value: '20' }, { value: '300' },{ value: '11' }, { value: '67' }] },
-                        {cells: [{ value: 'Flip- Flops & Slippers' }, { value: '6/23/2014' }, { value: '12:43:59 AM' }, { value: '40' }, { value: '10' }, { value: '300' },{ value: '10' }, { value: '70' }] },
-                        {cells: [{ value: 'Sneakers' }, { value: '7/22/2014' }, { value: '10:55:53 AM' }, { value: '30' }, { value: '20' }, { value: '800' },{ value: '13' }, { value: '66' }] },
-                        {cells: [{ value: 'Running Shoes' }, { value: '2/4/2014' }, { value: '3:44:34 AM' }, { value: '20' }, { value: '10' }, { value: '200' },{ value: '3' }, { value: '14' }] },
-                        {cells: [{ value: 'Loafers' }, { value: '2/4/2014' }, { value: '3:12:52 AM' }, { value: '30' }, { value: '10' }, { value: '300' },{ value: '6' }, { value: '29' }] },
-                        {cells: [{ value: 'Cricket Shoes' }, { value: '11/30/2014' }, { value: '11:32:14 AM' }, { value: '40' }, { value: '30' }, { value: '1200' },{ value: '12' }, { value: '166' }] },
-                        {cells: [{ value: 'T-Shirts' }, { value: '7/9/2014' }, { value: '12:01:44 AM' }, { value: '50' }, { value: '10' }, { value: '500' },{ value: '9' }, { value: '55' }] },
-                       ]  
-                    }],
-                    scrollSettings: { enableVirtualization: false, isFinite: true}
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Spreadsheet rows disappear after scrolling up and down in finite mode->', (done:  Function) => {
-                helper.invoke('goTo', ['A95']);
-                setTimeout(() => {
-                    helper.invoke('goTo', ['C5']);
-                    setTimeout(() => {
-                        helper.invoke('goTo', ['D110']);
-                        setTimeout(() => {
-                            expect(helper.getInstance().sheets[0].selectedRange).toBe('D110:D110');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-51467', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ value: 'UKP.BSLD.BOM.2018-03-20' }] }], selectedRange: 'A1' }] 
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the string with date pasted as date issue in Chrome', (done: Function) => {
-                helper.getElement('#' + helper.id + '_copy').click();
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['B5']);
-                    helper.getElement('#' + helper.id + '_paste').click();
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[4].cells[1].value).toBe('UKP.BSLD.BOM.2018-03-20');
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-51535', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ frozenRows: 3, frozenColumns: 8 , selectedRange: 'I4' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the selection issue and undo issue', (done: Function) => {
-                helper.invoke('goTo', ['DQ7']);
-                setTimeout(function () {
-                    helper.edit('E2', 'Edit');
-                    helper.triggerKeyNativeEvent(13);
-                    helper.getElement('#' + helper.id + '_undo').click();
-                    setTimeout(function () {
-                        expect(helper.getInstance().sheets[0].rows[1].cells[4].value).toBeNull;
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-52453->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Spreadsheet reloads when click Format buttons in ribbon->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_bold').click();
-                helper.getElement('#' + helper.id + '_italic').click();
-                helper.getElement('#' + helper.id + '_line-through').click();
-                helper.getElement('#' + helper.id + '_underline').click();
-                helper.click('.e-add-sheet-tab');
-                expect(helper.getInstance().activeSheetIndex).toBe(1);
-                expect(helper.getInstance().sheets.length).toBe(2);
-                done();
-            });
-        });
-        describe('EJ2-54049->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Data validation color format not copied on Autofill->', (done: Function) => {
-                helper.invoke('selectRange', ['H2']);
-                helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-                        helper.getElements('.e-datavalidation-dlg #minvalue')[0].value = '12';
-                        helper.getElements('.e-datavalidation-dlg #maxvalue')[0].value = '25';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
-                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"12","value2":"25","ignoreBlank":true,"inCellDropDown":null}');
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                            expect(helper.invoke('getCell', [1, 7]).style.color).toBe('rgb(255, 0, 0)');
-                            helper.invoke('autoFill', ['H3', 'H2', 'Down', 'CopyCells']);
-                            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                            expect(helper.invoke('getCell', [2, 7]).style.color).toBe('rgb(255, 0, 0)');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-53517->', () => {
-            beforeEach((done: Function) => {
-               model = {
-                sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                created: (): void => {
-                    const spreadsheet: Spreadsheet = helper.getInstance();
-                    spreadsheet.numberFormat('dd/MM/yyyy', "B2");
-                }  
-               }
-               helper.initializeSpreadsheet(model, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Issue with date format in spreadsheet->', (done: Function) => {
-                helper.edit('B2', '09/11/2030');
-                helper.edit('B2', '19/11/2030');
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe('47806');
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].format).toBe('dd/MM/yyyy');
-                expect(helper.invoke('getCell', [1, 1]).textContent).toBe('19/11/2030');
-                done();
-            });
-        });
-        describe('EJ2-53945->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'C3:D4' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Border missing issue with autofill support in Spreadsheet->', ( done: Function) => {
-                helper.getElement('#' + helper.id + '_merge').click();
-                setTimeout(() => {
-                    helper.edit('C3', 'Test');
-                    helper.getElement('#' + helper.id + '_borders').click();
-                    helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
-                    expect(helper.getInstance().sheets[0].rows[2].cells[2].style.borderBottom).toBe('1px solid #000000');
-                    expect(helper.getInstance().sheets[0].rows[2].cells[2].style.borderRight).toBe('1px solid #000000');
-                    setTimeout(() => {
-                        helper.invoke('autoFill', ['C5:D20', 'C3:D4', 'Down', 'CopyCells']);
-                        expect(helper.getInstance().sheets[0].rows[18].cells[2].style.borderBottom).toBe('1px solid #000000');
-                        expect(helper.getInstance().sheets[0].rows[18].cells[2].style.borderRight).toBe('1px solid #000000');
-                        done();
-                    });
-                });
-            });
-        });
-         describe('EJ2-54402->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('When drag the autofill for hidden column its occur script error->', (done: Function) => {
-                helper.invoke('selectRange', ['C1']);
-                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(0, 2, [8], false, true);
-                setTimeout(function () {
-                    expect(helper.getInstance().sheets[0].columns[2].hidden).toBeTruthy();
-                    var autofill = helper.getElementFromSpreadsheet('.e-autofill');
-                    expect(autofill.classList).toContain('e-hide');
-                    expect(getComputedStyle(autofill).display).toBe('none');
-                    done();
-                });
-            });
-        });
-        describe('EJ2-54586->', () => {
-            beforeEach((done: Function) => {
-               model = {
-                sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                created: (): void => {
-                    const spreadsheet: Spreadsheet = helper.getInstance();
-                    spreadsheet.numberFormat('dd/MM/yyyy', "B2");
-                }  
-               }
-               helper.initializeSpreadsheet(model, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Custom date format alignment issue->', (done: Function) => {
-                helper.edit('B2', '26/10/2030');
-                helper.triggerKeyNativeEvent(13);
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['B2']);
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe('47782');
-                        expect(helper.getInstance().sheets[0].rows[1].cells[1].format).toBe('dd/MM/yyyy');
-                        expect(helper.invoke('getCell', [1, 1]).textContent).toBe('26/10/2030');
-                        helper.getElement('#' + helper.id + '_text_align').click();
-                        setTimeout(() => {
-                            expect(helper.getElement('#' + helper.id + '_text_align-popup li:nth-child(3)').classList).toContain('e-selected');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-54678->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'A1' }], allowAutoFill: false
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Autofill option is visible when set allowAutoFill API as false->', (done: Function) => {
-                expect(helper.getElementFromSpreadsheet('.e-autofill')).toBeNull();
-                done();
-            });
-        });
-        describe('EJ2-54759->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ value: '1' }] }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('While using autoFill for formula applied cell, spreadsheet gets unresponsive->', (done: Function) => {
-                helper.edit('A2', '=A1*2');
-                expect(helper.getInstance().sheets[0].rows[1].cells[0].formula).toBe('=A1*2');
-                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('2');
-                helper.invoke('selectRange', ['A2']);
-                setTimeout(() => {
-                    helper.invoke('autoFill', ['A3:A10', 'A2', 'Down', 'CopyCells']);
-                    expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('2');
-                    expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe('2');
-                    expect(helper.getInstance().sheets[0].rows[9].cells[0].value).toBe('2');
-                    done();
-                });
-            });
-        });
-        describe('EJ2-54085->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the dynamic data binding issue and the updateRange method issue.->', (done: Function) => {
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.insertSheet([{ index: 1, name: 'Inserted Sheet', ranges: [{ dataSource: defaultData }] }]);
-                setTimeout(() => {
-                    helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
-                    setTimeout(() => {
-                        expect(spreadsheet.sheets[1].rows[0].cells[0].value.toString()).toBe('Item Name');
-                        spreadsheet.updateRange({ dataSource: filterData, startCell: "A1"}, 2)
-                        spreadsheet.refresh();
-                        setTimeout(() => {
-                            expect(spreadsheet.getCell(0,0).textContent).toBe('10248');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-54716->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('getDisplayText not properly working for customized number format', (done: Function) => {
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                helper.invoke('numberFormat', ['@', 'A1:D10']);
-                helper.edit('A2', '121212');
-                helper.invoke('numberFormat', ['#,###.00 ;(#,###.00);"-"', 'A2']);
-                setTimeout(() => {
-                    expect(helper.invoke('getDisplayText', [spreadsheet.sheets[0].rows[0].cells[0]])).toEqual('Item Name');
-                    expect(helper.invoke('getDisplayText', [spreadsheet.sheets[0].rows[1].cells[0]])).toEqual('121,212.00 ');
-                    done();
-                });
-            });
-        });
-        describe('EJ2-54569->', () => {
-            let count: number = 0;
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: [{ 'Test': '1', 'Test1': '2' }] }] }],
-                    cellSave: (args: CellSaveEventArgs): void => {
-                        count++;
-                        if (count === 1) { // Delete cell details
-                            expect(args.address).toEqual('Sheet1!A1');
-                            expect(args.oldValue).toEqual('Test');
-                            expect(args.value as any).toEqual('');
-                        }
-                        if (count === 2) { // undo cell details
-                            expect(args.address).toEqual('Sheet1!A1');
-                            expect(args.oldValue).toBeUndefined;
-                            expect(args.value as any).toEqual('Test');
-                        }
-                        if (count === 3) { // redo cell details
-                            expect(args.address).toEqual('Sheet1!A1');
-                            expect(args.oldValue).toEqual('Test');
-                            expect(args.value as any).toEqual('');
-                        }
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('cellsave event is not triggered for delete, undoredo and fill options->', (done: Function) => {
-                helper.triggerKeyNativeEvent(46);
-                setTimeout(() => {
-                    helper.getElement('#' + helper.id + '_undo').click();
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Test');
-                        helper.getElement('#' + helper.id + '_redo').click();
-                        setTimeout(() => {
-                            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-54849->', () => {
-            let count: number = 0;
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: [{ 'Test': '1' }] }] }],
-                    cellSave: (args: CellSaveEventArgs): void => {
-                        count++;
-                        if (count === 1) { // Paste cell details
-                            expect(args.address).toEqual('Sheet1!B1');
-                            expect(args.oldValue).toEqual('');
-                            expect(args.value as any).toEqual('Test');
-                        }
-                        if (count === 2) { // undo cell details
-                            expect(args.address).toEqual('Sheet1!B1');
-                            expect(args.oldValue).toEqual('Test');
-                            expect(args.value as any).toEqual('');
-                        }
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Cell Save event not triggered on undo->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_copy').click();
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['B1']);
-                    helper.getElement('#' + helper.id + '_paste').click();
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Test');
-                        helper.getElement('#' + helper.id + '_undo').click();
-                        setTimeout(() => {
-                            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-55119->', () => {
-            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    actionBegin: (args: any): void => {
-                        if (args.action === 'filter') { actionBeginCalled = true; }
-                    },
-                    actionComplete: (args: any): void => {
-                        if (args.action === 'filter') { actionCompleteCalled = true; }
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('On Redo Actioncomplete is triggered before the action is performed->', (done: Function) => {
-                expect(actionBeginCalled).toBeFalsy();
-                expect(actionCompleteCalled).toBeFalsy();
-                helper.getElement('#' + helper.id + '_sorting').click();
-                helper.getElement('#' + helper.id + '_applyfilter').click();
-                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
-                helper.getElement('#' + helper.id + '_undo').click();
-                setTimeout(() => {
-                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
-                    helper.getElement('#' + helper.id + '_redo').click();
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
-                        expect(actionBeginCalled).toBeTruthy();
-                        expect(actionCompleteCalled).toBeTruthy();
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-55211->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('While loading JSON data with the openFromJson method, it does not load anything ->', (done: Function) => {
-                const json: object = { Workbook: { sheets: [{ frozenColumns: 2, frozenRows: 3 ,
-                    columns: [{ width: 100 }, { width: 200 },{ width: 120 },{ width: 120 },{ width: 120 },{ width: 120 },{ width: 120 },],
-                    ranges: [{ dataSource: defaultData }] }], selectedRange: 'A1' }
-                }
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.openFromJson({ file: json});
-                setTimeout(() => {
-                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
-                    done();
-                });
-            });
-        });
+        // describe('EJ2-47897->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to fix the issue with Copy paste(values only) option with the formula values', (done: Function) => {
+        //         helper.edit('J4', '=SUM(F2:F8)');
+        //         helper.invoke('selectRange', ['J4']);
+        //         helper.getElement('#' + helper.id + '_copy').click();
+        //         setTimeout(() => {
+        //             helper.invoke('selectRange', ['L4']);
+        //             helper.getElement('#' + helper.id + '_paste_dropdownbtn').click();
+        //             helper.getElement('#' + helper.id + '_paste_dropdownbtn-popup .e-item:nth-child(2)').click();
+        //             setTimeout(() => {
+        //                 expect(helper.getInstance().sheets[0].rows[3].cells[11].value).toBe(2700);
+        //                 expect(helper.getInstance().sheets[0].rows[3].cells[11].value).toBeUndefined;
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('fb24579 ->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Gridlines disappear when "Hide Headers" option is selected and sheet is scrolled to right', (done: Function) => {
+        //         helper.switchRibbonTab(5);
+        //         helper.getElement('#' + helper.id + '_headers').click();
+        //         setTimeout(() => {
+        //             expect(helper.getElement('#' + helper.id + '_sheet').classList).toContain('e-hide-headers');
+        //             helper.invoke('goTo', ['Z10']);
+        //             setTimeout(() => {
+        //                 expect(helper.getInstance().sheets[0].topLeftCell).toBe('Z10');
+        //                 expect(helper.invoke('getScrollElement').scrollLeft).toBeGreaterThan(0);
+        //                 expect(helper.invoke('getMainContent').scrollLeft).toBeGreaterThan(0);
+        //                 expect(helper.invoke('getCell', [9, 25])).toBeDefined(0);
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-47751->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Formula not updated properly for copy paste action', (done: Function) => {
+        //         helper.edit('I4', '=SUM(H2:H8)');
+        //         expect(helper.getInstance().sheets[0].rows[3].cells[8].value).toBe(304);
+        //         helper.invoke('copy', ['I4']).then(() => {
+        //             helper.invoke('paste', ['K4']);
+        //             setTimeout(function () {
+        //                 expect(helper.getInstance().sheets[0].rows[3].cells[10].value).toBe(0);
+        //                 expect(helper.getInstance().sheets[0].rows[3].cells[10].formula).toBe('=SUM(J2:J8)');
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-47580->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
+        //             [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A5)' }] }], selectedRange: 'A5' }] }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it(' Need to fix the sheets property onPropertychange action', (done: Function) => {
+        //         expect(helper.getInstance().sheets.length).toBe(1);
+        //         helper.getInstance().sheets = [{}, {}, {}, {}];
+        //         helper.getInstance().dataBind() 
+        //         setTimeout(function () {
+        //             expect(helper.getInstance().sheets.length).toBe(4);
+        //             expect(helper.getInstance().sheets[0].rows.length).toBe(0);
+        //             helper.click('.e-sheets-list');
+        //             let popUpElem = helper.getElement('.e-dropdown-popup.e-sheets-list');
+        //             expect(popUpElem.firstElementChild.childElementCount).toBe(4);
+        //             done();
+        //         });
+        //     });
+        // });
+        // describe('EJ2-49470->', () => {
+        //     beforeAll((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ topLeftCell: 'C50'}], scrollSettings: {enableVirtualization: false}
+        //         }, done);
+        //     });
+        //     afterAll(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('TopLeftCell not set properly when enableVirtualization is false in spreadsheet', (done: Function) => {
+        //         expect(helper.getInstance().sheets[0].topLeftCell).toBe('C50');
+        //         done();
+        //     });
+        // });
+        // describe('EJ2-49474->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ colCount: 10, rowCount: 120, columns:[{ width: 90}, { width: 90}, { width: 90}, { width: 60}, { width: 90}, { width: 90}, { width: 60}], ranges: [{ dataSource: defaultData }], 
+        //             rows:[
+        //                 {index: 90, cells: [{ value: 'Casual Shoes' }, { value: '2/14/2014' }, { value: '11:34:32 AM' }, { value: '10' }, { value: '20' }, { value: '200' },{ value: '1' }, { value: '10' }] },
+        //                 {cells: [{ value: 'Sports Shoes' }, { value: '6/11/2014' }, { value: '5:56:32 AM' }, { value: '20' }, { value: '30' }, { value: '600' },{ value: '5' }, { value: '50' }] },
+        //                 {cells: [{ value: 'Formal Shoes' }, { value: '7/27/2014' }, { value: '3:32:44 AM' }, { value: '20' }, { value: '15' }, { value: '300' },{ value: '7' }, { value: '27' }] },
+        //                 {cells: [{ value: 'Sandals & Floaters' }, { value: '11/21/2014' }, { value: '6:23:54 AM' }, { value: '15' }, { value: '20' }, { value: '300' },{ value: '11' }, { value: '67' }] },
+        //                 {cells: [{ value: 'Flip- Flops & Slippers' }, { value: '6/23/2014' }, { value: '12:43:59 AM' }, { value: '40' }, { value: '10' }, { value: '300' },{ value: '10' }, { value: '70' }] },
+        //                 {cells: [{ value: 'Sneakers' }, { value: '7/22/2014' }, { value: '10:55:53 AM' }, { value: '30' }, { value: '20' }, { value: '800' },{ value: '13' }, { value: '66' }] },
+        //                 {cells: [{ value: 'Running Shoes' }, { value: '2/4/2014' }, { value: '3:44:34 AM' }, { value: '20' }, { value: '10' }, { value: '200' },{ value: '3' }, { value: '14' }] },
+        //                 {cells: [{ value: 'Loafers' }, { value: '2/4/2014' }, { value: '3:12:52 AM' }, { value: '30' }, { value: '10' }, { value: '300' },{ value: '6' }, { value: '29' }] },
+        //                 {cells: [{ value: 'Cricket Shoes' }, { value: '11/30/2014' }, { value: '11:32:14 AM' }, { value: '40' }, { value: '30' }, { value: '1200' },{ value: '12' }, { value: '166' }] },
+        //                 {cells: [{ value: 'T-Shirts' }, { value: '7/9/2014' }, { value: '12:01:44 AM' }, { value: '50' }, { value: '10' }, { value: '500' },{ value: '9' }, { value: '55' }] },
+        //                 {cells: [{ value: 'Casual Shoes' }, { value: '2/14/2014' }, { value: '11:34:32 AM' }, { value: '10' }, { value: '20' }, { value: '200' },{ value: '1' }, { value: '10' }] },
+        //                 {cells: [{ value: 'Sports Shoes' }, { value: '6/11/2014' }, { value: '5:56:32 AM' }, { value: '20' }, { value: '30' }, { value: '600' },{ value: '5' }, { value: '50' }] },
+        //                 {cells: [{ value: 'Formal Shoes' }, { value: '7/27/2014' }, { value: '3:32:44 AM' }, { value: '20' }, { value: '15' }, { value: '300' },{ value: '7' }, { value: '27' }] },
+        //                 {cells: [{ value: 'Sandals & Floaters' }, { value: '11/21/2014' }, { value: '6:23:54 AM' }, { value: '15' }, { value: '20' }, { value: '300' },{ value: '11' }, { value: '67' }] },
+        //                 {cells: [{ value: 'Flip- Flops & Slippers' }, { value: '6/23/2014' }, { value: '12:43:59 AM' }, { value: '40' }, { value: '10' }, { value: '300' },{ value: '10' }, { value: '70' }] },
+        //                 {cells: [{ value: 'Sneakers' }, { value: '7/22/2014' }, { value: '10:55:53 AM' }, { value: '30' }, { value: '20' }, { value: '800' },{ value: '13' }, { value: '66' }] },
+        //                 {cells: [{ value: 'Running Shoes' }, { value: '2/4/2014' }, { value: '3:44:34 AM' }, { value: '20' }, { value: '10' }, { value: '200' },{ value: '3' }, { value: '14' }] },
+        //                 {cells: [{ value: 'Loafers' }, { value: '2/4/2014' }, { value: '3:12:52 AM' }, { value: '30' }, { value: '10' }, { value: '300' },{ value: '6' }, { value: '29' }] },
+        //                 {cells: [{ value: 'Cricket Shoes' }, { value: '11/30/2014' }, { value: '11:32:14 AM' }, { value: '40' }, { value: '30' }, { value: '1200' },{ value: '12' }, { value: '166' }] },
+        //                 {cells: [{ value: 'T-Shirts' }, { value: '7/9/2014' }, { value: '12:01:44 AM' }, { value: '50' }, { value: '10' }, { value: '500' },{ value: '9' }, { value: '55' }] },
+        //                 {cells: [{ value: 'Casual Shoes' }, { value: '2/14/2014' }, { value: '11:34:32 AM' }, { value: '10' }, { value: '20' }, { value: '200' },{ value: '1' }, { value: '10' }] },
+        //                 {cells: [{ value: 'Sports Shoes' }, { value: '6/11/2014' }, { value: '5:56:32 AM' }, { value: '20' }, { value: '30' }, { value: '600' },{ value: '5' }, { value: '50' }] },
+        //                 {cells: [{ value: 'Formal Shoes' }, { value: '7/27/2014' }, { value: '3:32:44 AM' }, { value: '20' }, { value: '15' }, { value: '300' },{ value: '7' }, { value: '27' }] },
+        //                 {cells: [{ value: 'Sandals & Floaters' }, { value: '11/21/2014' }, { value: '6:23:54 AM' }, { value: '15' }, { value: '20' }, { value: '300' },{ value: '11' }, { value: '67' }] },
+        //                 {cells: [{ value: 'Flip- Flops & Slippers' }, { value: '6/23/2014' }, { value: '12:43:59 AM' }, { value: '40' }, { value: '10' }, { value: '300' },{ value: '10' }, { value: '70' }] },
+        //                 {cells: [{ value: 'Sneakers' }, { value: '7/22/2014' }, { value: '10:55:53 AM' }, { value: '30' }, { value: '20' }, { value: '800' },{ value: '13' }, { value: '66' }] },
+        //                 {cells: [{ value: 'Running Shoes' }, { value: '2/4/2014' }, { value: '3:44:34 AM' }, { value: '20' }, { value: '10' }, { value: '200' },{ value: '3' }, { value: '14' }] },
+        //                 {cells: [{ value: 'Loafers' }, { value: '2/4/2014' }, { value: '3:12:52 AM' }, { value: '30' }, { value: '10' }, { value: '300' },{ value: '6' }, { value: '29' }] },
+        //                 {cells: [{ value: 'Cricket Shoes' }, { value: '11/30/2014' }, { value: '11:32:14 AM' }, { value: '40' }, { value: '30' }, { value: '1200' },{ value: '12' }, { value: '166' }] },
+        //                 {cells: [{ value: 'T-Shirts' }, { value: '7/9/2014' }, { value: '12:01:44 AM' }, { value: '50' }, { value: '10' }, { value: '500' },{ value: '9' }, { value: '55' }] },
+        //                ]  
+        //             }],
+        //             scrollSettings: { enableVirtualization: false, isFinite: true}
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Spreadsheet rows disappear after scrolling up and down in finite mode->', (done:  Function) => {
+        //         helper.invoke('goTo', ['A95']);
+        //         setTimeout(() => {
+        //             helper.invoke('goTo', ['C5']);
+        //             setTimeout(() => {
+        //                 helper.invoke('goTo', ['D110']);
+        //                 setTimeout(() => {
+        //                     expect(helper.getInstance().sheets[0].selectedRange).toBe('D110:D110');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-51467', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ rows: [{ cells: [{ value: 'UKP.BSLD.BOM.2018-03-20' }] }], selectedRange: 'A1' }] 
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to fix the string with date pasted as date issue in Chrome', (done: Function) => {
+        //         helper.getElement('#' + helper.id + '_copy').click();
+        //         setTimeout(() => {
+        //             helper.invoke('selectRange', ['B5']);
+        //             helper.getElement('#' + helper.id + '_paste').click();
+        //             setTimeout(() => {
+        //                 expect(helper.getInstance().sheets[0].rows[4].cells[1].value).toBe('UKP.BSLD.BOM.2018-03-20');
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-51535', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ frozenRows: 3, frozenColumns: 8 , selectedRange: 'I4' }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to fix the selection issue and undo issue', (done: Function) => {
+        //         helper.invoke('goTo', ['DQ7']);
+        //         setTimeout(function () {
+        //             helper.edit('E2', 'Edit');
+        //             helper.triggerKeyNativeEvent(13);
+        //             helper.getElement('#' + helper.id + '_undo').click();
+        //             setTimeout(function () {
+        //                 expect(helper.getInstance().sheets[0].rows[1].cells[4].value).toBeNull;
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-52453->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Spreadsheet reloads when click Format buttons in ribbon->', (done: Function) => {
+        //         helper.getElement('#' + helper.id + '_bold').click();
+        //         helper.getElement('#' + helper.id + '_italic').click();
+        //         helper.getElement('#' + helper.id + '_line-through').click();
+        //         helper.getElement('#' + helper.id + '_underline').click();
+        //         helper.click('.e-add-sheet-tab');
+        //         expect(helper.getInstance().activeSheetIndex).toBe(1);
+        //         expect(helper.getInstance().sheets.length).toBe(2);
+        //         done();
+        //     });
+        // });
+        // describe('EJ2-54049->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Data validation color format not copied on Autofill->', (done: Function) => {
+        //         helper.invoke('selectRange', ['H2']);
+        //         helper.switchRibbonTab(4);
+        //         helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+        //         setTimeout(() => {
+        //             helper.click('.e-datavalidation-ddb li:nth-child(1)');
+        //             setTimeout(() => {
+        //                 helper.getElements('.e-datavalidation-dlg #minvalue')[0].value = '12';
+        //                 helper.getElements('.e-datavalidation-dlg #maxvalue')[0].value = '25';
+        //                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+        //                 helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
+        //                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[7].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"12","value2":"25","ignoreBlank":true,"inCellDropDown":null}');
+        //                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+        //                 setTimeout(() => {
+        //                     helper.click('.e-datavalidation-ddb li:nth-child(2)');
+        //                     expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+        //                     expect(helper.invoke('getCell', [1, 7]).style.color).toBe('rgb(255, 0, 0)');
+        //                     helper.invoke('autoFill', ['H3', 'H2', 'Down', 'CopyCells']);
+        //                     expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+        //                     expect(helper.invoke('getCell', [2, 7]).style.color).toBe('rgb(255, 0, 0)');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-53517->', () => {
+        //     beforeEach((done: Function) => {
+        //        model = {
+        //         sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //         created: (): void => {
+        //             const spreadsheet: Spreadsheet = helper.getInstance();
+        //             spreadsheet.numberFormat('dd/MM/yyyy', "B2");
+        //         }  
+        //        }
+        //        helper.initializeSpreadsheet(model, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Issue with date format in spreadsheet->', (done: Function) => {
+        //         helper.edit('B2', '09/11/2030');
+        //         helper.edit('B2', '19/11/2030');
+        //         expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe('47806');
+        //         expect(helper.getInstance().sheets[0].rows[1].cells[1].format).toBe('dd/MM/yyyy');
+        //         expect(helper.invoke('getCell', [1, 1]).textContent).toBe('19/11/2030');
+        //         done();
+        //     });
+        // });
+        // describe('EJ2-53945->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ selectedRange: 'C3:D4' }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Border missing issue with autofill support in Spreadsheet->', ( done: Function) => {
+        //         helper.getElement('#' + helper.id + '_merge').click();
+        //         setTimeout(() => {
+        //             helper.edit('C3', 'Test');
+        //             helper.getElement('#' + helper.id + '_borders').click();
+        //             helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
+        //             expect(helper.getInstance().sheets[0].rows[2].cells[2].style.borderBottom).toBe('1px solid #000000');
+        //             expect(helper.getInstance().sheets[0].rows[2].cells[2].style.borderRight).toBe('1px solid #000000');
+        //             setTimeout(() => {
+        //                 helper.invoke('autoFill', ['C5:D20', 'C3:D4', 'Down', 'CopyCells']);
+        //                 expect(helper.getInstance().sheets[0].rows[18].cells[2].style.borderBottom).toBe('1px solid #000000');
+        //                 expect(helper.getInstance().sheets[0].rows[18].cells[2].style.borderRight).toBe('1px solid #000000');
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        //  describe('EJ2-54402->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('When drag the autofill for hidden column its occur script error->', (done: Function) => {
+        //         helper.invoke('selectRange', ['C1']);
+        //         helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+        //         helper.openAndClickCMenuItem(0, 2, [8], false, true);
+        //         setTimeout(function () {
+        //             expect(helper.getInstance().sheets[0].columns[2].hidden).toBeTruthy();
+        //             var autofill = helper.getElementFromSpreadsheet('.e-autofill');
+        //             expect(autofill.classList).toContain('e-hide');
+        //             expect(getComputedStyle(autofill).display).toBe('none');
+        //             done();
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54586->', () => {
+        //     beforeEach((done: Function) => {
+        //        model = {
+        //         sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //         created: (): void => {
+        //             const spreadsheet: Spreadsheet = helper.getInstance();
+        //             spreadsheet.numberFormat('dd/MM/yyyy', "B2");
+        //         }  
+        //        }
+        //        helper.initializeSpreadsheet(model, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Custom date format alignment issue->', (done: Function) => {
+        //         helper.edit('B2', '26/10/2030');
+        //         helper.triggerKeyNativeEvent(13);
+        //         setTimeout(() => {
+        //             helper.invoke('selectRange', ['B2']);
+        //             setTimeout(() => {
+        //                 expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe('47782');
+        //                 expect(helper.getInstance().sheets[0].rows[1].cells[1].format).toBe('dd/MM/yyyy');
+        //                 expect(helper.invoke('getCell', [1, 1]).textContent).toBe('26/10/2030');
+        //                 helper.getElement('#' + helper.id + '_text_align').click();
+        //                 setTimeout(() => {
+        //                     expect(helper.getElement('#' + helper.id + '_text_align-popup li:nth-child(3)').classList).toContain('e-selected');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54678->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ selectedRange: 'A1' }], allowAutoFill: false
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Autofill option is visible when set allowAutoFill API as false->', (done: Function) => {
+        //         expect(helper.getElementFromSpreadsheet('.e-autofill')).toBeNull();
+        //         done();
+        //     });
+        // });
+        // describe('EJ2-54759->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ rows: [{ cells: [{ value: '1' }] }] }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('While using autoFill for formula applied cell, spreadsheet gets unresponsive->', (done: Function) => {
+        //         helper.edit('A2', '=A1*2');
+        //         expect(helper.getInstance().sheets[0].rows[1].cells[0].formula).toBe('=A1*2');
+        //         expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('2');
+        //         helper.invoke('selectRange', ['A2']);
+        //         setTimeout(() => {
+        //             helper.invoke('autoFill', ['A3:A10', 'A2', 'Down', 'CopyCells']);
+        //             expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('2');
+        //             expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe('2');
+        //             expect(helper.getInstance().sheets[0].rows[9].cells[0].value).toBe('2');
+        //             done();
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54085->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to fix the dynamic data binding issue and the updateRange method issue.->', (done: Function) => {
+        //         const spreadsheet: Spreadsheet = helper.getInstance();
+        //         spreadsheet.insertSheet([{ index: 1, name: 'Inserted Sheet', ranges: [{ dataSource: defaultData }] }]);
+        //         setTimeout(() => {
+        //             helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
+        //             setTimeout(() => {
+        //                 expect(spreadsheet.sheets[1].rows[0].cells[0].value.toString()).toBe('Item Name');
+        //                 spreadsheet.updateRange({ dataSource: filterData, startCell: "A1"}, 2)
+        //                 spreadsheet.refresh();
+        //                 setTimeout(() => {
+        //                     expect(spreadsheet.getCell(0,0).textContent).toBe('10248');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54716->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('getDisplayText not properly working for customized number format', (done: Function) => {
+        //         const spreadsheet: Spreadsheet = helper.getInstance();
+        //         helper.invoke('numberFormat', ['@', 'A1:D10']);
+        //         helper.edit('A2', '121212');
+        //         helper.invoke('numberFormat', ['#,###.00 ;(#,###.00);"-"', 'A2']);
+        //         setTimeout(() => {
+        //             expect(helper.invoke('getDisplayText', [spreadsheet.sheets[0].rows[0].cells[0]])).toEqual('Item Name');
+        //             expect(helper.invoke('getDisplayText', [spreadsheet.sheets[0].rows[1].cells[0]])).toEqual('121,212.00 ');
+        //             done();
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54569->', () => {
+        //     let count: number = 0;
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: [{ 'Test': '1', 'Test1': '2' }] }] }],
+        //             cellSave: (args: CellSaveEventArgs): void => {
+        //                 count++;
+        //                 if (count === 1) { // Delete cell details
+        //                     expect(args.address).toEqual('Sheet1!A1');
+        //                     expect(args.oldValue).toEqual('Test');
+        //                     expect(args.value as any).toEqual('');
+        //                 }
+        //                 if (count === 2) { // undo cell details
+        //                     expect(args.address).toEqual('Sheet1!A1');
+        //                     expect(args.oldValue).toBeUndefined;
+        //                     expect(args.value as any).toEqual('Test');
+        //                 }
+        //                 if (count === 3) { // redo cell details
+        //                     expect(args.address).toEqual('Sheet1!A1');
+        //                     expect(args.oldValue).toEqual('Test');
+        //                     expect(args.value as any).toEqual('');
+        //                 }
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('cellsave event is not triggered for delete, undoredo and fill options->', (done: Function) => {
+        //         helper.triggerKeyNativeEvent(46);
+        //         setTimeout(() => {
+        //             helper.getElement('#' + helper.id + '_undo').click();
+        //             setTimeout(() => {
+        //                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Test');
+        //                 helper.getElement('#' + helper.id + '_redo').click();
+        //                 setTimeout(() => {
+        //                     expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54849->', () => {
+        //     let count: number = 0;
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: [{ 'Test': '1' }] }] }],
+        //             cellSave: (args: CellSaveEventArgs): void => {
+        //                 count++;
+        //                 if (count === 1) { // Paste cell details
+        //                     expect(args.address).toEqual('Sheet1!B1');
+        //                     expect(args.oldValue).toEqual('');
+        //                     expect(args.value as any).toEqual('Test');
+        //                 }
+        //                 if (count === 2) { // undo cell details
+        //                     expect(args.address).toEqual('Sheet1!B1');
+        //                     expect(args.oldValue).toEqual('Test');
+        //                     expect(args.value as any).toEqual('');
+        //                 }
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Cell Save event not triggered on undo->', (done: Function) => {
+        //         helper.getElement('#' + helper.id + '_copy').click();
+        //         setTimeout(() => {
+        //             helper.invoke('selectRange', ['B1']);
+        //             helper.getElement('#' + helper.id + '_paste').click();
+        //             setTimeout(() => {
+        //                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Test');
+        //                 helper.getElement('#' + helper.id + '_undo').click();
+        //                 setTimeout(() => {
+        //                     expect(helper.invoke('getCell', [0, 1]).textContent).toBe('');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-55119->', () => {
+        //     let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //             actionBegin: (args: any): void => {
+        //                 if (args.action === 'filter') { actionBeginCalled = true; }
+        //             },
+        //             actionComplete: (args: any): void => {
+        //                 if (args.action === 'filter') { actionCompleteCalled = true; }
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('On Redo Actioncomplete is triggered before the action is performed->', (done: Function) => {
+        //         expect(actionBeginCalled).toBeFalsy();
+        //         expect(actionCompleteCalled).toBeFalsy();
+        //         helper.getElement('#' + helper.id + '_sorting').click();
+        //         helper.getElement('#' + helper.id + '_applyfilter').click();
+        //         expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+        //         helper.getElement('#' + helper.id + '_undo').click();
+        //         setTimeout(() => {
+        //             expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+        //             helper.getElement('#' + helper.id + '_redo').click();
+        //             setTimeout(() => {
+        //                 expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+        //                 expect(actionBeginCalled).toBeTruthy();
+        //                 expect(actionCompleteCalled).toBeTruthy();
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-55211->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({ }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('While loading JSON data with the openFromJson method, it does not load anything ->', (done: Function) => {
+        //         const json: object = { Workbook: { sheets: [{ frozenColumns: 2, frozenRows: 3 ,
+        //             columns: [{ width: 100 }, { width: 200 },{ width: 120 },{ width: 120 },{ width: 120 },{ width: 120 },{ width: 120 },],
+        //             ranges: [{ dataSource: defaultData }] }], selectedRange: 'A1' }
+        //         }
+        //         const spreadsheet: Spreadsheet = helper.getInstance();
+        //         spreadsheet.openFromJson({ file: json});
+        //         setTimeout(() => {
+        //             expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+        //             done();
+        //         });
+        //     });
+        // });
         describe('SF-380690, SF-380608 ->', () => {
             beforeEach((done: Function) => {
                 const rows: RowModel[] = [];

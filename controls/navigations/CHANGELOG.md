@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.44 (2022-08-16)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#F176651` - The issue with "Checkbox state is not maintained properly for multilevel nodes in the TreeView component" has been resolved.
+
 ## 20.2.39 (2022-07-19)
 
 ### Tab

@@ -130,9 +130,10 @@ describe('Render rowtemplate', () => {
     it('Render the row template', () => {
         expect(gridObj.getRows()[0].querySelectorAll('td')[2].classList.contains("details")).toBe(true);
      });
-     it('onpropertychange set null value', function () {
+     it('onpropertychange set null value', function (done: Function) {
         gridObj.rowTemplate = null;
         expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
+        done();
     });
     it('onpropertychange alt id', function (done: Function) {
         dataBound = (args?: Object): void => {

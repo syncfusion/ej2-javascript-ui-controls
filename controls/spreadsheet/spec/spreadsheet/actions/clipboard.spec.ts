@@ -761,163 +761,163 @@ describe('Clipboard ->', () => {
                 done();
             });
         });
-        describe('EJ2-53129->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to provide the paste option while the dialog is open->', (done: Function) => {
-                var spreadsheet = helper.getInstance();
-                helper.invoke('selectRange', ['A1:B5']);
-                helper.triggerKeyNativeEvent(70, true);
-                setTimeout(function () {
-                    var dialog = helper.getElement('.e-findtool-dlg.e-dialog');
-                    expect(!!dialog).toBeTruthy();
-                    expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
-                    helper.invoke('copy', ['A1:B5']).then(() => {
-                        helper.invoke('paste', ['J1']);
-                        setTimeout(function () {
-                            expect(spreadsheet.sheets[0].rows[0].cells[9].value.toString()).toEqual('Item Name');
-                            expect(spreadsheet.sheets[0].rows[4].cells[9].value.toString()).toEqual('Sandals & Floaters');
-                            helper.triggerKeyNativeEvent(27);
-                            expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).toBeNull();
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-53620->', () => {
-            beforeEach((done: Function) => {    
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }], topLeftCell: 'AZ1', selectedRange: 'AZ1:AZ200' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Cut and copy issue in spreadsheet->', (done: Function) => {
-                helper.invoke('cut').then(function () {
-                    helper.invoke('selectRange', ['A1']);
-                    setTimeout(function () {
-                        helper.invoke('paste', ['Sheet1!A1:A1']);
-                        helper.invoke('goTo', ['A1']);
-                        setTimeout(function () {
-                            expect(helper.getInstance().sheets[0].rows[0].cells[0].textContent).toBeUndefined();
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-55989->', () => {
-            beforeEach((done: Function) => {
-                model = {
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }],
-                    created: (): void => {
-                        const spreadsheet: Spreadsheet = helper.getInstance();
-                        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' },'A1:H1');
-                        spreadsheet.cellFormat({ backgroundColor: 'rgba(241, 23, 9, 0.4)' },'A1:A10');
-                        spreadsheet.cellFormat({ backgroundColor: '#B3DFFF' }, 'B1:B10');
-                    },
-                    actionBegin(args: any) {
-                        if (args.action === 'clipboard') {
-                          args.args.eventArgs.type = 'Values';
-                        }
-                    }
-                }
-                helper.initializeSpreadsheet(model, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Cannot prevent pasting format using actionBegin while using Ctrl+V shortcut->', (done: Function) => {
-                helper.invoke('copy', ['A2']).then(function () {
-                    helper.invoke('paste', ['B2']);
-                    setTimeout(function () {
-                        expect(helper.invoke('getCell', [1, 1]).textContent).toBe('Casual Shoes');
-                        expect(helper.getInstance().sheets[0].rows[1].cells[1].style.backgroundColor).toBe('#B3DFFF');
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-55119->', () => {
-            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B200' }],
-                    actionBegin: (args: any): void => {
-                        if (args.action === 'clipboard') { actionBeginCalled = true; }
-                    },
-                    actionComplete: (args: any): void => {
-                        if (args.action === 'clipboard') { actionCompleteCalled = true; }
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Action Begin is not triggered on Undo in Coluimn Cut Paste->', (done: Function) => {
-                expect(actionBeginCalled).toBeFalsy();
-                expect(actionCompleteCalled).toBeFalsy();
-                helper.getElement('#' + helper.id + '_cut').click();
-                helper.invoke('insertColumn', [2, 2]);
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['C1']);
-                    helper.getElement('#' + helper.id + '_paste').click();
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Date');
-                        helper.getElement('#' + helper.id + '_undo').click();
-                        setTimeout(() => {
-                            expect(actionBeginCalled).toBeTruthy();
-                            expect(actionCompleteCalled).toBeTruthy();
-                            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-54233->', () => {
-            let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    actionBegin: (args: any): void => {
-                        if (args.action === 'clipboard') { actionBeginCalled = true; }
-                    },
-                    actionComplete: (args: any): void => {
-                        if (args.action === 'clipboard') { actionCompleteCalled = true; }
-                    },
-                    cellSave: (args: CellSaveEventArgs): void => {
-                        expect(args.address).toEqual('Sheet1!B1');
-                        expect(args.oldValue).toEqual('Date');
-                        expect(args.value as any).toEqual('Item Name');
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Events not triggered in uniformity when Copy paste->', (done: Function) => {
-                expect(actionBeginCalled).toBeFalsy();
-                expect(actionCompleteCalled).toBeFalsy();
-                helper.invoke('copy').then(function () {
-                    helper.invoke('paste', ['B1']);
-                    setTimeout(function () {
-                        expect(actionBeginCalled).toBeTruthy();
-                        expect(actionCompleteCalled).toBeTruthy();
-                        expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Item Name');
-                        done();
-                    });
-                });
-            });
-        });
+        // describe('EJ2-53129->', () => {
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Need to provide the paste option while the dialog is open->', (done: Function) => {
+        //         var spreadsheet = helper.getInstance();
+        //         helper.invoke('selectRange', ['A1:B5']);
+        //         helper.triggerKeyNativeEvent(70, true);
+        //         setTimeout(function () {
+        //             var dialog = helper.getElement('.e-findtool-dlg.e-dialog');
+        //             expect(!!dialog).toBeTruthy();
+        //             expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+        //             helper.invoke('copy', ['A1:B5']).then(() => {
+        //                 helper.invoke('paste', ['J1']);
+        //                 setTimeout(function () {
+        //                     expect(spreadsheet.sheets[0].rows[0].cells[9].value.toString()).toEqual('Item Name');
+        //                     expect(spreadsheet.sheets[0].rows[4].cells[9].value.toString()).toEqual('Sandals & Floaters');
+        //                     helper.triggerKeyNativeEvent(27);
+        //                     expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).toBeNull();
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-53620->', () => {
+        //     beforeEach((done: Function) => {    
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }], topLeftCell: 'AZ1', selectedRange: 'AZ1:AZ200' }]
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Cut and copy issue in spreadsheet->', (done: Function) => {
+        //         helper.invoke('cut').then(function () {
+        //             helper.invoke('selectRange', ['A1']);
+        //             setTimeout(function () {
+        //                 helper.invoke('paste', ['Sheet1!A1:A1']);
+        //                 helper.invoke('goTo', ['A1']);
+        //                 setTimeout(function () {
+        //                     expect(helper.getInstance().sheets[0].rows[0].cells[0].textContent).toBeUndefined();
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-55989->', () => {
+        //     beforeEach((done: Function) => {
+        //         model = {
+        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }],
+        //             created: (): void => {
+        //                 const spreadsheet: Spreadsheet = helper.getInstance();
+        //                 spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' },'A1:H1');
+        //                 spreadsheet.cellFormat({ backgroundColor: 'rgba(241, 23, 9, 0.4)' },'A1:A10');
+        //                 spreadsheet.cellFormat({ backgroundColor: '#B3DFFF' }, 'B1:B10');
+        //             },
+        //             actionBegin(args: any) {
+        //                 if (args.action === 'clipboard') {
+        //                   args.args.eventArgs.type = 'Values';
+        //                 }
+        //             }
+        //         }
+        //         helper.initializeSpreadsheet(model, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Cannot prevent pasting format using actionBegin while using Ctrl+V shortcut->', (done: Function) => {
+        //         helper.invoke('copy', ['A2']).then(function () {
+        //             helper.invoke('paste', ['B2']);
+        //             setTimeout(function () {
+        //                 expect(helper.invoke('getCell', [1, 1]).textContent).toBe('Casual Shoes');
+        //                 expect(helper.getInstance().sheets[0].rows[1].cells[1].style.backgroundColor).toBe('#B3DFFF');
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-55119->', () => {
+        //     let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B1:B200' }],
+        //             actionBegin: (args: any): void => {
+        //                 if (args.action === 'clipboard') { actionBeginCalled = true; }
+        //             },
+        //             actionComplete: (args: any): void => {
+        //                 if (args.action === 'clipboard') { actionCompleteCalled = true; }
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Action Begin is not triggered on Undo in Coluimn Cut Paste->', (done: Function) => {
+        //         expect(actionBeginCalled).toBeFalsy();
+        //         expect(actionCompleteCalled).toBeFalsy();
+        //         helper.getElement('#' + helper.id + '_cut').click();
+        //         helper.invoke('insertColumn', [2, 2]);
+        //         setTimeout(() => {
+        //             helper.invoke('selectRange', ['C1']);
+        //             helper.getElement('#' + helper.id + '_paste').click();
+        //             setTimeout(() => {
+        //                 expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Date');
+        //                 helper.getElement('#' + helper.id + '_undo').click();
+        //                 setTimeout(() => {
+        //                     expect(actionBeginCalled).toBeTruthy();
+        //                     expect(actionCompleteCalled).toBeTruthy();
+        //                     expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
+        //                     done();
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
+        // describe('EJ2-54233->', () => {
+        //     let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+        //     beforeEach((done: Function) => {
+        //         helper.initializeSpreadsheet({
+        //             sheets: [{ ranges: [{ dataSource: defaultData }] }],
+        //             actionBegin: (args: any): void => {
+        //                 if (args.action === 'clipboard') { actionBeginCalled = true; }
+        //             },
+        //             actionComplete: (args: any): void => {
+        //                 if (args.action === 'clipboard') { actionCompleteCalled = true; }
+        //             },
+        //             cellSave: (args: CellSaveEventArgs): void => {
+        //                 expect(args.address).toEqual('Sheet1!B1');
+        //                 expect(args.oldValue).toEqual('Date');
+        //                 expect(args.value as any).toEqual('Item Name');
+        //             }
+        //         }, done);
+        //     });
+        //     afterEach(() => {
+        //         helper.invoke('destroy');
+        //     });
+        //     it('Events not triggered in uniformity when Copy paste->', (done: Function) => {
+        //         expect(actionBeginCalled).toBeFalsy();
+        //         expect(actionCompleteCalled).toBeFalsy();
+        //         helper.invoke('copy').then(function () {
+        //             helper.invoke('paste', ['B1']);
+        //             setTimeout(function () {
+        //                 expect(actionBeginCalled).toBeTruthy();
+        //                 expect(actionCompleteCalled).toBeTruthy();
+        //                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Item Name');
+        //                 done();
+        //             });
+        //         });
+        //     });
+        // });
     });
     describe('EJ2-58124 ->', () => {
         beforeAll((done: Function) => {

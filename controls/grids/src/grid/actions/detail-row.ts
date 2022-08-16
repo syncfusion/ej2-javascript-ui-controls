@@ -98,8 +98,10 @@ export class DetailRow {
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {
                     const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
+                    const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                        this.parent.parentDetails.parentInstObj.isReact;
                     const detailTemplateID: string = gObj.element.id + 'detailTemplate';
-                    if (isReactCompiler) {
+                    if (isReactCompiler || isReactChild) {
                         gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
                         this.parent.renderTemplates();
                     } else {
@@ -119,6 +121,12 @@ export class DetailRow {
                         parentKeyFieldValue: data[gObj.childGrid.queryString],
                         parentRowData: data
                     };
+                    if (gObj.isReact) {
+                        childGrid.parentDetails.parentInstObj = gObj;
+                    }
+                    else if (gObj.parentDetails && gObj.parentDetails.parentInstObj && gObj.parentDetails.parentInstObj.isReact) {
+                        childGrid.parentDetails.parentInstObj = gObj.parentDetails.parentInstObj;
+                    }
                     (<{ isLegacyTemplate?: boolean }>childGrid).isLegacyTemplate = gObj.isReact
                         || (<{ isLegacyTemplate?: boolean }>gObj).isLegacyTemplate;
                     if (gObj.isPrinting) {
@@ -330,10 +338,10 @@ export class DetailRow {
             if (this.parent.isEdit) { return; }
             // eslint-disable-next-line no-case-declarations
             let element: HTMLElement = this.focus.getFocusedElement();
-            if (element.classList.contains('e-icon-grightarrow') || element.classList.contains('e-icon-gdownarrow')) {
+            if (element && (element.classList.contains('e-icon-grightarrow') || element.classList.contains('e-icon-gdownarrow'))) {
                 element = element.parentElement;
             }
-            if (!element.classList.contains('e-detailrowcollapse') &&
+            if (element && !element.classList.contains('e-detailrowcollapse') &&
                 !element.classList.contains('e-detailrowexpand')) { break; }
             this.toogleExpandcollapse(element);
             break;

@@ -1801,6 +1801,52 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+        
+        describe('Backspace key press at the start of the list when no content is previous to the list', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ol><li id="firstli">first</li><li>second</li><li>third﻿﻿<br></li></ol><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' Backspace key press at start of the normal list', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint((startNode.childNodes[0] as Element), 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelectorAll('p').length === 1).toBe(true);
+                (editorObj as any).editorKeyUp(keyBoardEvent);
+                expect(editNode.querySelectorAll('.removeList').length === 0).toBe(true);
+                innerValue = `<div id="content-edit"><ol><li id="firstli">sdvsdv<ol><li>sdvsdv<ol><li>svdsdvsd</li></ol></li></ol></li><li>vsdvsdv﻿﻿<br></li></ol><div>`;
+            });
+
+            it(' Backspace key press at start of the nested list', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint((startNode.childNodes[0] as Element), 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelectorAll('p').length === 1).toBe(true);
+                (editorObj as any).editorKeyUp(keyBoardEvent);
+                expect(editNode.querySelectorAll('.removeList').length === 0).toBe(true);
+                innerValue = `<div id="content-edit"><ul><li id="firstli"><br><ol><li id="sublist">sublist</li><li>sublist 2﻿﻿<br></li></ol></li></ul><div>`;
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
 
         describe('Backspace key press testing in list', () => {
             let elem: HTMLElement;

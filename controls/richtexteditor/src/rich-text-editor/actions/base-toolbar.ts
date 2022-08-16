@@ -16,7 +16,12 @@ import { isNullOrUndefined, extend, EmitType } from '@syncfusion/ej2-base';
  */
 export class BaseToolbar {
     public toolbarObj: tool;
-    protected parent: IRichTextEditor;
+    /**
+     *
+     * @hidden
+     * @private
+     */
+    public parent: IRichTextEditor;
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;

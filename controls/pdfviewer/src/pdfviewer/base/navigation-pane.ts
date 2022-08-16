@@ -498,6 +498,7 @@ export class NavigationPane {
                     }
                 }
             }
+            args.target.value = "";
         }
     };
     /**

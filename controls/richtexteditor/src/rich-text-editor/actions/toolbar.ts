@@ -531,6 +531,13 @@ export class Toolbar {
         }
     }
 
+    private moduleDestroy(): void {
+        this.parent = null;
+        this.baseToolbar.parent = null;
+        this.toolbarActionModule.parent = null;
+        this.dropDownModule.parent = null;
+    }
+
     private scrollHandler(e: NotifyArgs): void {
         if (!this.parent.inlineMode.enable) {
             if (this.parent.toolbarSettings.enableFloating && this.getDOMVisibility(this.tbElement)) {
@@ -639,6 +646,7 @@ export class Toolbar {
         this.parent.on(events.mouseDown, this.mouseDownHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseDownHandler, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
         if (!this.parent.inlineMode.enable && !isIDevice()) {
             this.parent.on(events.toolbarClick, this.toolbarClickHandler, this);
         }
@@ -664,6 +672,7 @@ export class Toolbar {
         this.parent.off(events.mouseDown, this.mouseDownHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseDownHandler);
         this.parent.off(events.bindCssClass, this.setCssClass);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
         if (!this.parent.inlineMode.enable && !isIDevice()) {
             this.parent.off(events.toolbarClick, this.toolbarClickHandler);
         }

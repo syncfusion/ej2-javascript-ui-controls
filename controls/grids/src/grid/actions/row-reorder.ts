@@ -165,8 +165,8 @@ export class RowDD {
         gObj.element.classList.add('e-rowdrag');
         this.dragTarget = trElement && (parentsUntil(target, 'e-grid').id === cloneElement.parentElement.id  ||
             parentsUntil(target, 'e-grid').id) ? this.isDropGrid.element.querySelector('.e-emptyrow') ? 0 :
-                parseInt(trElement.getAttribute(literals.ariaRowIndex), 10) : parseInt(
-                this.startedRow.getAttribute(literals.ariaRowIndex), 10);
+                parseInt(trElement.getAttribute('data-rowindex'), 10) : parseInt(
+                this.startedRow.getAttribute('data-rowindex'), 10);
 
         if (gObj.rowDropSettings.targetID) {
             if (!parentsUntil(target, 'e-grid') ||

@@ -2714,10 +2714,10 @@ export class PdfViewerBase {
         this.isFreeTextContextMenu = false;
         let isUpdate: boolean = false;
         this.isSelection = true;
+        let target: any = event.target;
         if (event.button === 0 && !this.getPopupNoteVisibleStatus() && !this.isClickedOnScrollBar(event, false)) {
             this.isViewerMouseDown = true;
             // eslint-disable-next-line
-            let target: any = event.target;
             if (event.detail === 1 && target.className !== 'e-pdfviewer-formFields' && target.className !== 'free-text-input') {
                 isUpdate = true;
                 this.focusViewerContainer(true);
@@ -2750,7 +2750,7 @@ export class PdfViewerBase {
                 this.viewerContainer.style.cursor = 'grabbing';
             }
         }
-        if (this.isShapeBasedAnnotationsEnabled()) {
+        if (this.isShapeBasedAnnotationsEnabled() && (this.isAnnotationDrawn || !(target.className === 'e-pv-page-container' || (target.className === 'foreign-object' && isNaN(this.activeElements.activePageID))))) {
             this.diagramMouseDown(event);
         }
         if (this.pdfViewer.annotation && this.pdfViewer.annotation.stickyNotesAnnotationModule.accordionContainer) {
@@ -3173,7 +3173,7 @@ export class PdfViewerBase {
             if (isSignatureFieldReadOnly && this.pdfViewer.annotation) {
                 this.pdfViewer.annotation.clearSelection();
             }
-            if (this.isShapeBasedAnnotationsEnabled() && !isSignatureFieldReadOnly) {
+            if (this.isShapeBasedAnnotationsEnabled() && !isSignatureFieldReadOnly && (this.isAnnotationDrawn || this.action !== "DrawTool")) {
                 this.diagramMouseUp(event);
                 if (this.pdfViewer.annotation) {
                     this.pdfViewer.annotation.onAnnotationMouseUp();
@@ -3539,7 +3539,7 @@ export class PdfViewerBase {
         if (this.isShapeBasedAnnotationsEnabled()) {
             let canvas: Rect;
             // eslint-disable-next-line max-len
-            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation ||  (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')) {
+            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')||  (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')||(event.target as HTMLElement).classList.contains('e-pdfviewer-signatureformfields')) && this.pdfViewer.annotation ) {
                 const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
                 const diagram: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
                 if (diagram) {
@@ -5547,9 +5547,10 @@ export class PdfViewerBase {
      */
     public getPageNumberFromClientPoint(clientPoint: Point): number {
         let pointX: number = clientPoint.x + this.viewerContainer.scrollLeft;
-        let pointY: number = clientPoint.y + this.viewerContainer.scrollTop;
+        let pointY: number = clientPoint.y + this.viewerContainer.scrollTop;  
         for (let i: number = 0; i < this.pageCount; i++) {
-            if (pointY < (this.pageSize[i].top + this.pageSize[i].height)) {
+            let pageTop: number = this.pageSize[i].height + this.viewerContainer.scrollTop;
+            if (pointY < (this.pageSize[i].top + pageTop)) {
                 let viewerContainerBounds: DOMRect | ClientRect = this.getElement('_pageViewContainer').getBoundingClientRect();
                 let pageLeft: number = ((viewerContainerBounds.width - this.pageSize[i].width) / 2) + (viewerContainerBounds as DOMRect).x;
                 let verticalScrollPosition: number = 0;
@@ -5561,10 +5562,12 @@ export class PdfViewerBase {
                 if (verticalScrollPosition > 0) {
                     if (this.pageSize[i] != null) {
                         const pageHeight: number = this.getPageHeight(i);
-                        if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[i].width)))) {
-                            return -1;
+                        if(pageLeft >= 0){
+                            if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[i].width)))) {
+                                return -1;
+                            }
                         }
-                        if (verticalScrollPosition <= (this.getPageTop(i) + this.pageSize[i].height)) {
+                        if (verticalScrollPosition <= (this.getPageTop(i) + pageTop)) {
                             return i + 1;
                         }
                     }
@@ -6999,7 +7002,13 @@ export class PdfViewerBase {
             if ((e.target as HTMLElement).classList.contains('e-pv-hyperlink')) {
                 offsetX = (e as PointerEvent).offsetX + (e.target as HTMLElement).offsetLeft;
                 offsetY = (e as PointerEvent).offsetY + (e.target as HTMLElement).offsetTop;
-            } else if ((e.target as HTMLElement).classList.contains('e-pv-text') && currentTarget) {
+            } else if (((e.target as HTMLElement).classList.contains('e-pv-text')|| ((e.target as HTMLElement).classList.contains('e-pdfviewer-formFields')&& (e.target as HTMLElement).attributes[0].nodeValue!="text")||(e.target as HTMLElement).classList.contains('e-pdfviewer-signatureformfields')) && currentTarget) {
+                const targetParentRect: ClientRect = currentTarget.getBoundingClientRect();
+                offsetX = (e as PointerEvent).clientX - targetParentRect.left;
+                offsetY = (e as PointerEvent).clientY - targetParentRect.top;
+                // eslint-disable-next-line
+            } else if ((e.target as HTMLElement).classList.contains('e-pdfviewer-formFields')&& (e.target as HTMLElement).attributes[0].nodeValue=="text") {
+                currentTarget=(e.target as HTMLElement).parentElement.parentElement;
                 const targetParentRect: ClientRect = currentTarget.getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
@@ -7689,7 +7698,7 @@ export class PdfViewerBase {
                             this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions, viewerPositions);
                     }
                 } 
-                else if(!this.pdfViewer.formDesignerModule && event.target.classList.contains('e-pdfviewer-formFields'))
+                else if(!this.pdfViewer.formDesignerModule && (event.target.classList.contains('e-pdfviewer-formFields')||event.target.classList.contains('e-pdfviewer-signatureformfields')))
                 {
                     let pageIndex: any = this.pdfViewer.annotation.getEventPageNumber(event);
                     let currentPosition: any = this.getMousePosition(event);

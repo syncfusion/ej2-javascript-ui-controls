@@ -845,7 +845,7 @@ export class TablePropertiesDialog {
         //const child4: HTMLDivElement = createElement('div') as HTMLDivElement;
         //const controlDiv: HTMLDivElement = createElement('div', {className: 'e-de-subcontainer-right'}) as HTMLDivElement;
         const rowHeightType: HTMLSelectElement = createElement('select', {
-            innerHTML: '<option value="At least">' + localValue.getConstant('At least')
+            innerHTML: '<option value="AtLeast">' + localValue.getConstant('At least')
                 + '</option><option value="Exactly">' + localValue.getConstant('Exactly') + '</option>'
         }) as HTMLSelectElement;
         // const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('span', {
@@ -957,11 +957,7 @@ export class TablePropertiesDialog {
      * @returns {void}
      */
     public onRowHeightTypeChange(): void {
-        if (this.rowHeightType.value == 'At least') {
-            this.rowFormat.heightType = 'AtLeast';
-        } else if (this.rowHeightType.value == 'Exactly') {
-            this.rowFormat.heightType = 'Exactly';
-        }
+        this.rowFormat.heightType = this.rowHeightType.text as HeightType;
     }
     /**
      * @private

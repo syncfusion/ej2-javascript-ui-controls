@@ -799,7 +799,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
     }
-    private onPopupShown(): void {
+    private onPopupShown(e?: MouseEvent | KeyboardEventArgs | TouchEvent | Object): void {
         if (Browser.isDevice && (this.mode === 'CheckBox' && this.allowFiltering)) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: this = this;
@@ -810,7 +810,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             history.pushState({}, '');
         }
         const animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
-        const eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+        const eventArgs: PopupEventArgs = { popup: this.popupObj, event: e, cancel: false, animation: animModel };
         this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
             if (!eventArgs.cancel) {
                 this.focusAtFirstListItem();
@@ -1000,8 +1000,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     private updateActionList(
         ulElement: HTMLElement,
-        list: { [key: string]: Object }[] | number[] | boolean[] | string[],
-        e?: Object, isUpdated?: boolean): void {
+        list: { [key: string]: Object }[] | number[] | boolean[] | string[], e?: Object, isUpdated?: boolean): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
         if (this.mode === 'CheckBox' && this.showSelectAll) {
             this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
@@ -1046,7 +1045,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.renderPopup();
         if (this.beforePopupOpen) {
             this.beforePopupOpen = false;
-            this.onPopupShown();
+            this.onPopupShown(e);
         }
     }
     private refreshSelection(): void {
@@ -1339,7 +1338,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (!this.isPopupOpen() &&
             (this.openOnClick || (this.showDropDownIcon && e.target && (<HTMLElement>e.target).className === dropdownIcon))) {
-                this.showPopup();
+                this.showPopup(e);
             } else {
                 this.hidePopup(e);
                 if (this.mode === 'CheckBox') {
@@ -1635,7 +1634,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             break;
         case 40:
             if (!this.isPopupOpen()) {
-                this.showPopup();
+                this.showPopup(e);
                 e.preventDefault();
             }
             break;
@@ -2809,7 +2808,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.keyCode = e.keyCode;
         }
         if (!this.isPopupOpen() && this.openOnClick) {
-            this.showPopup();
+            this.showPopup(e);
         }
         this.openClick(e);
         if (this.checkTextLength() && !this.allowFiltering && !isNullOrUndefined(e) && (e.keyCode !== 8)) {
@@ -2960,7 +2959,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             || this.list.querySelector('.e-ul') && this.list.querySelector('.e-ul').childElementCount === 0)) {
             isEmptyData = true;
         }
-        super.render(isEmptyData);
+        super.render(null, isEmptyData);
         this.unwireListEvents();
         this.wireListEvents();
     }
@@ -4209,7 +4208,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      *
      * @returns {void}
      */
-    public showPopup(): void {
+    public showPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (!this.enabled) {
             return;
         }
@@ -4218,7 +4217,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!args.cancel) {
                 if (!this.ulElement) {
                     this.beforePopupOpen = true;
-                    super.render();
+                    super.render(e);
                     if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
                         this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                     }
@@ -4234,7 +4233,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.beforePopupOpen = false;
                     return;
                 }
-                this.onPopupShown();
+                this.onPopupShown(e);
             }
         });
     }

@@ -5975,7 +5975,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const data: string = this.getLocalData();
         if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
             const dataObj: Grid = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
-            if (this.enableVirtualization) {
+            if (this.enableVirtualization && dataObj.pageSettings) {
                 dataObj.pageSettings.currentPage = 1;
             }
             const keys: string[] = Object.keys(dataObj);
@@ -6938,9 +6938,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public renderTemplates(): void {
-        const portals: string = 'portals';
-        this.notify('reactTemplateRender', this[portals]);
-        this.renderReactTemplates();
+        const isReactChild: boolean = this.parentDetails && this.parentDetails.parentInstObj && this.parentDetails.parentInstObj.isReact;
+        if (isReactChild) {
+            this.parentDetails.parentInstObj['portals'] = this.parentDetails.parentInstObj['portals']
+                .concat(this['portals']);
+            this.parentDetails.parentInstObj.renderTemplates();
+            this['portals'] = undefined;
+        }
+        else {
+            const portals: string = 'portals';
+            this.notify('reactTemplateRender', this[portals]);
+            this.renderReactTemplates();
+        }
     }
 
     /**

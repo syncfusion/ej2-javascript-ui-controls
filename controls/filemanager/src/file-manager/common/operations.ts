@@ -321,6 +321,8 @@ function readSuccess(parent: IFileManager, result: ReadArgs, event: string): voi
             parent.notify(events.selectionChanged, {});
         }
         onFailure(parent, result, 'read');
+        parent.setProperties({ path: parent.oldPath }, true);
+        parent.pathNames.pop();
     }
     if (parent.isDragDrop && parent.isDropEnd) {
         if (parent.droppedObjects.length !== 0) {

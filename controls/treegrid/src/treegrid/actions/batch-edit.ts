@@ -245,7 +245,8 @@ export class BatchEdit {
         !this.parent.editModule['isAddedRowByContextMenu'] && (this.parent.grid.selectedRowIndex === -1 || this.parent.editModule['batchEditModule'].isAdd)) {
             this.selectedIndex = this.parent.editModule['selectedIndex'];
             this.addRowIndex = this.parent.editModule['addRowIndex'];
-            this.addRowRecord = this.batchRecords.length ? this.batchRecords[this.selectedIndex] : this.parent.getCurrentViewRecords()[this.selectedIndex];
+            this.addRowRecord = this.batchRecords.length ? this.batchRecords[this.selectedIndex]
+                : this.parent.getCurrentViewRecords()[this.selectedIndex];
         }
         else {
             this.selectedIndex = this.parent.grid.selectedRowIndex;

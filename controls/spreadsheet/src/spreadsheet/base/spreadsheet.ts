@@ -2871,8 +2871,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} functionName - Custom function name
      * @returns {void} - To add custom function.
      */
-    public addCustomFunction(functionHandler: string | Function, functionName?: string): void {
-        super.addCustomFunction(functionHandler, functionName);
+    public addCustomFunction(functionHandler: string | Function, functionName?: string, formulaDescription?: string ): void {
+        super.addCustomFunction(functionHandler, functionName, formulaDescription);
         this.notify(refreshFormulaDatasource, null);
     }
 }

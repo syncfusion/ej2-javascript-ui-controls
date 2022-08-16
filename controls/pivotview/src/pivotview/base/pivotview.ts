@@ -5314,8 +5314,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                     : this.actionObj.actionName == events.removeRecord ? events.recordRemoved : (this.actionObj.actionName == events.pngExport) ? events.pngExported : (this.actionObj.actionName == events.jpegExport) ? events.jpegExported
                                         : (this.actionObj.actionName == events.svgExport) ? events.svgExported : (this.actionObj.actionName == events.pdfExport) ? events.pdfExported : (this.actionObj.actionName == events.csvExport) ? events.csvExported : (this.actionObj.actionName == events.excelExport) ? events.excelExported : this.actionObj.actionName == events.windowResize ? events.windowResized
                                             : this.actionObj.actionName == events.saveCurrentReport ? events.reportSaved : (this.actionObj.actionName == events.addNewReport) ? events.newReportAdded : (this.actionObj.actionName == events.saveAsCurrentReport) ? events.reportReSaved
-                                                : (this.actionObj.actionName == events.renameCurrentReport) ? events.reportRenamed : (this.actionObj.actionName == events.renameCurrentReport) ? events.reportRenamed : (this.actionObj.actionName == events.horizontalScroll) ? events.horizontalScrolled
-                                                    : (this.actionObj.actionName == events.verticalScroll) ? events.verticalScrolled : this.actionObj.actionName;
+                                                : (this.actionObj.actionName == events.renameCurrentReport) ? events.reportRenamed : (this.actionObj.actionName == events.horizontalScroll) ? events.horizontalScrolled : (this.actionObj.actionName == events.verticalScroll) ? events.verticalScrolled : this.actionObj.actionName;
         return actionName;
     }
 
