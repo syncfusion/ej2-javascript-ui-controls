@@ -22,6 +22,8 @@
 
 - `I393078` - Now, the drag and drop between the cards will work fine with out any flickering.
 
+- `#F176345` - Now, the Sort Comparer Function's API link will work properly.
+
 ## 20.2.38 (2022-07-12)
 
 ### Kanban

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.2.45 (2022-08-23)
+
+### Tree Grid
+
+#### Bug fixes
+
+- `#I387291` - Resolved no records to display when we update the datasource in async way(using Observables).
+- `#F174814` , `#I395357` - Resolved expand/collapse icon not visible while initial rendering(using Observables).
+
 ## 20.2.44 (2022-08-16)
 
 ### Tree Grid

@@ -491,3 +491,42 @@ describe('Accept delete revisions of rows in splitted table', () => {
         expect(container.revisions.length).toBe(7);
     });
 });
+describe('Insert bookmark inside table and handle delete', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Insert bookmark inside table and accept revision', () => {
+        console.log('Insert bookmark inside table and accept revision');
+        container.openBlank();
+        container.editor.insertTable(1,1);
+        container.editor.insertBookmark('a1');
+        container.enableTrackChanges = true;
+        container.editor.handleEnterKey();
+        let paragraphLength: number = (((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets.length;
+        expect(paragraphLength).toBe(2);
+        container.selection.handleUpKey();
+        container.editor.delete();
+        let paraLength: number = (((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets.length;
+        expect(paraLength).toBe(1);
+        expect(container.revisions.length).toBe(0);
+    });
+});

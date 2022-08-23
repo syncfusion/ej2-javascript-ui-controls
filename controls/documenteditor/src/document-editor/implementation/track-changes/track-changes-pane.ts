@@ -363,7 +363,7 @@ export class TrackChangesPane {
                 isUpdate = true;
             }
         }
-        if (isNoChangeDiv && revisionCount > 0) {
+        if (isNoChangeDiv || revisionCount > 0) {
             isUpdate = true;
         }
         return isUpdate;

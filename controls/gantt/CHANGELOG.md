@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.45 (2022-08-23)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I389542` - Filter records with hierarchy mode as both shows no record to display issue has been fixed.
+
 ## 20.2.44 (2022-08-16)
 
 ### Gantt

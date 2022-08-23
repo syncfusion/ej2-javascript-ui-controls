@@ -1657,6 +1657,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private initPrivateVariable(): void {
         this.animateSeries = true;
         this.delayRedraw = false;
+        this.dragY = null;
         this.horizontalAxes = [];
         this.verticalAxes = [];
         this.refreshAxis();
@@ -4213,6 +4214,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
                 if ((this as any).isReact) { this.clearTemplate(); }
+                this.dragY = null;
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this.isBlazor ? {} : this });

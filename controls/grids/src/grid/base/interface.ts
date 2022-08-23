@@ -26,7 +26,7 @@ import { NumericTextBoxModel, MaskedTextBoxModel } from '@syncfusion/ej2-inputs'
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage } from '@syncfusion/ej2-pdf-export';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
 import { Matrix, FocusStrategy } from '../services/focus-strategy';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
@@ -2584,6 +2584,8 @@ export interface PdfContentStyle {
     hAlign?: PdfHAlign;
     /** Defines the vertical alignment. */
     vAlign?: PdfVAlign;
+    /** Defines the alignment of header */
+    stringFormat?: PdfStringFormat;
 }
 /**
  * Defines the context menu item model.

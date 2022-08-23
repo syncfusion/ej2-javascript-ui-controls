@@ -60,7 +60,7 @@ export class KeyboardNavigation {
         else if (target.id === `${this.parent.element.id}_File`) {
             focus(this.parent.element);
         }
-
+        if (this.parent.selectionSettings.mode === 'None') { return; }
         let isNavigate: boolean;
         let scrollIdxes: number[];
         let scrollToCell: boolean;

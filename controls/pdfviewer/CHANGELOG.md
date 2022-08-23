@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 20.2.45 (2022-08-23)
+
+- `#SF-389679` -  Now ,form fields color should not be changed on read only mode.
+- `#SF-390997`,`#SF-392717`,`#SF-394607` - The signature is now displayed and properly positioned in read only mode the document that was downloaded.
+- `#SF-383430` -   Now , form fields does not generate duplicates while using CTRL c and CRTL v.
+- `#SF-394763` -   Now , form fields is not deleted while trying to delete the text with delete key in property dialog.
+- `#SF-394979` -  The problem with continuously and programmatically adding a signature image disappearing has been resolved.
+- `#SF-397495` - Now the signature and Initial field is visible in chrome downloaded in the PDF Viewer.
+- `#F176687` - Now, markup text of Free Text annotation is proper for Arabic text.
+- `#SF-394979` -  The problem with continuously and programmatically adding a signature image disappearing has been resolved.
+- `#SF-386832` - Now if the `zoomMode` is set to `FitToWidth`, we can update or get the form field values properly.
+- `#SF-391994` - Now, The document download performance is improved if the PDF document contains above 1000 pages.
+
 ## 20.2.44 (2022-08-16)
 
 - `#SF-394274`,`#SF-394827` -  Now ,The signature and initial is updated after the 10th page.

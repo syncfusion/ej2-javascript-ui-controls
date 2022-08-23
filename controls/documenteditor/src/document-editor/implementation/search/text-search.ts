@@ -4,7 +4,7 @@ import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
-    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget
+    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters
 } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
@@ -19,8 +19,6 @@ export class TextSearch {
     private wordBefore: string = '\\b';
     private wordAfter: string = '\\b';
     private owner: DocumentEditor;
-    private isHeader: boolean = false;
-    private isFooter: boolean = false;
     private documentHelper: DocumentHelper;
 
     public constructor(owner: DocumentEditor) {
@@ -182,8 +180,6 @@ export class TextSearch {
                     break;
                 }
             }
-            result.isHeader = this.isHeader;
-            result.isFooter = this.isFooter;
             if (isFirstMatch) {
                 results.currentIndex = 0;
                 break;
@@ -253,20 +249,19 @@ export class TextSearch {
         if (isNullOrUndefined(section) || section.childWidgets.length === 0) {
             return;
         }
-        this.isHeader = false; this.isFooter = false;
+
         this.findInlineText(section, pattern, findOption, isFirstMatch, results, selectionEnd);
-        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            const headerWidget: HeaderFooterWidget = this.documentHelper.pages[i].headerWidgetIn as HeaderFooterWidget;
-            if (!isNullOrUndefined(headerWidget) && isNullOrUndefined(headerWidget.parentHeaderFooter)) {
-                this.isHeader = true; this.isFooter = false;
-                this.findInlineText(headerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
-            }
-        }
-        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            const footerWidget: HeaderFooterWidget = this.documentHelper.pages[i].footerWidgetIn as HeaderFooterWidget;
-            if (!isNullOrUndefined(footerWidget) && isNullOrUndefined(footerWidget.parentHeaderFooter)) {
-                this.isHeader = false; this.isFooter = true;
-                this.findInlineText(footerWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
+        
+        let headerFootersColletion: HeaderFooters[] = this.documentHelper.headersFooters;
+        for(let i: number = 0; i < headerFootersColletion.length; i++ ) {
+            let headerFooters: HeaderFooters = headerFootersColletion[i];
+            if (headerFooters) {
+                for (const index in headerFooters) {
+                    let headerFooter: HeaderFooterWidget = headerFooters[index];
+                    if (!isNullOrUndefined(headerFooter) && !isNullOrUndefined(headerFooter.page)) {
+                        this.findInlineText(headerFooter, pattern, findOption, isFirstMatch, results, selectionEnd);
+                    }
+                }
             }
         }
         if (isFirstMatch && !isNullOrUndefined(results) && results.length > 0) {

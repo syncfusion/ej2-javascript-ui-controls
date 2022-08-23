@@ -615,9 +615,18 @@ export class Group implements IAction {
             if (rowNodes[i].querySelectorAll('.e-recordplusexpand, .e-recordpluscollapse').length) {
                 row = rowNodes[i].querySelector(isExpand ? '.e-recordpluscollapse' : '.e-recordplusexpand');
                 if (row) {
-                    row.className = isExpand ? 'e-recordplusexpand' : 'e-recordpluscollapse';
-                    row.firstElementChild.className = isExpand ? 'e-icons e-gdiagonaldown e-icon-gdownarrow' :
-                        'e-icons e-gnextforward e-icon-grightarrow';
+                    if (isExpand) {
+                        row.className = 'e-recordplusexpand';
+                        row.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
+                        row.setAttribute('aria-expanded', 'true');
+                        row.firstElementChild.setAttribute('title', 'expanded');
+                    }
+                    else {
+                        row.className = 'e-recordpluscollapse';
+                        row.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
+                        row.setAttribute('aria-expanded', 'false');
+                        row.firstElementChild.setAttribute('title', 'collapsed');
+                    }
                 }
                 if (!(rowNodes[i].firstElementChild.classList.contains('e-recordplusexpand') ||
                     rowNodes[i].firstElementChild.classList.contains('e-recordpluscollapse'))) {

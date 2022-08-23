@@ -390,4 +390,86 @@ describe('Gantt filter child mode', () => {
             triggerMouseEvent(clearButton, 'click');
         });
     });
+    describe('Gantt filter Both mode', () => {
+        Gantt.Inject(Filter, Toolbar, ColumnMenu);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: filteredData,
+                    dateFormat: 'MM/dd/yyyy hh:mm:ss',
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    columns: [
+                        {
+                            field: 'TaskName',
+                            headerText: 'Task Name',
+                            width: '250',
+                            clipMode: 'EllipsisWithTooltip',
+                        },
+                        { field: 'StartDate', headerText: 'Start Date' },
+                        { field: 'Duration', headerText: 'Duration' },
+                        { field: 'EndDate', headerText: 'End Date' },
+                        { field: 'Predecessor', headerText: 'Predecessor' },
+                    ],
+                    searchSettings: {
+                        hierarchyMode: 'Both',
+                    },
+                    treeColumnIndex: 0,
+                    toolbar: ['Search'],
+                    allowFiltering: true,
+                    includeWeekend: true,
+                    height: '450px',
+                    timelineSettings: {
+                        timelineUnitSize: 60,
+                        topTier: {
+                            format: 'MMM dd, yyyy',
+                            unit: 'Day',
+                        },
+                        bottomTier: {
+                            unit: 'Hour',
+                            format: 'h.mm a',
+                        },
+                    },
+                    splitterSettings: {
+                        columnIndex: 3,
+                    },
+                    filterSettings: {
+                        hierarchyMode: 'Both'
+                    },
+                    collapseAllParentTasks: true,
+                    durationUnit: 'Hour',
+                    dayWorkingTime: [{ from: 1, to: 24 }],
+                    labelSettings: {
+                        rightLabel: 'TaskName',
+                    },
+                    projectStartDate: new Date('07/16/1969 01:00:00 AM'),
+                    projectEndDate: new Date('07/25/1969'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Filtering Taskname', () => {
+            ganttObj.actionComplete = function (args: any): void {
+                if(args.searchString == 'Hatch closing') {
+                   expect(ganttObj.currentViewData.length).toBe(2);
+                }
+            }
+            ganttObj.search('Return');
+            ganttObj.search('Hatch closing');
+        });
+    });
 });

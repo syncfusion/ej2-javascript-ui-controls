@@ -1,4 +1,4 @@
-import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';
+import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend, merge} from '@syncfusion/ej2-base';
 import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
@@ -2603,7 +2603,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     if (index === this.treeColumnIndex && prop === 'template') {
                         treeGridColumn[prop] = column[i][prop];
                     } else if (prop === 'columns' && !isNullOrUndefined(column[i][prop])) {
-                        gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, index);
+                        gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, this.columnModel.length - 1);
                         treeGridColumn[prop] = column[i][prop];
                     } else if (this.initialRender && !isNullOrUndefined(treeColumn) && this.enablePersistence && prop === 'edit') {
                         gridColumn[prop] = treeGridColumn[prop]  = treeColumn[prop];
@@ -3387,15 +3387,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
-        const merge: string = 'deepMerge';
-        this[merge] = ['columns']; // Workaround for blazor updateModel
+        const deepMerge: string = 'deepMerge';
+        this[deepMerge] = ['columns']; // Workaround for blazor updateModel
         if (this.grid.columns.length !== this.columnModel.length) {
             this.stackedHeader = true;
         }
         if (!this.stackedHeader) {
-            this.setProperties({ columns: this.columnModel }, true);
+            merge(this.columns, this.columnModel);
         }
-        this[merge] = undefined;  // Workaround for blazor updateModel
+        this[deepMerge] = undefined;  // Workaround for blazor updateModel
         return this.columnModel;
     }
 

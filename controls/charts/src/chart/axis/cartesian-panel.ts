@@ -476,17 +476,17 @@ export class CartesianAxisLayoutPanel {
             axis = chart.axisCollections[i];
             this.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Inside' });
             outsideElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Outside' });
-            for (const series of this.chart.series) {
+            for (const series of axis.series) {
                 if (axis.name === series.yAxisName || axis.name === series.xAxisName) {
                     axisVisibility = series.visible;
-                    if (axisVisibility) {
-                        break;
-                    } else {
+                    if (!axisVisibility) {
                         continue;
+                    } else {
+                        break;
                     }
                 }
             }
-            if (!axisVisibility) { break; }
+            if (!axisVisibility) { continue; }
             isInside = this.findAxisPosition(axis);
             if (axis.orientation === 'Horizontal') {
 
@@ -1599,7 +1599,7 @@ export class CartesianAxisLayoutPanel {
             axis.border.color || this.chart.themeStyle.axisLine, 1, '', labelBorder
         )) as HTMLElement;
         (borderElement as HTMLElement).style.pointerEvents = 'none';
-        appendChildElement(this.chart.enableCanvas, parent, borderElement, this.chart.redraw, true, 'x', 'y', null, direction, true);
+        appendChildElement(this.chart.enableCanvas, parent, borderElement, this.chart.redraw, false, 'x', 'y', null, direction, true);
     }
 
     /**

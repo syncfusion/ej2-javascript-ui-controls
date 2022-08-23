@@ -11104,9 +11104,10 @@ export class Editor {
             this.editorHistory.currentBaseHistoryInfo.action = 'InsertTextParaReplace';
         }
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
-            end.currentWidget === paragraph.lastChild || paraReplace) {
+            (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
+            paraReplace) {
             let isStartParagraph: boolean = start.paragraph === paragraph;
-            if (!this.isInsertingTOC || this.owner.enableTrackChanges && end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
+            if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
                 this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
                 //Removes the splitted paragraph.
@@ -11194,7 +11195,7 @@ export class Editor {
                         // On deleting para, para items may be added with delete revisions so we need to ensure whether it can be combined with prev/ next para.
                         this.combineRevisionWithBlocks((paragraph.firstChild as LineWidget).children[0]);
                     }
-                    if (paragraph === end.paragraph && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
+                    if (paragraph === end.paragraph && this.editorHistory.currentBaseHistoryInfo.action === 'Delete' && !this.isInsertingTOC) {
                         let paraInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
                         this.selection.editPosition = this.selection.getHierarchicalIndex(paraInfo.paragraph, paraInfo.offset.toString());
                     }
@@ -14618,9 +14619,8 @@ export class Editor {
                 }
             } else {
                 paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
-
                 let currentParagraph: ParagraphWidget = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, true);
-                this.removePrevParaMarkRevision(currentParagraph, true);
+                this.removePrevParaMarkRevision(paragraph, true);
                 this.deleteParagraphMark(currentParagraph, selection, 0);
                 this.addRemovedNodes(paragraph);
                 this.setPositionForCurrentIndex(selection.start, selection.editPosition);

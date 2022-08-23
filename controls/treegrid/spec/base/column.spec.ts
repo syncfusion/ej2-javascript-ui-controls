@@ -746,3 +746,55 @@ describe('Checkbox column within stacked header - EJ2-59568', () => {
     destroy(gridObj);
   });
 });
+
+describe('stacked header with template tree columnindex-EJ2-62337', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: stackedData,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        treeColumnIndex: 2,
+            height: 350,
+            columns: [
+                {
+                    headerText: 'Order Details', textAlign: 'Center', columns: [
+                        { field: 'orderID', headerText: 'Order ID', textAlign: 'Right', width: 90 },
+                        { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 170 },
+                        { headerText: 'Order Date',  template: "<span>test</span>", textAlign: 'Right', width: 120, format: 'yMd'},
+                    ]
+                },
+                {
+                    headerText: 'Shipment Details', textAlign: 'Center', columns: [
+                        { headerText: 'Shipment Category',  template: "<span>test</span>", textAlign: 'Left', width: 150 },
+                        { headerText: 'Shipped Date', template: "<span>test</span>", textAlign: 'Right', width: 120, format: 'yMd' },
+                        { field: 'units', headerText: 'Units', textAlign: 'Left', width: 85 },
+                    ]
+                },
+                {
+                    headerText: 'Price Details', textAlign: 'Center', columns: [
+                        { field: 'unitPrice', headerText: 'Price per unit', width: 110, textAlign: 'Right' },
+                        { field: 'price', headerText: 'Total Price', width: 110, format: 'c', type: 'number', textAlign: 'Right' }
+                    ]
+                }
+            ]
+
+
+      },
+      done
+    );
+  });
+  it('check template rendering', () => {
+    expect(gridObj.getCellFromIndex(0,3).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(1,3).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(2,3).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(3,3).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(4,3).classList.contains("e-templatecell")).toBe(true);
+
+    });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

@@ -2089,6 +2089,44 @@ describe('Diagram Control', () => {
                 done();
         });
 
+        it('Checking connector is drag and drop without selecting', (done : Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['connector1a'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 500, 300, false, false);
+            events.mouseUpEvent(diagram.element, 500, 300, false, false);
+            expect(diagram.connectors.length).toBe(2);
+            //dragging the node
+            events.mouseDownEvent(diagram.element, 326, 426, false, false);
+            events.mouseMoveEvent(diagram.element, 360, 470, false, false);
+            events.mouseUpEvent(diagram.element, 360, 470, false, false);
+           //dragging the connector
+            events.mouseDownEvent(diagram.element, 500, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 540, 340, false, false);
+            events.mouseMoveEvent(diagram.element, 600, 400, false, false);
+            events.mouseUpEvent(diagram.element, 600, 400, false, false);
+            expect(diagram.connectors[7].id == 'Link1').toBe(true);
+            expect(diagram.connectors[7].type == 'Orthogonal').toBe(true);
+            expect(diagram.connectors[7].sourcePoint.x != 0).toBe(true);
+            expect(diagram.connectors[7].sourcePoint.y != 0).toBe(true);
+            expect(diagram.connectors[7].targetPoint.x != 40).toBe(true);
+            expect(diagram.connectors[7].targetPoint.y != 40).toBe(true);
+            done();
+        });
+
         });
         
     });

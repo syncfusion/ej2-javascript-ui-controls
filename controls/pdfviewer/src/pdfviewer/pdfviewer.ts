@@ -5602,6 +5602,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
                 }
                 break;
+            case 'signatureFieldSettings':
+            case 'initialFieldSettings':
+                    if (this.formDesignerModule) {
+                        let isInitialField : boolean =(prop === "initialFieldSettings");
+                        this.formDesignerModule.updateSignatureSettings(newProp[prop], isInitialField);
+                    }
+                    break;
             }
         }
     }
@@ -6112,15 +6119,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     fieldValue.signatureType = fieldValue.signatureType[0];
                 }
                 fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName : fieldValue.fontFamily;
-                if ((target as any).classList.contains('e-pdfviewer-signatureformfields-signature')) {
+                let currentValue = fieldValue.value;
+                let signatureField = this.getFormFieldByID(fieldValue.id);
+                let isSameValue = this.formDesignerModule ? signatureField.value === fieldValue.value : signatureField.Value === fieldValue.value;
+                if ((target as any).classList.contains('e-pdfviewer-signatureformfields-signature') && !isSameValue) {
                     if (this.formDesignerModule)
                         this.annotation.deleteAnnotationById(fieldValue.id.split('_')[0] + '_content');
                     else
                         this.annotation.deleteAnnotationById(fieldValue.id);
                 }
-                if (!fieldValue.signatureType)
+                if (!fieldValue.signatureType || !fieldValue.value){
+                    fieldValue.value = currentValue;
                     fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
-                this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
+                }
+                if(!isSameValue)
+                    this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
             } else {
                 if (!isformDesignerModuleListBox) {
                     this.formFieldsModule.updateDataInSession(target);
@@ -6169,6 +6182,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             window.sessionStorage.removeItem(this.viewerBase.documentId + '_formfields');
             this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
         }
+    }
+    // eslint-disable-next-line
+    private getFormFieldByID(id : string): any {
+        if(this.formDesignerModule){
+            return (this.nameTable as any)[id.split('_')[0]];
+        }
+        let data = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
+        let formFieldsData = JSON.parse(data);
+        return formFieldsData[formFieldsData.findIndex((el: { uniqueID: any; }) => el.uniqueID === id)];
     }
 
     /**
@@ -6387,8 +6409,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public exportAnnotationsAsObject(): Promise<object> {
         if (this.annotationModule) {
             return new Promise((resolve: Function, reject: Function) => {
-                this.viewerBase.exportAnnotationsAsObject().then((value: object) => {
-                    resolve(value);
+                this.viewerBase.exportAnnotationsAsObject().then((value: any) => {
+                    let jsonData = JSON.parse(value);
+                    let jsonstring=JSON.stringify(jsonData);
+                    resolve(jsonstring);
                 });
             });
         } else {

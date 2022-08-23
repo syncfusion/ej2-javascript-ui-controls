@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.45 (2022-08-23)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I395418` - Issue with "unable to perform copy and paste actions on the textbox inside the cell template" has been resolved.
+
 ## 20.2.44 (2022-08-16)
 
 ### Spreadsheet

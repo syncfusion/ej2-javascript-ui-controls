@@ -136,9 +136,10 @@ export class KeyboardShortcut {
 
 
     private keyDownHandler(e: KeyboardEvent): void {
+        const isSelectionNone: boolean = this.parent.selectionSettings.mode === 'None';
         this.ribbonShortCuts(e);
         if ((e.ctrlKey || e.metaKey) && this.isTrgtNotInput(e)) {
-            if (!closest(e.target as Element, '.e-find-dlg')) {
+            if (!closest(e.target as Element, '.e-find-dlg') && !isSelectionNone) {
                 if ([79, 83].indexOf(e.keyCode) > -1) {
                     e.preventDefault();
                 } else if (e.keyCode === 65 && !this.parent.isEdit) {
@@ -149,9 +150,9 @@ export class KeyboardShortcut {
                 select('#' + this.parent.element.id + '_fileUpload', this.parent.element).click();
             } else if (e.keyCode === 83) { /*Ctrl + S*/
                 if (this.parent.saveUrl && this.parent.allowSave) { this.parent.notify(exportDialog, null); }
-            } else if (e.keyCode === 67) { /*Ctrl + C*/
+            } else if (e.keyCode === 67 && !isSelectionNone) { /*Ctrl + C*/
                 this.parent.notify(copy, { promise: Promise });
-            } else if (e.keyCode === 75) {  /*Ctrl + K*/
+            } else if (e.keyCode === 75 && !isSelectionNone) {  /*Ctrl + K*/
                 const sheet: SheetModel = this.parent.getActiveSheet(); const indexes: number[] = getCellIndexes(sheet.activeCell);
                 const row: RowModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]];
                 let cell: CellModel; e.preventDefault();
@@ -166,16 +167,16 @@ export class KeyboardShortcut {
                 } else {
                     this.parent.notify(initiateHyperlink, null);
                 }
-            } else if (e.keyCode === 90) { /* Ctrl + Z */
+            } else if (e.keyCode === 90 && !isSelectionNone) { /* Ctrl + Z */
                 if (!this.parent.isEdit) {
                     e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: true });
                 }
-            } else if (e.keyCode === 89) { /* Ctrl + Y */
+            } else if (e.keyCode === 89 && !isSelectionNone) { /* Ctrl + Y */
                 if (!this.parent.isEdit) {
                     e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: false });
                 }
             }
-            else if (e.keyCode === 82 || e.keyCode === 68) { /* Ctrl + R */ /* Ctrl + D */
+            else if ((e.keyCode === 82 || e.keyCode === 68) && !isSelectionNone) { /* Ctrl + R */ /* Ctrl + D */
                 e.preventDefault();
                 this.parent.notify(fillRange, { verticalFill: e.keyCode === 68 });
             }
@@ -187,11 +188,11 @@ export class KeyboardShortcut {
                 const cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], actSheet);
                 isLocked = actSheet.isProtected && isCellLocked(cellObj, getColumn(actSheet, actCellIndex[1]));
             }
-            if (e.keyCode === 70) { /* Ctrl + F */
+            if (e.keyCode === 70 && !isSelectionNone) { /* Ctrl + F */
                 e.preventDefault();
                 this.parent.notify(ribbonFind, null);
             }
-            if ((!isLocked || !actSheet.isProtected || e.keyCode === 86) && e.keyCode !== 70) {
+            if ((!isLocked || !actSheet.isProtected || e.keyCode === 86) && e.keyCode !== 70 && !isSelectionNone) {
                 if (e.keyCode === 71) { /* Ctrl + G */
                     e.preventDefault(); this.parent.notify(gotoDlg, null);
                 }
@@ -207,7 +208,7 @@ export class KeyboardShortcut {
                         ['fontWeight'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontWeight;
                     value = value === 'bold' ? 'normal' : 'bold';
                     this.parent.notify(setCellFormat, { style: { fontWeight: value }, onActionUpdate: true, refreshRibbon: true });
-                } else if (e.keyCode === 73) {  /* Ctrl + B */
+                } else if (e.keyCode === 73) {  /* Ctrl + I */
                     e.preventDefault();
                     let value: FontStyle = this.parent.getCellStyleValue(
                         ['fontStyle'], getCellIndexes(this.parent.getActiveSheet().activeCell)).fontStyle;
@@ -235,7 +236,7 @@ export class KeyboardShortcut {
             this.parent.ribbonModule.ribbon.ribbonExpandCollapse();
         }
         //general key actions
-        if (e.ctrlKey || e.metaKey) {
+        if ((e.ctrlKey || e.metaKey) && !isSelectionNone) {
             let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
             if (e.keyCode === 57) {   /*ctrl + 9(row-hide)*/
                 e.preventDefault();
@@ -255,17 +256,17 @@ export class KeyboardShortcut {
             }
         }
 
-        if (e.shiftKey && e.keyCode === 114) { /*shift + F3(insert-function dialog)*/
+        if (e.shiftKey && e.keyCode === 114 && !isSelectionNone) { /*shift + F3(insert-function dialog)*/
             e.preventDefault();
             this.parent.notify(renderInsertDlg, null);
         }
-        if ((e.ctrlKey || e.metaKey) && e.altKey && e.keyCode === 78) {/*ctrl+alt+N*/
+        if ((e.ctrlKey || e.metaKey) && e.altKey && e.keyCode === 78 && !isSelectionNone) {/*ctrl+alt+N*/
             e.preventDefault();
             this.parent.refresh(true);
         }
 
         //number-formatting
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && !isSelectionNone) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const range: string = sheet.selectedRange;
             let format: string;

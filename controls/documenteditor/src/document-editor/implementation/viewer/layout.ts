@@ -622,6 +622,7 @@ export class Layout {
             // const top: number = 0;
             // const bottom: number = 0;
             const width: number = this.documentHelper.textHelper.getParagraphMarkWidth(paragraphWidget.characterFormat);
+            paragraphWidget.clientX = area.x;
             let left: number = area.x;
             if (paragraphWidget.paragraphFormat.textAlignment === 'Center') {
                 left += (area.width - width) / 2;
@@ -641,6 +642,7 @@ export class Layout {
             }
             paragraphWidget.width = area.width;
             paragraphWidget.y = area.y;
+            paragraphWidget.clientX = undefined;
         }
         return paragraphWidget;
     }
@@ -932,13 +934,14 @@ export class Layout {
                 }
             }
             if (!this.isRTLLayout) {
-                if (this.hasFloatingElement) {
+                const lineIndex: number = paragraph.childWidgets.indexOf(element.line);
+                if (lineIndex > 0 && this.hasFloatingElement) {
                     this.hasFloatingElement = false;
-                    const lineIndex: number = paragraph.childWidgets.indexOf(element.line);
-                    if (lineIndex > 0 && paragraph.bodyWidget.floatingElements.length > 0 && element instanceof TextElementBox && !(paragraph.containerWidget instanceof TableCellWidget)) {
+                    if (paragraph.bodyWidget.floatingElements.length > 0 && element instanceof TextElementBox && !(paragraph.containerWidget instanceof TableCellWidget)) {
                         element = (paragraph.childWidgets[lineIndex] as LineWidget).children[0];                       
                     }
                 } else {
+                    this.hasFloatingElement = false;
                     if (this.is2013Justification && !isNullOrUndefined(this.nextElementToLayout)) {
                         element = this.nextElementToLayout;
                     } else {
@@ -2780,7 +2783,6 @@ export class Layout {
     private splitTextForClientArea(lineWidget: LineWidget, element: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
         const paragraph: ParagraphWidget = lineWidget.paragraph;
         let isSplitByWord: boolean = true;
-        let isSplitByCharacter:boolean = false;
         let index: number = -1;
         if (!(text.substring(0, 1) === ' ') && !(text.substring(0, 1) === '-')) {
             let textWidth: number = width;
@@ -2788,9 +2790,6 @@ export class Layout {
             characterUptoWS = HelperMethods.trimEnd(text).indexOf(' ') + 1;
             if (characterUptoWS == 0) {
                 characterUptoWS = HelperMethods.trimEnd(text).indexOf('-') + 1;
-                if(characterUptoWS > 0) {
-                    isSplitByCharacter = true;
-                }
             }
             index = characterUptoWS;
             //Checks whether text not starts with white space. If starts with white space, no need to check previous text blocks.
@@ -2812,7 +2811,7 @@ export class Layout {
         if (width <= this.viewer.clientActiveArea.width) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
-        } else if (isSplitByWord && !isSplitByCharacter && (index > 0 || text.indexOf(' ') !== -1 || text.indexOf('-') !== -1) ) {
+        } else if (isSplitByWord && (index > 0 || text.indexOf(' ') !== -1 || text.indexOf('-') !== -1) ) {
             this.splitByWord(lineWidget, paragraph, element, text, width, characterFormat);
         } else {
             this.splitByCharacter(lineWidget, element, text, width, characterFormat);
@@ -4543,15 +4542,22 @@ export class Layout {
     private getTextIndexAfterSpace(text: string, startIndex: number): number {
         let length: number = text.length;
         let index: number = 0;
+        let hyphenIndex: number = 0;
         index = text.indexOf(' ', startIndex) + 1;
-        if (index == 0) {
-            index = text.indexOf('-', startIndex) + 1;
+        hyphenIndex = text.indexOf('-', startIndex) + 1;
+        if(hyphenIndex == 1){
+            hyphenIndex = text.indexOf('-', (hyphenIndex + 1)) + 1;
+        }
+        if(hyphenIndex > 0 && index > 0){
+        index = Math.min(index, hyphenIndex);
+        } else if(hyphenIndex > 0 && index == 0){
+            index = hyphenIndex;
         }
         let nextIndex: number = index;
         if (nextIndex === 0 || nextIndex === length) {
             return nextIndex;
         }
-        while (text[nextIndex] === ' ') {
+        while (text[nextIndex] === ' ' || text[nextIndex] === '-') {
             nextIndex++;
             if (nextIndex === length) {
                 break;

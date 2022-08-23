@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.45 (2022-08-23)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I395530` - Issue with 'Unable to set a break within the content of the Tooltip component in order to render text in multiple lines' has been resolved.
+
 ## 20.2.40 (2022-07-26)
 
 ### Dialog

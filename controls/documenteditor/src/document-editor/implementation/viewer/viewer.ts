@@ -2997,7 +2997,7 @@ export class DocumentHelper {
                     isInShape = true;
                 }
             } else {
-                for (let i: number = 0; i < blockContainer.floatingElements.length; i++) {
+                for (let i: number = blockContainer.floatingElements.length - 1; i >= 0 ; i--) {
                     if (blockContainer.floatingElements[i] instanceof TableWidget
                         || (!isNullOrUndefined(isBehind) && isBehind ? (blockContainer.floatingElements[i] as ShapeBase).textWrappingStyle !== 'Behind' : (blockContainer.floatingElements[i] as ShapeBase).textWrappingStyle === 'Behind')) {
                         continue;
@@ -3582,7 +3582,16 @@ export class DocumentHelper {
         let isSameRightBorder: boolean;
         let previousBlock: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
         let nextBlock: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
-        if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraph.x === previousBlock.x) {
+        let paragraphX: number = this.getParagraphLeftPosition(paragraph);
+        let previousBlockX: number = 0;
+        let nextBlockX: number = 0;
+        if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget) {
+            previousBlockX = this.getParagraphLeftPosition(previousBlock);
+        }
+        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget) {
+            nextBlockX = this.getParagraphLeftPosition(nextBlock)
+        }
+        if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
             isSamePreviousBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);
             isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(previousBlock.paragraphFormat.borders.left, true);
             isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(previousBlock.paragraphFormat.borders.right, true);
@@ -3591,7 +3600,7 @@ export class DocumentHelper {
                 skipTopBorder = true;
             }
         }
-        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && paragraph.x === nextBlock.x) {
+        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && paragraphX === nextBlockX) {
             isSameNextBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.top);
             isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(nextBlock.paragraphFormat.borders.top);
             isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.bottom);
@@ -3605,6 +3614,16 @@ export class DocumentHelper {
             'skipTopBorder': skipTopBorder,
             'skipBottomBorder': skipBottomBorder
         };
+    }
+    /**
+    * @private
+    */
+    public getParagraphLeftPosition(paragraphWidet: ParagraphWidget): number {
+        if (paragraphWidet.isEmpty() && paragraphWidet.paragraphFormat.textAlignment !== 'Left' && paragraphWidet.paragraphFormat.textAlignment !== 'Justify') {
+            return paragraphWidet.clientX;
+        } else {
+            return paragraphWidet.x;
+        }
     }
     /**
      * @private

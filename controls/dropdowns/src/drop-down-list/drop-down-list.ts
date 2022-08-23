@@ -2387,13 +2387,13 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.element.tagName === 'INPUT') {
             this.inputElement = this.element as HTMLInputElement;
             if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
-                this.inputElement.setAttribute('role', 'textbox');
+                this.inputElement.setAttribute('role', 'combobox');
             }
             if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
                 this.inputElement.setAttribute('type', 'text');
             }
         } else {
-            this.inputElement = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } }) as HTMLInputElement;
+            this.inputElement = this.createElement('input', { attrs: { role: 'combobox', type: 'text' } }) as HTMLInputElement;
             if (this.element.tagName !== this.getNgDirective()) {
                 this.element.style.display = 'none';
             }
@@ -2444,6 +2444,9 @@ export class DropDownList extends DropDownBase implements IInput {
         attributes(this.targetElement(), this.getAriaAttributes());
         this.updateDataAttribute(this.htmlAttributes);
         this.setHTMLAttributes();
+        if (this.targetElement() === this.inputElement) {
+            this.element.removeAttribute('aria-labelledby');
+        }
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();
         } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {

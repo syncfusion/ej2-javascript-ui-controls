@@ -402,27 +402,6 @@ describe('Accumulation Chart Control', () => {
             chart.refresh();
         });
 
-        it('Data labels with custom connector', (done: Function) => {
-            chart.loaded = () => {
-                //debugger
-                let group: Element = getElement('ej2container_datalabel_Series_0_connector_2');
-                expect(group.getAttribute('fill')).toBe('transparent');
-                expect(group.getAttribute('stroke')).toBe('red');
-                expect(group.getAttribute('stroke-width')).toBe('5');
-                expect(group.getAttribute('stroke-dasharray')).toBe('');
-                expect(group.getAttribute('d') == 'M 361.2523364485981 151.68037383177568 L 410.7523364485981 151.68037383177568' ||
-                    group.getAttribute('d') == 'M 361.2523364485981 150.99158878504673 L 410.7523364485981 150.99158878504673').toBe(true);
-                done();
-
-                //reset default connector style
-                chart.series[0].dataLabel.connectorStyle = { color: null, length: null, type: 'Line', width: 1 };
-                chart.loaded = null;
-            };
-            chart.series[0].dataLabel.connectorStyle = { color: 'red', type: 'Curve', length: '40px', width: 5 };
-            chart.refresh();
-        });
-
-
         it('Data labels with hidden connector (opacity-0)', (done: Function) => {
             chart.loaded = () => {
                 //debugger

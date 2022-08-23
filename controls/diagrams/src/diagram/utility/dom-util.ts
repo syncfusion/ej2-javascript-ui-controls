@@ -1070,7 +1070,8 @@ export function getContent(
 export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
     const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        if (keys[i] !== 'style') {
+        // Added below condition to check whether svg is undefined or not
+        if (svg && keys[i] !== 'style') {
             svg.setAttribute(keys[i], attributes[keys[i]]);
         } else {
             applyStyleAgainstCsp(svg, attributes[keys[i]]);

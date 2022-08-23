@@ -1444,7 +1444,12 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.getDescription = getDescription;
     diagram.scrollSettings = dataObj.scrollSettings || {};
     diagram.commandManager = dataObj.commandManager || {};
+    /**
+     * EJ2-62846-Exception occurs after save and load when layers are undefined.
+     */
+    if(dataObj.layers && dataObj.layers.length > 0){
     sortLayerObjects(dataObj);
+    }
     diagram.layers = dataObj.layers || [];
     diagram.rulerSettings.horizontalRuler.arrangeTick = arrangeTickHorizontal;
     diagram.rulerSettings.verticalRuler.arrangeTick = arrangeTickVertical;

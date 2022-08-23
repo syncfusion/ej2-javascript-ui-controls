@@ -451,7 +451,42 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
-
+  describe('EJ2-61461 - Parent Icon disappears when we delete multiple records', () => {
+    let gridObj: TreeGrid;
+    let cellEdit: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: projectData2,
+          height: 400,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: 'Below' },
+          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+          allowPaging: true,
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140, isPrimaryKey:true },
+              { field: 'TaskName', headerText: 'Task Name', width: 160 },
+              { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+              { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+          ]
+         },
+        done
+      );
+    });
+    it('Delete multiple records ', () => {
+      gridObj.selectRow(3);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+      gridObj.selectRow(1);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+      expect(gridObj.grid.getRows()[0].getElementsByClassName('e-treegridexpand').length).toBe(1);
+     });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   describe('EJ2-22751: Events not triggered', () => {
     let gridObj: TreeGrid;
     let rows: Element[];

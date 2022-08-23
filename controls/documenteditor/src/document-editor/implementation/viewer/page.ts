@@ -871,7 +871,13 @@ export abstract class BlockWidget extends Widget {
         } else {
             let bodyWidget: BlockContainer = this.bodyWidget;
             let sectionFormat: WSectionFormat = bodyWidget.sectionFormat;
-            return sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
+            let padding: number = 0;
+            if (!isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.documentHelper) &&
+                bodyWidget.page.documentHelper.compatibilityMode !== 'Word2013' && !this.isInsideTable) {
+                let firstRow: TableRowWidget = this.firstChild as TableRowWidget;
+                padding = (firstRow.firstChild as TableCellWidget).leftMargin + ((firstRow).lastChild as TableCellWidget).rightMargin;
+            }
+            return sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin) + padding;
         }
     }
     public get bidi(): boolean {
@@ -949,6 +955,11 @@ export class ParagraphWidget extends BlockWidget {
      * @private
      */
     public isChangeDetected: boolean = false;
+    /**
+     * @private
+     * The clientX having previous left value of empty paragraph
+     */
+     public clientX: number = undefined;
     /**
      * @private
      */
@@ -1859,11 +1870,14 @@ export class TableWidget extends BlockWidget {
      */
     public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
         this.checkTableColumns();
-        let tableWidth: number = this.tableHolder.getTotalWidth(1);
+        let isAllColumnHasPointWidth: boolean = this.tableHolder.isAllColumnHasPointWidthType();
+        let tableWidth: number = isAllColumnHasPointWidth ? this.tableHolder.getTotalWidth(0) : this.tableHolder.getTotalWidth(1);
         if (tableWidth > minimumWordWidth) {
             minimumWordWidth = tableWidth;
         }
+        if (!isAllColumnHasPointWidth) {
         tableWidth = this.tableHolder.getTotalWidth(2);
+        }
         if (tableWidth > maximumWordWidth) {
             maximumWordWidth = tableWidth;
         }
@@ -1920,6 +1934,7 @@ export class TableWidget extends BlockWidget {
         if (isZeroWidth && !this.isDefaultFormatUpdated && isAutoFit) {
             this.splitWidthToTableCells(tableWidth, isZeroWidth);
         }
+        let hasSpannedCells: boolean = false;
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             let rowFormat: WRowFormat = row.rowFormat;
@@ -1934,6 +1949,9 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                if (cell.cellFormat.rowSpan > 1 || cell.cellFormat.columnSpan > 1) {
+                    hasSpannedCells = true;
+                }
                 if (rowSpannedCells.length === 0) {
                     cell.columnIndex = columnSpan;
                 }
@@ -2002,7 +2020,7 @@ export class TableWidget extends BlockWidget {
         this.tableHolder.validateColumnWidths();
         if (isAutoFit) {
             // Fits the column width automatically based on contents.
-            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, this.leftIndent + this.rightIndent);
+            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, hasSpannedCells, this.leftIndent + this.rightIndent);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
             this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
@@ -3071,7 +3089,7 @@ export class TableCellWidget extends BlockWidget {
                 cellWidth = containerWidth;
             } else {
                 // If cell has prefferd width, we need to consider prefferd width.
-                cellWidth = this.cellFormat.preferredWidth;
+                cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
             }
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
@@ -4002,6 +4020,9 @@ export class LineWidget implements IWidget {
         }
         line.width = this.width;
         line.height = this.height;
+        if (!isNullOrUndefined(this.margin)) {
+            line.margin = this.margin.clone();
+        }
         return line;
     }
     /**
@@ -8304,7 +8325,20 @@ export class WTableHolder {
     /**
      * @private
      */
-    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, indent?: number): void {
+    public isAllColumnHasPointWidthType(): boolean {
+        let isPointWidthType: boolean = true;
+        for (let i: number = 0; i < this.columns.length; i++) {
+            if (this.columns[i].widthType != 'Point') {
+                isPointWidthType = false;
+            }
+        }
+        return isPointWidthType;
+    }
+
+    /**
+     * @private
+     */
+    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, hasSpannedCells: boolean, indent?: number): void {
         // Cell's preferred width should be considered until the table width fits to the container width.
         let maxTotal: number = 0;
         let minTotal: number = 0;
@@ -8313,6 +8347,8 @@ export class WTableHolder {
         // If all columns are set as 0 pixels, then this will work.
         let remainingWidthTotal: number = 0;
         let isAllColumnPointWidth: boolean = true;
+        let minWidthExceedCellWidth = 0;
+        let columnIndexCollection: number[] = []
         for (let i: number = 0; i < this.columns.length; i++) {
             let column: WColumn = this.columns[i];
             // If preferred width of column is less than column minimum width and also column is empty, considered column preferred width
@@ -8330,6 +8366,11 @@ export class WTableHolder {
             let preferred: number = column.preferredWidth === 0 ? column.minimumWordWidth : column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
             difference = column.maximumWordWidth - preferred;
             remainingWidthTotal += difference > 0 ? difference : 0;
+            if (column.preferredWidth < column.minimumWordWidth) {
+                minWidthExceedCellWidth += column.minimumWordWidth - column.preferredWidth;
+            } else {
+                columnIndexCollection.push(i);
+            }
         }
         // Try to fit maximum word width to match preferredTableWidth.
         if (maxTotal <= preferredTableWidth) {
@@ -8354,6 +8395,27 @@ export class WTableHolder {
                 this.fitColumns(containerWidth, preferredTableWidth, isAuto);
             }
         } else {
+            let totalPreferredWidth: number = this.getTotalWidth(0);
+            if (isAllColumnPointWidth && !hasSpannedCells) {
+                if (minTotal > containerWidth) {
+                    if (containerWidth > totalPreferredWidth) {
+                        minWidthExceedCellWidth -= (containerWidth - (totalPreferredWidth));
+                    }
+                    if (columnIndexCollection.length > 0 && minWidthExceedCellWidth > 0) {
+                        let averageWidth: number = minWidthExceedCellWidth / columnIndexCollection.length;
+                        for (let i: number = 0; i < this.columns.length; i++) {
+                            let column: WColumn = this.columns[i];
+                            if (columnIndexCollection.indexOf(i) === -1) {
+                                column.preferredWidth = column.minimumWordWidth;
+                            } else {
+                                column.preferredWidth = (column.preferredWidth - averageWidth);
+                            }
+                        }
+                        totalPreferredWidth = this.getTotalWidth(0);
+                    }
+                }
+            }
+
             // If the table preferred table width is set, then check its greater than total minimum word width. 
             // If yes then set table preferred table width as container width. Else, check whether the total minimum word width is less than container width.
             // If yes, then set total minimum word width as container width. Else, set the container width to container width.
@@ -8394,7 +8456,6 @@ export class WTableHolder {
                 // Try to fit minimum width for each column and allot remaining space to columns based on their minimum word width.
                 let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 let totalMinWidth: number = this.getTotalWidth(3);
-                let totalPreferredWidth: number = this.getTotalWidth(0);
                 if (totalMinWidth > 2112) {
                     let cellWidth: number = 2112 / this.columns.length;
                     for (let i: number = 0; i < this.columns.length; i++) {
@@ -8402,7 +8463,8 @@ export class WTableHolder {
                     }
                 } else {
                     let availableWidth: number = 0;
-                    if ((totalMinWidth < containerWidth) && ((containerWidth - totalMinWidth) >= 1) && !isAllColumnPointWidth) {
+                    if (((totalMinWidth < containerWidth) && ((containerWidth - totalMinWidth) >= 1) && !isAllColumnPointWidth)
+                        || (isAllColumnPointWidth && !hasSpannedCells && totalMinimumWordWidth > containerWidth)) {
                         availableWidth = containerWidth - totalMinWidth;
                         for (let i: number = 0; i < this.columns.length; i++) {
                             let column: WColumn = this.columns[i];

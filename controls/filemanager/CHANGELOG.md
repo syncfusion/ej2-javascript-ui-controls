@@ -8,13 +8,8 @@
 
 #### Bug Fixes
 
-- `#I394199` - The issue with "Image preview is not loaded while naming folders with special characters in ASP.NET Core File Manager" has been resolved.
-
-### File Manager
-
-#### Bug Fixes
-
 - `#I391992` - The issue with "Getting incorrect folder or file path details in the Node JS file service provider for the File Manager component" has been resolved.
+- `#I394199` - The issue with "Image preview is not loaded while naming folders with special characters in ASP.NET Core File Manager" has been resolved.
 
 ## 20.2.39 (2022-07-19)
 
@@ -22,19 +17,9 @@
 
 #### Bug Fixes
 
-- `#I391271` - The issue with "Facing an error in the File Manager component while performing the drag and drop with the ID-based providers" has been resolved.
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I385707` - The issue with "Facing error while copying and pasting a folder within another folder in the MVC File Manager component" has been resolved.
-
-### File Manager
-
-#### Bug Fixes
-
 - `#F175723` - The issue with "The File Manager incorrectly shows Type of the selected items when an unidentified file type is selected" has been resolved.
+- `#I385707` - The issue with "Facing error while copying and pasting a folder within another folder in the MVC File Manager component" has been resolved.
+- `#I391271` - The issue with "Facing an error in the File Manager component while performing the drag and drop with the ID-based providers" has been resolved.
 
 ## 19.2.56 (2021-08-17)
 

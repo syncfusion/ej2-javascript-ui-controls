@@ -49,43 +49,45 @@ export class ContextMenu {
         && !(isNullOrUndefined(editRecord)) && !(editRecord.classList.contains('e-menu-hide'))) {
             editRecord.style.display = 'none';
         }
-        if (indent || outdent) {
-            const tObj: TreeGrid = this.parent;
-            const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
+        const tObj: TreeGrid = this.parent;
+        const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
+        if ((indent || outdent) && !isNullOrUndefined(selectedrow)) {
             const targetElement: Element = (args.event.target as Element).closest('td');
             if (isNullOrUndefined(targetElement) || (!isNullOrUndefined(targetElement) && !targetElement.classList.contains('e-rowcell'))) {
                 indent.style.display = outdent.style.display = 'none';
-            } else {
+            }
+            else {
                 if (selectedrow.rowIndex === 0 || tObj.getSelectedRowIndexes().length > 1) {
                     indent.style.display = outdent.style.display = 'none';
                 }
                 else if (args['name'] !== 'rowDeselected' || (!isNullOrUndefined(selectedrow) && tObj.grid.isCheckBoxSelection)) {
                     const selectedItem: ITreeData = tObj.getCurrentViewRecords()[selectedrow.rowIndex];
                     if (!isNullOrUndefined(selectedItem)) {
-                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level)) {
+                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level)|| this.parent.editSettings.mode === 'Batch'
+                        || this.parent.editSettings.mode === 'Cell') {
                             indent.style.display = 'none';
                         } else {
                             indent.style.display = 'block';
                         }
-                        if (selectedItem.level === (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level) {
+                        if ((selectedItem.level === (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level) && this.parent.editSettings.mode !== 'Batch'
+                        && this.parent.editSettings.mode !== 'Cell') {
                             indent.style.display = 'block';
                         }
-                        if (selectedItem.level === 0) {
+                        if ((selectedItem.level === 0) || this.parent.editSettings.mode === 'Batch'
+                        || this.parent.editSettings.mode === 'Cell') {
                             outdent.style.display = 'none';
                         }
-                        if (selectedItem.level !== 0) {
+                        else {
                             outdent.style.display = 'block';
                         }
                     }
                 }
-                if (args['name'] === 'rowDeselected' && isNullOrUndefined(selectedrow) && !tObj.grid.isCheckBoxSelection) {
-                    if (this.parent.toolbar['includes']('Indent')) {
-                        indent.style.display = 'none';
-                    }
-                    if (this.parent.toolbar['includes']('Outdent')) {
-                        outdent.style.display = 'none';
-                    }
-                }
+            }
+        }
+        else {
+            if (tObj.grid.isEdit && isNullOrUndefined(selectedrow)) {
+                indent.style.display = 'none';
+                outdent.style.display = 'none';
             }
         }
     }

@@ -387,6 +387,17 @@ export class SelectionCharacterFormat {
         }
     }
     /**
+     * @private
+     */
+    public canRetrieveNextCharacterFormat(): boolean {
+        if (isNullOrUndefined(this.bold) && isNullOrUndefined(this.italic) && this.fontSize === 0 && isNullOrUndefined(this.fontFamily) && isNullOrUndefined(this.highlightColor)
+            && isNullOrUndefined(this.baselineAlignment) && isNullOrUndefined(this.fontColor) && isNullOrUndefined(this.underline) && isNullOrUndefined(this.strikethrough) && isNullOrUndefined(this.boldBidi)
+            && isNullOrUndefined(this.italicBidi) && this.fontSizeBidi === 0 && isNullOrUndefined(this.fontFamilyBidi) && isNullOrUndefined(this.bdo) && isNullOrUndefined(this.allCaps)) {
+            return false;
+        }
+        return true;
+    }
+    /**
      * Clones the format.
      *
      * @param {SelectionCharacterFormat} selectionCharacterFormat

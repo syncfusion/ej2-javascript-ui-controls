@@ -658,12 +658,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.enableHtmlParse) {
                         const nodeList: number = tempArr.length;
                         for (var i = 0; i < nodeList; i++) {
-                            append(tempArr, tooltipContent)
+                            tooltipContent[append(tempArr, tooltipContent), 'innerHTML'] = this.content;
                         }
                     } else {
                         tooltipContent['textContent'] = this.content;
                     }
-                    this.enableHtmlParse ? append(tempArr, tooltipContent) : tooltipContent['textContent'] = this.content;
                 }
             } else {
                 // eslint-disable-next-line

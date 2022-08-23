@@ -3,7 +3,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentEditor } from '../../document-editor';
-import { LineWidget, ElementBox, TextElementBox, FieldElementBox, Page, HeaderFooterWidget } from '../viewer/page';
+import { LineWidget, ElementBox, TextElementBox, FieldElementBox, Page, HeaderFooterWidget, BlockContainer, BodyWidget } from '../viewer/page';
 import { LayoutViewer, DocumentHelper } from '../index';
 import { ElementInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from './text-search';
@@ -34,10 +34,6 @@ export class Search {
      * @private
      */
     public searchHighlighters: Dictionary<LineWidget, SearchWidgetInfo[]> = undefined;
-    private isHandledOddPageHeader: boolean = undefined;
-    private isHandledEvenPageHeader: boolean = undefined;
-    private isHandledOddPageFooter: boolean = undefined;
-    private isHandledEvenPageFooter: boolean = undefined;
     /**
      * @private
      */
@@ -513,10 +509,6 @@ export class Search {
             let result: TextSearchResult = textSearchResults.innerList[i];
             this.addFindResultViewForSearch(result);
         }
-        this.isHandledOddPageHeader = true;
-        this.isHandledOddPageFooter = true;
-        this.isHandledEvenPageHeader = true;
-        this.isHandledEvenPageFooter = true;
     }
     /**
      * @private
@@ -597,50 +589,16 @@ export class Search {
             lastIndex = suffixtext.lastIndexOf(' ');
             suffixtext = suffixtext === '\v' ? suffixtext = '' : suffixtext;
             let headerFooterString: string = '';
-            if (result.isHeader) {
-                headerFooterString = '<span class="e-de-header-footer-list">' + 'Header' + ': ' + '</span>';
-            } else if (result.isFooter) {
-                headerFooterString = '<span class="e-de-header-footer-list">' + 'Footer' + ': ' + '</span>';
-            } else {
-                headerFooterString = '';
-                headerFooterString = '';
-                this.isHandledOddPageHeader = true;
-                this.isHandledEvenPageHeader = true;
-                this.isHandledOddPageFooter = true;
-                this.isHandledEvenPageFooter = true;
-            }
             let listElement: string = '';
-            let page: Page = result.documentHelper.selection.getPage(result.start.paragraph);
-            if (isNullOrUndefined(this.isHandledEvenPageHeader) && isNullOrUndefined(this.isHandledEvenPageFooter)) {
-                this.isHandledEvenPageHeader = true;
-                this.isHandledEvenPageFooter = true;
-            } else if (isNullOrUndefined(this.isHandledOddPageHeader) && isNullOrUndefined(this.isHandledOddPageFooter)) {
-                this.isHandledOddPageHeader = true;
-                this.isHandledOddPageFooter = true;
+            let containerWidget: BodyWidget = result.start.paragraph.containerWidget as BodyWidget;
+            let type: string = containerWidget instanceof HeaderFooterWidget ? containerWidget.headerFooterType : '';
+            if (type.indexOf('Header')) {
+                headerFooterString = '<span class="e-de-header-footer-list">' + 'Header' + ': ' + '</span>';
+            } else if (type.indexOf('Footer')) {
+                headerFooterString = '<span class="e-de-header-footer-list">' + 'Footer' + ': ' + '</span>';
             }
-            if (result.isHeader) {
-                if (page.headerWidget.headerFooterType === 'FirstPageHeader' && page.bodyWidgets[0].sectionFormat.differentFirstPage) {
-                    listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-                } else if (page.headerWidget.headerFooterType === 'EvenHeader' && this.isHandledEvenPageHeader) {
-                    listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-                    this.isHandledEvenPageHeader = false;
-                } else if (page.headerWidget.headerFooterType === 'OddHeader' && this.isHandledOddPageHeader) {
-                    listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-                    this.isHandledOddPageHeader = false;
-                }
-            } else if (result.isFooter) {
-                if (page.footerWidget.headerFooterType === 'FirstPageFooter' && page.bodyWidgets[0].sectionFormat.differentFirstPage) {
-                    listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-                } else if (page.footerWidget.headerFooterType === 'EvenFooter' && this.isHandledEvenPageFooter) {
-                    listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-                    this.isHandledEvenPageFooter = false;
-                } else if (page.footerWidget.headerFooterType === 'OddFooter' && this.isHandledOddPageFooter) {
-                    listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-                    this.isHandledOddPageFooter = false;
-                }
-            } else if (!result.isHeader && !result.isFooter) {
-                listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-            }
+            
+            listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
             this.addSearchResultItems(listElement);
         }
     }

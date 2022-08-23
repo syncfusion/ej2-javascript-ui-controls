@@ -184,7 +184,7 @@ export class FormFields {
                                     if (addedElement1 && addedElement1.parentElement) {
                                         currentData.id = addedElement1.parentElement.id.split('_')[0];
                                     }
-                                    if(addedElement1.style.visibility === "hidden")
+                                    if(addedElement1 &&addedElement1.style.visibility === "hidden")
                                             {
                                               addedElement1.childNodes[0].disabled = true;
                                             }
@@ -1578,7 +1578,7 @@ export class FormFields {
         let filterFieldName = [];
         let filterArrayLength = 0;
         let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
-        if(data){
+        if(data && !this.pdfViewer.formDesignerModule){
             // eslint-disable-next-line
             let FormFieldsData: any = JSON.parse(data);
             filterFields = FormFieldsData.filter((item: any) => item.uniqueID === target.id);
@@ -1688,6 +1688,7 @@ export class FormFields {
                 selectedItem.value = target.value;
                 let point: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
                 this.pdfViewer.formDesignerModule.updateFormDesignerFieldInSessionStorage(point, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
             }
         }
     }

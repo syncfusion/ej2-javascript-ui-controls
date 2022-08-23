@@ -628,7 +628,7 @@ export class PdfExport {
             } else {
                 const headerTemplate: PdfPageTemplateElement = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
                 this.headerOnPages.filter((index: number) => {
-                    if (index - 1 >= 0 && index - 1 < this.pdfDocument.pages.count - 1) {
+                    if (index - 1 >= 0 && index - 1 <= this.pdfDocument.pages.count - 1) {
                         this.pdfDocument.pages.getPageByIndex(index - 1).graphics
                             .drawPdfTemplate(headerTemplate.template, new PointF(0, 0));
                     }
@@ -718,6 +718,9 @@ export class PdfExport {
         const x: number = content.position.x * 0.75;
         const y: number = content.position.y * 0.75;
         const format: PdfStringFormat = new PdfStringFormat();
+        if (!isNullOrUndefined(content.style.stringFormat)) {
+            format.alignment = content.style.stringFormat.alignment;
+        }
         const result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, format);
         if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
             pageTemplate.graphics.drawString(value, font, pen, brush, x, y, result.size.width, result.size.height, result.format);

@@ -1803,6 +1803,10 @@ export class CommandHandler {
         this.diagram.removeFromAQuad(obj);
         this.diagram.removeObjectsFromLayer(this.diagram.nameTable[obj.id]);
         delete this.diagram.nameTable[obj.id];
+        // EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
+        if(obj instanceof Connector && obj.type === 'Bezier' && obj.segments.length > 0) {
+            obj.segments = [];
+        }
         const newObj: Node | Connector = this.diagram.add(obj);
         if (this.diagram.mode !== 'SVG') {
             this.diagram.refreshDiagramLayer();
@@ -5772,7 +5776,7 @@ Remove terinal segment in initial
     /** @private */
     public isDroppable(source: IElement, targetNodes: IElement): boolean {
         const node: Node = this.diagram.nameTable[(source as Node).id] || (source as SelectorModel).nodes[0];
-        if (node) {
+        if (node instanceof Node) {
             if ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation') ||
                 (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation')) {
                 return true;
@@ -5849,20 +5853,23 @@ Remove terinal segment in initial
         }
     }
     /** @private */
+    /**Bug(EJ2-62725): Exception occurs when drag and drop the connector inside the swimlane */
     public dropAnnotation(source: IElement, target: IElement): void {
-        const node: Node = (source instanceof Node) ? source : (source as Selector).nodes[0] as Node;
-        if (this.diagram.bpmnModule && (target as Node).shape.type === 'Bpmn'
-            && ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation') ||
-                (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation'))) {
-            const hasTarget: string = 'hasTarget';
-            node[hasTarget] = (target as Node).id;
-            ((node.shape as BpmnShape).annotation as BpmnAnnotation).nodeId = (target as Node).id;
-            if (!this.diagram.currentSymbol) {
-                this.diagram.addTextAnnotation((node.shape as BpmnShape).annotation, target);
-                ((node.shape as BpmnShape).annotation as BpmnAnnotation).nodeId = '';
-                this.diagram.remove(node);
+         if(source instanceof Node || source instanceof Selector){
+            const node: Node = (source instanceof Node) ? source : (source as Selector).nodes[0] as Node;
+            if (this.diagram.bpmnModule && (target as Node).shape.type === 'Bpmn'
+                && ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation') ||
+                    (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation'))) {
+                const hasTarget: string = 'hasTarget';
+                node[hasTarget] = (target as Node).id;
+                ((node.shape as BpmnShape).annotation as BpmnAnnotation).nodeId = (target as Node).id;
+                if (!this.diagram.currentSymbol) {
+                    this.diagram.addTextAnnotation((node.shape as BpmnShape).annotation, target);
+                    ((node.shape as BpmnShape).annotation as BpmnAnnotation).nodeId = '';
+                    this.diagram.remove(node);
+                }
+                this.diagram.refreshDiagramLayer();
             }
-            this.diagram.refreshDiagramLayer();
         }
     }
     /** @private */
@@ -5875,7 +5882,7 @@ Remove terinal segment in initial
                     target as Node, (source instanceof Node) ? source : (source as Selector).nodes[0] as Node, this.diagram);
                 this.diagram.refreshDiagramLayer();
             }
-        }
+       }
     }
 
     /** @private */

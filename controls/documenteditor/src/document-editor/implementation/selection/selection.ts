@@ -7839,7 +7839,8 @@ export class Selection {
     public getCharacterFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
         if (paragraph !== start.paragraph && paragraph !== end.paragraph && !paragraph.isEmpty()) {
             this.getCharacterFormatInternal(paragraph, this);
-            return;
+            if(!this.characterFormat.canRetrieveNextCharacterFormat())
+                return;
         }
         if (end.paragraph === paragraph && start.paragraph !== paragraph && end.offset === 0) {
             return;

@@ -1442,7 +1442,7 @@ export class Render {
                     if (window.navigator.userAgent.indexOf('Edge') > -1 || window.navigator.userAgent.indexOf('Trident') > -1) {
                         (tCell.children[0] as HTMLElement).style.display = 'table';
                     } else {
-                        (tCell.children[0] as HTMLElement).style.display = 'block';
+                        (tCell.children[0] as HTMLElement).style.display = this.gridSettings.allowTextWrap ? 'inline' : 'block';
                     }
                     if (tCell.children[0].classList.contains('e-stackedheadercelldiv')) {
                         let span: HTMLElement = createElement('span', {

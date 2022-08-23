@@ -750,9 +750,16 @@ export class DiagramScroller {
                 deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
                 break;
             }
+            /**
+             * In applyScrollLimit method the sign of deltaX and deltaY 
+             * will be changed ,so here we change the sign.
+             * similarly for bringIntoView and bringToCenter.
+             */ 
+            if(factor === 1){deltaX*=-1;deltaY*=-1};
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
         } else {
             factor = 1 / this.currentZoom;
+            if(factor === 1){deltaX*=-1;deltaY*=-1};
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
         }
     }
@@ -788,6 +795,7 @@ export class DiagramScroller {
             centerY = (this.viewPortHeight - (bounds.height) * zoomFactor) / 2 - bounds.y * zoomFactor;
             deltaX += centerX;
             deltaY += centerY;
+            if(factor === 1){deltaX*=-1;deltaY*=-1};
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
         }
     }
@@ -803,12 +811,18 @@ export class DiagramScroller {
     public bringToCenter(bounds: Rect): void {
         const scale: number = this.currentZoom;
         const actualbounds: Rect = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
-        const hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
-        const voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
+        let hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
+        let voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
+        hoffset*=-1;voffset*=-1;
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
     private applyScrollLimit(hOffset: number, vOffset: number,isInteractiveZoomPan:boolean): PointModel {
+        /**
+         * EJ2-60980- ScrollOffset is not updated properly in runtime.
+         * EJ2-62524 - panning is not working properly in diagram.
+         * isInteractiveZoomPan is undefined while setting scrollOffset at runtime.
+         */
         if(this.diagram.scrollSettings.scrollLimit === 'Infinity')
         {
             if(isInteractiveZoomPan === undefined){
@@ -817,68 +831,50 @@ export class DiagramScroller {
         }
         if (this.diagram.scrollSettings.scrollLimit !== 'Infinity') {
             let bounds: Rect;
-            let allowedRight: number;
-            let allowedBottom: number;
             if (this.diagram.scrollSettings.scrollLimit === 'Limited') {
                 const scrollableBounds: Rect = this.diagram.scrollSettings.scrollableArea;
                 bounds = new Rect(scrollableBounds.x, scrollableBounds.y, scrollableBounds.width, scrollableBounds.height);
-                allowedRight = this.diagram.scrollSettings.scrollableArea.width;
-                allowedBottom = this.diagram.scrollSettings.scrollableArea.height;
             }
             bounds = bounds || this.getPageBounds(true);
             bounds.x *= this.currentZoom;
             bounds.y *= this.currentZoom;
             bounds.width *= this.currentZoom;
             bounds.height *= this.currentZoom;
-            if(this.diagram.scrollSettings.scrollLimit === 'Limited'){
-                hOffset = this.getOffset(hOffset,allowedRight,this.diagram.scrollSettings.scrollableArea.x,isInteractiveZoomPan);
-                vOffset = this.getOffset(vOffset,allowedBottom,this.diagram.scrollSettings.scrollableArea.y,isInteractiveZoomPan);
+            if(isInteractiveZoomPan !== undefined){
+            hOffset *= -1;
+            vOffset *= -1;
             }
-            if(this.diagram.scrollSettings.scrollLimit === 'Diagram'){
-            var boundX : number; var boundY : number;
-            allowedRight = Math.max(bounds.right, this.viewPortWidth);
-            allowedBottom = Math.max(bounds.bottom, this.viewPortHeight);
-            if(bounds.x>0){boundX =0}else{boundX = bounds.x}
-            if(bounds.y>0){boundY =0}else{boundY = bounds.y}
-            /**
-             * EJ2-60980- ScrollOffset is not updated properly in runtime.
-             */
-             hOffset = this.getOffset(hOffset,allowedRight,boundX,isInteractiveZoomPan);
-             vOffset = this.getOffset(vOffset,allowedBottom,boundY,isInteractiveZoomPan);
-        }
+            const allowedRight: number = Math.max(bounds.right, this.viewPortWidth);
+            if (!(hOffset <= bounds.x && (hOffset + this.viewPortWidth >= bounds.right ||
+                hOffset >= bounds.right - this.viewPortWidth)
+                || hOffset >= bounds.x && (hOffset + this.viewPortWidth <= allowedRight))) {
+                //not allowed case
+                if (hOffset >= bounds.x) {
+                    hOffset = Math.max(
+                        bounds.x,
+                        Math.min(hOffset, hOffset - (hOffset + this.viewPortWidth - this.vScrollSize - allowedRight)));
+                } else {
+                    const allowed: number = bounds.right - this.viewPortWidth;
+                    hOffset = Math.min(allowed, bounds.x);
+                }
+            }
+            const allowedBottom: number = Math.max(bounds.bottom, this.viewPortHeight);
+            if (!(vOffset <= bounds.y && vOffset + this.viewPortHeight >= bounds.bottom
+                || vOffset >= bounds.y && vOffset + this.viewPortHeight <= allowedBottom)) {
+                //not allowed case
+                if (vOffset >= bounds.y) {
+                    vOffset = Math.max(
+                        bounds.y,
+                        Math.min(vOffset, vOffset - (vOffset + this.viewPortHeight - this.hScrollSize - allowedBottom)));
+                } else {
+                    const allowed: number = bounds.bottom - this.viewPortHeight;
+                    vOffset = Math.min(bounds.y, allowed);
+                }
+            }
+            hOffset *= -1;
+            vOffset *= -1;
         }
         return { x: hOffset, y: vOffset };
-    }
-    /**
-     * Calculate the offset for scroll Limit Diagram and Limited.
-     * @param offset - provide the offset value
-     * @param viewPort - provide the viewport size
-     * @param bounds - provide the bounds value
-     * @param isInteractiveZoomPan - provide the zoom,scroll and pan interaction
-     * @returns {number} offset 
-     */
-    private getOffset(offset:number,viewPort:number,bounds:number,isInteractiveZoomPan:boolean):number
-    {
-            if(offset<=viewPort && isInteractiveZoomPan === undefined){
-                if (offset > bounds) {
-                    offset = -offset;
-                }
-                else{
-                    offset = -bounds;
-                }
-            }
-            else if(-offset<=viewPort && isInteractiveZoomPan !== undefined){
-                if (-offset < bounds) {
-                    offset = -bounds;
-                }
-                else {
-                    offset = offset;
-                }
-            }
-            else{
-                offset = 0;
-            }
-        return offset;
     }
 }
 /** @private */

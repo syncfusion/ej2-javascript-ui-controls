@@ -4341,7 +4341,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         }) as HTMLInputElement;
         if (this.mode === 'Default' || this.mode === 'Box') {
             this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
-            this.inputElement.setAttribute('aria-labelledby', this.chipCollectionWrapper.id);
         }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';

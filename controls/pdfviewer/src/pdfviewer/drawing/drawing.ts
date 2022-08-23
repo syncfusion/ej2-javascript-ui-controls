@@ -3239,10 +3239,11 @@ export class Drawing {
      */
     
     public copy(): Object {
-       
+        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0|| this.pdfViewer.selectedItems.annotations.length!==0)) {
             this.pdfViewer.clipboardData.pasteIndex = 1;
-            this.pdfViewer.clipboardData.clipObject = this.copyObjects();           
-            return this.pdfViewer.clipboardData.clipObject;
+            this.pdfViewer.clipboardData.clipObject = this.copyObjects(); 
+        }          
+        return this.pdfViewer.clipboardData.clipObject;
     }
     /**
      * @private
@@ -3476,11 +3477,12 @@ export class Drawing {
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.removedAnnotationCollection = [];
         }
-        this.pdfViewer.clipboardData.pasteIndex = 0;
-        this.pdfViewer.clipboardData.clipObject = this.copyObjects();
-        this.pdfViewer.renderDrawing(undefined, index);
-        this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
-       
+        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.selectedItems.annotations.length>0) &&  (this.pdfViewer.designerMode || this.pdfViewer.selectedItems.annotations.length>0) && (this.pdfViewer.selectedItems.formFields.length !== 0|| this.pdfViewer.selectedItems.annotations.length!==0)) {
+            this.pdfViewer.clipboardData.pasteIndex = 0;
+            this.pdfViewer.clipboardData.clipObject = this.copyObjects();
+            this.pdfViewer.renderDrawing(undefined, index);
+            this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
+        }
     }
     /**
      * @private

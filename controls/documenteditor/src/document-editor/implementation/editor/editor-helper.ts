@@ -100,16 +100,24 @@ export class HelperMethods {
         }
         return hex;
     }
-    public static convertHexToRgb(colorCode: string): any  {
+    public static convertHexToRgb(colorCode: string): any {
+        let r: number;
+        let g: number;
+        let b: number;
         if (colorCode) {
             colorCode = colorCode.replace(/[^0-9A-â€Œâ€‹F]/gi, '');   // To remove # from color code string.
             const colCodeNo: number = parseInt(colorCode, 16);
-            const r: number = (colCodeNo >> 32) & 255;
-            const g: number = (colCodeNo >> 16) & 255;
-            const b: number = (colCodeNo >> 8) & 255;
-            return { 'r': r, 'g': g, 'b': b };
+            if (colorCode.length == 8) {
+                r = (colCodeNo >> 32) & 255;
+                g = (colCodeNo >> 16) & 255;
+                b = (colCodeNo >> 8) & 255;
+            } else if (colorCode.length == 6) {
+                r = (colCodeNo >> 16) & 255;
+                g = (colCodeNo >> 8) & 255;
+                b = colCodeNo & 255;
+            }
+            return { 'r': r, 'g': g, 'b': b };;
         }
-        return undefined;
     }
 
     public static addCssStyle(css: string): void {

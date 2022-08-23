@@ -2724,15 +2724,84 @@ describe('Grid Touch Selection', () => {
             }, done);
         });
 
-        it('focus 1st row 1st cell and press down arrow ction', () => {
+        it('focus 1st row 2nd cell and press down arrow action', () => {
+            gridObj.isPersistSelection = true;
             let args: any = { action: 'altW', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args);
-            let args1: any = { action: 'downArrow', preventDefault: preventDefault };
+            let args1: any = { action: 'rightArrow', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args1);
         });
 
         it('check selected records and select checkbox action', () => {
+            let args2: any = { action: 'downArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args2);
             expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+            let args3: any = { action: 'space', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args3);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+            let args1: any = { action: 'leftArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args1);
+            let args: any = { action: 'space', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args);
+        });
+
+        it('check selected records and deselect action', () => {
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+            let args: any = { action: 'space', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+        });
+
+        it('change checkboxOnly mode as false and check navigate focus to down', () => {
+            gridObj.selectionSettings.checkboxOnly = false;
+            let args: any = { action: 'downArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args);
+        });
+
+        it('check selected records and clear selection action', () => {
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+            gridObj.clearSelection();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-62837 virtualization enabled Grid checkboxOnly keyboard Selection Issue =>', () =>{
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done) => {
+            gridObj = createGrid({
+                    dataSource: data,
+                    allowSelection: true,
+                    enableVirtualization: true,
+                    selectionSettings: { persistSelection: true, checkboxOnly: true },
+                    columns: [
+                    { type: 'checkbox', width: 50 },    
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }]
+            }, done);
+        });
+
+        it('focus 1st row 2nd cell and press down arrow action', () => {
+            gridObj.isPersistSelection = true;
+            let args: any = { action: 'altW', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args);
+            let args1: any = { action: 'rightArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args1);
+        });
+
+        it('check selected records and select checkbox action', () => {
+            let args2: any = { action: 'downArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args2);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+            let args3: any = { action: 'space', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args3);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+            let args1: any = { action: 'leftArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args1);
             let args: any = { action: 'space', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args);
         });

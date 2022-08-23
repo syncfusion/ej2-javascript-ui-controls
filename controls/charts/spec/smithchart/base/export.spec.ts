@@ -133,35 +133,6 @@ describe('smithChart component Spec', () => {
             };
             smithChart.refresh();
         });*/
-
-        it('Checking export', (done: Function) => {
-            smithChart.export('JPEG', 'map');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-        it('Checking export - SVG', (done: Function) => {
-            smithChart.export('SVG', 'map');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-        it('Checking export - PDF', (done: Function) => {
-            smithChart.export('PDF', 'map');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-        it('Checking export - PDF - Potrait', (done: Function) => {
-            smithChart.export('PDF', 'map', PdfPageOrientation.Portrait);
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
         it('Checking to print in multiple element', () => {
             smithChart.loaded = (args: Object): void => {
                 smithChart.print(['container', 'tempElement']);

@@ -481,7 +481,7 @@ export class Renderer {
         let lastLine: LineWidget = paragraphWidet.lastChild as LineWidget;
         let canRenderParagraphBorders: BorderRenderInfo = this.documentHelper.canRenderBorder(paragraphWidet);
         if (leftBorder.lineStyle !== 'None') {
-            startX = paragraphWidet.x - HelperMethods.convertPointToPixel(leftBorder.space);
+            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) - HelperMethods.convertPointToPixel(leftBorder.space);
             endX = startX;
             endY = startY + paragraphWidet.height;
             if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
@@ -498,7 +498,7 @@ export class Renderer {
             this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, leftBorder.lineWidth);
         }
         if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
-            startX = paragraphWidet.x;
+            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
             endX = startX + this.getContainerWidth(paragraphWidet, page);
             startY = paragraphWidet.y + this.getTopMargin(paragraphWidet) - (HelperMethods.convertPointToPixel(topBorder.lineWidth + topBorder.space));
             endY = startY;
@@ -511,7 +511,7 @@ export class Renderer {
             this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, topBorder.lineWidth);
         }
         if (rightBorder.lineStyle !== 'None') {
-            startX = paragraphWidet.x + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
+            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
             startY = endY;
             endX = startX;
             endY = startY + paragraphWidet.height;
@@ -529,7 +529,7 @@ export class Renderer {
             this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, rightBorder.lineWidth);
         }
         if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
-            startX = paragraphWidet.x;
+            startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
             endX = startX + this.getContainerWidth(paragraphWidet, page);
             startY = (paragraphWidet.y + paragraphWidet.height + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - (this.getBottomMargin(paragraphWidet));
             endY = startY;

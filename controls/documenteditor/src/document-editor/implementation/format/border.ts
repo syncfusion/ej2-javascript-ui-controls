@@ -259,7 +259,7 @@ export class WBorder {
         case 'Outset':
         case 'Inset':
         case 'Thick':
-            weight = numberOfLines * borderNumber;
+            weight = this.lineWidth * borderNumber;
             break;
         case 'Dot':
         case 'DashLargeGap':

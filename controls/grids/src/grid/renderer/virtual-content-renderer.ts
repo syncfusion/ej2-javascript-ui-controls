@@ -911,7 +911,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 } else {
                     this.activeKey = this.empty as string;
                 }
-                this.parent.selectRow(rowIndex);
+                if (!this.parent.selectionSettings.checkboxOnly) {
+                    this.parent.selectRow(rowIndex);
+                }
             }
         }
     }

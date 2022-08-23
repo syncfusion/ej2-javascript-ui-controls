@@ -695,11 +695,12 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.parent.setBlazorDiagramProps(true);
         this.parent.realActions |= RealAction.OverViewAction;
+        let canOverview : boolean = true;
         if (this.actionName === 'scale' || this.actionName === 'draw') {
             this.parent.scroller.zoom(zoom / this.parent.scroller.currentZoom, delx, dely, focusPoint);
         } else {
             if (!isBlazor()) {
-                this.parent.pan(delx, dely, focusPoint);
+                this.parent.pan(delx, dely, focusPoint,canOverview);
             } else {
                 this.parent.scroller.zoom(1, delx, dely, focusPoint);
             }

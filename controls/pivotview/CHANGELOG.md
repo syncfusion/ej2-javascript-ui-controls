@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.45 (2022-08-23)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I395797` - Text Wrapping is now working properly in the pivot table.
+
 ## 20.2.43 (2022-08-08)
 
 ### Pivot Table

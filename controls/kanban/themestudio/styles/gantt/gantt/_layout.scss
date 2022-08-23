@@ -71,8 +71,7 @@
           background-color: $connector-point-hover-color;
           border-color: $connector-point-border-color;
           outline: 2px solid $connector-point-hover-outerline-color;
-      }
-
+        }
       }
 
       .e-tab .e-content {
@@ -485,7 +484,6 @@
         line-height: 10px;
         vertical-align: middle;
       }
-
     }
 
     .e-gantt-chart {
@@ -521,13 +519,11 @@
           height: 100%;
           position: absolute;
         }
-
       }
-
 
       .e-timeline-header-container {
         border-bottom-style: solid;
-        border-right-width: 0;
+        border-right: 1px solid;
         overflow: hidden;
         position: relative;
         z-index: 6;
@@ -535,7 +531,6 @@
 
       .e-timeline-header-table-container > thead > tr > th {
         border-left: 0;
-        padding: 0 3px;
       }
 
       .e-timeline-header-table-container {
@@ -557,7 +552,7 @@
 
       .e-timeline-header-table-body > tr {
         display: inline-flex;
-       }
+      }
 
       .e-timeline-top-header-cell,
       .e-timeline-single-header-cell {
@@ -586,10 +581,9 @@
         }
 
         .e-gantt-top-cell-text {
-          padding-left: 8px;
+          padding-left: 11px;
           text-align: left;
         }
-
       }
 
       .e-gantt-grid-lines {
@@ -706,7 +700,7 @@
       .e-indicator-span {
         display: inline-block;
         font-size: 13px;
-        font-weight: 400;
+        font-weight: normal;
         overflow: hidden;
         position: absolute;
         text-overflow: ellipsis;
@@ -739,7 +733,7 @@
           border-color: $gantt-active-background-color;
         }
         @else {
-          border-color:  inherit;
+          border-color: inherit;
         }
         border-top-style: dotted;
         border-top-width: 2px;
@@ -1077,9 +1071,7 @@
         outline: 1px solid;
         outline-offset: 2px;
       }
-
     }
-
   }
 
   .e-gantt-dialog .e-tab .e-tab-header {
@@ -1093,7 +1085,6 @@
       border-style: solid;
       border-width: $gantt-tab-header-border-width;
     }
-
   }
 
   .e-gantt-dialog .e-tab .e-tab-header:not(.e-vertical)::before {
@@ -1129,7 +1120,6 @@
       .e-gridheader {
         border-top-width: 0;
       }
-
     }
 
     .e-edit-form-row {
@@ -1178,6 +1168,7 @@
     .e-richtexteditor .e-rte-content {
       border-bottom-width: $gantt-richtext-content-border-bottom;
       height: $gantt-dialog-rte-content-height;
+      overflow: hidden;
     }
 
     > .e-dlg-content {
@@ -1200,7 +1191,6 @@
         height: auto !important; // sass-lint:disable-line no-important
         width: auto !important; // sass-lint:disable-line no-important
       }
-
     }
   }
 
@@ -1229,7 +1219,7 @@
       height: 26px;
       padding: 4px;
       width: 26px;
-     }
+    }
 
     .e-content {
       border-radius: 4px;

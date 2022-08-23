@@ -114,53 +114,7 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.refresh();
-        });      
-        it('Checking export', (done: Function) => {
-            chartObj.exportModule.export('JPEG', 'chart');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-
-        it('Checking export - SVG', (done: Function) => {
-            chartObj.exportModule.export('SVG', 'chart');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-       it('Checking export - PDF', (done: Function) => {
-            chartObj.exportModule.export('PDF', 'chart');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-        it('Checking export - PDF - Potrait', (done: Function) => {
-            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait);
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });    
-        
-        it('Checking export - PDF - multi controls', (done: Function) => {
-            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450);
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-        
-        it('Checking export - PDF - multi controls width out size', (done: Function) => {
-            chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        }); 
-      
+        });       
     });
     it('memory leak', () => {
         profile.sample();

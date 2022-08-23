@@ -3453,7 +3453,7 @@ export class PdfViewerBase {
         }
     };
     private DeleteKeyPressed(event: KeyboardEvent): void {
-        if (this.pdfViewer.formDesignerModule && this.pdfViewer.designerMode && this.pdfViewer.selectedItems.formFields.length !== 0) {
+        if (this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen && this.pdfViewer.designerMode && this.pdfViewer.selectedItems.formFields.length !== 0) {
             this.pdfViewer.formDesignerModule.deleteFormField(this.pdfViewer.selectedItems.formFields[0].id);
         } else if (this.pdfViewer.annotation && !this.pdfViewer.designerMode) {
             if (this.isTextMarkupAnnotationModule() && !this.getPopupNoteVisibleStatus()) {
@@ -3539,7 +3539,7 @@ export class PdfViewerBase {
         if (this.isShapeBasedAnnotationsEnabled()) {
             let canvas: Rect;
             // eslint-disable-next-line max-len
-            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')||  (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')||(event.target as HTMLElement).classList.contains('e-pdfviewer-signatureformfields')) && this.pdfViewer.annotation ) {
+            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation ||  (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')) {
                 const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
                 const diagram: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
                 if (diagram) {
@@ -5547,7 +5547,7 @@ export class PdfViewerBase {
      */
     public getPageNumberFromClientPoint(clientPoint: Point): number {
         let pointX: number = clientPoint.x + this.viewerContainer.scrollLeft;
-        let pointY: number = clientPoint.y + this.viewerContainer.scrollTop;  
+        let pointY: number = clientPoint.y + this.viewerContainer.scrollTop;
         for (let i: number = 0; i < this.pageCount; i++) {
             let pageTop: number = this.pageSize[i].height + this.viewerContainer.scrollTop;
             if (pointY < (this.pageSize[i].top + pageTop)) {
@@ -5563,9 +5563,9 @@ export class PdfViewerBase {
                     if (this.pageSize[i] != null) {
                         const pageHeight: number = this.getPageHeight(i);
                         if(pageLeft >= 0){
-                            if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[i].width)))) {
-                                return -1;
-                            }
+                        if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[i].width)))) {
+                            return -1;
+                        }
                         }
                         if (verticalScrollPosition <= (this.getPageTop(i) + pageTop)) {
                             return i + 1;
@@ -6093,7 +6093,56 @@ export class PdfViewerBase {
         jsonObject['action'] = 'Download';
         // eslint-disable-next-line
         jsonObject['elementId'] = this.pdfViewer.element.id;
+
+        let annotationsPageList: any = this.getAnnotationsPageList();
+        let formFieldsPageList: any = this.getFormFieldsPageList();
+
+        jsonObject['isAnnotationsExist'] = this.isAnnotationsExist(jsonObject["textMarkupAnnotations"]) || this.isAnnotationsExist(jsonObject["shapeAnnotations"]) || this.isAnnotationsExist(jsonObject["measureShapeAnnotations"]) || this.isAnnotationsExist(jsonObject["stampAnnotations"]) || this.isAnnotationsExist(jsonObject["stickyNotesAnnotation"])  || this.isAnnotationsExist(jsonObject["signatureData"]) || this.isAnnotationsExist(jsonObject["freeTextAnnotation"]) || this.isAnnotationsExist(jsonObject["inkSignatureData"]) || annotationsPageList.length > 0;
+
+        jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
+
+        jsonObject['annotationsPageList'] = JSON.stringify(annotationsPageList);
+        jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
+
         return jsonObject;
+    }
+    /**
+     * @private
+     * @returns {boolean} - Returns whether annotation is present.
+     */
+     private isAnnotationsExist(annotationInfo: string): boolean {
+        // eslint-disable-next-line max-len
+        return !isNullOrUndefined(annotationInfo) ? JSON.parse(annotationInfo).flat(1).length > 0 : false;
+    }
+    /**
+     * @private
+     * @returns {boolean} - Returns whether fields data is present.
+     */
+     private isFieldsDataExist(fieldsData: string): boolean {
+        // eslint-disable-next-line max-len
+        return !isNullOrUndefined(fieldsData) ? (<any>Object).entries(JSON.parse(fieldsData)).length !== 0 : false;
+    }
+    /**
+     * @private
+     * @returns {boolean} - Returns annotations page number list.
+     */
+     private getAnnotationsPageList(): any {
+        // eslint-disable-next-line max-len
+        let annotCollection = this.pdfViewer.annotationCollection .map(a => a.pageNumber);
+        let annotActionCollection = this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName !== "formFields" && value.annotation.formFieldAnnotationType == undefined).map(a => a.pageIndex);
+        let fullPageList = annotCollection.concat(annotActionCollection);
+        return fullPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
+    }
+    /**
+     * @private
+     * @returns {boolean} - Returns form fields page number list.
+     */
+     private getFormFieldsPageList(): any {
+        // eslint-disable-next-line max-len
+        let formFieldsCollection = this.pdfViewer.formFieldCollection.map(a => a.properties.pageNumber);
+        let annotActionCollection = this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName == "formFields" || value.annotation.formFieldAnnotationType != undefined).map(a => a.pageIndex);
+        let fullPageList = formFieldsCollection.concat(annotActionCollection);
+        return fullPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
     }
     /**
      * @private
@@ -7002,13 +7051,7 @@ export class PdfViewerBase {
             if ((e.target as HTMLElement).classList.contains('e-pv-hyperlink')) {
                 offsetX = (e as PointerEvent).offsetX + (e.target as HTMLElement).offsetLeft;
                 offsetY = (e as PointerEvent).offsetY + (e.target as HTMLElement).offsetTop;
-            } else if (((e.target as HTMLElement).classList.contains('e-pv-text')|| ((e.target as HTMLElement).classList.contains('e-pdfviewer-formFields')&& (e.target as HTMLElement).attributes[0].nodeValue!="text")||(e.target as HTMLElement).classList.contains('e-pdfviewer-signatureformfields')) && currentTarget) {
-                const targetParentRect: ClientRect = currentTarget.getBoundingClientRect();
-                offsetX = (e as PointerEvent).clientX - targetParentRect.left;
-                offsetY = (e as PointerEvent).clientY - targetParentRect.top;
-                // eslint-disable-next-line
-            } else if ((e.target as HTMLElement).classList.contains('e-pdfviewer-formFields')&& (e.target as HTMLElement).attributes[0].nodeValue=="text") {
-                currentTarget=(e.target as HTMLElement).parentElement.parentElement;
+            } else if ((e.target as HTMLElement).classList.contains('e-pv-text') && currentTarget) {
                 const targetParentRect: ClientRect = currentTarget.getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
@@ -7698,7 +7741,7 @@ export class PdfViewerBase {
                             this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions, viewerPositions);
                     }
                 } 
-                else if(!this.pdfViewer.formDesignerModule && (event.target.classList.contains('e-pdfviewer-formFields')||event.target.classList.contains('e-pdfviewer-signatureformfields')))
+                else if(!this.pdfViewer.formDesignerModule && event.target.classList.contains('e-pdfviewer-formFields'))
                 {
                     let pageIndex: any = this.pdfViewer.annotation.getEventPageNumber(event);
                     let currentPosition: any = this.getMousePosition(event);

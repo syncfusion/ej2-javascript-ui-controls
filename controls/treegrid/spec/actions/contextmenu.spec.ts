@@ -432,7 +432,6 @@ describe('ContextMenu module', () => {
         });
       });
 
-       
   describe('Localization', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -460,7 +459,7 @@ describe('ContextMenu module', () => {
     afterAll(() => {
       destroy(gridObj);
     });
-  }); 
+  });
 
   describe('EJ2-49323-Add new row with AddRow - Child', () => {
     let gridObj: TreeGrid;
@@ -528,7 +527,7 @@ describe('ContextMenu module', () => {
       destroy(gridObj);
     });
   });
-  
+
     describe('EJ2-59747 - Indent using context menu', () => {
     let gridObj: TreeGrid;
     let actionComplete: (args: CellSaveEventArgs) => void;
@@ -579,7 +578,6 @@ describe('ContextMenu module', () => {
       });
     });
 
-
     describe('EJ2-59747 - Outdent using context menu', () => {
       let gridObj: TreeGrid;
       let actionComplete: (args: CellSaveEventArgs) => void;
@@ -626,6 +624,65 @@ describe('ContextMenu module', () => {
       });
       afterAll(() => {
           destroy(gridObj);
+        });
+      });
+
+      describe('EJ2-62049-ensure the context menu open working while Indent outdent enable', () => {
+        let gridObj: TreeGrid;
+        let actionBegin: () => void;
+        beforeAll((done: Function) => {
+          gridObj = createGrid(
+            {
+              dataSource: sampleData,
+              allowExcelExport: true,
+              allowPdfExport: true,
+              allowSorting: true,
+              childMapping: 'subtasks',
+              allowPaging: true,
+              pageSettings: { pageSize: 10 },
+              treeColumnIndex: 1,
+              editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Row' },
+              toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+              contextMenuItems: ['SortAscending', 'SortDescending',
+              'Edit', 'Delete', 'Save', 'Cancel',
+             'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+             'LastPage', 'NextPage','Indent','Outdent'],
+             columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                  { field: 'taskName', headerText: 'Task Name' },
+                  { field: 'progress', headerText: 'Progress' },
+                  { field: 'startDate', headerText: 'Start Date' }
+                  ]
+            },
+            done
+          );
+        });
+        it('record double click', () => {
+          gridObj.cellEdit = (args?: CellEditArgs): void => {
+            expect(args.columnName).toBe('taskName');
+          };
+          let event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+          });
+          gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+        });
+        it('ensure the cancel action in context menu', (done: Function) => {
+          gridObj.getRows()[2].querySelectorAll('td')[1].innerText = 'test';
+          (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+          let e: Object = {
+          event: (gridObj.grid.contextMenuModule as any).eventArgs,
+          items: gridObj.grid.contextMenuModule.contextMenu.items,
+          parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+          };
+          (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+          (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+          document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Cancel').click();
+          expect(gridObj.getRows()[2].querySelectorAll('td')[1].innerText == "Plan budget").toBe(true);
+           done();
+        });
+        afterAll(() => {
+           destroy(gridObj);
         });
       });
 

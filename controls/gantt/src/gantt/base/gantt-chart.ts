@@ -763,7 +763,7 @@ export class GanttChart {
      * @private
      */
     public expandedGanttRow(args: object): void {
-        if ((isNullOrUndefined(args['gridRow']) || isNullOrUndefined(args['chartRow'])) && this.parent.enableVirtualization) {
+        if ((isNullOrUndefined(args['gridRow']) && this.parent.enableVirtualization) || isNullOrUndefined(args['chartRow'])) {
             return;
         }
         const record: IGanttData = getValue('data', args);

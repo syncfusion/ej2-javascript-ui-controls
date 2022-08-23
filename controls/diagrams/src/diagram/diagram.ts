@@ -11283,6 +11283,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             && canAllowDrop(arg.target)) {
                             addChildToContainer(this, arg.target, clonedObject);
                         } else {
+                            // EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
+                            if((clonedObject as Connector).type === 'Bezier' && (clonedObject as Connector).segments.length > 0) {
+                                (clonedObject as Connector).segments = [];
+                            }
                             value = this.add(clonedObject, true);
                         }
                         if ((clonedObject || value) && canSingleSelect(this)) {

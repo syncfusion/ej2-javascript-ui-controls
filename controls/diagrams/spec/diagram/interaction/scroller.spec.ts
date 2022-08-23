@@ -483,26 +483,6 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-        it('changing scroll offset at runtime', (done: Function) => {
-            let preHorizontalOffset = diagram.scrollSettings.horizontalOffset;
-            let preVerticalOffset = diagram.scrollSettings.verticalOffset;
-            diagram.scrollSettings.horizontalOffset = 100;
-            diagram.scrollSettings.verticalOffset = 100;
-            diagram.dataBind();
-            expect(preHorizontalOffset === 0 && preVerticalOffset === 0 
-                && diagram.scrollSettings.horizontalOffset === 100 && diagram.scrollSettings.verticalOffset === 100).toBe(true);
-            done();
-        });
-        it('changing scroll offset at runtime with negative value', (done: Function) => {
-            let preHorizontalOffset = diagram.scrollSettings.horizontalOffset;
-            let preVerticalOffset = diagram.scrollSettings.verticalOffset;
-            diagram.scrollSettings.horizontalOffset = -200;
-            diagram.scrollSettings.verticalOffset = -200;
-            diagram.dataBind();
-            expect(preHorizontalOffset === 100 && preVerticalOffset === 100 
-                && diagram.scrollSettings.horizontalOffset === 0 && diagram.scrollSettings.verticalOffset === 0).toBe(true);
-            done();
-        });
         it('changing scroll offset at runtime with scroll Limit Infinity', (done: Function) => {
             let preHorizontalOffset = diagram.scrollSettings.horizontalOffset;
             let preVerticalOffset = diagram.scrollSettings.verticalOffset;

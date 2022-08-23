@@ -338,6 +338,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
         const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
+        const currentViewData: Object[] = this.parent.currentViewData; const indexValue: string = 'index';
         if (upScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left')) {
             const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
                 this.parent.element.getBoundingClientRect().height);
@@ -355,6 +356,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 const remains: number = this.endIndex % lastInx;
                 this.endIndex = lastInx;
                 this.startIndex = (this.startIndex - remains) < 0 ? 0 : (this.startIndex - remains);
+            }
+            if (currentViewData.length && ((currentViewData[0][indexValue] - this.startIndex) < (this.parent.pageSettings.pageSize / 2))) {
+                this.startIndex = currentViewData[0][indexValue] - (this.parent.pageSettings.pageSize / 2);
+                this.endIndex = this.startIndex + this.parent.pageSettings.pageSize;
             }
             //var firsttdinx = parseInt(this.parent.getContent().querySelector('.e-content td').getAttribute('index'), 0);
             let rowPt: number = Math.ceil(scrollArgs.offset.top / this.parent.getRowHeight());
@@ -392,6 +397,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             this.startIndex =  !isLastBlock ? lastIndex - this.parent.pageSettings.pageSize : nextSetResIndex;
             this.endIndex = lastIndex;
+            if (currentViewData.length && this.startIndex > currentViewData[0][indexValue] &&
+            ((this.startIndex - currentViewData[0][indexValue]) < (this.parent.pageSettings.pageSize / 2))){
+                this.startIndex = currentViewData[0][indexValue] + (this.parent.pageSettings.pageSize / 2);
+            }
             if (scrollArgs.offset.top > (this.parent.getRowHeight() * this.totalRecords)) {
                 this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
             } else {
