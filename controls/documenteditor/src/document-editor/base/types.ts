@@ -1569,6 +1569,18 @@ export enum CharacterRangeType {
     Tab = 6
 }
 
+export enum FontScriptType {
+    English = 0, // Consider as Default.
+    Hindi = 1,
+    Korean = 2,
+    //To-Do : Should split the chinese script as "Simplified" and "Traditional".
+    Chinese = 3,
+    Arabic = 4,
+    Hebrew = 5,
+    Japanese = 6
+    //To-Do : Should add a enum field for other known scripts. Such as Tamil, Malayalam, Telugu, etc.
+}
+
 /**
  * Specifies the server action types.
  */

@@ -238,7 +238,7 @@ export class Ribbon {
 
     private getPasteBtn(id: string): Element {
         const btn: HTMLElement = this.parent.element.appendChild(
-            this.parent.createElement('button', { id: id + '_paste' }));
+            this.parent.createElement('button', { id: id + '_paste', attrs: { 'type': 'button' } }));
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.pasteSplitBtn = new SplitButton(
             {
@@ -449,7 +449,7 @@ export class Ribbon {
 
     private getChartThemeDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const chartThemeBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart_theme' });
+        const chartThemeBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart_theme', attrs: { 'type': 'button' } });
         chartThemeBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text' }));
         let theme: ChartTheme = 'Material';
         const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
@@ -487,7 +487,7 @@ export class Ribbon {
     }
 
     private getNumFormatDDB(id: string): Element {
-        const numFormatBtn: HTMLElement = this.parent.createElement('button', { id: id + '_number_format' });
+        const numFormatBtn: HTMLElement = this.parent.createElement('button', { id: id + '_number_format', attrs: { 'type': 'button' } });
         numFormatBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'General' }));
         this.numFormatDDB = new DropDownButton({
             items: this.getNumFormatDdbItems(id),
@@ -527,7 +527,7 @@ export class Ribbon {
             },
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
-        this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
+        this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size', attrs: { 'type': 'button' } }));
         return this.fontSizeDdb.element;
     }
 
@@ -535,10 +535,10 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let chartBtn: HTMLElement;
         if (isChart) {
-            chartBtn = this.parent.createElement('button', { id: id + '_chart-btn' });
+            chartBtn = this.parent.createElement('button', { id: id + '_chart-btn', attrs: { 'type': 'button' } });
             chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('Chart') }));
         } else {
-            chartBtn = this.parent.createElement('button', { id: id + '_chart-type-btn' });
+            chartBtn = this.parent.createElement('button', { id: id + '_chart-type-btn', attrs: { 'type': 'button' } });
             chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart_type', innerHTML: l10n.getConstant('ChartType') }));
             this.createChartDdb(chartBtn, false);
         }
@@ -791,7 +791,7 @@ export class Ribbon {
             }
         });
         this.addChartDdb.createElement = this.parent.createElement;
-        const addChartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_addchart' });
+        const addChartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_addchart', attrs: { 'type': 'button' } });
         addChartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: l10n.getConstant('AddChartElement') }));
         this.addChartDdb.appendTo(addChartBtn);
         return this.addChartDdb.element;
@@ -898,7 +898,7 @@ export class Ribbon {
             }
         });
         this.cfDdb.createElement = this.parent.createElement;
-        this.cfDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting' }));
+        this.cfDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting', attrs: { 'type': 'button' } }));
         return this.cfDdb.element;
     }
 
@@ -1149,7 +1149,7 @@ export class Ribbon {
             close: (): void => focus(this.bordersDdb.element)
         });
         this.bordersDdb.createElement = this.parent.createElement;
-        this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
+        this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders', attrs: { 'type': 'button' } }));
         return this.bordersDdb.element;
     }
 
@@ -1316,7 +1316,7 @@ export class Ribbon {
     }
 
     private getFontNameDDB(id: string): Element {
-        const fontNameBtn: HTMLElement = this.parent.createElement('button', { id: id + '_font_name' });
+        const fontNameBtn: HTMLElement = this.parent.createElement('button', { id: id + '_font_name', attrs: { 'type': 'button' } });
         fontNameBtn.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text', innerHTML: 'Calibri' }));
         this.fontNameDdb = new DropDownButton({
             cssClass: 'e-font-family',
@@ -1387,7 +1387,7 @@ export class Ribbon {
             },
         });
         this.datavalidationDdb.createElement = this.parent.createElement;
-        this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation' }));
+        this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation', attrs: { 'type': 'button' } }));
         return this.datavalidationDdb.element;
     }
 
@@ -1416,7 +1416,7 @@ export class Ribbon {
             },
         });
         this.textAlignDdb.createElement = this.parent.createElement;
-        this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align' }));
+        this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align', attrs: { 'type': 'button' } }));
         return this.textAlignDdb.element;
     }
 
@@ -1445,12 +1445,12 @@ export class Ribbon {
             },
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
-        this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align' }));
+        this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align', attrs: { 'type': 'button' } }));
         return this.verticalAlignDdb.element;
     }
 
     private getMergeSplitBtn(id: string): Element {
-        this.parent.element.appendChild(this.parent.createElement('button', { id: id + '_merge' }));
+        this.parent.element.appendChild(this.parent.createElement('button', { id: id + '_merge', attrs: { 'type': 'button' } }));
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.mergeSplitBtn = new SplitButton({
             cssClass: 'e-merge-ddb',
@@ -1612,7 +1612,7 @@ export class Ribbon {
             },
         });
         this.sortingDdb.createElement = this.parent.createElement;
-        this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
+        this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting', attrs: { 'type': 'button' } }));
         return this.sortingDdb.element;
     }
 
@@ -1815,7 +1815,7 @@ export class Ribbon {
             },
         });
         this.clearDdb.createElement = this.parent.createElement;
-        this.clearDdb.appendTo(this.parent.createElement('button', { id: id + '_clear' }));
+        this.clearDdb.appendTo(this.parent.createElement('button', { id: id + '_clear', attrs: { 'type': 'button' } }));
         return this.clearDdb.element;
     }
 
@@ -1970,7 +1970,7 @@ export class Ribbon {
         const cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet());
         const dummyDiv: HTMLElement = this.parent.createElement('div');
         const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
-        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('APPLY')});
+        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('APPLY'), attrs: { 'type': 'button' } });
         const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample', innerHTML: l10n.getConstant('CustomFormatSample') + ':'});
         const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormat'), 'spellcheck': 'false' }});
         const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
@@ -2672,7 +2672,7 @@ export class Ribbon {
     private renderMobileToolbar(): void {
         const toolbarPanel: HTMLElement = this.parent.createElement('div', { className: 'e-toolbar-panel e-ribbon' });
         const toolbar: HTMLElement = this.parent.createElement('div');
-        const ddb: HTMLButtonElement = this.parent.createElement('button') as HTMLButtonElement;
+        const ddb: HTMLButtonElement = this.parent.createElement('button', { attrs: { 'type': 'button' } }) as HTMLButtonElement;
         toolbarPanel.appendChild(toolbar); toolbarPanel.appendChild(ddb);
         toolbarPanel.style.display = 'block';
         this.parent.element.appendChild(toolbarPanel);

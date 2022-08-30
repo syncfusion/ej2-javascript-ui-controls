@@ -3881,7 +3881,9 @@ export abstract class LayoutViewer {
                             tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.tableWidth);
                         }
                         if (tableAlignment === 'Center') {
-                            tableWidth = block.getTableCellWidth();
+                            if (!this.documentHelper.isRowOrCellResizing) {
+                                tableWidth = block.getTableCellWidth();
+                            }
                             leftIndent = (this.clientArea.width - tableWidth) / 2;
                         } else {
                             leftIndent = this.clientArea.width - tableWidth;

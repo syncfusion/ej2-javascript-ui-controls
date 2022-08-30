@@ -3047,3 +3047,54 @@ describe('EJ2-60560 - Scroller thumb is shown when empty record displayed in the
     });
     
 });
+
+
+describe('EJ2-62502 - clear filter testing with ColumnMenu ', ()=>{
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    let dBound: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                allowSorting: true,
+                allowFiltering: true,
+                filterSettings: { type: 'FilterBar',
+                showFilterBarOperator: true },
+                allowPaging: true,
+                groupSettings: { showGroupedColumn: true },
+                showColumnMenu: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Filtering a single records ', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('ShipCountry', 'equal', 'Brazil');
+    });
+    it('Clear filter - checking', (done: Function) => {
+        var ShipCountryColumn = gridObj.getHeaderContent().querySelectorAll('th')[4];
+        dBound = (args?: Object): void => {
+            expect(ShipCountryColumn.querySelector('.e-filtered')).toBe(null);
+            gridObj.actionBegin = null;
+            done();
+        };
+        gridObj.actionBegin = dBound;
+        gridObj.removeFilteredColsByField('ShipCountry');
+    });     
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});
+

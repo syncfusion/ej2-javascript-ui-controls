@@ -65,7 +65,7 @@ export class FormulaBar {
             this.comboBoxInstance.element.parentElement.title = l10n.getConstant('NameBox');
         }
         const insertFnBtn: HTMLElement = fBarWrapper.appendChild(this.parent.createElement('button', {
-            className: 'e-btn e-css e-flat e-icon-btn e-insert-function', attrs: { 'title': l10n.getConstant('InsertFunction') }
+            className: 'e-btn e-css e-flat e-icon-btn e-insert-function', attrs: { 'title': l10n.getConstant('InsertFunction'), 'type': 'button' }
         }));
         insertFnBtn.appendChild(this.parent.createElement('span', { className: 'e-btn-icon e-icons' }));
         this.insertFnRipple = rippleEffect(fBarWrapper, { selector: '.e-insert-function' });
@@ -93,7 +93,7 @@ export class FormulaBar {
     }
     private textAreaFocusIn(): void {
         const formulaPanel: Element = this.parent.element.querySelector('.e-formula-bar-panel');
-        const tickBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn e-css e-flat e-icon-btn e-formula-submit' });
+        const tickBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn e-css e-flat e-icon-btn e-formula-submit', attrs: { 'type': 'button' } });
         tickBtn.appendChild(this.parent.createElement('span', { className: 'e-btn-icon e-icons e-tick-icon' }));
         formulaPanel.classList.add('e-focused');
         formulaPanel.appendChild(tickBtn);

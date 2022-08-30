@@ -25070,3 +25070,41 @@ describe('table track change accept/reject revision validation', () => {
     expect(editor.revisionsInternal.length).toBe(0);
   });
 });
+describe('Paste text with KeepTextOnly', () => {
+  let editor: DocumentEditor = undefined;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: true });
+    DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.appendTo('#container');
+  });
+  afterAll((done) => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    document.body.innerHTML = '';
+    setTimeout(() => {
+      done();
+    }, 1000);
+  });
+  it('Paste text with KeepTextOnly', () => {
+    console.log('Paste text with KeepTextOnly');
+    editor.openBlank();
+    editor.editor.insertText("Hello World");
+    editor.enableLocalPaste = true;
+    editor.selection.select('0;0;6', '0;0;11');
+    editor.selection.copy();
+    editor.selection.select('0;0;0', '0;0;5');
+    editor.editorModule.paste();
+    editor.editor.copiedTextContent = 'World';
+
+    editor.editorModule.applyPasteOptions('KeepTextOnly');
+    expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(2);
+  });
+});

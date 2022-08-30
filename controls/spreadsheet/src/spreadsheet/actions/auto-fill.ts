@@ -35,19 +35,21 @@ export class AutoFill {
     }
 
     private createAutoFillElement(): void {
-        const element: HTMLElement = this.parent.getMainContent();
-        const ele: HTMLElement = this.parent.createElement('div', { className: 'e-autofill' });
-        if (element.lastElementChild && element.lastElementChild.classList.contains('e-ss-overlay')) {
-            element.insertBefore(ele, element.getElementsByClassName('e-ss-overlay')[0]);
-        } else {
-            element.appendChild(ele);
+        if (this.parent.allowAutoFill) {
+            const element: HTMLElement = this.parent.getMainContent();
+            const ele: HTMLElement = this.parent.createElement('div', { className: 'e-autofill' });
+            if (element.lastElementChild && element.lastElementChild.classList.contains('e-ss-overlay')) {
+                element.insertBefore(ele, element.getElementsByClassName('e-ss-overlay')[0]);
+            } else {
+                element.appendChild(ele);
+            }
+            this.autoFillElement = ele;
+            this.getautofillDDB({ id: this.parent.element.id + '_autofilloptionbtn', appendElem: element });
         }
-        this.autoFillElement = ele;
-        this.getautofillDDB({ id: this.parent.element.id + '_autofilloptionbtn', appendElem: element });
     }
 
     private getautofillDDB(args: { id: string, appendElem: HTMLElement }): DropDownButton {
-        const splitBtnElem: HTMLElement = this.parent.createElement('button', { id: args.id, className: 'e-filloption' });
+        const splitBtnElem: HTMLElement = this.parent.createElement('button', { id: args.id, className: 'e-filloption', attrs: { 'type': 'button' } });
         splitBtnElem.appendChild(this.parent.createElement('span', { className: 'e-tbar-btn-text' }));
         this.autoFillDropDown = new DropDownButton({
             cssClass: 'e-dragfill-ddb',

@@ -29,7 +29,7 @@ export function wrapperInitialize(
                 input.setAttribute(element.attributes[index].nodeName, element.attributes[index].nodeValue);
             }
         }
-        attributes(element, { 'class': WRAPPER, 'aria-checked': 'false' });
+        attributes(element, { 'class': WRAPPER });
         element.appendChild(input);
         setValue('ej2_instances', ejInstance, input);
         deleteObject(element, 'ej2_instances');

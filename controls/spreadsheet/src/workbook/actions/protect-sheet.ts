@@ -81,7 +81,7 @@ export class WorkbookProtectSheet {
         const addressInfo = this.parent.getAddressInfo(args.range);
         const indexes: number[] = getSwapRange(addressInfo.indices);
         const sheet: SheetModel = getSheet(this.parent, addressInfo.sheetIndex);
-        const cell: CellModel = { isLocked: args.isLocked ? args.isLocked : false };
+        const isLocked: boolean = args.isLocked ? args.isLocked : false;
         if (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1) {
             for (let i: number = indexes[1]; i <= indexes[3]; i++) {
                 setColumn(sheet, i, { isLocked: args.isLocked });
@@ -89,7 +89,7 @@ export class WorkbookProtectSheet {
         }
         for (let i: number = indexes[0]; i <= indexes[2]; i++) {
             for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                setCell(i, j, sheet, cell, true);
+                setCell(i, j, sheet, { isLocked: isLocked }, true);
             }
         }
         if (args.triggerEvent) {

@@ -1026,7 +1026,7 @@ export class DateTimePicker extends DatePicker {
     }
     private documentClickHandler(event: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>event.target;
-        if ((!isNullOrUndefined(this.popupObject) && (this.inputWrapper.container.contains(target) ||
+        if ((!isNullOrUndefined(this.popupObject) && (this.inputWrapper.container.contains(target) && event.type !== 'mousedown' ||
             (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }

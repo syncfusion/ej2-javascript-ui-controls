@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- `#I394878` - Issue with Date type Between value not render properly while using `setRulesFromSql` method has been fixed.
+
+### QueryBuilder
+
+#### Bug Fixes
+
 - `#I391922` - Issue with Show Buttons option in query builder has been fixed.
 
 ## 20.2.40 (2022-07-26)

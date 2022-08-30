@@ -645,6 +645,16 @@ export class TableProperties {
         }
         this.parentElement.style.display = isShow ? 'block' : 'none';
         if (isShow) {
+            this.updateTabContainerHeight();
+        }
+        this.documentEditor.resize();
+        this.prevContext = this.documentEditor.selection.contextType;
+    }
+    /**
+     * @private
+     */
+    public updateTabContainerHeight(): void {
+        if (this.parentElement && this.parentElement.style.display === 'block') {
             const tabHeaderHeight: HTMLElement = (this.parentElement.getElementsByClassName('e-tab-header')[0] as HTMLElement);
             if (tabHeaderHeight) {
                 const paneHeight: number = this.parentElement.offsetHeight - tabHeaderHeight.offsetHeight;
@@ -652,8 +662,6 @@ export class TableProperties {
                 this.tableTextProperties.element.style.height = paneHeight + 'px';
             }
         }
-        this.documentEditor.resize();
-        this.prevContext = this.documentEditor.selection.contextType;
     }
     public destroy(): void {
         this.container = undefined;

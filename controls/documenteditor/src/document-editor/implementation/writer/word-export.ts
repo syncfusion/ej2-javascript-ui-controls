@@ -5561,6 +5561,9 @@ export class WordExport {
         if (characterFormat.allCaps) {
             this.serializeBoolProperty(writer, 'caps', characterFormat.allCaps);
         }
+        if (characterFormat.complexScript) {
+            this.serializeBoolProperty(writer, 'cs', characterFormat.complexScript);
+        }
         if (!isNullOrUndefined(characterFormat.strikethrough)) {
             switch (characterFormat.strikethrough) {
                 case 'SingleStrike':

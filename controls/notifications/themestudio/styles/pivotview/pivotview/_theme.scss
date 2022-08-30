@@ -311,12 +311,12 @@
     }
 
     .e-stackedheadercelldiv {
-      display: block;
+      display: inline;
     }
 
     .e-stackedheadertext.e-cellvalue,
     .e-stackedheadercelldiv.e-cellvalue {
-      display: inline-block;
+      display: inline;
       padding-left: 12px !important;
       margin-top: 5px;
 
@@ -929,7 +929,7 @@
     .e-expand,
     .e-collapse {
       cursor: pointer;
-      display: inline-block;
+      display: inline;
       height: 18px;
       margin-top: 5px;
       text-align: center;

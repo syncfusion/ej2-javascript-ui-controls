@@ -2185,6 +2185,9 @@ export class FormDesigner {
             }
         }
     }
+    /**
+     * @private
+     */
     public getSignatureBackground(color: string) {
         if (color.includes('#')) {
             if (color.length > 8) {
@@ -6130,6 +6133,9 @@ export class FormDesigner {
             }
         }
     }
+    /**
+     * @private
+     */
     public updateSignatureSettings(newSignatureFieldSettings: any, isInitialField : boolean) {
         isInitialField = !isNullOrUndefined(isInitialField) ? isInitialField : false;
         if (isInitialField) {

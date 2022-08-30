@@ -319,6 +319,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 break;
             case 'placeholder':
                 Input.setPlaceholder(this.placeholder, this.respectiveElement);
+                Input.calculateWidth(this.respectiveElement, this.textboxWrapper.container);
                 break;
             case 'autocomplete':
                 if ( this.autocomplete !== 'on' && this.autocomplete !== '') {

@@ -355,8 +355,12 @@ export class TaskProcessor extends DateProcessor {
         if (baselineEndDate && baselineEndDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
             this.setTime(this.parent.defaultEndTime, baselineEndDate);
         }
+
         if ((ganttProperties.baselineStartDate && baselineEndDate &&
-            (ganttProperties.baselineStartDate.getTime() > baselineEndDate.getTime())) || ganttProperties.isMilestone) {
+            (ganttProperties.baselineStartDate.getTime() > baselineEndDate.getTime())) ||
+            ((!isNullOrUndefined(ganttProperties.baselineStartDate) && !isNullOrUndefined(ganttProperties.startDate) && (ganttProperties.baselineStartDate.getTime() === ganttProperties.startDate.getTime())) 
+            && (!isNullOrUndefined(baselineEndDate) && !isNullOrUndefined(ganttProperties.endDate) && (baselineEndDate.toLocaleDateString() === ganttProperties.endDate.toLocaleDateString())) &&
+                ganttProperties.isMilestone)) {
             baselineEndDate = ganttProperties.baselineStartDate;
         }
         this.parent.setRecordValue('baselineEndDate', this.checkBaselineEndDate(baselineEndDate, ganttProperties), ganttProperties, true);

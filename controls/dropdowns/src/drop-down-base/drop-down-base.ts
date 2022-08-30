@@ -242,6 +242,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isAngular: boolean = false;
     protected isPreventChange: boolean = false;
     protected isDynamicDataChange: boolean = false;
+    protected addedNewItem: boolean = false;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -1312,7 +1313,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     dataSource = this.selectData;
                 }
             }
-            dataSource = this.getModuleName() === 'combobox' && this.selectData && dataSource instanceof Array && dataSource.length < this.selectData.length ? this.selectData : dataSource;
+            dataSource = this.getModuleName() === 'combobox' && this.selectData && dataSource instanceof Array && dataSource.length < this.selectData.length && this.addedNewItem ? this.selectData : dataSource;
+            this.addedNewItem = false;
             this.setListData(dataSource, fields, query, e);
         }
     }
@@ -1573,6 +1575,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (selectedItemValue || itemIndex === 0) {
             this.updateSelection();
         }
+        this.addedNewItem = true;
     }
     protected validationAttribute(target: HTMLElement, hidden: Element): void {
         const name: string = target.getAttribute('name') ? target.getAttribute('name') : target.getAttribute('id');

@@ -350,6 +350,9 @@ export class WUniqueFormat {
         if (property === 'localeIdBidi') {
             return 17;
         }
+        if (property === 'complexScript') {
+            return 18;
+        }
         return 0;
     }
     private static getParaFormatPropertyType(property: string): number {
@@ -552,6 +555,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('localeIdBidi', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('complexScript', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         return true;

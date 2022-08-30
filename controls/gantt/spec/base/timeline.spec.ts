@@ -976,8 +976,8 @@ describe('Gantt-Timeline', () => {
             ganttObj.dataBound = () => {
                 ganttObj.zoomingLevels[1].bottomTier.count=14;
                 ganttObj.zoomIn();
-                expect(ganttObj.currentZoomingLevel.level).toBe(6);
-                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("11/30/2018");
+                expect(ganttObj.currentZoomingLevel.level).toBe(7);
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/24/2018");
                 ganttObj.fitToProject();
                 done();
             }
@@ -1009,6 +1009,39 @@ describe('Gantt-Timeline', () => {
                 expect(ganttObj.timelineSettings.weekStartDay).toBe(1);
                 }
             }
+        });
+    });
+    describe('Project End Date', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: defaultGanttData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                },
+                splitterSettings: {
+                    position: '30%'
+                },
+                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
+                projectStartDate: new Date('01/28/2018'),
+                projectEndDate: new Date('02/07/2018')
+                }, done);
+        });
+        it('Render project end date as in sample', () => {
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/7/2018");
+        });  
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
         });
     });
 });

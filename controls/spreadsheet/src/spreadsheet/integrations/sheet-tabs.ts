@@ -45,14 +45,14 @@ export class SheetTabs {
         });
         const addBtn: HTMLElement = this.parent.createElement('button', {
             className: 'e-add-sheet-tab e-btn e-css e-flat e-icon-btn' + (this.parent.allowInsert ? '' : ' e-disabled'),
-            attrs: { 'title': l10n.getConstant('AddSheet') }
+            attrs: { 'title': l10n.getConstant('AddSheet'), 'type': 'button' }
         });
         addBtn.appendChild(this.parent.createElement('span', { className: 'e-btn-icon e-icons e-add-icon' }));
         addBtn.addEventListener('click', this.addSheetTab.bind(this));
         (addBtn as HTMLButtonElement).disabled = !this.parent.allowInsert;
         panel.appendChild(addBtn);
         this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
-        const ddb: HTMLElement = this.parent.createElement('button', { attrs: { 'title': l10n.getConstant('ListAllSheets') } });
+        const ddb: HTMLElement = this.parent.createElement('button', { attrs: { 'title': l10n.getConstant('ListAllSheets'), 'type': 'button' } });
         panel.appendChild(ddb);
         this.parent.element.appendChild(panel);
         const items: { tabItems: TabItemModel[], ddbItems: ItemModel[] } = this.getSheetTabItems();
@@ -585,7 +585,7 @@ export class SheetTabs {
             const key: string = this.aggregateContent;
             const content: string = `${key}: ${eventArgs[key]}`;
             if (!this.aggregateDropDown) {
-                const aggregateEle: HTMLElement = this.parent.createElement('button', { id: this.parent.element.id + '_aggregate' });
+                const aggregateEle: HTMLElement = this.parent.createElement('button', { id: this.parent.element.id + '_aggregate', attrs: { 'type': 'button' } });
                 document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
                 this.aggregateDropDown = new DropDownButton({
                     content: content,

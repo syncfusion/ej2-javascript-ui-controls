@@ -509,6 +509,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 break;
             case 'width':
                 this.setWidth(newProp.width);
+                Input.calculateWidth(this.element, this.inputObj.container);
                 break;
             case 'cssClass':
                 this.updateCssClass(newProp.cssClass, oldProp.cssClass);

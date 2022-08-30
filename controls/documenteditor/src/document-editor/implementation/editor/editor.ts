@@ -4800,6 +4800,7 @@ export class Editor {
     private defaultPaste(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
         let selection: Selection = this.documentHelper.selection;
         let isRemoved: boolean = true;
+        let layoutWholeDocument: boolean = false;
         //if (!this.isSkipHistory) {
         this.initComplexHistory('Paste');
         //}
@@ -4816,7 +4817,7 @@ export class Editor {
             isRemoved = this.removeSelectedContentInternal(selection, selection.start, selection.end);
         }
         if (isRemoved) {
-            this.pasteContent(widgets, currentFormat);
+            layoutWholeDocument = this.pasteContent(widgets, currentFormat);
         } else if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo = undefined;
         }
@@ -4826,6 +4827,9 @@ export class Editor {
             this.editorHistory.updateComplexHistory();
         } else {
             this.reLayout(selection, selection.isEmpty);
+        }
+        if(layoutWholeDocument) {
+            this.layoutWholeDocument(true);
         }
         this.isPaste = false;
     }
@@ -5202,7 +5206,7 @@ export class Editor {
         //this.reLayout(this.selection, true);
     }
 
-    private pasteContent(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
+    private pasteContent(widgets: BodyWidget[], currentFormat?: WParagraphFormat): boolean {
         this.documentHelper.owner.isShiftingEnabled = true;
         let insertPosition: string = '';
 
@@ -5219,7 +5223,7 @@ export class Editor {
         }
         this.documentHelper.owner.isLayoutEnabled = true;
         this.documentHelper.owner.isPastingContent = true;
-        this.pasteCopiedData(widgets, currentFormat);
+        let layoutWholeDocument: boolean = this.pasteCopiedData(widgets, currentFormat);
 
         let endPosition: string = '';
 
@@ -5237,9 +5241,11 @@ export class Editor {
         this.pasteTextPosition = { startPosition: startPosition, endPosition: end };
         this.documentHelper.owner.isPastingContent = false;
         this.documentHelper.selection.fireSelectionChanged(true);
+        return layoutWholeDocument;
     }
 
-    private pasteCopiedData(bodyWidget: BodyWidget[], currentFormat?: WParagraphFormat): void {
+    private pasteCopiedData(bodyWidget: BodyWidget[], currentFormat?: WParagraphFormat): boolean  {
+        let layoutWholeDocument: boolean = false;
         if (this.documentHelper.layout.isBidiReLayout) {
             this.documentHelper.layout.isBidiReLayout = false;
         }
@@ -5254,7 +5260,7 @@ export class Editor {
                 this.owner.viewer.updatePageBoundingRectangle(this.selection.start.paragraph.bodyWidget, page, page.boundingRectangle.y);
                 this.owner.viewer.updateClientArea(this.selection.start.paragraph.bodyWidget.sectionFormat, page);
             }
-            this.layoutWholeDocument();
+            layoutWholeDocument = true;
         }
         for (let k: number = 0; k < bodyWidget.length; k++) {
             let widgets: BlockWidget[] = bodyWidget[k].childWidgets as BlockWidget[];
@@ -5296,13 +5302,14 @@ export class Editor {
                             table.fitCellsToClientArea(clientWidth);
                         }
                         if (startParagraph.isEmpty() && startParagraph.previousWidget instanceof TableWidget && !this.isPaste) {
-                            return this.insertTableRows(table, startParagraph.previousWidget as TableWidget);
+                             this.insertTableRows(table, startParagraph.previousWidget as TableWidget);
+                             return layoutWholeDocument;
                         }
                     }
                     this.insertBlockInternal(widget);
                 }
             }
-        }
+        } return layoutWholeDocument;
     }
     private generateTableRevision(table: TableWidget): void {
         if (this.owner.enableTrackChanges && !isNullOrUndefined(table)) {
@@ -14618,13 +14625,34 @@ export class Editor {
                     selection.selectParagraphInternal(nextParagraph, true);
                 }
             } else {
-                paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+                if (paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+                    let nextParagraph: ParagraphWidget = paragraph.nextRenderedWidget as ParagraphWidget;
+                    let startingOffset: number = 0;
+                    let nextIndex: number = nextParagraph.childWidgets.length - 1;
+                    paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+                    let currentParagraph: ParagraphWidget = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, true);
+                    if (this.owner.enableTrackChanges && paragraph != undefined && paragraph.characterFormat.revisions.length != 0 && paragraph.characterFormat.revisions[0].revisionType == 'Insertion') {
+                        this.removePrevParaMarkRevision(paragraph, true);
+                        this.deleteParagraphMark(currentParagraph, selection, 0);
+                        this.addRemovedNodes(paragraph);
+                        this.setPositionForCurrentIndex(selection.start, selection.editPosition);
+                        selection.selectContent(selection.start, true);
+                    } else {
+                        this.removePrevParaMarkRevision(paragraph, true);
+                        this.deleteParagraphMark(currentParagraph, selection, 0, true);
+                        this.addRemovedNodes(paragraph);
+                        this.setPositionForCurrentIndex(selection.start, selection.editPosition);
+                        selection.selects(nextParagraph.childWidgets[nextIndex] as LineWidget, startingOffset, true);
+                    }
+                } else {
+                    paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
                 let currentParagraph: ParagraphWidget = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, true);
-                this.removePrevParaMarkRevision(paragraph, true);
-                this.deleteParagraphMark(currentParagraph, selection, 0);
-                this.addRemovedNodes(paragraph);
-                this.setPositionForCurrentIndex(selection.start, selection.editPosition);
-                selection.selectContent(selection.start, true);
+                    this.removePrevParaMarkRevision(paragraph, true);
+                    this.deleteParagraphMark(currentParagraph, selection, 0);
+                    this.addRemovedNodes(paragraph);
+                    this.setPositionForCurrentIndex(selection.start, selection.editPosition);
+                    selection.selectContent(selection.start, true);
+                }
             }
             // if (!isRedoing) {
             this.reLayout(selection);

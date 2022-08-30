@@ -2328,7 +2328,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private documentClickHandler(event: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>event.target;
-        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(target) ||
+        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(target) && event.type !== 'mousedown' ||
             (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }

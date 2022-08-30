@@ -18,10 +18,6 @@ export class TableResizer {
     public resizerPosition: number = -1;
     public currentResizingTable: TableWidget = undefined;
     public startingPoint: Point;
-    /**
-    * @private
-    */
-    public checkCellMinWidth: boolean = false;
     public constructor(node: DocumentEditor) {
         this.owner = node;
         this.documentHelper = this.owner.documentHelper;
@@ -346,9 +342,6 @@ export class TableResizer {
         if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets) || this.resizerPosition < 0) {
             return;
         }
-        if (dragValue < 0) {
-            this.checkCellMinWidth = true;
-        }
         let selectionFlag: boolean = true;
         const selection: Selection = this.owner.selection;
         this.owner.editor.setOffsetValue(selection);
@@ -417,6 +410,9 @@ export class TableResizer {
             table.tableFormat.leftIndent = tableAlignment === 'Left' ? newIndent : 0;
             table.tableHolder.tableWidth = table.tableHolder.getTotalWidth(0);
             this.updateCellPreferredWidths(table);
+            if (table.tableFormat.preferredWidthType !== 'Auto') {
+                table.updateWidth(dragValue);
+            }
             this.updateGridValue(table, true, dragOffset);
         } else if (table !== null && this.resizerPosition === table.tableHolder.columns.length) {
             // Todo: need to handle the resizing of last column and table width.
@@ -431,7 +427,6 @@ export class TableResizer {
         // table.PreserveGrid = false;
         this.owner.isLayoutEnabled = true;
         selection.selectPosition(selection.start, selection.end);
-        this.checkCellMinWidth = false;
     }
     private resizeColumnWithSelection(selection: Selection, table: TableWidget, dragValue: number): boolean {
         //const newIndent: number = table.leftIndent;

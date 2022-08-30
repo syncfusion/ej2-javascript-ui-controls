@@ -829,7 +829,7 @@ export class RowDD {
     }
 
     private onDataBound(): void {
-        if (this.selectedRowColls.length > 0 && this.parent.enableVirtualization) {
+        if (this.selectedRowColls.length > 0 && (this.parent.enableVirtualization || this.parent.allowRowDragAndDrop)) {
             this.parent.selectRows(this.selectedRowColls);
             this.selectedRowColls = [];
         }

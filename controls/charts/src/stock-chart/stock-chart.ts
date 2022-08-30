@@ -1219,16 +1219,20 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                     this.startValue = this.referenceXAxis.visibleRange.min - diff;
                     this.endValue = this.referenceXAxis.visibleRange.max - diff;
                     this.cartesianChart.cartesianChartRefresh(this);
-                    this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min - diff,
-                                                    this.referenceXAxis.visibleRange.max - diff);
+                    if (this.enableSelector) {
+                        this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min - diff,
+                            this.referenceXAxis.visibleRange.max - diff);
+                    }
                 }
             } else {
                 if (this.seriesXMax >= this.referenceXAxis.visibleRange.max + diff) {
                     this.startValue = this.referenceXAxis.visibleRange.min + diff;
                     this.endValue = this.referenceXAxis.visibleRange.max + diff;
                     this.cartesianChart.cartesianChartRefresh(this);
-                    this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min + diff,
-                                                    this.referenceXAxis.visibleRange.max + diff);
+                    if (this.enableSelector) {
+                        this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min + diff,
+                            this.referenceXAxis.visibleRange.max + diff);
+                    }
                 }
             }
 

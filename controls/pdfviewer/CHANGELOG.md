@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## 20.2.46 (2022-08-30)
+
+- `#SF-394117` - Now, Tapping a page with signature field does not moves to another page on mobile devices.
+- `#SF-395979` - Now, Deleted annotations are updated in the annotation collection properly.
+
 ## 20.2.45 (2022-08-23)
 
 - `#SF-389679` -  Now ,form fields color should not be changed on read only mode.

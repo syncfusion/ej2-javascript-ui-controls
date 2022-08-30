@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.2.45 (2022-08-23)
+## 20.2.46 (2022-08-30)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I399484` - The issue with aria-checked accessibility issue in angular checkbox has been fixed.
+
+## 20.2.43 (2022-08-08)
 
 ### Switch
 

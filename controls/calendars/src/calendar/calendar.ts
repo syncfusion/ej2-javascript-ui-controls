@@ -2760,7 +2760,7 @@ export class Calendar extends CalendarBase {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: this.value }, true);
         }
-        if (!this.isMultiSelection && +this.value !== Number.NaN && (+this.value !== +this.previousDate || this.previousDate == null
+        if (!this.isMultiSelection && +this.value !== Number.NaN && (!isNullOrUndefined(this.value) && !isNullOrUndefined(this.previousDate) && +new Date(this.value.toDateString()) !== +new Date(this.previousDate.toDateString()) || this.previousDate == null
             && !isNaN(+this.value))) {
             this.changeEvent(e);
         } else if (!isNullOrUndefined(this.values) && this.previousValues !== this.values.length) {

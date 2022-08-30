@@ -50,7 +50,7 @@ export class EnterKeyAction {
                 blockElement = curElement;
                 curElement = curElement.parentElement;
             }
-            isTableEnter = blockElement.tagName === 'TD' ? false : true;
+            isTableEnter = blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
         if ((e.args as KeyboardEventArgs).which === 13 && (e.args as KeyboardEventArgs).code === 'Enter') {
             if (isNOU(this.startNode.closest('LI')) && isNOU(this.endNode.closest('LI')) && isTableEnter &&
@@ -138,7 +138,10 @@ export class EnterKeyAction {
                                 isFocusedFirst = true;
                             }
                             this.removeBRElement(nearBlockNode);
-                            if (((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
+                            const fireFoxEnterAtMiddle: boolean = Browser.userAgent.indexOf('Firefox') != -1 && this.range.startOffset === 0 && this.range.startContainer === this.range.endContainer &&
+                                this.range.startContainer.nodeName === '#text' && !this.parent.formatter.editorManager.domNode.isBlockNode(this.range.startContainer.previousSibling as Element) &&
+                                this.range.startContainer.parentElement === this.range.startContainer.previousSibling.parentElement;
+                            if (!fireFoxEnterAtMiddle && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
                                 !(!isNOU(this.range.startContainer.previousSibling) &&
                                 (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
                                 let isNearBlockLengthZero: boolean;

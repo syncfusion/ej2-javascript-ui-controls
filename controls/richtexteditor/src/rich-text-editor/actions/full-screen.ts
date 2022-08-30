@@ -62,6 +62,7 @@ export class FullScreen {
                             baseToolbar: this.parent.getBaseToolbarObject()
                         });
                     }
+                    this.parent.refreshUI();
                     this.parent.trigger(events.actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
                 }
             });

@@ -10,6 +10,7 @@ const CLASSNAMES: ClassNames = {
     FLOATINPUT: 'e-float-input',
     FLOATLINE: 'e-float-line',
     FLOATTEXT: 'e-float-text',
+    FLOATTEXTCONTENT: 'e-float-text-content',
     CLEARICON: 'e-clear-icon',
     CLEARICONHIDE: 'e-clear-icon-hide',
     LABELTOP: 'e-label-top',
@@ -78,6 +79,7 @@ export namespace Input {
         }
         validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
+        createSpanElement(inputObject, makeElement);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         privateInputObj = inputObject;
         return inputObject;
@@ -381,6 +383,9 @@ export namespace Input {
     export function setValue(value: string, element: HTMLInputElement | HTMLTextAreaElement,
                              floatLabelType ?: string, clearButton?: boolean): void {
         element.value = value;
+        if (isNullOrUndefined(element.getAttribute('value'))) {
+            calculateWidth(element, element.parentElement);
+        }
         if ((!isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {
             validateLabel(element, floatLabelType);
         }
@@ -421,6 +426,26 @@ export namespace Input {
     }
 
     /**
+     * Set the width to the placeholder when it overflows on the button such as spinbutton, clearbutton, icon etc
+     * ```
+     * E.g : Input.calculateWidth(element, container);
+     * ```
+     *
+     * @param {any} element - Input element which is need to add.
+     * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
+     */
+    export function calculateWidth(element: any, container: HTMLElement): void {
+        if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
+            if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
+                container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
+            }
+            if (element.clientWidth < container.getElementsByClassName('e-float-text-content')[0].clientWidth || container.getElementsByClassName('e-control')[0].clientWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
+                container.getElementsByClassName('e-float-text-content')[0].classList.add('e-float-text-overflow');
+            }
+        }
+    }
+
+    /**
      * Set the width to the wrapper of input element.
      * ```
      * E.g : Input.setWidth('200px', container);
@@ -435,6 +460,7 @@ export namespace Input {
         } else if (typeof width === 'string') {
             container.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
         }
+        calculateWidth(container.firstChild, container);
     }
 
     /**
@@ -451,12 +477,12 @@ export namespace Input {
         const parentElement: HTMLElement = getParentNode(element);
         if (parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
+                parentElement.getElementsByClassName('e-float-text-content')[0] ? parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].children[0].textContent = placeholder : parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
                 parentElement.classList.remove(CLASSNAMES.NOFLOATLABEL);
                 element.removeAttribute('placeholder');
             } else {
                 parentElement.classList.add(CLASSNAMES.NOFLOATLABEL);
-                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
+                parentElement.getElementsByClassName('e-float-text-content')[0] ? parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].children[0].textContent = '' : parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
             }
         } else {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
@@ -635,6 +661,8 @@ export namespace Input {
             const inputObj: InputObject = { container: container};
             input.classList.remove(CLASSNAMES.INPUT);
             createFloatingInput(args, inputObj, makeElement);
+            createSpanElement(inputObj, makeElement);
+            calculateWidth(args.element, inputObj.container);
             const isPrependIcon: boolean = container.classList.contains('e-float-icon-left');
             if (isNullOrUndefined(iconEle)) {
                 if (isPrependIcon) {
@@ -661,6 +689,26 @@ export namespace Input {
             }
         }
         checkFloatLabelType(type, input.parentElement);
+    }
+
+     /**
+     * Create the span inside the label and add the label text into the span textcontent
+     * ```
+     * E.g : Input.createSpanElement(inputObject, makeElement);
+     * ```
+     *
+     * @param {InputObject} inputObject
+     * - Element which is need to get the label
+     * @param {createElementParams} makeElement
+     * - Element which is need to create the span
+     */
+    export function createSpanElement(inputObject: InputObject, makeElement: createElementParams): void {
+        if (inputObject.container.classList.contains('e-outline') && inputObject.container.getElementsByClassName('e-float-text')[0]) {
+            const labelSpanElement: HTMLElement = makeElement('span', { className: CLASSNAMES.FLOATTEXTCONTENT });
+            labelSpanElement.innerHTML = inputObject.container.getElementsByClassName('e-float-text')[0].innerHTML;
+            inputObject.container.getElementsByClassName('e-float-text')[0].innerHTML = '';
+            inputObject.container.getElementsByClassName('e-float-text')[0].appendChild(labelSpanElement);
+        }
     }
 
     /**
@@ -756,6 +804,9 @@ export namespace Input {
                 prependSpan(icon, container, input, internalCreate);
             }
         }
+        if (container.getElementsByClassName('e-input-group-icon')[0] && container.getElementsByClassName('e-float-text-overflow')[0]) {
+            container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');   
+        }
     }
 
     /**
@@ -836,6 +887,7 @@ interface ClassNames {
     FLOATINPUT: string
     FLOATLINE: string
     FLOATTEXT: string
+    FLOATTEXTCONTENT: string
     CLEARICON: string
     CLEARICONHIDE: string
     LABELTOP: string

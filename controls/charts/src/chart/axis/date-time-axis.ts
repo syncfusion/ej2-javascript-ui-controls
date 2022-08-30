@@ -149,7 +149,7 @@ export class DateTime extends NiceInterval {
                     } else {
                         this.min = (
                             new Date(
-                                minimum.getFullYear(), maximum.getMonth(), minimum.getDate(),
+                                minimum.getFullYear(), minimum.getMonth(), minimum.getDate(),
                                 minimum.getHours(), minute + (-interval), 0
                             )
                         ).getTime();

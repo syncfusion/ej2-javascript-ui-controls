@@ -2227,7 +2227,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
             }
-            if (this.editorMode === 'HTML' && this.inputElement && this.inputElement.innerHTML.trim() !== value.trim()) {
+            if (this.editorMode === 'HTML' && this.inputElement && this.inputElement.innerHTML.replace('&amp;', '&').trim() !== value.trim()) {
                 this.inputElement.innerHTML = value;
             } else if (this.editorMode === 'Markdown' && this.inputElement
                 && (this.inputElement as HTMLTextAreaElement).value.trim() !== value.trim()) {

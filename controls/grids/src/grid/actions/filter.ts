@@ -835,7 +835,7 @@ export class Filter implements IAction {
                 }
                 const fltrElement: Element = this.parent.getColumnHeaderByField(column.field);
                 fltrElement.removeAttribute('aria-filtered');
-                if (this.filterSettings.type !== 'FilterBar') {
+                if (this.filterSettings.type !== 'FilterBar' || this.parent.showColumnMenu) {
                     const iconClass: string = this.parent.showColumnMenu && column.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
                 }

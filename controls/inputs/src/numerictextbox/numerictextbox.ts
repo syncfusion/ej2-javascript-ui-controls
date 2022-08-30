@@ -1457,6 +1457,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             switch (prop) {
             case 'width':
                 this.setElementWidth(newProp.width);
+                Input.calculateWidth(this.element, this.container);
                 break;
             case 'cssClass':
                 this.updateCssClass(newProp.cssClass, oldProp.cssClass);
@@ -1484,6 +1485,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 break;
             case 'placeholder':
                 Input.setPlaceholder(newProp.placeholder, this.element);
+                Input.calculateWidth(this.element, this.container);
                 break;
             case 'step':
                 this.step = newProp.step;

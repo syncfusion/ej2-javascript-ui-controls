@@ -482,6 +482,63 @@ export class BezierSegment extends StraightSegment {
         return 'BezierSegment';
     }
 
+    /**
+    * @private
+    * Returns the total points of the bezier curve
+    */
+      public getPoints(segments:BezierSegment,start:PointModel):PointModel[]{
+        let points:PointModel[] = [];
+        if (points.length > 0 || start!= null)
+            {
+                let st:PointModel = points.length > 0 ? points[points.length - 1] : start;
+                let bezier:PointModel[]=this.bezireToPoly(st, segments);
+                points.push.apply(points,bezier);
+            }
+        return points;
+    }
+    
+    /**
+    * @private
+    * Returns the total points of the bezier curve
+    */
+     public bezireToPoly(start:PointModel ,segment:BezierSegment):PointModel[]{
+        let points:PointModel[] = [];
+        if (segment as BezierSegment)
+            {
+                let bezSeg:BezierSegment = segment as BezierSegment;
+                let pt0:PointModel = start;
+                let pt1:PointModel= bezSeg.bezierPoint1;
+                let pt2:PointModel= bezSeg.bezierPoint2;
+                let pt3:PointModel = {x:bezSeg.points[1].x,y:bezSeg.points[1].y} as PointModel;
+                this.flattenCubicBezier(points, pt0 as Point, pt1 as Point, pt2 as Point, pt3 as Point, 10);
+            }
+        return points;
+    }
+
+    /**
+    * @private
+    * Returns the total points of the bezier curve
+    */
+    public flattenCubicBezier(points:PointModel[],ptStart:Point, ptCtrl1:Point,ptCtrl2:Point,ptEnd:Point,tolerance:number){
+
+        let max:number =((Point.findLength(ptStart,ptCtrl1) + Point.findLength(ptCtrl1,ptCtrl2) + Point.findLength(ptCtrl2,ptEnd)) / tolerance);
+        let i:number;
+        for (i = 0; i <= max; i++)
+        {
+            let t:number = i / max;
+            let x:number = (1 - t) * (1 - t) * (1 - t) * ptStart.x +
+                       3 * t * (1 - t) * (1 - t) * ptCtrl1.x +
+                       3 * t * t * (1 - t) * ptCtrl2.x +
+                       t * t * t * ptEnd.x;
+            let y:number = (1 - t) * (1 - t) * (1 - t) * ptStart.y +
+                       3 * t * (1 - t) * (1 - t) * ptCtrl1.y +
+                       3 * t * t * (1 - t) * ptCtrl2.y +
+                       t * t * t * ptEnd.y;
+            points.push({x ,y} as PointModel);
+        }
+    
+    }
+
 }
 
 /**

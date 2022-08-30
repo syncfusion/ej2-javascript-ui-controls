@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.2.46 (2022-08-30)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I399799` - Console error thrown in stock chart issue has been fixed.
+- `#I390359` - Now chart is rendered properly in all pixel resolution.
+
 ## 20.2.45 (2022-08-23)
 
 ### Chart

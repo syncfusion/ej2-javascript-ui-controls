@@ -410,16 +410,16 @@ export class Renderer {
             let topPosition: number = widget.y
             let height: number = widget.y + widget.height;
             //Left border
-            this.renderSingleBorder(color, leftPosition, topPosition, leftPosition, height, 1);
+            this.renderSingleBorder(color, leftPosition, topPosition, leftPosition, height, 1, "Single");
             //Top border
             if (isNullOrUndefined(previousWidget) || !previousWidget.locked || widget.lockedBy !== previousWidget.lockedBy) {
-                this.renderSingleBorder(color, leftPosition, topPosition, leftPosition + pageWidth, topPosition, 1);
+                this.renderSingleBorder(color, leftPosition, topPosition, leftPosition + pageWidth, topPosition, 1, "Single");
             }
             //Right border
-            this.renderSingleBorder(color, leftPosition + pageWidth, topPosition, leftPosition + pageWidth, height, 1);
+            this.renderSingleBorder(color, leftPosition + pageWidth, topPosition, leftPosition + pageWidth, height, 1, "Single");
             if (isNullOrUndefined(nextWidget) || !nextWidget.locked || widget.lockedBy !== nextWidget.lockedBy) {
                 // Bottom border
-                this.renderSingleBorder(color, leftPosition, height, leftPosition + pageWidth, height, 1);
+                this.renderSingleBorder(color, leftPosition, height, leftPosition + pageWidth, height, 1, "Single");
             }
         }
     }
@@ -495,7 +495,7 @@ export class Renderer {
             if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
                 endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
             }
-            this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, leftBorder.lineWidth);
+            this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, leftBorder.lineWidth, leftBorder.lineStyle);
         }
         if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
@@ -508,7 +508,7 @@ export class Renderer {
             if (rightBorder.lineStyle !== 'None') {
                 endX += HelperMethods.convertPointToPixel(rightBorder.space);
             }
-            this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, topBorder.lineWidth);
+            this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, topBorder.lineWidth, topBorder.lineStyle);
         }
         if (rightBorder.lineStyle !== 'None') {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
@@ -526,7 +526,7 @@ export class Renderer {
             if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
                 endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
             }
-            this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, rightBorder.lineWidth);
+            this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, rightBorder.lineWidth, rightBorder.lineStyle);
         }
         if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
@@ -539,7 +539,7 @@ export class Renderer {
             if (rightBorder.lineStyle !== 'None') {
                 endX += HelperMethods.convertPointToPixel(rightBorder.space);
             }
-            this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, bottomBorder.lineWidth);
+            this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, bottomBorder.lineWidth, bottomBorder.lineStyle);
         }
     }
     private getContainerWidth(paraWidget: ParagraphWidget, page: Page): any {
@@ -883,6 +883,7 @@ export class Renderer {
             if (elementBox instanceof ListTextElementBox) {
                 this.renderListTextElementBox(elementBox, left, top, underlineY);
             } else if (elementBox instanceof ImageElementBox) {
+                left += elementBox.padding.left;
                 this.renderImageElementBox(elementBox, left, top, underlineY);
             } else if (elementBox instanceof ShapeElementBox) {
                 let shapeLeft: number = this.getScaledValue(left, 1);
@@ -1527,7 +1528,7 @@ export class Renderer {
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
 
-        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y, tableWidget.x - tableWidget.margin.left - lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth, border.lineStyle);
         // }
 
         border = layout.getTableTopBorder(table.tableFormat.borders);
@@ -1535,7 +1536,7 @@ export class Renderer {
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
 
-        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y - lineWidth / 2, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y - lineWidth / 2, lineWidth, border.lineStyle);
         // }
         border = !table.isBidiTable ? layout.getTableRightBorder(table.tableFormat.borders)
             : layout.getTableLeftBorder(table.tableFormat.borders);
@@ -1543,14 +1544,14 @@ export class Renderer {
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
 
-        this.renderSingleBorder(border.color, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y, tableWidget.x + tableWidget.width + tableWidget.margin.right + lineWidth / 2, tableWidget.y + tableWidget.height, lineWidth, border.lineStyle);
         // }
         border = layout.getTableBottomBorder(table.tableFormat.borders);
         lineWidth = 0;
         // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
 
-        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y + tableWidget.height - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y + tableWidget.height - lineWidth / 2, lineWidth);
+        this.renderSingleBorder(border.color, tableWidget.x - tableWidget.margin.left - lineWidth, tableWidget.y + tableWidget.height - lineWidth / 2, tableWidget.x + tableWidget.width + lineWidth + tableWidget.margin.right, tableWidget.y + tableWidget.height - lineWidth / 2, lineWidth, border.lineStyle);
         // }
     }
     /* eslint-disable  */
@@ -1588,7 +1589,7 @@ export class Renderer {
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
         if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
-            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellWidget.margin.top, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellWidget.margin.top, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth, border.lineStyle);
         } else { 
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
                 let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
@@ -1609,11 +1610,11 @@ export class Renderer {
                     if (cell.y + cell.height < tableCell.y) {
                         continue;
                     } else if (cell.y < tableCell.y && cell.y + cell.height > tableCell.y) {
-                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, tableCell.y - cellTopMargin, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt);
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, tableCell.y - cellTopMargin, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt, border.lineStyle);
                     } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + tableCell.height)) {
-                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt);
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt, border.lineStyle);
                     } else if (cell.y < tableCell.y + tableCell.height && cell.y + cell.height >= tableCell.y + tableCell.height) {
-                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cellBottomMargin, lineWidthInt);
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cellBottomMargin, lineWidthInt, border.lineStyle);
                     } else if (cell.y > tableCell.y + tableCell.height) {
                         break;
                     }
@@ -1632,7 +1633,7 @@ export class Renderer {
                 }
                 if (!isNullOrUndefined(border)) {
                     lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-                    this.renderSingleBorder(border.color, cellX, cellY + lineWidth / 2, cellX + borderInfo.width, cellY + lineWidth / 2, lineWidth);
+                    this.renderSingleBorder(border.color, cellX, cellY + lineWidth / 2, cellX + borderInfo.width, cellY + lineWidth / 2, lineWidth, border.lineStyle);
                     cellX = cellX + borderInfo.width;
                 }
             }
@@ -1641,7 +1642,7 @@ export class Renderer {
             // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             let width: number = 0;
-            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right + width, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right + width, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth, border.lineStyle);
             // }
         }
         let isLastCell: boolean = false;
@@ -1664,7 +1665,7 @@ export class Renderer {
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
 
-            this.renderSingleBorder(border.color, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellWidget.margin.top, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y - cellWidget.margin.top, cellWidget.x + cellWidget.width + cellWidget.margin.right - lineWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth, border.lineStyle);
             // }
         }
         let nextRow: TableRowWidget = tableCell.ownerRow.nextWidget as TableRowWidget;
@@ -1706,7 +1707,7 @@ export class Renderer {
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth, border.lineStyle);
             // }
         }
         border = layout.getCellDiagonalUpBorder(tableCell);
@@ -1714,7 +1715,7 @@ export class Renderer {
         //Renders the cell diagonal up border.
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         if (lineWidth > 0) {
-            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y + cellWidget.height + cellBottomMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y - cellTopMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y + cellWidget.height + cellBottomMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y - cellTopMargin, lineWidth, border.lineStyle);
             // }
         }
         border = layout.getCellDiagonalDownBorder(tableCell);
@@ -1722,7 +1723,7 @@ export class Renderer {
         //Renders the cell diagonal down border.
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         if (lineWidth > 0) {
-            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin, cellWidget.y - cellTopMargin, cellWidget.x + cellWidget.width + cellRightMargin, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth, border.lineStyle);
         }
         // }
     }
@@ -1789,14 +1790,14 @@ export class Renderer {
         return colorValue;
     }
 
-    private renderSingleBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number): void {
+    private renderSingleBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number, lineStyle: string): void {
         this.pageContext.beginPath();
         this.pageContext.moveTo(this.getScaledValue(startX, 1), this.getScaledValue(startY, 2));
         this.pageContext.lineTo(this.getScaledValue(endX, 1), this.getScaledValue(endY, 2));
         this.pageContext.lineWidth = this.getScaledValue(lineWidth);
         // set line color
         this.pageContext.strokeStyle = HelperMethods.getColor(color);
-        if (lineWidth > 0) {
+        if (lineStyle !== "None" && lineStyle !== "Cleared") {
             this.pageContext.stroke();
         }
         this.pageContext.closePath();

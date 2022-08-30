@@ -477,6 +477,10 @@ export class Annotation {
                     else
                         this.updateAnnotationCollection(annotation);
                 }
+                if (this.pdfViewer.formDesignerModule && selectedAnnot.formFieldAnnotationType)
+                    this.updateFormFieldCollection(annotation)
+                else
+                    this.updateAnnotationCollection(annotation);
                 let formFieldObj: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[annotation.id.split("_")[0]];
                 if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField')) {
                     let index: number = this.pdfViewer.formFieldCollections.findIndex(el => el.id === annotation.id.split("_")[0]);

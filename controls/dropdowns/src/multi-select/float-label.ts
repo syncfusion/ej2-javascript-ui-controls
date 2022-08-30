@@ -3,7 +3,7 @@
  * Specifies whether to display the floating label above the input element.
  */
 import { removeClass, addClass, detach } from '@syncfusion/ej2-base';
-import { attributes, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { attributes, isNullOrUndefined, createElement, getUniqueID } from '@syncfusion/ej2-base';
 import { FloatLabelType } from '@syncfusion/ej2-inputs';
 
 const FLOATLINE: string = 'e-float-line';
@@ -31,9 +31,11 @@ export function createFloatLabel(
     placeholder: string): void {
     const floatLinelement: HTMLElement = createElement('span', { className: FLOATLINE });
     const floatLabelElement: HTMLElement = createElement('label', { className: FLOATTEXT });
+    const id: string = element.getAttribute('id') ? element.getAttribute('id') : getUniqueID('ej2_multiselect');
+    element.id = id;
     if (!isNullOrUndefined(element.id) && element.id !== '') {
         floatLabelElement.id = 'label_' + element.id.replace(/ /g, '_');
-        attributes(element, { 'aria-labelledby': floatLabelElement.id });
+        attributes(inputElement, { 'aria-labelledby': floatLabelElement.id });
     }
     if (!isNullOrUndefined(inputElement.placeholder) && inputElement.placeholder !== '') {
         floatLabelElement.innerText = encodePlaceholder(inputElement.placeholder);

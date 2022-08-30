@@ -1394,8 +1394,12 @@ export class ChartRows extends DateProcessor {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
-                this.templateData.ganttProperties.baselineEndDate) {
-                taskBaselineTemplateNode = this.getTaskBaselineNode();
+                this.templateData.ganttProperties.baselineEndDate) {                    
+                    taskBaselineTemplateNode =(
+                        (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
+                    && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+                    this.templateData.ganttProperties.isMilestone)
+                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;
             }
         } else if (this.templateData.ganttProperties.isMilestone) {
             const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
@@ -1404,7 +1408,11 @@ export class ChartRows extends DateProcessor {
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
-                taskBaselineTemplateNode = this.getMilestoneBaselineNode();
+                    taskBaselineTemplateNode =(
+                        (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
+                    && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+                    this.templateData.ganttProperties.isMilestone)
+                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;
             }
         } else {
             const scheduledTask: Boolean = isScheduledTask(this.templateData.ganttProperties);// eslint-disable-line
@@ -1446,7 +1454,11 @@ export class ChartRows extends DateProcessor {
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
-                taskBaselineTemplateNode = this.getTaskBaselineNode();
+                    taskBaselineTemplateNode =(
+                (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
+            && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+            this.templateData.ganttProperties.isMilestone)
+                        ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;
             }
         }
         if (!this.templateData.hasChildRecords) {

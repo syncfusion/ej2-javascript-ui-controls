@@ -2476,6 +2476,11 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
+        const floatLabelElement: HTMLElement = <HTMLElement>this.inputWrapper.container.getElementsByClassName('e-float-text')[0];
+        if (!isNullOrUndefined(this.element.id) && this.element.id !== '' && !isNullOrUndefined(floatLabelElement)) {
+            floatLabelElement.id = 'label_' + this.element.id.replace(/ /g, '_');
+            attributes(this.inputElement, { 'aria-labelledby': floatLabelElement.id });
+        }
         this.renderComplete();
     }
 

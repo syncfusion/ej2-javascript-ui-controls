@@ -53,6 +53,37 @@ describe('EJ2-59705 - Console error thrown when pressing enter key at firefox br
     });
 });
 
+describe('EJ2-62544 - Enter key press after pressing backspace key on the start of the first list removes the previous content', () => {
+    let defaultUserAgent= navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode"><strong>hello</strong>﻿List 1</p><ol><li>List 2</li><li>List 3﻿<br></li></ol>`
+        });
+        done();
+    });
+
+    it('Enter key press after pressing backspace key on the start of the first list removes the previous content', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode').childNodes[1];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p class="focusNode"><strong>hello</strong></p><p>﻿List 1</p><ol><li>List 2</li><li>List 3﻿<br></li></ol>`).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent =defaultUserAgent;
+    });
+});
+
 describe('EJ2-57587 - Many BR are inserted after enter key after the shift + enter is pressed', () => {
     let defaultUserAgent= navigator.userAgent;
     let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";

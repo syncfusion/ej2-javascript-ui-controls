@@ -159,6 +159,7 @@ import { ConnectorFixedUserHandle, NodeFixedUserHandle } from './objects/fixed-u
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandleModel } from './objects/fixed-user-handle-model';
 import { LinearGradient, RadialGradient } from './core/appearance';
 import { SegmentThumbShapes } from './enum/enum';
+import { Point } from './primitives/point';
 
 /**
  * Represents the Diagram control
@@ -7544,35 +7545,31 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     //Method used to get mid point of Bezier Curve
     private getMidPoint(obj: (NodeModel | ConnectorModel)) {
         let centerPoint: number | PointModel;
-        centerPoint = obj.annotations[0] ? obj.annotations[0].offset : 0.5;
         let finalPoint: object;
+        centerPoint = obj.annotations[0] ? obj.annotations[0].offset : 0.5;
         if (obj instanceof Connector && obj.type === 'Bezier') {
-            let points = [
-                [obj.sourcePoint.x, obj.sourcePoint.y],
-                [(obj.segments[0] as BezierSegment).bezierPoint2.x, (obj.segments[0] as BezierSegment).bezierPoint2.y],
-                [(obj.segments[0] as BezierSegment).bezierPoint1.x, (obj.segments[0] as BezierSegment).bezierPoint1.y],
-                [obj.targetPoint.x, obj.targetPoint.y]
-            ];
-            let helperPoints: object[] = [];
-            for (let i = 1; i < 4; i++) {
-                let p = this.findPointOnCurve(points[i - 1], points[i], centerPoint);
-                helperPoints.push(p);
-            }
-            helperPoints.push(this.findPointOnCurve(helperPoints[0], helperPoints[1], centerPoint));
-            helperPoints.push(this.findPointOnCurve(helperPoints[1], helperPoints[2], centerPoint));
-            helperPoints.push(this.findPointOnCurve(helperPoints[3], helperPoints[4], centerPoint));
-            finalPoint = { cx: helperPoints[5][0] - 2, cy: helperPoints[5][1] - 2 }
+            let totalPoints:PointModel[] = this.getBezierPoints(obj)
+            let totalLength:number =Point.getLengthFromListOfPoints(totalPoints);
+            let absoluteLength:number= centerPoint as number * totalLength;
+            let position: PointModel =this.commandHandler.getPointAtLength(absoluteLength,totalPoints,0);
+            finalPoint = { cx: position.x , cy: position.y  }
             this.applyMarginBezier(obj, finalPoint);
         }
         return finalPoint;
     }
 
-    private findPointOnCurve(pointOne: object, pointTwo: object, t: number | any) {
-        let pointOnCurve = [
-            (pointTwo[0] - pointOne[0]) * t + pointOne[0],
-            (pointTwo[1] - pointOne[1]) * t + pointOne[1]
-        ];
-        return pointOnCurve;
+    //(EJ2-62683) Method used to get total points in bezier connector
+    private getBezierPoints(obj:ConnectorModel){
+        let points:PointModel[] = [];
+        let i: number;
+        let source:PointModel= {x:obj.sourcePoint.x,y: obj.sourcePoint.y};
+        points.push(source as PointModel);
+        for (i = 0; i < obj.segments.length; i++){
+            let total:PointModel[]=(obj.segments[i] as BezierSegment).getPoints(obj.segments[i] as BezierSegment,source);
+            points.push.apply(points,total);
+            source = points[points.length - 1];
+        }
+        return points;
     }
 
     /**

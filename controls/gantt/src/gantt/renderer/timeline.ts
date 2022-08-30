@@ -929,7 +929,7 @@ export class Timeline {
                 endDate.setHours(24, 0, 0, 0);
             }
         }
-        if (this.isZooming || this.parent.isLoad) {
+        if ((this.isZooming || this.parent.isLoad) && isNullOrUndefined(this.parent.projectEndDate)) {
             this.updateTimelineAfterZooming(endDate, false);
         }
         return endDate;

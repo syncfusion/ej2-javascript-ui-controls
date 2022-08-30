@@ -521,6 +521,7 @@ export class Layout {
     private layoutBlock(block: BlockWidget, index: number): BlockWidget {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
+            block.splitTextRangeByScriptType(0)
             block.splitLtrAndRtlText(0);
             block.combineconsecutiveRTL(0);
             nextBlock = this.layoutParagraph(block, index);
@@ -1340,9 +1341,9 @@ export class Layout {
     }
     private isNeedToWrapLeafWidget(pargaraph: ParagraphWidget, elementBox: ElementBox): boolean {
         let IsNeedToWrap: boolean = true;
-        return (pargaraph.bodyWidget.floatingElements.length > 0 
+        return (pargaraph.bodyWidget.floatingElements.length > 0
             && (IsNeedToWrap || pargaraph.associatedCell)
-            && !(elementBox instanceof ImageElementBox));
+            && !(elementBox instanceof ShapeBase && (elementBox.textWrappingStyle === 'InFrontOfText' || elementBox.textWrappingStyle === 'Behind')));
     }
     private getMinWidth(currTextRange: TextElementBox, width: number, height: number, rect: Rect): number {
         let text: string = currTextRange.text;
@@ -1559,7 +1560,7 @@ export class Layout {
                         let paragraphLeftIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.leftIndent);
                         let paragarphRightIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.rightIndent);
                         firstLineIndent = ((elementBox.indexInOwner === 0 && elementBox.line.isFirstLine()) && firstLineIndent > 0) ? firstLineIndent : 0;
-                        let currTextRange: ElementBox = elementBox;
+                        let currTextRange: ElementBox = elementBox instanceof TextElementBox ? elementBox : null;
                         let containerWidget: Widget = floatingItem instanceof TableWidget ? floatingItem.containerWidget : floatingItem.line.paragraph.containerWidget;
                         let isnewline: boolean = false;
                         if (elementBox.line.paragraph) {
@@ -1588,17 +1589,7 @@ export class Layout {
                         //     this.viewer.updateClientAreaForTextWrap(rect);
                         //     return rect;
                         // }
-                        if (textWrappingStyle === 'Square') {
-                            //If the floating item intersects the Horizontal line shape, then we fit the shape in the remaining area
-                            if (elementBox instanceof ShapeBase &&
-                                (elementBox as ShapeElementBox).textWrappingStyle === 'Inline') {
-                                if (textWrappingBounds.x - rect.x > 24) {
-                                    floatingItem.width = textWrappingBounds.x - rect.x;
-                                } else {
-                                    floatingItem.width = floatingItem.width - (textWrappingBounds.right - rect.x) - rightIndent;
-                                }
-                            }
-                        }
+
                         /* Since the Microsoft Word has different behavior to calculate minimum width required to fit a word to a side of Table, 
                         the minimum width required changes based upon table border value and table alignment.
                         And this value even differ for different word version, such that 2013, will have different minimum required value, where all other version shares the same logic to calculate minimum width required */
@@ -1620,7 +1611,7 @@ export class Layout {
                             rect.width = rect.width - (textWrappingBounds.right - rect.x) - rightIndent;
                             this.isWrapText = true;
                             let isEntityFitInCurrentLine: boolean = true;
-                            if (table !== null) {
+                            if (!isNullOrUndefined(table)) {
                                 minimumWidthRequired = this.getMinimumWidthRequiredForTable(isBorderValueZero, tableHorizontalPosition, border);
                             }
                             //checks minimum width
@@ -1631,7 +1622,7 @@ export class Layout {
                                 rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0);
                                 //checks minimum width of the single word
                                 let minwidth: number = 0;
-                                if (currTextRange) {
+                                if (!isNullOrUndefined(currTextRange)) {
                                     minwidth = this.getMinWidth(elementBox as TextElementBox, elementBox.width, elementBox.height, rect);
                                 } else {
                                     minwidth = elementBox.width;
@@ -1739,12 +1730,12 @@ export class Layout {
                             this.isWrapText = true;
                             //checks minimum width
                             let minwidth: number = 0;
-                            if (currTextRange) {
+                            if (!isNullOrUndefined(currTextRange)) {
                                 minwidth = this.getMinWidth(currTextRange as TextElementBox, elementBox.width, elementBox.height, rect);
                             } else {
                                 minwidth = elementBox.width;
                             }
-                            if (table !== null) {
+                            if (!isNullOrUndefined(table)) {
                                 minimumWidthRequired = this.getMinimumWidthRequiredForTable(isBorderValueZero, tableHorizontalPosition, border);
                             }
                             if (this.isNeedDoIntermediateWrapping(remainingClientWidth, textWrappingType, rect, elementBox.width, elementBox.paragraph, textWrappingBounds, elementBox, minwidth, minimumWidthRequired)) {
@@ -2780,11 +2771,20 @@ export class Layout {
         lineWidget.children[startIndex].padding.left = paddingLeft;
     }
 
+    private isSplitByHyphen(element: TextElementBox, text: string): boolean {
+        if (!isNullOrUndefined(element.previousElement)) {
+            if (element.previousElement instanceof TextElementBox || element.previousElement instanceof ListTextElementBox) {
+                let test: string = (element.previousElement as TextElementBox).text;
+                return (text.substring(0, 1) === '-') && (test.substring(test.length - 1, test.length) !== ' ');
+            }
+        }
+        return (text.substring(0, 1) === '-');
+    }
     private splitTextForClientArea(lineWidget: LineWidget, element: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
         const paragraph: ParagraphWidget = lineWidget.paragraph;
         let isSplitByWord: boolean = true;
         let index: number = -1;
-        if (!(text.substring(0, 1) === ' ') && !(text.substring(0, 1) === '-')) {
+        if (!(text.substring(0, 1) === ' ') && !this.isSplitByHyphen(element, text)) {
             let textWidth: number = width;
             let characterUptoWS: number = 0;
             characterUptoWS = HelperMethods.trimEnd(text).indexOf(' ') + 1;
@@ -4667,7 +4667,7 @@ export class Layout {
         //cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
         cell.margin.right += (isRightStyleNone && !linestyle) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
-        if (cell.width < cell.sizeInfo.minimumWidth / 2 && this.documentHelper.owner.editor.tableResize.checkCellMinWidth) {
+        if (cell.width < cell.sizeInfo.minimumWidth / 2 && !this.isInitialLoad) {
             cell.width = cell.sizeInfo.minimumWidth / 2;
         }
         return cell;
@@ -8305,6 +8305,7 @@ export class Layout {
         if (isNullOrUndefined(lineToLayout)) {
             lineToLayout = lineWidget;
         }
+        lineToLayout.paragraph.splitTextRangeByScriptType(lineToLayout.indexInOwner);
         lineToLayout.paragraph.splitLtrAndRtlText(lineToLayout.indexInOwner);
         lineToLayout.paragraph.combineconsecutiveRTL(lineToLayout.indexInOwner);
         let bodyWidget: BodyWidget = paragraph.containerWidget as BlockContainer;

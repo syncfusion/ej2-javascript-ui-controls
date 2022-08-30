@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,projectNewData2 } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,projectNewData2,baselineDatas } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -905,6 +905,70 @@ describe('milestone render', () => {
     
     
     
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 2000);
+    });
+});
+describe('milestone render as taskbar ', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: baselineDatas,
+            renderBaseline: true,
+            taskFields : {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate'
+            },
+            columns: [
+                { field: 'TaskName', headerText: 'Service Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'BaselineStartDate', headerText: 'Planned start time' },
+                { field: 'BaselineEndDate', headerText: 'Planned end time' },
+                { field: 'StartDate', headerText: 'Start time' },
+                { field: 'EndDate', headerText: 'End time' },
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            timelineSettings: {
+                timelineUnitSize: 65,
+                topTier: {
+                    unit: 'None',
+                },
+                bottomTier: {
+                    unit: 'Minutes',
+                    count: 15,
+                    format: 'hh:mm a'
+                },
+            },
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            durationUnit: 'Minute',
+            dateFormat: 'hh:mm a',
+            height: '450px',
+            dayWorkingTime: [{ from: 0, to: 24 }],
+            projectStartDate: new Date('03/05/2018 09:30:00 AM'),
+            projectEndDate: new Date('03/05/2018 07:00:00 PM')
+            
+            }, done);
+    });
+    it('milestone renders  duration', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(0);
+        expect(ganttObj.currentViewData[0].ganttProperties.startDate.toDateString()).toBe("Mon Mar 05 2018")
+        expect(ganttObj.currentViewData[0].ganttProperties.endDate.toDateString()).toBe("Mon Mar 05 2018")
+        expect(ganttObj.currentViewData[0].ganttProperties.baselineStartDate.toDateString()).toBe("Mon Mar 05 2018")
+        expect(ganttObj.currentViewData[0].ganttProperties.baselineEndDate.toDateString()).toBe("Mon Mar 05 2018")
+        expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+});
+   
     afterAll(() => {
         destroyGantt(ganttObj);
     });

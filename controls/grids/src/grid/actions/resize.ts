@@ -141,7 +141,7 @@ export class Resize implements IAction {
             headerTable = gObj.getHeaderTable();
             contentTable = gObj.getContentTable();
             headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
-            contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
+            contentTextClone = contentTable.querySelectorAll(`td.e-rowcell:nth-child(${columnIndex + 1}):not(.e-groupcaption):not(.e-detailcell)`);
             if (footerTable) {
                 footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
             }

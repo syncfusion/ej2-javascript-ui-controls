@@ -11,7 +11,7 @@ Chart.Inject(
     SplineSeries, DataLabel, Category, Legend, Tooltip, Export);
 AccumulationChart.Inject(AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel);
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Chart component is used to convert office charts to ej2-charts.
  */
@@ -192,13 +192,8 @@ export class ChartComponent {
     private writeChartSeries(seriesData: any, data: any[], type: string, count: number): any {
         let chartType: string = this.officeChartType(type);
         // let isAreaType: boolean = (type === 'Area_Stacked_100' || type === 'Area' || type === 'Area_Stacked');
-        let seriesFormat: any = seriesData.dataPoints[0];
-        let bColor: string = this.chartFormat(seriesFormat, 'Line');
+        let seriesFormat: any = seriesData.dataPoints[count];        
         let series: any = {};
-        let border: any = {};
-        border.color = bColor;
-        border.width = 1;
-        series.border = border;
         let fill: string;
         series.type = chartType;
         series.dataSource = data;
@@ -208,7 +203,6 @@ export class ChartComponent {
         if (type === 'Bubble') {
             series.size = 'size' + count;
         }
-        
         if (this.isPieType) {
             series.pointColorMapping = 'color';
             if (type === 'Doughnut') {
@@ -216,8 +210,14 @@ export class ChartComponent {
                 series.radius = '70%';
             }
         } else {
+            if(isNullOrUndefined(seriesFormat)){
+                seriesFormat = seriesData.dataPoints[0];
+            }
             fill = this.chartFormat(seriesFormat, chartType);
             series.fill = fill;
+            if (!isNullOrUndefined(seriesFormat.fill.foreColor)) {
+                series.pointColorMapping = 'color';
+            }
         }
         if (type === 'Line_Markers' || type === 'Line_Markers_Stacked' || type === 'Line_Markers_Stacked_100') {
             series.marker = { visible: true };
@@ -333,9 +333,7 @@ export class ChartComponent {
             primaryXAxis.edgeLabelPlacement = 'Shift';
         }
         if (type === 'Scatter_Markers' || type === 'Bubble') {
-            primaryXAxis.minimum = data.minimumValue;
-            primaryXAxis.maximum = data.maximumValue;
-            primaryXAxis.interval = data.majorUnit;
+            this.checkAndSetAxisValue(primaryXAxis, data);
         }
         if (data.hasMajorGridLines) {
             primaryXAxis.majorGridLines = { width: 1 };
@@ -365,9 +363,7 @@ export class ChartComponent {
         if (data.chartTitle) {
             primaryYAxis.title = data.chartTitle;
         }
-        primaryYAxis.minimum = data.minimumValue;
-        primaryYAxis.maximum = data.maximumValue;
-        primaryYAxis.interval = data.majorUnit;
+        this.checkAndSetAxisValue(primaryYAxis, data);
         if (data.hasMajorGridLines) {
             primaryYAxis.majorGridLines = { width: 1 };
         }
@@ -375,6 +371,17 @@ export class ChartComponent {
             primaryYAxis.minorTicksPerInterval = 4;
         }
         return primaryYAxis;
+    }
+    private checkAndSetAxisValue(primaryYAxis: any, data: any): any {
+        if (data.minimumValue !== 0) {
+            primaryYAxis.minimum = data.minimumValue;
+        }
+        if (data.maximumValue !== 0) {
+            primaryYAxis.maximum = data.maximumValue;
+        }
+        if (data.majorUnit !== 0) {
+            primaryYAxis.interval = data.majorUnit;
+        }
     }
 
     private chartData(chart: any, type: string): any[] {
@@ -408,15 +415,41 @@ export class ChartComponent {
             if (type === 'Bubble') {
                 plotValue['size' + j] = yData.size;
             }
-            if (chart.chartType === 'Pie' || chart.chartType === 'Doughnut') {
+            if (chart.chartType === 'Pie' || chart.chartType === 'Doughnut' || chart.chartType === 'Column_Stacked') {
                 let seriesData: any = series[j];
-                let seriesDataPoints: any = seriesData.dataPoints[count];
-                plotValue.color = this.chartFormat(seriesDataPoints, type);
+                let seriesDataPoints: any = seriesData.dataPoints.find((obj: any) => {
+                    return obj.id === count
+                });
+                if (!isNullOrUndefined(seriesDataPoints)) {
+                    plotValue.color = this.chartFormat(seriesDataPoints, type);
+                }
+                else {
+                    if (seriesData.dataPoints.length > 1 && seriesData.dataPoints[count].id === 0) {
+                        seriesDataPoints = seriesData.dataPoints[count];
+                        plotValue.color = this.chartFormat(seriesDataPoints, type);
+                    }
+                    else {
+                        if (!isNullOrUndefined(seriesData.seriesFormat) && !isNullOrUndefined(seriesData.seriesFormat.fill)) {
+                            if (seriesData.seriesFormat.fill.rgb.length > 7) {
+                                plotValue.color = this.getColor(seriesData.seriesFormat.fill.rgb);
+                            }
+                        }
+                    }
+                }
             }
         }
         return plotValue;
     }
-
+    public getColor(color: string): string {
+        if (color.length > 0) {
+            if (color[0] === '#') {
+                if (color.length > 7) {
+                    return color.substr(0, 7);
+                }
+            }
+        }
+        return color;
+    }
     private parseChartLegend(data: any): any {
         let legendSettings: any = {};
         let position: string = data.position;

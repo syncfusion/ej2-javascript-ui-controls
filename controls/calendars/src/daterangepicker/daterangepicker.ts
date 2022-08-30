@@ -3732,7 +3732,7 @@ export class DateRangePicker extends CalendarBase {
         }
         const target: HTMLElement = <HTMLElement>e.target;
         if (!this.inputWrapper.container.contains(target as Node) ||
-            (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]'))) {
+            (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]') && e.type === 'mousedown')) {
             if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
                 this.closeEventArgs && !this.closeEventArgs.cancel)) {
                 e.preventDefault();

@@ -74,6 +74,7 @@ export class PagerDropDown {
             dataSource: pageSizesArray,
             value: defaultValue.toString() as string,
             change: this.onChange.bind(this),
+            placeholder: this.pagerModule.getLocalizedLabel('pagerDropDown'),
             cssClass: this.pagerModule.cssClass ? 'e-alldrop' + ' ' + this.pagerModule.cssClass : 'e-alldrop'
         });
         this.dropDownListObject.appendTo(input);

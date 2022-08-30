@@ -2040,7 +2040,7 @@ describe('QueryBuilder', () => {
             queryBuilder.setRulesFromSql("Category NOT IN('S', 'R')");
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('notequal');
             queryBuilder.setRulesFromSql("Date BETWEEN '1/12/2021' AND '2/12/2021' OR Date = '1/12/2021'");
-            expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].operator).toEqual('greaterthanorequal');  
+            expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('greaterthanorequal');  
             queryBuilder.setRulesFromSql("Category IN('S', 'R') OR Category IN('S', 'R')");
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].predicates[0].operator).toEqual('equal');
             queryBuilder.setRulesFromSql("Date = '1/12/2021' AND Date = '3/12/2021'");
@@ -2464,7 +2464,7 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getGroup(document.getElementById('querybuilder_group0')).condition).toEqual('and');
             let slider: Slider = queryBuilder.element.querySelector('.e-control.e-slider').ej2_instances[0];
             slider.value = 30; slider.dataBind();
-            expect(queryBuilder.rule.rules[0].value).toEqual(32);
+            expect(queryBuilder.rule.rules[0].value).toEqual(30);
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
             let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
@@ -3146,6 +3146,50 @@ describe('QueryBuilder', () => {
             queryBuilder.rule.rules[0].value = 'Football'
             items[1].click();
             expect(queryBuilder.rule.rules[0].value).toEqual("");
+        });
+
+        it('EJ2-62285 - Date type Between value not render properly while use setRulesFromSql method', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'EmployeeID', type: 'number' },
+                { field: 'FirstName', label: 'FirstName', type: 'string' },
+                { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+                { field: 'Title', label: 'Title', type: 'string' },
+                { 
+                    field: 'HireDate', label: 'HireDate',
+                    operators: [
+                      {
+                        key: 'Greater Than',
+                        value: 'greaterthan',
+                      },
+                      {
+                        key: 'Greater Than Or Equal',
+                        value: 'greaterthanorequal',
+                      },
+                      {
+                        key: 'Less Than',
+                        value: 'lessthan',
+                      },
+                      {
+                        key: 'Less Than Or Equal',
+                        value: 'lessthanorequal',
+                      },
+                      {
+                        key: 'Between',
+                        value: 'between',
+                      },
+                    ] ,type: 'date', format: 'dd/MM/yyyy' 
+                },
+                { field: 'Country', label: 'Country', type: 'string' },
+                { field: 'City', label: 'City', type: 'string' }
+            ];
+            
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                enableRtl: true,
+                columns: customFieldData
+            }, '#querybuilder');
+            queryBuilder.setRulesFromSql("FirstName = 'Keerthi' AND HireDate BETWEEN '01/08/2022' AND '05/08/2022' AND Country = 'Erode'");
+            expect(queryBuilder.rule.rules[1].value).toEqual(['01/08/2022', '05/08/2022']);
         });
         
     });

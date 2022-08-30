@@ -3,7 +3,7 @@ import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
-    TextWrappingStyle, TextWrappingType, CharacterRangeType
+    TextWrappingStyle, TextWrappingType, CharacterRangeType, FontScriptType
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
@@ -1187,6 +1187,204 @@ export class ParagraphWidget extends BlockWidget {
         return width;
     }
 
+    private isArabicChar(character: string): boolean {
+        //Arabic characters https://en.wikipedia.org/wiki/Arabic_script#Unicode
+        return ((character >= String.fromCharCode(1536) && character <= String.fromCharCode(1791)) //Script-Arab, Arabic characters https://en.wikipedia.org/wiki/Arabic_(Unicode_block)
+            || (character >= String.fromCharCode(1872) && character <= String.fromCharCode(1919)) //Script-Arab, Arabic Supplement characters https://en.wikipedia.org/wiki/Arabic_Supplement
+            || (character >= String.fromCharCode(2208) && character <= String.fromCharCode(2303)) //Script-Arab, Arabic Extended-A characters https://en.wikipedia.org/wiki/Arabic_Extended-A
+            || (character >= String.fromCharCode(64336) && character <= String.fromCharCode(65023)) //Script-Arab, Arabic Presentation Forms-A characters https://en.wikipedia.org/wiki/Arabic_Presentation_Forms-A
+            || (character >= String.fromCharCode(65136) && character <= String.fromCharCode(65279))); //Script-Arab, Arabic Presentation Forms-B characters https://en.wikipedia.org/wiki/Arabic_Presentation_Forms-B                
+    }
+    private isHebrewChar(character: string): boolean {
+        return ((character >= String.fromCharCode(1424) && character <= String.fromCharCode(1535)) //Script-Hebr, Hebrew characters https://en.wikipedia.org/wiki/Hebrew_alphabet#Unicode_and_HTML (https://en.wikipedia.org/wiki/Hebrew_(Unicode_block))
+            || (character >= String.fromCharCode(64285) && character <= String.fromCharCode(64335))); //Script-Hebr, Hebrew Alphabetic Presentation Forms characters https://en.wikipedia.org/wiki/Alphabetic_Presentation_Forms                                                                    
+    }
+    private isHindiChar(character: string): boolean {
+        //Hindi characters are comes under the Devanagari scripts.
+        //The Unicode Standard defines three blocks for Devanagari. https://en.wikipedia.org/wiki/Devanagari#Unicode              
+        return ((character >= String.fromCharCode(2304) && character <= String.fromCharCode(2431)) //Devanagari (U+0900–U+097F), https://en.wikipedia.org/wiki/Devanagari_(Unicode_block)
+            || (character >= String.fromCharCode(43232) && character <= String.fromCharCode(43263)) //Devanagari Extended (U+A8E0–U+A8FF), https://en.wikipedia.org/wiki/Devanagari_Extended
+            || (character >= String.fromCharCode(7376) && character <= String.fromCharCode(7423))); //Vedic Extensions (U+1CD0–U+1CFF), https://en.wikipedia.org/wiki/Vedic_Extensions
+    }
+    private isKoreanChar(character: string): boolean {
+        return (
+            //Korean characters https://en.wikipedia.org/wiki/Korean_language_and_computers#Hangul_in_Unicode
+            (character >= String.fromCharCode(44032) && character <= String.fromCharCode(55203)) //Hangul Syllables characters https://en.wikipedia.org/wiki/Hangul_Syllables
+            || (character >= String.fromCharCode(4352) && character <= String.fromCharCode(4607)) //Hangul Jamo characters https://en.wikipedia.org/wiki/Hangul_Jamo_(Unicode_block)
+            || (character >= String.fromCharCode(12592) && character <= String.fromCharCode(12687)) //Hangul Compatibility Jamo characters https://en.wikipedia.org/wiki/Hangul_Compatibility_Jamo
+            || (character >= String.fromCharCode(43360) && character <= String.fromCharCode(43391)) //Hangul Jamo Extended-A characters https://en.wikipedia.org/wiki/Hangul_Jamo_Extended-A
+            || (character >= String.fromCharCode(55216) && character <= String.fromCharCode(55295)) //Hangul Jamo Extended-B characters https://en.wikipedia.org/wiki/Hangul_Jamo_Extended-B
+            || (character >= String.fromCharCode(44032) && character <= String.fromCharCode(55215)) //Hangul_Syllables characters https://en.wikipedia.org/wiki/Hangul_Syllables
+        );
+    }
+    private isJapanese(character: string): boolean {
+        return (
+            //Japanese and Ainu languages
+            (character >= String.fromCharCode(12448) && character <= String.fromCharCode(12543)) //Katakana characters https://en.wikipedia.org/wiki/Katakana_(Unicode_block)
+            || (character >= String.fromCharCode(12352) && character <= String.fromCharCode(12447)) //Hiragana characters https://en.wikipedia.org/wiki/Hiragana_(Unicode_block)
+        );
+    }
+    private isChineseChar(character: string): boolean {
+        //To-Do: Should handle a Chinese characters as two separate scripts such as Chinese Simplified and Chinese Traditional.
+        return (
+            //Chinese characters https://en.wikipedia.org/wiki/Han_unification#Unicode_ranges
+            //Chinese characters are comes under the Han script.
+            (character >= String.fromCharCode(19968) && character <= String.fromCharCode(40959)) //CJK Unified Ideographs(4E00–9FFF), https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
+            || (character >= String.fromCharCode(13312) && character <= String.fromCharCode(19903)) //CJK Unified Ideographs Extension A(3400–4DBF), https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_A
+            //|| (character >= '\u20000' && character <= '\u2A6DF') //CJK Unified Ideographs Extension B(20000–2A6DF), https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_B
+            // As we don't hold a 32 bit character into char data type, and also it get splitted into two char value, when it is 32 bit.
+            // So, below we have added a maximum and least char range of the above 32 bit character.
+            // We can split a 32 bit character into two 16 bit characters by "Char.ConvertFromUtf32(0x20000).ToCharArray()" built-in method.
+            || (character >= String.fromCharCode(55360) && character <= String.fromCharCode(55401)) // Represents a start and end range of first character code, when we split a character between (character >= '\u20000' && character <= '\u2A6DF').
+            || (character >= String.fromCharCode(56320) && character <= String.fromCharCode(57055)) // Represents a start and end range of second character code, when we split a character between (character >= '\u20000' && character <= '\u2A6DF').
+            || (character >= String.fromCharCode(43360) && character <= String.fromCharCode(43391)) //CJK Compatibility Ideographs(F900–FAFF), https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs
+            || (character >= String.fromCharCode(65280) && character <= String.fromCharCode(65519)) //Halfwidth and Fullwidth Forms, https://en.wikipedia.org/wiki/Halfwidth_and_Fullwidth_Forms_(Unicode_block).
+            || (character >= String.fromCharCode(12288) && character <= String.fromCharCode(12351)) //CJK Symbols and Punctuation, https://en.wikipedia.org/wiki/CJK_Symbols_and_Punctuation
+        );
+    }
+
+    private getFontScriptType(inputCharacter: string): FontScriptType {
+        // Return FontScriptType as Hindi, if input character is in-between Hindi character ranges.
+        if (this.isHindiChar(inputCharacter))
+            return FontScriptType.Hindi;
+        // Return FontScriptType as Korean, if input character is in-between Korean character ranges.
+        else if (this.isKoreanChar(inputCharacter))
+            return FontScriptType.Korean;
+        // Return FontScriptType as Japanese, if input character is in-between Japanese character ranges.
+        else if (this.isJapanese(inputCharacter))
+            return FontScriptType.Japanese;
+        // Return FontScriptType as Chinese, if input character is in-between Chinese character ranges.
+        else if (this.isChineseChar(inputCharacter))
+            return FontScriptType.Chinese;
+        // Return FontScriptType as Arabic, if input character is in-between Arabic character ranges.
+        else if (this.isArabicChar(inputCharacter))
+            return FontScriptType.Arabic;
+        // Return FontScriptType as Hebrew, if input character is in-between Hebrew character ranges.
+        else if (this.isHebrewChar(inputCharacter))
+            return FontScriptType.Hebrew;
+        // Return FontScriptType as English, for remaining character ranges.
+        else
+            return FontScriptType.English;
+    }
+
+    public splitTextByFontScriptType(inputText: string, fontScriptTypes: FontScriptType[]): string[] {
+        let splittedText: string[] = [];
+        //Retrun the empty array, if input text is Null or Empty.
+        if (isNullOrUndefined(inputText)
+            || (!isNullOrUndefined(inputText) && inputText === '')) {
+            return splittedText;
+        }
+        let text: string = '';
+        let prevCharacterType: FontScriptType = FontScriptType.English;
+        let currCharacterType: FontScriptType = FontScriptType.English;
+        for (let i: number = 0; i < inputText.length; i++) {
+            // Gets a FontScriptType for the current character.
+            // As per the Microsoft application behavior, we need to consider a space (\u0020) as previous character type.
+            // So, that we can avoid a text splitting based on space character.
+            if (inputText[i] != String.fromCharCode(32)) {
+                // && !(char.IsHighSurrogate(inputText.charAt(i)) || char.IsLowSurrogate(inputText.charAt(i)))) { //Skip the setting of script type for surrogate character.
+                currCharacterType = this.getFontScriptType(inputText[i]);
+            }
+
+            //Add a current text into splitted text collection, when previous character type is not equival to current type.
+            if (text != '' && currCharacterType !== prevCharacterType) {
+                //Add splitted text and it's FontScriptType into the collection.
+                splittedText.push(text);
+                fontScriptTypes.push(prevCharacterType);
+                //Reset the text value.
+                text = '';
+            }
+            //Add a current character.
+            text += inputText[i];
+            //Assign a current character type as previous type.
+            prevCharacterType = currCharacterType;
+        }
+        //Add a final text.
+        if (text != '') {
+            //Add splitted text and it's FontScriptType into the collection.
+            splittedText.push(text);
+            fontScriptTypes.push(currCharacterType);
+            //Reset the text value.
+            text = '';
+        }
+        return splittedText;
+    }
+    public splitTextRangeByScriptType(lineIndex: number): void {
+        let isField: boolean = false;
+        let iIncrementer: number = 1;
+        // Iterates the items for textrange in the paragraph.
+        if (this.childWidgets.length > 0) {
+            let lineWidget: LineWidget = this.childWidgets[lineIndex] as LineWidget;
+            for (let i = lineIndex + 1; i < this.childWidgets.length; i++) {
+                let nextLineWidget: LineWidget = this.childWidgets[i] as LineWidget;
+                for (let m: number = 0; m < nextLineWidget.children.length; m++) {
+                    let element: ElementBox = nextLineWidget.children[m];
+                    lineWidget.children.push(element);
+                    element.line = lineWidget;
+                }
+                this.childWidgets.splice(i, 1);
+                i--;
+            }
+            for (let i: number = 0; i < lineWidget.children.length; i += iIncrementer) {
+                let elementBox: ElementBox = lineWidget.children[i];
+                iIncrementer = 1;
+
+                // InlineContentControl inlineContentControl = paraItems[i] as InlineContentControl;
+                // if (inlineContentControl != null)
+                //     this.splitTextRangeByScriptType(inlineContentControl.ParagraphItems, splitter);
+
+                ////Gets the span to split.
+                let textElement: TextElementBox = undefined;
+                if (elementBox instanceof TextElementBox) {
+                    textElement = elementBox as TextElementBox;
+                }
+                if (elementBox instanceof FieldElementBox && elementBox.fieldType == 0) {
+                    isField = true;
+                } else if (elementBox instanceof FieldElementBox && elementBox.fieldType === 2) {
+                    isField = false;
+                }
+
+                if (textElement != undefined && !isField) {
+                    // let hasHintPath: boolean = textElement.characterFormat.IdctHint != FontHintType.Default;
+                    let fontScriptTypes: FontScriptType[] = [];
+                    // Split a current text part text based on FontScriptType.
+                    let splitedTextCollection: string[] = this.splitTextByFontScriptType(textElement.text, fontScriptTypes);
+
+                    if (splitedTextCollection.length > 1) {
+                        for (let j: number = 0; j < splitedTextCollection.length; j++) {
+                            let text: string = splitedTextCollection[j];
+                            if (j > 0) {
+                                //Split text range.
+                                //Clone the source text range.
+                                let clonedtextElement: TextElementBox = textElement.clone();
+                                clonedtextElement.text = text;
+                                //Sets a script type of WTextRange.
+                                clonedtextElement.scriptType = fontScriptTypes[j];
+                                //Insert the splitted text ranges in order.
+                                lineWidget.children.splice(i + j, 0, clonedtextElement);
+                                clonedtextElement.line = lineWidget;
+                                iIncrementer++;
+                            }
+                            else {
+                                //Replace the source text range with splitted text.
+                                textElement.text = text;
+                                //Sets a script type of WTextRange.
+                                textElement.scriptType = fontScriptTypes[j];
+                            }
+                        }
+                    }
+                    else if (splitedTextCollection.length > 0) {
+                        //Sets a script type of WTextRange.
+                        textElement.scriptType = fontScriptTypes[0];
+                    }
+
+                    // Clear the FontScriptType collection.
+                    fontScriptTypes.length = 0;
+                }
+            }
+        }
+    }
+
     /**
      * @private
      */
@@ -1200,16 +1398,6 @@ export class ParagraphWidget extends BlockWidget {
         let textHelper: TextHelper = documentHelper.textHelper;
         if (this.childWidgets.length > 0) {
             let lineWidget: LineWidget = this.childWidgets[lineIndex] as LineWidget;
-            for (let i = lineIndex + 1; i < this.childWidgets.length; i++) {
-                let nextLineWidget: LineWidget = this.childWidgets[i] as LineWidget;
-                for (let m: number = 0; m < nextLineWidget.children.length; m++) {
-                    let element: ElementBox = nextLineWidget.children[m];
-                    lineWidget.children.push(element);
-                    element.line = lineWidget;
-                }
-                this.childWidgets.splice(i, 1);
-                i--;
-            }
             for (let i: number = 0; i < lineWidget.children.length; i += iIncrementer) {
                 let elementBox: ElementBox = lineWidget.children[i];
                 iIncrementer = 1;
@@ -1298,7 +1486,14 @@ export class ParagraphWidget extends BlockWidget {
                     let currentTxtRange: TextElementBox = elementBox;
                     let nextTxtRange: TextElementBox = lineWidget.children[i + 1] as TextElementBox;
 
-                    if (currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft &&
+                    if (currentTxtRange.characterFormat.complexScript && currentTxtRange.scriptType == nextTxtRange.scriptType &&
+                        currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
+                        !textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && !textHelper.isWordSplitChar(nextTxtRange.text[0])
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {
+                        currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
+                        lineWidget.children.splice(i + 1, 1);
+                        i--;
+                    } else if (currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && textHelper.isWordSplitChar(nextTxtRange.text[0])
                         && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat)) {
@@ -3342,7 +3537,7 @@ export class TableCellWidget extends BlockWidget {
             if (ownerCell.columnIndex === 0 || (ownerCell.cellIndex === 0 && ownerCell.ownerRow.rowFormat.gridBefore > 0)) {
                 isFirstCell = true;
             }
-            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && !leftBorder.isBorderDefined) || isNullOrUndefined(leftBorder)) {
+            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
                 if (isFirstCell) {
                     leftBorder = rowBorders.left;
                     if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
@@ -3435,7 +3630,7 @@ export class TableCellWidget extends BlockWidget {
                 || (ownerCell.cellIndex === ownerCell.ownerRow.childWidgets.length - 1)) {
                 isLastCell = true;
             }
-            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && !rightBorder.isBorderDefined) || isNullOrUndefined(rightBorder)) {
+            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
                 if (isLastCell) {
                     rightBorder = rowBorders.right;
                     if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
@@ -3516,7 +3711,7 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(topBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isFirstRow: boolean = isNullOrUndefined(ownerCell.ownerRow.previousWidget);
-            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && !topBorder.isBorderDefined) || isNullOrUndefined(topBorder)) {
+            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
                 if (isFirstRow) {
                     topBorder = rowBorders.top;
                     if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
@@ -3608,7 +3803,7 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isLastRow: boolean = isNullOrUndefined(ownerCell.ownerRow.nextWidget);
-            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && !bottomBorder.isBorderDefined) || isNullOrUndefined(bottomBorder)) {
+            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
                 if (isLastRow) {
                     bottomBorder = rowBorders.bottom;
                     if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
@@ -4832,6 +5027,11 @@ export class TextElementBox extends ElementBox {
      * @private
      */
     public istextCombined?: boolean = false;
+    /**
+     * @private
+     */
+    public scriptType?: FontScriptType = FontScriptType.English;
+
     constructor() {
         super();
         this.errorCollection = [];

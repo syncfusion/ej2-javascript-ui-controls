@@ -1,7 +1,7 @@
 import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel } from '../../../src/index';
+import { CellModel, SheetModel, getCell } from '../../../src/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { EventHandler } from '@syncfusion/ej2-base';
@@ -325,7 +325,7 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I309407, EJ2-60617 ->', () => {
+        describe('I309407, EJ2-60617, EJ2-62809 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }], height: 1000,
@@ -354,6 +354,14 @@ describe('Editing ->', () => {
                 helper.edit('A2', '.');
                 expect(helper.invoke('getCell', [1, 0]).textContent).toBe('.')
                 expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('.');
+                done();
+            });
+            it('Repeated character combined with the lock cells has improper behavior', (done: Function) => {
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.invoke('lockCells', ['I1:J1', false]);
+                helper.edit('I1', 'text');
+                expect(getCell(0, 8, sheet).value).toBe("text");
+                expect(getCell(0, 9, sheet).value).not.toBe('text');
                 done();
             });
         });

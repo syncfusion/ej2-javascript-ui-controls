@@ -326,7 +326,7 @@ export class Sort {
         dialogElem.appendChild(headerTabElement);
         const addButton: HTMLElement = this.parent.createElement('button', {
             className: 'e-btn e-sort-addbtn e-flat',
-            innerHTML: l10n.getConstant('AddColumn')
+            innerHTML: l10n.getConstant('AddColumn'), attrs: { 'type': 'button' }
         });
         const footer: Element = this.parent.element.querySelector('.e-customsort-dlg .e-footer-content');
         footer.insertBefore(addButton, footer.firstElementChild);

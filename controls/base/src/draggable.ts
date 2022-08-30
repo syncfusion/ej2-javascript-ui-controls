@@ -509,9 +509,6 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (isChangeTouch && (evt.changedTouches.length !== 1)) {
             return;
         }
-        if (isChangeTouch) {
-            evt.preventDefault();
-        }
         let intCordinate: Coordinates = this.getCoordinates(evt);
         let pos: PositionModel;
         let styleProp: CSSStyleDeclaration = getComputedStyle(this.element);
@@ -541,6 +538,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             let ele: HTMLElement = this.getHelperElement(evt);
             if (!ele || isNullOrUndefined(ele)) {
                 return;
+            }
+            if (isChangeTouch) {
+                evt.preventDefault();
             }
             let dragTargetElement: HTMLElement = this.helperElement = ele;
             this.parentClientRect = this.calculateParentPosition(dragTargetElement.offsetParent);

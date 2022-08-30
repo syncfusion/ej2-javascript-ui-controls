@@ -1735,6 +1735,9 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.localeIdBidi)) {
                 characterFormat.localeIdBidi = sourceFormat.localeIdBidi;
             }
+            if (!isNullOrUndefined(sourceFormat.complexScript)) {
+                characterFormat.complexScript = sourceFormat.complexScript;
+            }
         }
     }
     private getColor(color: string): string {

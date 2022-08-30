@@ -5189,7 +5189,10 @@ Remove terinal segment in initial
         return intersect;
     }
 
-    private getPointAtLength(length: number, points: PointModel[], angle: number): PointModel {
+    /**
+    * @private
+    */
+    public getPointAtLength(length: number, points: PointModel[], angle: number): PointModel {
         angle = 0;
         let run: number = 0; let pre: PointModel; let found: PointModel = { x: 0, y: 0 };
         let pt: PointModel;

@@ -1826,6 +1826,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 let item: MenuItemModel[];
                 if (!Object.keys(oldProp.items).length) {
                     this.updateItem(this.element, this.items);
+                    if (this.enableScrolling && this.element.parentElement.classList.contains('e-custom-scroll')) {
+                        if (this.element.classList.contains('e-vertical')) {
+                            addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl);
+                        } else {
+                            addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+                        }
+                    }
                     if (!this.hamburgerMode) {
                         for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
                             detach(wrapper.lastElementChild);
@@ -1846,13 +1853,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         navIdx.length = 0;
                     }
                 }
-                if (this.enableScrolling) {
-                    if (this.element.classList.contains('e-vertical')){
-                        addScrolling(this.createElement, wrapper, this.element, 'vscroll', this.enableRtl);
-                    } else {
-                        addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
-                    }
-                }
                 break;
             }
             }
@@ -1863,6 +1863,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (isBlazor() && !this.isMenu) {
             ul = this.removeChildElement(ul);
         } else {
+            if (this.enableScrolling) {
+                const wrapper1: HTMLElement = this.getWrapper() as HTMLElement;
+                let ul1: HTMLElement = wrapper1.children[0] as HTMLElement;
+                if (this.element.classList.contains('e-vertical')) {
+                    destroyScroll(getInstance(ul1, VScroll) as VScroll, ul1);
+                } else {
+                    destroyScroll(getInstance(ul1, HScroll) as HScroll, ul1);
+                }
+            }
             ul.innerHTML = '';
         }
         const lis: HTMLElement[] = [].slice.call(this.createItems(items).children);

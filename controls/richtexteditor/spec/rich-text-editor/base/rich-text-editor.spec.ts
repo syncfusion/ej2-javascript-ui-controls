@@ -936,6 +936,39 @@ describe('RTE base module', () => {
         });
     });
 
+
+    describe("EJ2-62642 - Blur called when @amp; is on the RTE content", () => {
+        let rteObj: RichTextEditor;
+        let focusIn: boolean = false;
+        let focusOut: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>The custom command "insert special character" is configured as the last item of the too&amp;lbar. Click on the command and choo😒se the special character you want to include from the popup.</p>',
+                focus: () => {
+                    focusIn = true;
+                },
+                blur: () => {
+                    focusOut = true;
+                }
+            });
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Blur called when @amp; is on the RTE content with individual text nodes', () => {
+            document.body.focus();
+            (rteObj as any).onDocumentClick({ target: document.body });
+            dispatchEvent(rteObj.contentModule.getEditPanel(), 'focusout');
+            expect(focusIn).toBe(false);
+            expect(focusOut).toBe(true);
+            focusIn = false;
+            focusOut = false;
+            expect(rteObj.inputElement.innerHTML === '<p>The custom command "insert special character" is configured as the last item of the too&amp;lbar. Click on the command and choo😒se the special character you want to include from the popup.</p>').toBe(true);
+            expect(rteObj.inputElement.textContent === 'The custom command "insert special character" is configured as the last item of the too&lbar. Click on the command and choo😒se the special character you want to include from the popup.').toBe(true);
+        });
+    });
+
     describe("Iframe - RTE content focus and blur event handler testing", () => {
         let rteObj: RichTextEditor;
         let focusIn: boolean = false;

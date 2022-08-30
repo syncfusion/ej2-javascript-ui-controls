@@ -1103,7 +1103,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
     }
     protected getMinWidth(item: PanelModel): number {
-        return (item.minSizeX) * this.getCellSize()[0];
+        return (((item.minSizeX) * this.getCellSize()[0]) + (item.minSizeX - 1) * this.cellSpacing[0]);
     }
 
     protected getMaxWidth(item: PanelModel): number {
@@ -1111,7 +1111,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     protected getMinHeight(item: PanelModel): number {
-        return (item.minSizeY) * this.getCellSize()[1];
+        return (((item.minSizeY) * this.getCellSize()[1]) + (item.minSizeY - 1) * this.cellSpacing[1]);
     }
 
     protected getMaxHeight(item: PanelModel): number {

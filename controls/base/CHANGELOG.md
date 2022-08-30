@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.46 (2022-08-30)
+
+### Common
+
+#### Bug Fixes
+
+- `#SF378052`, `#F176538` - The touch scroll issue in `Grid` has been resolved.
+
 ## 20.2.39 (2022-07-19)
 
 ### Common

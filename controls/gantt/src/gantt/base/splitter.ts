@@ -68,7 +68,9 @@ export class Splitter {
                         this.splitterObject.paneSettings[1].size = null;
                         this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
                     }
-                    this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
+                    if (isNullOrUndefined(this.parent.projectEndDate)) {
+                        this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
+                    }
                     callBackPromise.resolve(splitterResizedArgs);
                 });
                 return callBackPromise;

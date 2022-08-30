@@ -1019,6 +1019,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.toolbarModule) {
                 this.toolbarModule.toolbar.refreshOverflow();
             }
+            if (this.showPropertiesPane && this.tableProperties) {
+                this.tableProperties.updateTabContainerHeight();
+            }
         }
     }
     /**

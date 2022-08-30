@@ -747,7 +747,9 @@ export class Selection {
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
             //selects the field range
             this.documentHelper.selection.selectRange(startPosition, endPosition);
-            this.triggerFormFillEvent(isKeyBoardEvent);
+            if (!isReplacingFormResult) {
+                this.triggerFormFillEvent(isKeyBoardEvent);
+            }
         }
     }
     /**

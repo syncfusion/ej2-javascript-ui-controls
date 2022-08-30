@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.46 (2022-08-30)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I387276` - The issue with "Enable Scrolling not working properly when we dynamically set scroll to menu bar" has been resolved.
+
 ## 20.2.44 (2022-08-16)
 
 ### TreeView

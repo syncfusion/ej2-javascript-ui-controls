@@ -1046,7 +1046,7 @@ export class FormFields {
                         let widthRatio: number = 1;
                         if (textWidth > bounds.width)
                            widthRatio =  bounds.width / textWidth;
-                        annot.fontSize = this.getFontSize(Math.floor((annot.fontSize * widthRatio))); 
+                        annot.fontSize = this.getFontSize(Math.ceil((annot.fontSize * widthRatio))); 
                     }
                     signString = annot.data;
                     signatureFontFamily = annot.fontFamily;
@@ -1234,7 +1234,7 @@ export class FormFields {
      * @private
      */
     public getDefaultBoundsforSign(bounds:any):any{
-       return { x: bounds.x + 10, y: bounds.y + 10, width: bounds.width - 21, height: bounds.height - 21 }
+        return { x: bounds.x + 7, y: bounds.y + 6, width: bounds.width - 15, height: bounds.height - 14 };
     }
     /**
      * @private
@@ -2649,7 +2649,7 @@ export class FormFields {
      * @param {number} fontSize - Font size.
      * @returns {number} - Returns the font size.
     */
-    public getFontSize(fontSize: number): number {
-        return (fontSize % 2 === 0) ? fontSize : --fontSize;
+     public getFontSize(fontSize: number): number {
+        return fontSize ;;
     }
 }

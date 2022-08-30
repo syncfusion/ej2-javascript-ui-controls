@@ -4088,16 +4088,36 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const rowuID: string = 'uid';
         let rowObjects: Object = this.contentModule.getRows();
         const pkName: string = this.getPrimaryKeyFieldNames()[0];
-        const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this);
         if (this.groupSettings.columns.length > 0 && this.aggregates.length > 0) {
             rowObjects = (<Row<{}>[]>rowObjects).filter((row: Row<{}>) => row.isDataRow);
         }
         const selectedRow: Row<Column> = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0] as Row<Column>;
-        if (!isNullOrUndefined(selectedRow) && this.element.querySelectorAll('[data-uid=' + selectedRow[rowuID] + ']').length) {
+        const selectRowEle: Element[] = [].slice.call(this.element.querySelectorAll('[data-uid=' + selectedRow[rowuID] + ']'));
+        if (!isNullOrUndefined(selectedRow) && selectRowEle.length) {
             selectedRow.changes = rowData;
-            refreshForeignData(selectedRow, this.getForeignKeyColumns(), selectedRow.changes);
-            rowRenderer.refresh(selectedRow, this.getColumns() as Column[], true);
+            if (this.isFrozenGrid()) {
+                const currentTbl: Element = parentsUntil(selectRowEle[0], 'e-table');
+                const currentTblName: string = currentTbl.parentElement.matches('.e-frozen-left-header,.e-frozen-left-content') ? 'left'
+                    : currentTbl.parentElement.matches('.e-frozen-right-header,.e-frozen-right-content') ? 'right' : 'movable';
+                const mTr: Row<Column> = this.getMovableRowsObject()[selectedRow.index];
+                this.setFrozenRowData(mTr, rowData);
+                if (currentTblName === 'left') {
+                    const lTr: Row<Column> = this.getRowsObject()[selectedRow.index];
+                    this.setFrozenRowData(lTr, rowData);
+                }
+                if (currentTblName === 'right' || this.frozenRightColumns) {
+                    const rTr: Row<Column> = this.getFrozenRightRowsObject()[selectedRow.index];
+                    this.setFrozenRowData(rTr, rowData);
+                }
+            }
+            else if (this.frozenRows) {
+                const fRowTr: Row<Column> = this.getRowsObject()[selectedRow.index];
+                this.setFrozenRowData(fRowTr, rowData);
+            }
+            else{
+                this.setFrozenRowData(selectedRow, rowData);
+            }
             if (this.aggregates.length > 0) {
                 this.notify(events.refreshFooterRenderer, {});
                 if (this.groupSettings.columns.length > 0) {
@@ -4109,7 +4129,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-
+    private setFrozenRowData(fTr: Row<Column>, rowData: Object): void {
+        const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this);
+        fTr.changes = rowData;
+        refreshForeignData(fTr, this.getForeignKeyColumns(), fTr.changes);
+        rowRenderer.refresh(fTr, this.getColumns() as Column[], true);
+    }
+    
     /**
      * Gets a cell by row and column index.
      *

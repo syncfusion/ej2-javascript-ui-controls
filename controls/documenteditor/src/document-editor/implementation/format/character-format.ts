@@ -133,6 +133,12 @@ export class WCharacterFormat {
     public set allCaps(value: boolean) {
         this.setPropertyValue('allCaps', value);
     }
+    public get complexScript(): boolean {
+        return this.getPropertyValue('complexScript') as boolean;
+    }
+    public set complexScript(value: boolean) {
+        this.setPropertyValue('complexScript', value);
+    }
 
     public constructor(node?: Object) {
         this.ownerBase = node;
@@ -277,6 +283,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('localeIdBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('complexScript', property, propValue, uniqueCharFormatTemp);
 
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
@@ -344,6 +351,9 @@ export class WCharacterFormat {
         case 'localeIdBidi':
             value = 0;
             break;
+        case 'complexScript':
+            value = false;
+            break;
         }
         return value;
     }
@@ -359,7 +369,8 @@ export class WCharacterFormat {
             && this.highlightColor === format.highlightColor && this.bidi === format.bidi
             && this.bdo === format.bdo)
             && this.allCaps === format.allCaps
-            && this.localeIdBidi === format.localeIdBidi;
+            && this.localeIdBidi === format.localeIdBidi
+            && this.complexScript === format.complexScript;
     }
     public isSameFormat(format: WCharacterFormat): boolean {
         return this.baseCharStyle === format.baseCharStyle &&
@@ -473,6 +484,9 @@ export class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('localeIdBidi'))) {
             this.localeIdBidi = format.getValue('localeIdBidi') as number;
+        }
+        if (isNullOrUndefined(this.getValue('complexScript'))) {
+            this.complexScript = format.getValue('complexScript') as boolean;
         }
     }
 }

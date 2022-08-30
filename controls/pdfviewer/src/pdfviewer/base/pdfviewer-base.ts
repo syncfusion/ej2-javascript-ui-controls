@@ -4342,8 +4342,10 @@ export class PdfViewerBase {
             if (Math.abs(speed) > 1.5) {
                 // eslint-disable-next-line
                 let scrollTop: any = (difference) + ((duration) * speed);
+            if (scrollTop > 0) {
                 this.viewerContainer.scrollTop += scrollTop;
                 this.updateMobileScrollerPosition();
+                }             
             }
         }
         this.diagramMouseUp(event);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.46 (2022-08-30)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I396820` - The issue with "minSizeX and minSizeY properties not working while using cellSpacing in Dashboard Layout component" has been resolved.
+
 ## 20.2.39 (2022-07-19)
 
 ### Dashboard Layout

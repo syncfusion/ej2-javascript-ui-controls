@@ -277,7 +277,7 @@ export class RowDD {
                                 let currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData) {
                                     return e[uniqueTaskID] === ganttData[i][uniqueTaskID];
                                 })[0];
-                                if (currentData.index > droppedRecord.index) {
+                                if (currentData && currentData.index > droppedRecord.index) {
                                     endIndex = currentData.index;
                                     break;
                                 }
@@ -288,7 +288,7 @@ export class RowDD {
                                 let currentData: IGanttData = this.parent.currentViewData.filter(function (e: IGanttData) {
                                     return e[uniqueTaskID] === ganttData[i][uniqueTaskID];
                                 })[0];
-                                if (currentData.index > draggedRecord.index) {
+                                if (currentData && currentData.index > draggedRecord.index) {
                                     endIndex = currentData.index;
                                     break;
                                 }

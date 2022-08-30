@@ -44,7 +44,7 @@ export class SheetRender implements IRenderer {
         }
         cell.appendChild(
             this.parent.createElement('button', { className: 'e-selectall', id: `${this.parent.element.id}_select_all`,
-            attrs: { 'aria-label': this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll') } }));
+            attrs: { 'aria-label': this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll'), 'type': 'button' } }));
     }
 
     private updateLeftColGroup(width?: number, rowHdr?: HTMLElement): void {
