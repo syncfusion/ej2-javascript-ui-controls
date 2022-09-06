@@ -2190,8 +2190,10 @@ export class Drawing {
         const elements: PdfAnnotationBaseModel[] = [];
         // eslint-disable-next-line
         let oldValues: any = { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY };
-        obj.wrapper.offsetX += tx;
-        obj.wrapper.offsetY += ty;
+        //bug (EJ2-62649) : fixed an issue with difficulty on moving/ resizing free text annotation that added in edge of viewer
+        let newDiff : any = this.moveInsideViewer(obj,tx,ty);
+        obj.wrapper.offsetX += newDiff.tx;
+        obj.wrapper.offsetY += newDiff.ty;
         if (isLineShapes(obj) || obj.shapeAnnotationType === 'Polygon') {
             if (obj.wrapper.children.length) {
                 const nodes: DrawingElement[] = obj.wrapper.children;
@@ -2924,9 +2926,61 @@ export class Drawing {
         const constraints: boolean = this.checkBoundaryConstraints(undefined, undefined, (obj as PdfAnnotationBaseModel).pageIndex, obj.wrapper.bounds);
         if (!constraints) {
             this.scaleObject(1 / sw, 1 / sh, refPoint, node, element, refObject);
+            //bug (EJ2-62649) : fixed an issue with difficulty on moving/ resizing free text annotation that added in edge of viewer 
+            // eslint-disable-next-line
+            if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0,9) === 'free_text' || (obj as any).id.slice(0,8) === 'freetext') ){
+                let newDiff : any = this.moveInsideViewer(obj);
+                this.nodePropertyChange(obj, {
+                    bounds: { width: obj.wrapper.width, height: obj.wrapper.height, x: obj.wrapper.offsetX + newDiff.tx, y: obj.wrapper.offsetY + newDiff.ty}
+                    });
+            }
         }
         return constraints;
     }
+
+    //bug (EJ2-62649) : Implemnted method for calculating optimal bound for free text annotation that outside viewer container 
+    private moveInsideViewer(obj: PdfAnnotationBaseModel, tx? : number, ty? : number) : any{
+        tx = tx ? tx: 0;
+        ty = ty ? ty: 0;
+        if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0,9) === 'free_text' || (obj as any).id.slice(0,8) === 'freetext') ){
+            // eslint-disable-next-line
+             let canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (obj as any).pageIndex);
+             if(canvas){
+                 let bounds : Rect = obj.wrapper.bounds;
+                 let width : number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
+                 let height : number = canvas.clientHeight / this.pdfViewer.viewerBase.getZoomFactor();
+                 let right : number =  bounds.right;
+                 let left : number = bounds.left;
+                 let top : number =  bounds.top; 
+                 let bottom : number = bounds.bottom;
+                 // eslint-disable-next-line
+                 if (!(right + tx <= width - 3 && left + tx >= 1 && bottom + ty <= height - 3 && top + ty >= 1)) {
+                    let txNew : number  = 0;
+                    let tyNew : number = 0;
+                    if (!(right <= width - 3)) {
+                        txNew = width - right - 3;
+                    }
+                    if (!(left >= 1)) {
+                        txNew = txNew - left + 1;
+                    }
+                    if (!(bottom <= height - 3)) {
+                        tyNew = height - bottom - 3;
+                    }
+                    if (!(top >= 1)) {
+                        tyNew = tyNew - top + 1;
+                    }
+                    if(txNew !== 0){
+                        tx = txNew;
+                    }
+                    if(tyNew !== 0){
+                        ty = tyNew;
+                    }
+                 }
+             }
+         }
+         return {tx : tx , ty : ty};
+    }
+
     /**
      * @private
      * @param {number} tx - Specified the tx value.

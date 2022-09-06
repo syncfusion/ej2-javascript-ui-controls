@@ -479,6 +479,10 @@ export class Layout {
                         const element: ElementBox = widget.children[k];
                         if (element instanceof ShapeBase && element.textWrappingStyle !== "Inline") {
                             element.y = (childWidget as Widget).y + element.verticalPosition;
+                            if (element instanceof ShapeElementBox) {
+                                const topMargin: number = element.textFrame.marginTop;
+                                this.updateChildLocationForCellOrShape(element.y + topMargin, element as ShapeElementBox);
+                            }
                         }
                     }
                 }
@@ -847,7 +851,7 @@ export class Layout {
             const position: Point = this.getFloatingItemPoints(element);
             element.x = position.x;
             element.y = position.y;
-            if(element.paragraph.indexInOwner !== 0 && element.verticalPosition > 0 && element.paragraph.y > element.y && this.viewer.clientArea.bottom === element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
+            if(element.paragraph.indexInOwner !== 0 && element.verticalPosition >= 0 && Math.round(element.paragraph.y) >= Math.round(element.y) && this.viewer.clientArea.bottom <= element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
                 this.moveToNextPage(this.viewer, element.line);
             }
             const bodyWidget: BlockContainer = element.paragraph.bodyWidget;
@@ -1107,6 +1111,11 @@ export class Layout {
             if (element.text === '\t') {
                 width = this.getTabWidth(paragraph, this.viewer, index, line, element as TabElementBox);
                 element.width = width;
+            }
+            // As per MS word behavior, optional hyper is shown only when show paragraph mark properly is enabled
+            // We need to show this special character based on property `showHiddenMark`
+            else if (element.text === '\u001f') {
+                element.width = width = 0;
             }
         }
         if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
@@ -4654,7 +4663,7 @@ export class Layout {
         let lastCell: boolean = !cell.ownerTable.isBidiTable ? cell.cellIndex === cell.ownerRow.childWidgets.length - 1
             : cell.cellIndex === 0;
         if (cellspace > 0 || cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1 ||
-            (cell.columnIndex === (cell.containerWidget as TableRowWidget).childWidgets.length - 1 && cell.cellFormat.columnSpan > 1)) {
+            cell.index === (cell.containerWidget as TableRowWidget).childWidgets.length - 1) {
             cell.rightBorderWidth = !cell.ownerTable.isBidiTable ? rightBorderWidth : leftBorderWidth;
             if (!cell.ownerTable.tableFormat.allowAutoFit) {
                 cell.width -= cell.rightBorderWidth;
@@ -5073,17 +5082,17 @@ export class Layout {
                             count++;
                         }
                         if (isHeader && row.ownerTable.continueHeader) {
-                            row.ownerTable.header = false;
-                            row.ownerTable.continueHeader = false;
-                            row.ownerTable.headerHeight = 0;
                             let pages: Page[] = undefined;
                             if (viewer instanceof PageLayoutViewer) {
                                 pages = this.documentHelper.pages;
                             }
                             if (!isNullOrUndefined(pages)) {
                                 for (let i: number = 0; i < pages.length; i++) {
-                                    if (pages[i].repeatHeaderRowTableWidget) {
+                                    if (pages[i].repeatHeaderRowTableWidget && !isNullOrUndefined(pages[i].bodyWidgets[0].firstChild) && !(pages[i].bodyWidgets[0].firstChild instanceof TableWidget && (pages[i].bodyWidgets[0].firstChild as TableWidget).header)) {
                                         pages[i].repeatHeaderRowTableWidget = false;
+                                        row.ownerTable.header = false;
+                                        row.ownerTable.continueHeader = false;
+                                        row.ownerTable.headerHeight = 0;
                                     }
                                 }
                             }

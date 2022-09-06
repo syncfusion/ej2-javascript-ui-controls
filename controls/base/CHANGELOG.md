@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Common
+
+#### Bug Fixes
+
+- `#I401438` - The issue with the "License registration through `npx` command" has been resolved.
+
 ## 20.2.46 (2022-08-30)
 
 ### Common

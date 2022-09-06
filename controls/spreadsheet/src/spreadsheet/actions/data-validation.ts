@@ -319,6 +319,7 @@ export class DataValidation {
         if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
         } else {
+            if (this.parent.isEdit) this.parent.closeEdit();
             updateCell(
                 this.parent, sheet, { cell: { value: value }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
                 uiRefresh: true, checkCF: true });
@@ -1104,6 +1105,9 @@ export class DataValidation {
                                 isValidate = true;
                             }
                         }
+                    }
+                    if (!isValidate && ignoreBlank && args.value.toString() === '') {
+                        isValidate = true;
                     }
                 } else {
                     if (type === 'Decimal' || type === 'Time') {

@@ -1619,7 +1619,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
             });
 
     describe('CR-Issues ->', () => {
-        describe('I282749, I300338, I303567 ->', () => {
+        describe('I282749, I300338, I303567, EJ2-62856 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: [{ 'Employee ID': '', 'Employee Name': '', 'Gender': '', 'Department': '',
@@ -1689,6 +1689,22 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                         }, 10);
                     }, 10);
                 }, 10);
+            });
+            it('Data validation list does not perform properly while editing', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '1,2,3,4' }, 'H1']);
+                helper.invoke('selectRange', ['H1']);
+                let td: HTMLElement = helper.invoke('getCell', [0, 7]);
+                let coords: ClientRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+                helper.getElement('.e-spreadsheet-edit').textContent = 'text';
+                helper.triggerKeyNativeEvent(13);
+                    helper.click('.e-validationerror-dlg .e-primary');
+                    setTimeout(() => {
+                        helper.getElement('#' + helper.id + 'listValid_options li:nth-child(1)').click();
+                        expect(helper.getInstance().editModule.isEdit).toBe(false);
+                        expect(helper.getInstance().sheets[0].rows[0].cells[7].value).toBe(1);
+                        done();
+                    });
             });
         });
         describe('I301019, I300657 ->', () => {

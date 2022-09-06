@@ -1166,7 +1166,7 @@ describe('Conditional formatting ->', () => {
                 });
             });
         });
-        describe('EJ2-55014->', () => {
+        describe('EJ2-55014, EJ2-62888 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }]
@@ -1185,6 +1185,25 @@ describe('Conditional formatting ->', () => {
                     helper.click('_paste');
                     setTimeout(() => {
                         expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+                        done();
+                    });
+                });
+            });
+            it('Issue in applying conditional formatting for the same selected range->', (done: Function) => {
+                helper.invoke('selectRange', ['D2:E4']);
+                helper.invoke('conditionalFormat', [{ type: "GreaterThan", cFColor: "RedFT", range: "D2:E4", value: '15' }]);
+                helper.invoke('conditionalFormat', [{ type: "LessThan", cFColor: "RedFT", range: "D2:E4", value: '15' }]);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('');
+                    helper.edit('D2', '30');
+                    helper.edit('E3', '15');
+                    helper.edit('E4', '10');
+                    setTimeout((): void => {
+                        expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                        expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('');
+                        expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                         done();
                     });
                 });

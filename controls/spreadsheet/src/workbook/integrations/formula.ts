@@ -739,7 +739,7 @@ export class WorkbookFormula {
                                 this.updateFormula(args, cell, i, j);
                             }
                         } else if (cell.formula.includes(args.sheet.name)) {
-                            this.updateFormula(args, cell, i, j, true);
+                            this.updateFormula(args, cell, i, j, true, sheet);
                         }
                     }
                 }
@@ -755,10 +755,11 @@ export class WorkbookFormula {
         this.updateFormula(args.insertDeleteArgs, args.cell, args.row, args.col);
     }
 
-    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, otherSheet?: boolean): void {
+    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, otherSheet?: boolean,
+        formulaSheet?: SheetModel): void {
         let ref: string; let pVal: string; let index: number[]; let updated: boolean;
         if (cell.formula && cell.formula.includes('UNIQUE')) {
-            this.clearUniqueRange(row, col, args.sheet);
+            this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
         const getAddress: () => string = (): string => {
             return index[0] === index[2] && index[1] === index[3] ? getCellAddress(index[0], index[1]) : getRangeAddress(index);
@@ -792,8 +793,8 @@ export class WorkbookFormula {
     }
 
     private clearUniqueRange(row: number, col: number, sheet: SheetModel): void {
-        const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } =
-        { cellIdx: [row, col, row, col], isUnique: false, uniqueRange: '' };
+        const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string, sheetName: string } =
+        { cellIdx: [row, col, row, col], isUnique: false, uniqueRange: '', sheetName: sheet.name };
         this.parent.notify(checkUniqueRange, uniqueArgs);
         const range: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
         for (let i: number = range[0]; i <= range[2]; i++) {

@@ -985,6 +985,7 @@ export class FormFields {
     public drawSignature(signatureType?: string, value?: string, target?: any, fontname?: string): void {
         let annot: PdfAnnotationBaseModel;
         // eslint-disable-next-line
+        let proxy: any = this;
         let bounds: any;
         let targetBounds: Rect;
         let parentElementBounds: Rect;
@@ -1056,41 +1057,11 @@ export class FormFields {
                     bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
                     let image: HTMLImageElement = new Image();
                     image.src = currentValue;
-                    if (this.pdfViewer.signatureFitMode === 'Default') {
-                        // To check whether the image shape is square or rectangle
-                        let difference: number = 20;
-                        let hightDifference: number = 4;
-                        let heightRatio: number = 2;
-                        if (Math.abs(image.height - image.width) < difference) {
-                            if (bounds.width > bounds.height) {
-                                bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
-                                bounds.width = bounds.height;
-                            }
-                            else {
-                                bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
-                                bounds.height = bounds.width;
-                            }
-                        }
-                        else {
-                            if (bounds.width > bounds.height) {
-                                bounds.y = bounds.y + (bounds.height / hightDifference);
-                                bounds.x = bounds.x + (bounds.height / hightDifference);
-                                let height: number = bounds.height / heightRatio;
-                                bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
-                            }
-                            else {
-                                bounds.y = bounds.y + (bounds.height / hightDifference);
-                                bounds.height = bounds.height / heightRatio;
-                            }
-                        }
+                    image.onload = function(){
+                        proxy.imageOnLoad(bounds, image, currentValue, currentPage, rotateAngle, currentField, signatureField, signString, signatureFontFamily, signatureFontSize, target)
                     }
-                    annot = {
-                        // eslint-disable-next-line max-len
-                        id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                        shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-                    };
-                    signString = annot.data;
-                } else {
+                }
+                    else {
                     if ((currentValue.indexOf('base64')) !== -1) {
                         // eslint-disable-next-line
                         bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, currentWidth, currentHeight);
@@ -1122,11 +1093,11 @@ export class FormFields {
                         };
                     }
                 }
-                if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
+                if (this.pdfViewerBase.drawSignatureWithTool && signatureField && signatureType !== 'Image' ) {
                     annot.id = signatureField.id + "_content";
                     let obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                     signatureField.wrapper.children.push(obj.wrapper);
-                } else {
+                } else if(signatureType !== 'Image'){
                     this.pdfViewer.add(annot as PdfAnnotationBase);
                 }
                 if (annot && annot.shapeAnnotationType === 'Path' && currentValue !== '') {
@@ -1137,6 +1108,7 @@ export class FormFields {
                     signString = this.pdfViewerBase.signatureModule.saveImageString;
                     this.pdfViewerBase.currentSignatureAnnot = null;
                 }
+                if (signatureType !== 'Image'){
                 // eslint-disable-next-line
                 let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
                 // eslint-disable-next-line
@@ -1147,12 +1119,14 @@ export class FormFields {
                 } else {
                     currentField.className = 'e-pdfviewer-signatureformfields-signature';
                 }
+
                 if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
                     let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
                     this.updateSignatureDataInSession(annot, key);
                 } else {
                     this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
                 }
+                
                 currentField.style.pointerEvents = 'none';
 
                 if (this.pdfViewer.annotation) {
@@ -1169,11 +1143,88 @@ export class FormFields {
                 this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
             }
         }
+        }
+        if (signatureType !== 'Image'){
+        this.pdfViewerBase.signatureModule.hideSignaturePanel();
+        this.pdfViewerBase.drawSignatureWithTool = false;
+        this.pdfViewer.isInitialFieldToolbarSelection = false;
+        }
+    }
+    //  EJ2-62918- Image signature width is wrong while adding programmatically and it is fixed by adding an onload event.
+    //  A function was added and it was called
+    private imageOnLoad(bounds: any, image: HTMLImageElement, currentValue: string, currentPage: number, rotateAngle: number, currentField: any, signatureField: PdfAnnotationBase, signString: string, signatureFontFamily: string, signatureFontSize: number, target: any) {
+        let annot: PdfAnnotationBaseModel;
+            if (this.pdfViewer.signatureFitMode === 'Default'){
+            // To check whether the image shape is square or rectangle
+            let difference: number = 20;
+            let hightDifference: number = 4;
+            let heightRatio: number = 2;{
+            if (Math.abs(image.height - image.width) < difference) {
+                if (bounds.width > bounds.height) {
+                    bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
+                    bounds.width = bounds.height;
+                }
+                else {
+                    bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
+                    bounds.height = bounds.width;
+                }
+            }
+            else {
+                if (bounds.width > bounds.height) {
+                    bounds.y = bounds.y + (bounds.height / hightDifference);
+                    bounds.x = bounds.x + (bounds.height / hightDifference);
+                    let height: number = bounds.height / heightRatio;
+                    bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
+                }
+                else {
+                    bounds.y = bounds.y + (bounds.height / hightDifference);
+                    bounds.height = bounds.height / heightRatio;
+                }
+            }
+        }
+        annot = {
+            // eslint-disable-next-line max-len
+            id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+            shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+        };
+        signString = annot.data;
+        if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
+            annot.id = signatureField.id + "_content";
+            let obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+            signatureField.wrapper.children.push(obj.wrapper);
+        } else {
+            this.pdfViewer.add(annot as PdfAnnotationBase);
+        }
+        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
+                // eslint-disable-next-line
+                this.pdfViewer.renderDrawing(canvass as any, currentPage);
+                this.pdfViewerBase.signatureModule.showSignatureDialog(false);
+                if (currentField.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus') {
+                    currentField.className = 'e-pdfviewer-signatureformfields-signature e-pv-signature-focus';
+                } else {
+                    currentField.className = 'e-pdfviewer-signatureformfields-signature';
+                }
+                if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
+                    let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
+                    this.updateSignatureDataInSession(annot, key);
+                } else {
+                    this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
+                }
+                currentField.style.pointerEvents = 'none';
+                if (this.pdfViewer.annotation) {
+                    this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
+                }
+                // eslint-disable-next-line
+                let isFormField = annot.shapeAnnotationType == "SignatureImage";
+                if (!isFormField) {                     
+                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
+                }
+                this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
+    }
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         this.pdfViewerBase.drawSignatureWithTool = false;
         this.pdfViewer.isInitialFieldToolbarSelection = false;
     }
-
     private updateSignatureDataInSession(annot: any, key: string) {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);

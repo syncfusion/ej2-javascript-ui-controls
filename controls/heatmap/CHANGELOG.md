@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Heatmap
+
+#### Bug Fixes
+
+- `#I389024` - The `textAlignment` property in the `textStyle` of `xAxis` and `yAxis` will now work properly.
+
 ## 18.4.30 (2020-12-17)
 
 ### Heatmap

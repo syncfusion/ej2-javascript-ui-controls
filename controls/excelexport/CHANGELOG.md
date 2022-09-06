@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed the exception issue when image exist in the last column of the grid.
+
 ## 20.2.39 (2022-07-19)
 
 ### Excel Export

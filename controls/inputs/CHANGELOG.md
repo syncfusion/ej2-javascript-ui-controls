@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### TextBox
+
+#### Bug Fixes
+
+- Issue with "Change event is triggered without changing the value when we focusout the component" has been resolved.
+
 ## 19.4.38 (2021-12-17)
 
 ### Signature

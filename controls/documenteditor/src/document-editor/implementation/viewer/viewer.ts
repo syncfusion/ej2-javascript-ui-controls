@@ -2608,7 +2608,9 @@ export class DocumentHelper {
                 page = this.pages[i];
                 page.boundingRectangle = new Rect(page.boundingRectangle.x, top, page.boundingRectangle.width, page.boundingRectangle.height);
                 top = page.boundingRectangle.bottom + 20;
-                page.repeatHeaderRowTableWidget = false;
+                if (!isNullOrUndefined(page.bodyWidgets[0].firstChild) && !(page.bodyWidgets[0].firstChild instanceof TableWidget && page.bodyWidgets[0].firstChild.header)) {
+                    page.repeatHeaderRowTableWidget = false;
+                }
             }
         }
     }

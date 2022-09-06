@@ -668,7 +668,11 @@ export class BaseHistoryInfo {
                     }
                 }
             } else if (node instanceof BodyWidget) {
-                this.owner.editorModule.insertSection(this.owner.selection, false);
+                if (!isNullOrUndefined(node.removedHeaderFooters) && node.removedHeaderFooters.length !== 0) {
+                    this.owner.documentHelper.headersFooters.splice(node.sectionIndex, 0, node.removedHeaderFooters[0]);
+                    node.removedHeaderFooters = undefined;
+                }
+                this.owner.editorModule.insertSection(this.owner.selection, false, true);
             } else if (typeof (node) === 'string' && this.action === 'AcceptTOC') {
                 let insertIndex: string = this.selectionStart;
                 let widget: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;

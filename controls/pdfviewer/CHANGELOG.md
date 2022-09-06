@@ -2,10 +2,23 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+- `#SF-398958` -  Now, Script error does not occurs while adding signature and initial fields when enable form field is false.
+- `#SF-397605` -  Now, If a portion of the free text annotation is outside the viewer, moving or resizing it will bring that annotation inside viewer.
+- `#SF-392269` -  Now, considered both GUID and description while importing the annotations .
+- `#SF-398972` -  Now, The Script error is not occurred while saving the PDF consecutively with Calibrate perimeter control .
+- `#SF-399220` -  Now, Some form fields are not removed on reloading the downloaded document .
+- `#SF-389566` -  Now, The Script error is not occurred while try to change PDF view to text view in sample .
+- `#SF-369895` -  When an image signature is added programmatically, the width is now properly maintained.
+- `#SF-388895` -  Now, stamp annotations comments displays valid time in comment panel for any culture.
+
 ## 20.2.46 (2022-08-30)
 
-- `#SF-394117` - Now, Tapping a page with signature field does not moves to another page on mobile devices.
-- `#SF-395979` - Now, Deleted annotations are updated in the annotation collection properly.
+- `#SF-391994` -  Now, Programmatically able to add a all form fields in read only mode .
+- `#SF-394117` -  Now, Tapping a page with signature field does not moves to another page on mobile devices.
+- `#SF-395979` -  Now, Deleted annotations are updated in the annotation collection properly.
+- `#SF-369895` -  Now, The selection and strike through is now aligned properly.
 
 ## 20.2.45 (2022-08-23)
 

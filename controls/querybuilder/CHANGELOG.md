@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 20.2.43 (2022-08-08)
+## 20.2.48 (2022-09-06)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I375472` - Issue with Change event not trigger for changing field for default column to rule template column in query builder has been fixed.
+
+## 20.2.46 (2022-08-30)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I394878` - Issue with Date type Between value not render properly while using `setRulesFromSql` method has been fixed.
+
+## 20.2.43 (2022-08-08)
 
 ### QueryBuilder
 

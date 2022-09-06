@@ -2445,7 +2445,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.updateDataAttribute(this.htmlAttributes);
         this.setHTMLAttributes();
         if (this.targetElement() === this.inputElement) {
-            this.element.removeAttribute('aria-labelledby');
+            this.inputElement.removeAttribute('aria-labelledby');
         }
         if (this.value !== null || this.activeIndex !== null || this.text !== null) {
             this.initValue();

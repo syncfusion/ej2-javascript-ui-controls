@@ -392,8 +392,9 @@ export class Filter {
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         range[1] = range[3] = cell[1];
         const field: string = getColumnHeaderText(cell[1] + 1);
-        let cellVal: string | number | Date = getValueFromFormat(this.parent, getCell(cell[0], cell[1], sheet));
-        if (isNumber(<string>cellVal)) {
+        const selectedCell: CellModel = getCell(cell[0], cell[1], sheet);
+        let cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell);
+        if (isNumber(<string>cellVal) && !(selectedCell.format && selectedCell.format === '@')) {
             cellVal = parseFloat(<string>cellVal);
         }
         const predicates: PredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,

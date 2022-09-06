@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I398466` - Tab key navigation breaks the functionality of Grid while using toolbar template has been fixed.
+- `#I396595`, `#I396424` - Group Caption template becomes empty in previous page while doing `infiniteScrolling` has been fixed.
+- `#F176349` - Key press in grid with toolbar template throws script errors has been fixed.
+- `#I397834` - `queryString` as complex field is not working in Hierarchy Grid has been fixed.
+- `#I397934` - Date filter issue with Russian Language has been fixed.
+
+## 20.2.46 (2022-08-30)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I394999` - Autofit columns are now working fine with hierarchy grid.
+- `#I372528` - Clear filtering is now working fine with column menu.
+- `#I392728` - Persist Selection issue with primary key column as complex field has been fixed.
+- `#I396789` - Provided place holder for pagination page size dropdown component.
+- `#I394229` - `setRowData` method issue with Frozen Grid has been fixed.
+- `#I394623` - `rowReorders` method issue with checkbox selection issue has been fixed.
+
 ## 20.2.45 (2022-08-23)
 
 ### Grid

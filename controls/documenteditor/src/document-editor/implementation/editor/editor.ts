@@ -2928,7 +2928,7 @@ export class Editor {
      * @private
      * @returns {BodyWidget}
      */
-    public insertSection(selection: Selection, selectFirstBlock: boolean): BlockWidget {
+    public insertSection(selection: Selection, selectFirstBlock: boolean, isUndoing?: boolean): BlockWidget {
         let newSectionFormat: WSectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat.cloneFormat();
         let lastBlock: BlockWidget;
         let firstBlock: BlockWidget;
@@ -2965,12 +2965,20 @@ export class Editor {
             let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
             let selectionStart: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
             //Split Paragraph
-            this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
+            if (!isUndoing) {
+                this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
+            }
             this.setPositionForCurrentIndex(selection.start, selectionStart);
             lastBlock = selection.start.paragraph.getSplitWidgets().pop() as BlockWidget;
+            if (isUndoing && lastBlock.previousRenderedWidget !== undefined) {
+                lastBlock = lastBlock.previousRenderedWidget as BlockWidget;
+            }
         }
         //Split body widget
         firstBlock = this.splitBodyWidget(lastBlock.bodyWidget, newSectionFormat, lastBlock).firstChild as BlockWidget;
+        if (isUndoing) {
+            this.layoutWholeDocument(true);
+        }
         if (firstBlock instanceof TableWidget) {
             firstBlock.updateRowIndex(0);
         }
@@ -2993,7 +3001,9 @@ export class Editor {
         //Update SectionIndex for splitted body widget
         this.updateSectionIndex(sectionFormat, newBodyWidget, true);
         // insert New header footer widget in to section index 
-        this.insertRemoveHeaderFooter(newBodyWidget.sectionIndex, true);
+        if (!this.editorHistory.isUndoing) {
+            this.insertRemoveHeaderFooter(newBodyWidget.sectionIndex, true);
+        }
         if (this.documentHelper.viewer instanceof PageLayoutViewer) {
             //update header and footer for splitted widget
 
@@ -11110,10 +11120,10 @@ export class Editor {
         if (paraReplace) {
             this.editorHistory.currentBaseHistoryInfo.action = 'InsertTextParaReplace';
         }
+        let isStartParagraph: boolean = start.paragraph === paragraph;
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
             (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
             paraReplace) {
-            let isStartParagraph: boolean = start.paragraph === paragraph;
             if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
                 this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
@@ -11223,6 +11233,14 @@ export class Editor {
                     newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
                     this.removeRevisionForBlock(paragraph, undefined, false, true);
                     this.addRemovedNodes(paragraph);
+                    if (!isNullOrUndefined(block) && !isStartParagraph && !paraReplace) {
+                        this.delBlock = block;
+                        var nextSection = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
+                        if (nextSection && !section.equals(nextSection) && section.index !== nextSection.index) {
+                            var bodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
+                            this.deleteSection(selection, nextSection, bodyWidget, editAction);
+                        }
+                    }
                     this.removeBlock(paragraph);
 
                     /* let widget: IWidget;
@@ -11306,6 +11324,10 @@ export class Editor {
             insertIndex = block.indexInOwner + 1;
             i--;
         }
+        if (this.documentHelper.headersFooters[bodyWidget.sectionIndex]) {
+            bodyWidget.removedHeaderFooters = [];
+            bodyWidget.removedHeaderFooters.push(this.documentHelper.headersFooters.splice(bodyWidget.sectionIndex, 1)[0]);
+        }
         this.updateSectionIndex(undefined, nextSection, false);
         this.addRemovedNodes(bodyWidget);
         // this.insert
@@ -11366,6 +11388,9 @@ export class Editor {
             }
         }
         //Inserts new paragraph in the current text position.
+        if (paragraphAdv.isInsideTable || this.owner.enableTrackChanges) {
+            paragraphAdv.containerWidget.childWidgets.splice(insertIndex + 1, 1);
+        }
         paragraphAdv.containerWidget.childWidgets.splice(insertIndex, 0, paragraph);
         paragraph.index = blockIndex;
         paragraph.containerWidget = paragraphAdv.containerWidget;

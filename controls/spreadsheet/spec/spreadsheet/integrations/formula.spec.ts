@@ -1330,4 +1330,32 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+    describe('EJ2-62878 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }] }, {} ]}, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Console error on deleting or inserting rows and cannot able to delete a row', (done: Function) => {
+            helper.getElement('.e-sheet-tab').querySelectorAll('.e-toolbar-item')[1].click();
+            setTimeout(() => {
+                helper.edit('A1', '=UNIQUE(Sheet1!A1:A3)');
+                helper.getElement('.e-sheet-tab').querySelectorAll('.e-toolbar-item')[0].click();
+                setTimeout(() => {
+                    expect(getCell(2, 0, helper.getInstance().sheets[0]).value).toBe('3');
+                    expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A3)');
+                    helper.invoke('delete', [2, 2, 'Row']);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[2]).toBeUndefined();
+                        expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A2)');
+                        helper.invoke('insertRow', [1, 1]);
+                        expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('2');
+                        expect(getCell(0, 0, helper.getInstance().sheets[1]).formula).toBe('=UNIQUE(Sheet1!A1:A3)');
+                        done();
+                    }, 10);
+                });
+            });
+        });
+    });
 });

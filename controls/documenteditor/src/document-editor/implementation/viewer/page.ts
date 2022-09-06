@@ -388,7 +388,8 @@ export abstract class Widget implements IWidget {
         }
         return root;
     }
-    private combine(widget: Widget, viewer: LayoutViewer): void {
+   
+   private combine(widget: Widget, viewer: LayoutViewer): void {
         if (widget.childWidgets.length > 0) {
             let lastChild: Widget = this.lastChild as Widget;
 
@@ -468,6 +469,10 @@ export abstract class BlockContainer extends Widget {
      * @private
      */
     public footNoteReference: FootnoteElementBox = undefined;
+     /**
+     * @private
+     */
+      public removedHeaderFooters: HeaderFooters[];
     /**
      * @private
      */
@@ -476,7 +481,7 @@ export abstract class BlockContainer extends Widget {
         let container: BlockContainer = this;
         if (container instanceof BodyWidget) {
             return container.sectionFormatIn;
-        } else if (!isNullOrUndefined(container.page.bodyWidgets) && container.page) {
+        } else if (container.page && !isNullOrUndefined(container.page.bodyWidgets)) {
             return container.page.bodyWidgets[0].sectionFormat;
         }
         return undefined;
@@ -4154,11 +4159,6 @@ export class LineWidget implements IWidget {
                 isStarted = true;
             }
             if (isStarted && offset <= count + inlineElement.length) {
-                if (inlineElement instanceof BookmarkElementBox) {
-                    offset += inlineElement.length;
-                    count += inlineElement.length;
-                    continue;
-                }
                 if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
                     let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
                     inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;

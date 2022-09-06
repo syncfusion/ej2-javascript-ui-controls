@@ -4093,7 +4093,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const selectedRow: Row<Column> = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0] as Row<Column>;
-        const selectRowEle: Element[] = [].slice.call(this.element.querySelectorAll('[data-uid=' + selectedRow[rowuID] + ']'));
+        const selectRowEle: Element[] = selectedRow ? [].slice.call(
+            this.element.querySelectorAll('[data-uid=' + selectedRow[rowuID] + ']')) : undefined;
         if (!isNullOrUndefined(selectedRow) && selectRowEle.length) {
             selectedRow.changes = rowData;
             if (this.isFrozenGrid()) {
@@ -4106,7 +4107,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     const lTr: Row<Column> = this.getRowsObject()[selectedRow.index];
                     this.setFrozenRowData(lTr, rowData);
                 }
-                if (currentTblName === 'right' || this.frozenRightColumns) {
+                if (currentTblName === 'right' || this.frozenRightColumns.length > 0) {
                     const rTr: Row<Column> = this.getFrozenRightRowsObject()[selectedRow.index];
                     this.setFrozenRowData(rTr, rowData);
                 }
@@ -4135,7 +4136,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         refreshForeignData(fTr, this.getForeignKeyColumns(), fTr.changes);
         rowRenderer.refresh(fTr, this.getColumns() as Column[], true);
     }
-    
+
     /**
      * Gets a cell by row and column index.
      *

@@ -807,5 +807,56 @@ describe('Menu', () => {
              expect(wrap.lastElementChild.getAttribute('role')).toEqual('menubar');
              expect(wrap.lastElementChild.childElementCount).toEqual(5);
          });
+
+         it('EJ2-62691 - SetItem method not working properly for customized menu item', () => {
+            document.body.appendChild(ul);
+            let customMenuItems: { [key: string]: Object }[]  = [
+                {
+                    continent: "Dashboard", id: "dashboard"
+                },
+                {
+                    continent: "Finance & Accounts", id: "finance",
+                    countries: [
+                        {
+                            country: "Master", id: "accounts1",
+                            languages: [
+                                { language: "Create Group", id: "accounts2" },
+                                { language: "Create (Multiple Groups)", id: "accounts3" },
+                                { language: "Create Ledger", id: "accounts4" }
+                            ]
+                        },
+                        {
+                            country: "Chart of Accounts", id: "accounts5",
+                            languages: [
+                            ]
+                        },
+                        {
+                            country: "Vouchers", id: "accounts6",
+                            languages: [
+                                { language: "Receipt", id: "accounts7" },
+                                { language: "Payment", id: "accounts8" },
+                                { language: "Contra", id: "accounts9" },
+                                { language: "Journal", id: "accounts10" }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    continent: "Help", id: "help1"
+                }
+            ];
+            let menuFields = {
+                text: ["continent", "country", "language"],
+                itemId: ["id"],
+                children: ["countries", "languages"]
+            };
+             menu = new Menu({ items: customMenuItems, fields: menuFields }, '#menu');
+             expect(menu.items[2].continent).toEqual('Help');
+             let customitem: any  = { text: 'Bars', continent: 'Bars'};
+             menu.setItem(customitem, 'Help', false );
+             menu.dataBind();
+             expect(menu.items[2].continent).toEqual('Bars');
+             expect(menu.items[2].text).toEqual('Bars');
+         });
     });
 });

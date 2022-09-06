@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { Toolbar as tool, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ComboBox, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -862,10 +862,12 @@ export class Toolbar {
      */
     public updateTotalPage(): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            if (this.pdfViewerBase.pageCount > 0) {
-                this.currentPageBox.min = 1;
+           if (this.pdfViewerBase.pageCount > 0) {
+                if (!isNullOrUndefined(this.currentPageBox))
+                    this.currentPageBox.min = 1;
             }
-            this.totalPageItem.textContent = this.pdfViewer.localeObj.getConstant('of') + this.pdfViewerBase.pageCount.toString();
+            if (!isNullOrUndefined(this.totalPageItem))
+                this.totalPageItem.textContent = this.pdfViewer.localeObj.getConstant('of') + this.pdfViewerBase.pageCount.toString();
         }
     }
 

@@ -233,11 +233,12 @@ export class ScaleGroup {
     }
 
     private drawcategory(lPointX: number, lPointY: number, categoryValue: string): TextOption {
+        let defaultValueHeight: number = 6;
         const categoryOptions: TextOption = {
             'id': '',
             'anchor': 'middle',
             'x': lPointX,
-            'y': lPointY + (this.bulletChart.valueHeight),
+            'y': lPointY + (defaultValueHeight / 2 + this.bulletChart.valueHeight / 2),
             'transform': '',
             'text': categoryValue,
             'baseLine': '',
@@ -270,7 +271,7 @@ export class ScaleGroup {
         const minimum: number = bulletChart.minimum;
         const maximum: number = bulletChart.maximum;
         const delta: number = maximum - minimum;
-        const targetWidth: number = bulletChart.targetWidth;
+        const targetWidth: number = 5;
         const pointX: number = isHorizontal ? (rect.x - (targetWidth / 2)) : (rect.y + rect.height);
         let temp: number;
         let values: number[] = [];

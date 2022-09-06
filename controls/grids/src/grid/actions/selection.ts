@@ -18,7 +18,7 @@ import { Row } from '../models/row';
 import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { FocusStrategy } from '../services/focus-strategy';
-import { iterateExtend, setChecked } from '../base/util';
+import { iterateExtend, setChecked, isComplexField , getObject } from '../base/util';
 import { VirtualFreezeRenderer } from '../renderer/virtual-freeze-renderer';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from '../base/interface';
 import { addRemoveEventListener } from '../base/util';
@@ -694,6 +694,10 @@ export class Selection implements IAction {
         this.isRowSelected = this.selectedRowIndexes.length && true;
     }
 
+    private getPkValue(pkField: string, data: object): string{
+        return pkField ? isComplexField(pkField) ? getObject(pkField, data) : data[pkField] : data[pkField];
+    }
+
     private updatePersistCollection(selectedRow: Element, chkState: boolean): void {
         if ((this.parent.isPersistSelection || this.parent.selectionSettings.persistSelection &&
             this.parent.getPrimaryKeyFieldNames().length > 0) && !isNullOrUndefined(selectedRow)) {
@@ -701,12 +705,12 @@ export class Selection implements IAction {
                 this.ensureCheckboxFieldSelection();
             }
             const rowObj: Row<Column> = this.getRowObj(selectedRow);
-            const pKey: string = rowObj.data ? rowObj.data[this.primaryKey] : null;
+            const pKey: string = rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null;
             if (pKey === null) { return; }
             rowObj.isSelected = chkState;
             if ((chkState && !this.isPartialSelection) || (this.isPartialSelection && rowObj.isSelectable && rowObj.isSelected)) {
                 this.selectedRowState[pKey] = chkState;
-                if (!this.persistSelectedData.some((data: Object) => data[this.primaryKey] === pKey)) {
+                if (!this.persistSelectedData.some((data: Object) => this.getPkValue(this.primaryKey, data) === pKey)) {
                     this.persistSelectedData.push(rowObj.data);
                 }
             } else {
@@ -720,7 +724,7 @@ export class Selection implements IAction {
         let index: number;
         const isPresent: boolean = this.persistSelectedData.some((data: Object, i: number) => {
             index = i;
-            return data[this.primaryKey] === pKey;
+            return this.getPkValue(this.primaryKey, data) === pKey;
         });
         if (isPresent) {
             this.persistSelectedData.splice(index, 1);
@@ -2374,7 +2378,8 @@ export class Selection implements IAction {
             this.persistSelectedData = [];
             for (let i: number = 0; i < rowObj.length; i++) {
                 indexes.push(rowObj[i].index);
-                this.selectedRowState[rowObj[i].data[this.primaryKey]] = true;
+                const pkValue: string = this.getPkValue(this.primaryKey, rowObj[i].data);
+                this.selectedRowState[pkValue] = true;
                 this.persistSelectedData.push(rowObj[i].data);
             }
             this.selectedRowIndexes = indexes;
@@ -2454,7 +2459,8 @@ export class Selection implements IAction {
 
     private rowsRemoved(e: { records: Object[] }): void {
         for (let i: number = 0; i < e.records.length; i++) {
-            delete (this.selectedRowState[e.records[i][this.primaryKey]]);
+            const pkValue: string = this.getPkValue(this.primaryKey, e.records[i]);
+            delete (this.selectedRowState[pkValue]);
             --this.totalRecordsCount;
         }
         this.setCheckAllState();
@@ -2604,8 +2610,9 @@ export class Selection implements IAction {
 
     private dataSuccess(res: Object[]): void {
         for (let i: number = 0; i < res.length; i++) {
-            if (isNullOrUndefined(this.selectedRowState[res[i][this.primaryKey]]) && res[i][this.chkField]) {
-                this.selectedRowState[res[i][this.primaryKey]] = res[i][this.chkField];
+            const pkValue: string = this.getPkValue(this.primaryKey, res[i]);
+            if (isNullOrUndefined(this.selectedRowState[pkValue]) && res[i][this.chkField]) {
+                this.selectedRowState[pkValue] = res[i][this.chkField];
             }
         }
         this.persistSelectedData = res;
@@ -2617,17 +2624,17 @@ export class Selection implements IAction {
                 if (this.isPartialSelection && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                     const rowObj: Row<Column>[] = this.parent.getRowsObject().filter((e: Row<Column>) => e.isSelectable);
                     for (const row of rowObj) {
-                        this.selectedRowState[row.data[this.primaryKey]] = true;
+                        this.selectedRowState[this.getPkValue(this.primaryKey, row.data)] = true;
                     }
                 } else {
                     const selectedData: Object[] = this.isPartialSelection ? this.parent.partialSelectedRecords : this.getData();
                     if (this.parent.groupSettings.columns.length) {
                         for (const data of this.isPartialSelection ? selectedData : (<{ records?: Object[] }>selectedData).records) {
-                            this.selectedRowState[data[this.primaryKey]] = true;
+                            this.selectedRowState[this.getPkValue(this.primaryKey, data)] = true;
                         }
                     } else {
                         for (const data of selectedData) {
-                            this.selectedRowState[data[this.primaryKey]] = true;
+                            this.selectedRowState[this.getPkValue(this.primaryKey, data)] = true;
                         }
                     }
                 }
@@ -2667,7 +2674,7 @@ export class Selection implements IAction {
             const indexes: number[] = [];
             for (let j: number = 0; j < rows.length; j++) {
                 const rowObj: Row<Column> = this.getRowObj(rows[j]);
-                const pKey: string = rowObj ? rowObj.data ? rowObj.data[this.primaryKey] : null : null;
+                const pKey: string = rowObj ? rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null : null;
                 if (pKey === null) { return; }
                 if (this.isPartialSelection && !rowObj.isSelectable) { continue; }
                 let checkState: boolean;
@@ -2710,7 +2717,7 @@ export class Selection implements IAction {
                     }
                     const rowObj: Row<Column> = this.getRowObj(row);
                     if (!rowObj) { return; }
-                    this.selectedRowState[rowObj.data[this.primaryKey]] = rowObj.isSelected = editChkBox.checked;
+                    this.selectedRowState[this.getPkValue(this.primaryKey, rowObj.data)] = rowObj.isSelected = editChkBox.checked;
                 } else {
                     this.isCheckedOnAdd = editChkBox.checked;
                 }
@@ -2733,7 +2740,7 @@ export class Selection implements IAction {
                 if (this.isCheckedOnAdd) {
                     const rowObj: Row<Column> = this.parent.getRowObjectFromUID(
                         this.parent.getRows()[e.selectedRow].getAttribute('data-uid'));
-                    this.selectedRowState[rowObj.data[this.primaryKey]] = rowObj.isSelected = this.isCheckedOnAdd;
+                    this.selectedRowState[this.getPkValue(this.primaryKey, rowObj.data)] = rowObj.isSelected = this.isCheckedOnAdd;
                 }
                 this.isHdrSelectAllClicked = false;
                 this.setCheckAllState();
@@ -2744,8 +2751,9 @@ export class Selection implements IAction {
             const records: object[] = e.data;
             const data: Object[] = records.slice();
             for (let i: number = 0; i < data.length; i++) {
-                if (!isNullOrUndefined(data[i][this.primaryKey])) {
-                    this.updatePersistDelete(data[i][this.primaryKey], this.isPartialSelection);
+                const pkValue: string = this.getPkValue(this.primaryKey, data[i]);
+                if (!isNullOrUndefined(pkValue)) {
+                    this.updatePersistDelete(pkValue, this.isPartialSelection);
                 }
             }
             this.isHdrSelectAllClicked = false;
@@ -2848,7 +2856,7 @@ export class Selection implements IAction {
         this.isHeaderCheckboxClicked = true;
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data: Object) =>
-                data[this.primaryKey] in this.selectedRowState);
+                this.getPkValue(this.primaryKey, data) in this.selectedRowState);
         }
         if (this.parent.isPersistSelection && this.parent.allowPaging) {
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
@@ -2904,7 +2912,7 @@ export class Selection implements IAction {
     private moveIntoUncheckCollection(row: HTMLElement): void {
         if (this.parent.checkAllRows === 'Check' || this.parent.checkAllRows === 'Uncheck') {
             const rowObj: Row<Column> = this.getRowObj(row);
-            const pKey: string = rowObj && rowObj.data ? rowObj.data[this.primaryKey] : null;
+            const pKey: string = rowObj && rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null;
             if (!pKey) { return; }
             if (this.chkAllCollec.indexOf(pKey) < 0) {
                 this.chkAllCollec.push(pKey);
@@ -2962,7 +2970,7 @@ export class Selection implements IAction {
             if (this.parent.allowPaging && this.parent.pageSettings.pageSize < this.parent.pageSettings.totalRecordsCount) {
                 const data: object[] = this.parent.partialSelectedRecords;
                 for (let i: number = 0; i < data.length; i++) {
-                    const pKey: string = data[i][this.primaryKey];
+                    const pKey: string = this.getPkValue(this.primaryKey, data[i]);
                     if (!this.selectedRowState[pKey]) {
                         return false;
                     }
@@ -2974,7 +2982,7 @@ export class Selection implements IAction {
         } else {
             const data: object[] = this.getData();
             for (let i: number = 0; i < data.length; i++) {
-                const pKey: string = data[i][this.primaryKey];
+                const pKey: string = this.getPkValue(this.primaryKey, data[i]);
                 if (!this.selectedRowState[pKey]) {
                     return false;
                 }
@@ -2986,7 +2994,7 @@ export class Selection implements IAction {
     private someDataSelected(): boolean {
         const data: object[] = this.isPartialSelection ? this.parent.partialSelectedRecords : this.getData();
         for (let i: number = 0; i < data.length; i++) {
-            const pKey: string = data[i][this.primaryKey];
+            const pKey: string = this.getPkValue(this.primaryKey, data[i]);
             if (this.selectedRowState[pKey]) {
                 return false;
             }
@@ -3014,8 +3022,9 @@ export class Selection implements IAction {
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
                 setChecked(input, false);
                 input.indeterminate = false;
-                if ((checkToSelectAll && isFiltered && this.getData().length) || (!isFiltered && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
-                    && !this.isPartialSelection && !this.parent.enableVirtualization) ||
+                if ((checkToSelectAll && isFiltered && this.getData().length) || (!isFiltered
+                    && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
+                        && !this.isPartialSelection && !this.parent.enableVirtualization) ||
                     (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling
                     && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen) || this.isHdrSelectAllClicked))
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)

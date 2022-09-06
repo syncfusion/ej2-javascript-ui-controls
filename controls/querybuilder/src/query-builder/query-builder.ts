@@ -879,7 +879,7 @@
              ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
              ruleListElem.appendChild(ruleElem); this.ruleIdCounter++;
          }
-         if (column && column.ruleTemplate) {
+         if (column && column.ruleTemplate && rule) {
              args = { requestType: 'template-initialize', ruleID: ruleElem.id, action: action, fields: this.fields, rule: rule };
              this.trigger('actionBegin', args);
              this.ruleTemplateFn = this.templateParser(column.ruleTemplate);
@@ -905,7 +905,7 @@
              elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true) as Element;
          }
          ruleElem.appendChild(elem);
-         if (column && column.ruleTemplate) { this.renderReactTemplates(); }
+         if (column && column.ruleTemplate && rule) { this.renderReactTemplates(); }
          return ruleElem;
      }
      private addRuleElement(
@@ -931,7 +931,7 @@
          let operators: { [key: string]: Object }[]; let dropDownList: DropDownList; let ruleElem: Element;
          let newRule: RuleModel = { 'label': '', 'field': '', 'type': '', 'operator': '' };
          if (!args.cancel) {
-             if (column && column.ruleTemplate) {
+             if (column && column.ruleTemplate && rule.field) {
                  this.selectedColumn = column; operators = this.selectedColumn.operators;
                  newRule = {'label': column.label, 'field': column.field, 'type': column.type, 'operator': operators[0].value as string};
                  const passedRule: RuleModel = Object.keys(rule).length ? rule : newRule;
@@ -974,7 +974,7 @@
              if (!this.isImportRules) {
                  this.updateAddedRule(trgt, rule, newRule, isRlTmp, pId);
              }
-             if (!column || (column && !column.ruleTemplate)) {
+             if (!column || (column && !column.ruleTemplate) || !rule.field) {
                  if (this.fieldMode === 'Default'){
                      let ddlField: DropDownListModel;
                      const ddlValue: string = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
@@ -1442,6 +1442,7 @@
      private templateChange(
          element: Element, value: string | number | boolean | string[] | number[], type?: string): void {
          const grpElem: Element = closest(element, '.e-group-container');
+         let eventsArgs: ChangeEventArgs;
          const rules: RuleModel = this.getParentGroup(grpElem);
          let ruleElem: Element = closest(element, '.e-rule-container'); let index: number = 0;
          while (ruleElem && ruleElem.previousElementSibling !== null) {
@@ -1509,7 +1510,10 @@
                  }
                  const args: ActionEventArgs = { requestType: 'template-create', action: type, ruleID: grpEle.id,
                      fields: this.fields, rule: rule };
+                 eventsArgs = { groupID: grpElem.id.replace(this.element.id + '_', ''), ruleID: grpEle.id.replace(this.element.id + '_', ''),
+                     value: rule.field, type: 'field' };    
                  this.trigger('actionBegin', args);
+                 this.trigger('change', eventsArgs);
              }
          }
      }

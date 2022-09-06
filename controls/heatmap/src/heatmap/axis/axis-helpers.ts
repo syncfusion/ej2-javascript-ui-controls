@@ -255,6 +255,13 @@ export class AxisHelper {
             labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             let x: number = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
+            if (axis.textStyle.textAlignment === 'Near') {
+                x = lableRect.x - ((!axis.isInversed) ?
+                    (elementSize.width / 2) : (lableRect.width + (elementSize.width / 2)));
+            } else if (axis.textStyle.textAlignment === 'Far') {
+                x = lableRect.x + ((!axis.isInversed) ?
+                    (lableRect.width - elementSize.width) : -(elementSize.width));
+            }
             if (axis.labelIntersectAction === 'Trim') {
                 x = (!axis.isInversed) ? (x >= lableRect.x ? x : lableRect.x) : (x > (lableStrtX - interval) ? x : (lableStrtX - interval));
             } else if (angle % 180 === 0) {
@@ -350,13 +357,19 @@ export class AxisHelper {
         }
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             const labelRect: Rect = new Rect(rect.x, lableStartY, rect.width, interval);
-            const position: number = labelRect.height / 2; //titlePositionY(lableRect, 0, 0, axis.textStyle);
+            let position: number = axis.isInversed ? labelRect.height / 2 : -(labelRect.height / 2); //titlePositionY(lableRect, 0, 0, axis.textStyle);
             const axisWidth: number = this.heatMap.cellSettings.border.width >= 20 ? (this.heatMap.cellSettings.border.width / 2) : 0;
             const x: number = labelRect.x + padding + (axis.opposedPosition ? axisWidth : -axisWidth);
             const indexValue: number = this.heatMap.cellSettings.border.width > 5 ?
                 (((this.heatMap.cellSettings.border.width / 2) / len) * (axis.isInversed ? (i) : (len - i))) : 0;
-            const y: number = (labelRect.y - indexValue) + (axis.isInversed ? position : -position);
             label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
+            const elementSize: Size = measureText(label, axis.textStyle);
+            if (axis.textStyle.textAlignment === 'Far' && axis.angle === 0) {
+                position = axis.isInversed ? labelRect.height - (elementSize.height / 2) : -(elementSize.height / 2);
+            } else if (axis.textStyle.textAlignment === 'Near' && axis.angle === 0) {
+                position = axis.isInversed ? elementSize.height / 2 : ((elementSize.height / 2) - labelRect.height);
+            }
+            const y: number = (labelRect.y - indexValue) + position;
             const options: TextOption = new TextOption(
                 heatMap.element.id + '_YAxis_Label' + i,
                 new TextBasic(x, y, anchor, label, 0, 'rotate(' + axis.angle + ',' + (x) + ',' + (y) + ')', 'middle'),
@@ -374,7 +387,6 @@ export class AxisHelper {
                 lableStartY = lableStartY + (axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
                 i = i + (compactInterval - 1);
             }
-            const elementSize: Size = measureText(label, axis.textStyle);
             this.drawYAxisBorder(axis, borderElement, axis.rect, y, elementSize.height, i);
             if (label.indexOf('...') !== -1) {
                 const xValue: number = axis.opposedPosition ? x : (x - elementSize.width);

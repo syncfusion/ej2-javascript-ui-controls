@@ -5455,6 +5455,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     protected render(): void {
         this.viewerBase.initializeComponent();
+        if(!this.enableFormFields){
+            this.formFieldsModule = new FormFields(this, this.viewerBase);
+            this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
+        }
         if (this.enableTextSelection && this.textSelectionModule) {
             this.textSelectionModule.enableTextSelectionMode();
         } else {
@@ -5607,6 +5611,36 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     if (this.formDesignerModule) {
                         let isInitialField : boolean =(prop === "initialFieldSettings");
                         this.formDesignerModule.updateSignatureSettings(newProp[prop], isInitialField);
+                    }
+                    break;
+                case 'textFieldSettings':
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.updateTextFieldSettings(newProp[prop]);
+                    }
+                    break;
+                case 'passwordFieldSettings':
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.updatePasswordFieldSettings(newProp[prop]);
+                    }
+                    break;
+                case 'checkBoxFieldSettings':
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.updateCheckBoxFieldSettings(newProp[prop]);
+                    }
+                    break;
+                case 'radioButtonFieldSettings':
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.updateRadioButtonFieldSettings(newProp[prop]);
+                    }
+                    break;
+                case 'DropdownFieldSettings':
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.updateDropDownFieldSettings(newProp[prop]);
+                    }
+                    break;
+                case 'listBoxFieldSettings':
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.updateListBoxFieldSettings(newProp[prop]);
                     }
                     break;
             }

@@ -30,6 +30,7 @@ export interface IPopupAnnotation {
     comments: ICommentsCollection[]
     review: IReviewCollection
     annotName: string
+    pageNumber: number
     annotationSelectorSettings: AnnotationSelectorSettingsModel
     customData: object
     // eslint-disable-next-line
@@ -179,7 +180,7 @@ export class StickyNotesAnnotation {
                         annotationObject = {
                             // eslint-disable-next-line max-len
                             shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
-                            pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: author },
+                            pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: author },pageNumber: pageNumber,
                             // eslint-disable-next-line max-len
                             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
                             annotName: annotation.AnnotName, color: annotation.color,
@@ -298,7 +299,7 @@ export class StickyNotesAnnotation {
                 let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                 annotationObject = {
                     // eslint-disable-next-line max-len
-                    author: author, allowedInteractions: allowedInteractions, modifiedDate: this.getDateAndTime(), subject: 'Sticky Note', shapeAnnotationType: 'sticky',
+                    author: author, allowedInteractions: allowedInteractions, modifiedDate: this.getDateAndTime(), subject: 'Sticky Note', shapeAnnotationType: 'sticky', pageNumber: pageIndex,
                     // eslint-disable-next-line max-len
                     note: '', opacity: this.opacity, pathData: '', state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
                     // eslint-disable-next-line max-len
@@ -837,7 +838,7 @@ export class StickyNotesAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public createCommentControlPanel(data: any, pageIndex: number, type?: string, annotationSubType?: string): string {
+    public createCommentControlPanel(data: any, pageIndex: number, type?: string, annotationSubType?: string, isReRender?: boolean): string {
         const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordioncontent' + pageIndex);
         if (accordionContent) {
             // eslint-disable-next-line
@@ -855,6 +856,12 @@ export class StickyNotesAnnotation {
                     for (let j: number = 0; j < accordionContent.childElementCount; j++) {
                         if (accordionContent.children[j].id === data.AnnotName) {
                             isCommentsAdded = true;
+                            if(isReRender){
+                                // To remove the existing div element in the comment panel while importing the annotation with the same name. (EJ2-62092)
+                                let id: any = document.getElementById(accordionContent.children[j].id);
+                                id.remove();
+                                isCommentsAdded = false;
+                            }
                             break;
                         }
                     }
@@ -1483,7 +1490,7 @@ export class StickyNotesAnnotation {
         if (!modifiedDate) {
             commentsTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
         } else {
-            commentsTitle.textContent = annotationAuthor + ' - ' + this.setExistingAnnotationModifiedDate(modifiedDate);
+            commentsTitle.textContent = annotationAuthor + ' - ' + this.convertUTCDateToLocalDate(modifiedDate);
         }
         commentTitleContainer.appendChild(commentsTitle);
         // eslint-disable-next-line max-len
@@ -3302,6 +3309,7 @@ export class StickyNotesAnnotation {
                     updateAnnotation.review = { state: '', stateModel: '', modifiedDate: updateAnnotation.ModifiedDate, author: updateAnnotation.author };
                     updateAnnotation.state = '';
                     updateAnnotation.stateModel = '';
+                    updateAnnotation.pageNumber = annotation.pageIndex;
                     this.pdfViewer.annotationModule.storeAnnotations(annotation.pageIndex, updateAnnotation, '_annotations_' + type);
                     this.createCommentsContainer(updateAnnotation, annotation.pageIndex + 1, true);
                     if (isCut) {
@@ -3370,7 +3378,8 @@ export class StickyNotesAnnotation {
         if (date.toLocaleTimeString().split(' ').length === 2) {
             // eslint-disable-next-line max-len
             modifiedTime = date.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':') + ' ' + date.toLocaleTimeString().split(' ')[1];
-        } else {
+        } 
+        else {
             // eslint-disable-next-line
             let time: number = parseInt(date.toLocaleTimeString().split(':')[0]);
             const minutes: string = date.toLocaleTimeString().split(':')[1];
@@ -3378,6 +3387,21 @@ export class StickyNotesAnnotation {
         }
         const modifiedDateTime: string = modifiedDate + ', ' + modifiedTime;
         return modifiedDateTime;
+    }
+    private convertUTCDateToLocalDate(date:any) 
+    {
+        let dateTime: Date = new Date( Date.parse(date+' '+'UTC'));
+        let timeValue: string = dateTime.toLocaleTimeString(this.globalize.culture);
+        let newTime: string;
+        if(typeof(timeValue.split(' ')[1])!=undefined){
+            newTime = (timeValue.split(':').splice(0,2).join(':'))+' '+timeValue.split(' ')[1];
+        }
+        else{
+            newTime = (timeValue.split(':').splice(0,2).join(':'))
+        }
+        let newDate: string = dateTime.toLocaleDateString('default',{month:'short' , day:'numeric'});
+        let dateTimeValue: string = newDate +','+' '+ newTime ;
+        return dateTimeValue;         
     }
 
     // eslint-disable-next-line
@@ -3459,7 +3483,7 @@ export class StickyNotesAnnotation {
         annotationObject = {
             // eslint-disable-next-line max-len
             shapeAnnotationType: 'sticky', author: annotation.Author, allowedInteractions: allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
-            pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
+            pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },pageNumber:pageNumber,
             // eslint-disable-next-line max-len
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotName: annotation.AnnotName, color: annotation.color,

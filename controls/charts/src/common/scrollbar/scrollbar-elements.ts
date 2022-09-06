@@ -38,7 +38,7 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
         style: 'position: absolute;top: ' + ((scrollbar.axis.isAxisOpposedPosition && isHorizontalAxis ? -16 :
-            (enablePadding ? markerHeight : 0)) + rect.y) + 'px;left: ' +
+            (enablePadding ? markerHeight : 0)) + rect.y + Math.max(1, scrollbar.axis.lineStyle.width / 2)) + 'px;left: ' +
             (((scrollbar.axis.isAxisOpposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) - (scrollbar.isVertical ? scrollbar.height : 0))
             + 'px;cursor:auto;'
     });

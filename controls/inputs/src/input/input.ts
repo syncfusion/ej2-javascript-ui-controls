@@ -439,7 +439,7 @@ export namespace Input {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
             }
-            if (element.clientWidth < container.getElementsByClassName('e-float-text-content')[0].clientWidth || container.getElementsByClassName('e-control')[0].clientWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
+            if (element.clientWidth < container.getElementsByClassName('e-float-text-content')[0].clientWidth || element.clientWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.add('e-float-text-overflow');
             }
         }

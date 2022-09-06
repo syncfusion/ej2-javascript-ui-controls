@@ -237,7 +237,7 @@ export class FocusStrategy {
             if ((this.parent.toolbar || this.parent.toolbarTemplate) && (e.target === this.parent.element
                 || parentsUntil(e.target as Element, 'e-groupdroparea')
                 || (e.target as HTMLElement).classList.contains('e-toolbar'))) {
-                const toolbarElement: Element = (this.parent as Grid).toolbarModule.toolbar.element;
+                const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
                 const focusableToolbarItems: NodeListOf<Element> = toolbarElement
                     .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
                 if (focusableToolbarItems.length > 0) {
@@ -260,6 +260,9 @@ export class FocusStrategy {
             if (this.parent.isFrozenGrid() && (this.parent.getFrozenMode() === 'Left'
                 || this.parent.getFrozenMode() === literals.leftRight)) {
                 this.setActive(false, true);
+            }
+            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length === this.parent.columns.length){
+                this.setActive(true);
             } else {
                 this.setActive(false);
             }
@@ -322,6 +325,10 @@ export class FocusStrategy {
         if (e.target && parentsUntil(e.target as Element, 'e-gridcontent')) {
             if (!this.parent.isFrozenGrid()) {
                 if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
+                    if (this.parent.allowGrouping && this.parent.groupSettings.columns.length === this.parent.columns.length) {
+                        this.focusOutFromHeader(e);
+                        return;
+                    }
                     let firstContentCellIndex: number[] = [0, 0];
                     if (this.active.matrix.matrix[firstContentCellIndex[0]][firstContentCellIndex[1]] === 0) {
                         firstContentCellIndex = findCellIndex(this.active.matrix.matrix, [0, 0], true);
@@ -407,7 +414,7 @@ export class FocusStrategy {
         e.preventDefault();
         this.removeFocus();
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
-            const toolbarElement: Element = (this.parent as Grid).toolbarModule.toolbar.element;
+            const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
             const focusableToolbarItems: NodeListOf<Element> = toolbarElement
                 .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
             if (focusableToolbarItems.length > 0) {
@@ -454,7 +461,7 @@ export class FocusStrategy {
             }
         }
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
-            const toolbarElement: Element = (this.parent as Grid).toolbarModule.toolbar.element;
+            const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
             const focusableToolbarItems: NodeListOf<Element> = toolbarElement
                 .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
             if (parentsUntil(e.target as Element, 'e-toolbar-item')

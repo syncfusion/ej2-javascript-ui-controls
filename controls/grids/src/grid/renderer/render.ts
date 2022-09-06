@@ -447,7 +447,8 @@ export class Render {
             if ((this.parent.isReact || this.parent.isVue) && !isNullOrUndefined(args) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
                 clearReactVueTemplates(this.parent, ['footerTemplate']);
             }
-            if (this.parent.isAngular && this.parent.allowGrouping && this.parent.groupSettings.captionTemplate) {
+            if (this.parent.isAngular && this.parent.allowGrouping && this.parent.groupSettings.captionTemplate
+                && !(!isNullOrUndefined(args) && args.requestType === 'infiniteScroll')) {
                 this.parent.destroyTemplate(['groupSettings_captionTemplate']);
             }
             this.parent.notify(

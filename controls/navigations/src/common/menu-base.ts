@@ -1702,10 +1702,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         const navIdx: number[] = this.getIndex(idx, isUniqueId);
         const newItem: MenuItemModel = this.getItem(navIdx);
-        newItem.iconCss = item.iconCss || newItem.iconCss;
-        newItem.text = item.text || newItem.text;
-        newItem.url = item.url || newItem.url;
-        newItem.separator = item.separator || newItem.separator;
+        Object.assign(newItem, item);
     }
 
     private getItem(navIdx: number[]): MenuItemModel {

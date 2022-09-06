@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I400391` - X axis start label is now shifted when y axis is in opposed position.
+- `#I400062` - Now the axis lines are displayed properly after the scrollbar.
+
+### Bullet Chart
+
+#### Bug Fixes
+
+- `#I400762` - Bullet Chart target height is now render properly.
+- `#I400763` - Bullet chart axis labels are now center aligned, when changing value height.
+
 ## 20.2.46 (2022-08-30)
 
 ### Chart

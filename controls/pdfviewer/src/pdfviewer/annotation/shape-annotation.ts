@@ -41,6 +41,7 @@ export interface IShapeAnnotation {
     review: IReviewCollection
     annotName: string
     position?: string
+    pageNumber: number
     enableShapeLabel: boolean
     labelContent: string
     labelFillColor: string
@@ -257,7 +258,7 @@ export class ShapeAnnotation {
                             let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
                             let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;                            // eslint-disable-next-line max-len
                             annotationObject = {
-                                id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                                id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,pageNumber: pageNumber,
                                 // eslint-disable-next-line max-len
                                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
                                 borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
@@ -287,7 +288,7 @@ export class ShapeAnnotation {
                                 thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: annotationObject.borderDashArray ? annotationObject.borderDashArray.toString(): '0', rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]), comments: annotationObject.comments, review: annotationObject.review,                            isCloudShape: annotationObject.isCloudShape, cloudIntensity: annotationObject.cloudIntensity, taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(annotationObject.lineHeadEnd),
                                 // eslint-disable-next-line max-len
                                 sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(annotationObject.lineHeadStart), vertexPoints: vPoints, bounds: { x: annotationObject.bounds.left, y: annotationObject.bounds.top, width: annotationObject.bounds.width, height: annotationObject.bounds.height },
-                                pageIndex: pageNumber,
+                                pageIndex: annotationObject.pageNumber,
                                 // eslint-disable-next-line max-len
                                 labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
@@ -773,7 +774,7 @@ export class ShapeAnnotation {
             // eslint-disable-next-line max-len
             id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: annotationModel.author, allowedInteractions: this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotationModel),  subject: annotationModel.subject, note: annotationModel.notes,
             strokeColor: annotationModel.strokeColor, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime(), author: annotationModel.author},
-            fillColor: annotationModel.fillColor, opacity: annotationModel.opacity, thickness: annotationModel.thickness,
+            fillColor: annotationModel.fillColor, opacity: annotationModel.opacity, thickness: annotationModel.thickness,pageNumber: annotationModel.pageIndex,
             // eslint-disable-next-line max-len
             borderStyle: annotationModel.borderStyle, borderDashArray: borderDashArray, bounds: bound, modifiedDate: this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime(),
             rotateAngle: 'RotateAngle' + annotationModel.rotateAngle, isCloudShape: annotationModel.isCloudShape, cloudIntensity: annotationModel.cloudIntensity,
@@ -884,7 +885,7 @@ export class ShapeAnnotation {
         annotation.allowedInteractions =  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         // eslint-disable-next-line max-len
         annotationObject = {
-            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,pageNumber: pageNumber,
             // eslint-disable-next-line max-len
             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,

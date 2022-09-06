@@ -80,7 +80,7 @@ describe('Scrollbar Chart ', () => {
                 let width: string = scrollEle.getAttribute("width");
                 expect(width == '832.5' || width == '836.5').toBe(true);
                 expect(scrollEle.getAttribute("height") == '16').toBe(true);
-                expect(scrollEle.style.top == '373.5px' || scrollEle.style.top == '377.5px').toBe(true);
+                expect(scrollEle.style.top == '374.5px' || scrollEle.style.top == '378.5px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -258,7 +258,7 @@ describe('Scrollbar Chart ', () => {
                 let width: string = scrollEle.getAttribute('width');
                 expect(width == '832.5' || width === '836.5').toBe(true);
                 expect(scrollEle.getAttribute('height') == '16').toBe(true);
-                expect(scrollEle.style.top == '404.5px' || scrollEle.style.top == '407.5px').toBe(true);
+                expect(scrollEle.style.top == '405.5px' || scrollEle.style.top == '408.5px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -358,7 +358,7 @@ describe('Scrollbar Chart ', () => {
                 let width: string = scrollEle.getAttribute('width');
                 expect(width == '832.5' || width === '836.5').toBe(true);
                 expect(scrollEle.getAttribute('height') == '16').toBe(true);
-                expect(scrollEle.style.top == '433.5px').toBe(true);
+                expect(scrollEle.style.top == '434.5px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -500,7 +500,7 @@ describe('Scrollbar Chart ', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute("width") == '856.5' || scrollEle.getAttribute("width") == '857.5').toBe(true);
                 expect(scrollEle.getAttribute("height") == '16').toBe(true);
-                expect(scrollEle.style.top == '397.5px' || scrollEle.style.top == '398.5px').toBe(true);
+                expect(scrollEle.style.top == '398.5px' || scrollEle.style.top == '399.5px').toBe(true);
                 expect(scrollEle.style.left == '33.5px' || scrollEle.style.left == '32.5px').toBe(true);
                 done();
             };

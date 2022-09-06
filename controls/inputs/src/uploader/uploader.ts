@@ -584,6 +584,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private isFirstFileOnSelection: boolean = false;
     private dragCounter : number = 0;
     private isPreloadFiles: boolean;
+    private isAngular:boolean=false;
     /**
      * Get the file item(li) which are shown in file list.
      *
@@ -2117,6 +2118,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             targetFiles = [].slice.call((<HTMLInputElement>args.target).files);
             this.renderSelectedFiles(args, targetFiles);
         }
+        if (this.isAngular) {
+            args.stopPropagation();
+        }
+
     }
     /* istanbul ignore next */
     private getBase64(file: File): Promise<void> {

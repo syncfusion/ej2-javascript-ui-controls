@@ -616,7 +616,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         if (!isNullOrUndefined(this.textboxWrapper)) {
             const label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
-            if (!isNullOrUndefined(label)) {
+            if (!isNullOrUndefined(label) && this.floatLabelType !== 'Always') {
                 if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
                     label.classList.add('e-label-bottom');
                     label.classList.remove('e-label-top');
@@ -638,7 +638,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
     private focusOutHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
         if (!(this.previousValue === null && this.value === null && this.respectiveElement.value === '') &&
-        (this.previousValue !== this.respectiveElement.value)) {
+        (this.previousValue !== this.value)) {
             this.raiseChangeEvent(args, true);
         }
         const eventArgs: FocusOutEventArgs = {

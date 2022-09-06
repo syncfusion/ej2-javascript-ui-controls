@@ -16,6 +16,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { EJ2Intance } from '../../../src';
 
 Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit,RowDD);
 

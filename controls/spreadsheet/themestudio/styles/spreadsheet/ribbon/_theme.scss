@@ -111,5 +111,44 @@
         }
       }
     }
+
+    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+      & .e-tab,
+      & .e-tab.e-focused {
+
+        & .e-tab-header .e-toolbar-item {
+
+          & .e-tab-wrap:focus {
+            border: 1px solid transparent;
+          }
+
+          & .e-tab-wrap:focus-visible {
+            border: 1px solid $ribbon-focused-wrap-focus-border-color;
+          }
+
+          & .e-tab-wrap:focus-visible:hover {
+            border: 1px solid $ribbon-focused-wrap-focus-border-color;
+          }
+        }
+      }
+
+      & .e-tab .e-tab-header {
+
+        & .e-toolbar-item.e-active .e-tab-wrap {
+          border: 1px solid transparent;
+        }
+
+        & .e-toolbar-item.e-active .e-tab-wrap:hover {
+          border: 1px solid transparent;
+        }
+      }
+
+      & .e-tab:not(.e-focused),
+      & .e-tab:not(.e-focused)> {
+        & .e-tab-header .e-toolbar-item.e-active .e-tab-wrap:focus {
+          border: 1px solid transparent;
+        }
+      }
+    }
   }
 }

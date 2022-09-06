@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I396977` - The issue with "`SetItem` method not working properly for customized menu item" has been resolved.
+
 ## 20.2.46 (2022-08-30)
 
 ### Menu

@@ -71,7 +71,7 @@ describe('Scrollbar Chart', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute("width") == '16').toBe(true);
                 expect(scrollEle.getAttribute("height") == '344.25' || scrollEle.getAttribute("height") == '351.25').toBe(true);
-                expect(scrollEle.style.top == '45.25px' || scrollEle.style.top == '42.25px').toBe(true);
+                expect(scrollEle.style.top == '46.25px' || scrollEle.style.top == '43.25px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -244,7 +244,7 @@ describe('Scrollbar Chart', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute('width') == '16').toBe(true);
                 expect(scrollEle.getAttribute('height') == '375.25' || scrollEle.getAttribute('height') == '381.25').toBe(true);
-                expect(scrollEle.style.top == '45.25px' || scrollEle.style.top == '42.25px').toBe(true);
+                expect(scrollEle.style.top == '46.25px' || scrollEle.style.top == '43.25px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -340,7 +340,7 @@ describe('Scrollbar Chart', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute('width') == '16').toBe(true);
                 expect(scrollEle.getAttribute('height') == '344.25' || scrollEle.getAttribute('height') == '351.25').toBe(true);
-                expect(scrollEle.style.top == '45.25px' || scrollEle.style.top == '42.25px').toBe(true);
+                expect(scrollEle.style.top == '46.25px' || scrollEle.style.top == '43.25px').toBe(true);
                 expect(scrollEle.style.left == '0.5px').toBe(true);
                 done();
             };
@@ -559,8 +559,8 @@ describe('Scrollbar Chart', () => {
                 };
                 chartObj.axisCollections[1].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryYAxis');
-                expect(thumbEle.getAttribute('x') === '118.0102052013836' || thumbEle.getAttribute('x') === '122.42295795735588').toBe(true);
-                expect(thumbEle.getAttribute('width') === '41.83006535947713' || thumbEle.getAttribute('width') === '40.99644128113879').toBe(true);
+                expect(thumbEle.getAttribute('x') === '118.0102052013836' || thumbEle.getAttribute('x') === '122.42626704874375' || thumbEle.getAttribute('x') === '135.84086473600797').toBe(true);
+                expect(thumbEle.getAttribute('width') === '41.83006535947713' || thumbEle.getAttribute('width') === '40.99644128113879' || thumbEle.getAttribute('width') === '120').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -581,7 +581,7 @@ describe('Scrollbar Chart', () => {
                 };
                 chartObj.axisCollections[1].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryYAxis');
-                expect(thumbEle.getAttribute('x') === '137.2216947843075' || thumbEle.getAttribute('x') === '132.91907894632376').toBe(true);
+                expect(thumbEle.getAttribute('x') === '137.2216947843075' || thumbEle.getAttribute('x') === '137.22462493193277' || thumbEle.getAttribute('x') === '175.76356799454996').toBe(true);
                 expect(thumbEle.getAttribute('width') === '40').toBe(true);
                 done();
             };
@@ -680,7 +680,7 @@ describe('Scrollbar Chart', () => {
                     chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 150, 380)));
                     let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryYAxis');
                     expect(thumbEle.getAttribute('x') === '8').toBe(true);
-                    expect(thumbEle.getAttribute('width') === '318.75' || thumbEle.getAttribute('width') === '321.75').toBe(true);
+                    expect(thumbEle.getAttribute('width') === '317.75' || thumbEle.getAttribute('width') === '320.75').toBe(true);
                     chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp();
                     done();
                 };

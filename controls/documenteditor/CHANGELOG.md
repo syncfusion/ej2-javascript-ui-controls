@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 20.2.48 (2022-09-06)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I401666`, `#I401858` - Resolved the issue with selecting bookmark.
+- `#I396827` - Resolved the through wrapping style preservation issue.
+- `#I397297` - Resolved the table alignment issue.
+- `#I398051` - Resolved the invalid text rendering issue.
+- `#I397670` - Resolved the browser hanging issue while changing the line spacing continuously.
+- `#I390697` - Shape is now preserved properly on undo/redo.
+
 ## 20.2.46 (2022-08-30)
 
 ### Document Editor
@@ -14,6 +27,7 @@
 - `#I395575` - Resolved the issue with rendering cell right border.
 - `#I390700` - Resolved the text overlapping issue with square wrapped image.
 - `#I394115` - Resolved the table resizing issue.
+- `#I379655` - Resolved the issue with rejecting empty paragraph.
 
 ## 20.2.45 (2022-08-23)
 

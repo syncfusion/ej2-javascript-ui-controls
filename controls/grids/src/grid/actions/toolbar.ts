@@ -16,7 +16,8 @@ import { SearchBox } from '../services/focus-strategy';
  */
 export class Toolbar {
     //internal variables
-    private element: HTMLElement;
+    /** @hidden */
+    public element: HTMLElement;
     private predefinedItems: { [key: string]: ItemModel } = {};
     public toolbar: tool;
     private searchElement: HTMLInputElement;
@@ -498,8 +499,8 @@ export class Toolbar {
             EventHandler.add(this.searchElement, 'keyup', this.keyUpHandler, this);
             this.searchBoxObj.wireEvent();
         }
-        EventHandler.add(this.toolbar.element, 'focusin', this.onFocusIn, this);
-        EventHandler.add(this.toolbar.element, 'focusout', this.onFocusOut, this);
+        EventHandler.add(this.element, 'focusin', this.onFocusIn, this);
+        EventHandler.add(this.element, 'focusout', this.onFocusOut, this);
     }
 
     private unWireEvent(): void {
@@ -507,8 +508,8 @@ export class Toolbar {
             EventHandler.remove(this.searchElement, 'keyup', this.keyUpHandler);
             this.searchBoxObj.unWireEvent();
         }
-        EventHandler.remove(this.toolbar.element, 'focusin', this.onFocusIn);
-        EventHandler.remove(this.toolbar.element, 'focusout', this.onFocusOut);
+        EventHandler.remove(this.element, 'focusin', this.onFocusIn);
+        EventHandler.remove(this.element, 'focusout', this.onFocusOut);
     }
 
     private onFocusIn(e: FocusEvent): void {
@@ -535,7 +536,7 @@ export class Toolbar {
     }
 
     private getFocusableToolbarItems(): NodeListOf<Element> {
-        return this.toolbar.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+        return this.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
     }
 
     private keyPressedHandler(e: KeyboardEventArgs): void {

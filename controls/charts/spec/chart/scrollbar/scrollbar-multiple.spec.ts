@@ -63,7 +63,7 @@ describe('Scrollbar Chart', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute("width") == '16').toBe(true);
                 expect(scrollEle.getAttribute("height") == '328.25' || scrollEle.getAttribute("height") == '335.25').toBe(true);
-                expect(scrollEle.style.top == '45.25px' || scrollEle.style.top == '42.25px').toBe(true);
+                expect(scrollEle.style.top == '46.25px' || scrollEle.style.top == '43.25px').toBe(true);
                 expect(scrollEle.style.left == '57.5px' || scrollEle.style.left == '53.5px').toBe(true);
                 done();
             };
@@ -79,7 +79,7 @@ describe('Scrollbar Chart', () => {
                 expect(scrollEle != null).toBe(true);
                 expect(scrollEle.getAttribute("width") == '816.5' || scrollEle.getAttribute("width") == '820.5').toBe(true);
                 expect(scrollEle.getAttribute("height") == '16').toBe(true);
-                expect(scrollEle.style.top == '373.5px' || scrollEle.style.top == '377.5px').toBe(true);
+                expect(scrollEle.style.top == '374.5px' || scrollEle.style.top == '378.5px').toBe(true);
                 expect(scrollEle.style.left == '73.5px' || scrollEle.style.left == '69.5px').toBe(true);
                 done();
             };

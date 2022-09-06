@@ -94,7 +94,106 @@ export class FormDesigner {
             isPrintChanged: false,
             isTooltipChanged: false,
         };
-
+    private textFieldPropertyChanged: any =
+        {
+            isReadOnlyChanged: false,
+            isRequiredChanged: false,
+            isBackgroundColorChanged: false,
+            isBorderColorChanged: false,
+            isAlignmentChanged: false,
+            isFontSizeChanged: false,
+            isNameChanged: false,
+            isToolTipChanged: false,
+            isThicknessChanged: false,
+            isVisibilityChanged: false,
+            isPrintChanged: false,
+            isSelected: false,
+            isFontFamilyChanged: false,
+            isFontStyle: false,
+            isValueChanged: false,
+            isMaXLength: false,
+            isColorChanged: false,
+            isMultilineChanged: false,
+        };
+    private passwordFieldPropertyChanged: any = {
+        isReadOnlyChanged: false,
+        isRequiredChanged: false,
+        isBackgroundColorChanged: false,
+        isBorderColorChanged: false,
+        isAlignmentChanged: false,
+        isFontSizeChanged: false,
+        isNameChanged: false,
+        isToolTipChanged: false,
+        isThicknessChanged: false,
+        isVisibilityChanged: false,
+        isPrintChanged: false,
+        isSelected: false,
+        isFontFamilyChanged: false,
+        isFontStyle: false,
+        isValueChanged: false,
+        isMaXLength: false,
+        isColorChanged: false,
+    }
+    private checkBoxFieldPropertyChanged: any = {
+        isReadOnlyChanged: false,
+        isRequiredChanged: false,
+        isBackgroundColorChanged: false,
+        isBorderColorChanged: false,
+        isNameChanged: false,
+        isToolTipChanged: false,
+        isThicknessChanged: false,
+        isVisibilityChanged: false,
+        isPrintChanged: false,
+        isCheckedChanged: false,
+    }
+    private radioButtonFieldPropertyChanged: any = {
+        isReadOnlyChanged: false,
+        isRequiredChanged: false,
+        isBackgroundColorChanged: false,
+        isBorderColorChanged: false,
+        isNameChanged: false,
+        isToolTipChanged: false,
+        isThicknessChanged: false,
+        isVisibilityChanged: false,
+        isPrintChanged: false,
+        isSelectedChanged: false,
+    }
+    private dropdownFieldPropertyChanged: any = {
+        isReadOnlyChanged: false,
+        isRequiredChanged: false,
+        isBackgroundColorChanged: false,
+        isBorderColorChanged: false,
+        isAlignmentChanged: false,
+        isFontSizeChanged: false,
+        isNameChanged: false,
+        isToolTipChanged: false,
+        isThicknessChanged: false,
+        isVisibilityChanged: false,
+        isPrintChanged: false,
+        isSelected: false,
+        isFontFamilyChanged: false,
+        isFontStyle: false,
+        isColorChanged: false,
+        isOptionChanged: false,
+    }
+    private listBoxFieldPropertyChanged: any = {
+        isReadOnlyChanged: false,
+        isRequiredChanged: false,
+        isBackgroundColorChanged: false,
+        isBorderColorChanged: false,
+        isAlignmentChanged: false,
+        isFontSizeChanged: false,
+        isNameChanged: false,
+        isToolTipChanged: false,
+        isThicknessChanged: false,
+        isVisibilityChanged: false,
+        isPrintChanged: false,
+        isSelected: false,
+        isFontFamilyChanged: false,
+        isFontStyle: false,
+        isColorChanged: false,
+        isOptionChanged: false,
+    }
     /**
      * @private
      */
@@ -5818,277 +5917,277 @@ export class FormDesigner {
 
     private updateTextFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         let textFieldSettings: any = this.pdfViewer.textFieldSettings;
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isReadOnly)) {
+        if (!isNullOrUndefined(textFieldSettings.isReadOnly) && this.textFieldPropertyChanged.isReadOnlyChanged) {
             drawingObject.isReadonly = textFieldSettings.isReadOnly;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isRequired)) {
+        if (!isNullOrUndefined(textFieldSettings.isRequired) && this.textFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = textFieldSettings.isRequired;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.value) {
+        if (textFieldSettings.value && this.textFieldPropertyChanged.isValueChanged) {
             drawingObject.value = textFieldSettings.value;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.backgroundColor !== 'white') {
+        if ((textFieldSettings.backgroundColor && textFieldSettings.backgroundColor !== 'white') && this.textFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = textFieldSettings.backgroundColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.borderColor !== 'black') {
+        if ((textFieldSettings.borderColor && textFieldSettings.borderColor !== 'black') && this.textFieldPropertyChanged.isBorderColorChanged) {
             drawingObject.borderColor = textFieldSettings.borderColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.alignment !== 'Left') {
+        if ((textFieldSettings.alignment && textFieldSettings.alignment !== 'Left') && this.textFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = textFieldSettings.alignment;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.color !== 'black') {
+        if ((textFieldSettings.color && textFieldSettings.color !== 'black') && this.textFieldPropertyChanged.isColorChanged) {
             drawingObject.color = textFieldSettings.color;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.fontFamily !== 'Helvetica') {
+        if ((textFieldSettings.fontFamily && textFieldSettings.fontFamily !== 'Helvetica') && this.textFieldPropertyChanged.isFontFamilyChanged) {
             drawingObject.fontFamily = textFieldSettings.fontFamily;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.fontSize !== 10) {
+        if ((textFieldSettings.fontSize && textFieldSettings.fontSize !== 10) && this.textFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = textFieldSettings.fontSize;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.fontStyle) {
+        if (textFieldSettings.fontStyle && this.textFieldPropertyChanged.isFontStyleChanged) {
             (drawingObject as any).fontStyle = this.getFontStyleName(textFieldSettings.fontStyle, drawingObject);;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.name) {
+        if (textFieldSettings.name && this.textFieldPropertyChanged.isNameChanged) {
             drawingObject.name = textFieldSettings.name;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.tooltip) {
+        if (textFieldSettings.tooltip && this.textFieldPropertyChanged.isToolTipChanged) {
             drawingObject.tooltip = textFieldSettings.tooltip;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.thickness !== 1) {
+        if ((textFieldSettings.thickness && textFieldSettings.thickness !== 1) && this.textFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = textFieldSettings.thickness;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.maxLength) {
+        if (textFieldSettings.maxLength && this.textFieldPropertyChanged.isMaxLengthChanged) {
             drawingObject.maxLength = textFieldSettings.maxLength;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && textFieldSettings.visibility) {
+        if (textFieldSettings.visibility && this.textFieldPropertyChanged.isVisibilityChanged) {
             drawingObject.visibility = textFieldSettings.visibility;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isPrint)) {
+        if (!isNullOrUndefined(textFieldSettings.isPrint) && this.textFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = textFieldSettings.isPrint;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(textFieldSettings.isMultiline)) {
+        if (!isNullOrUndefined(textFieldSettings.isMultiline) && this.textFieldPropertyChanged.isMultilineChanged) {
             drawingObject.isMultiline = textFieldSettings.isMultiline;
         }
     }
 
     private updatePasswordFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         let passwordFieldSettings: any = this.pdfViewer.passwordFieldSettings;
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(passwordFieldSettings.isReadOnly)) {
+        if (!isNullOrUndefined(passwordFieldSettings.isReadOnly) && this.passwordFieldPropertyChanged.isReadOnlyChanged) {
             drawingObject.isReadonly = passwordFieldSettings.isReadOnly;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(passwordFieldSettings.isRequired)) {
+        if (!isNullOrUndefined(passwordFieldSettings.isRequired) && this.passwordFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = passwordFieldSettings.isRequired;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.value) {
+        if (passwordFieldSettings.value && this.passwordFieldPropertyChanged.isValueChanged) {
             drawingObject.value = passwordFieldSettings.value;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.backgroundColor !== 'white') {
+        if ((passwordFieldSettings.backgroundColor && passwordFieldSettings.backgroundColor !== 'white') && this.passwordFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = passwordFieldSettings.backgroundColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.borderColor !== 'black') {
+        if ((passwordFieldSettings.borderColor && passwordFieldSettings.borderColor !== 'black') && this.passwordFieldPropertyChanged.isBorderColorChanged) {
             drawingObject.borderColor = passwordFieldSettings.borderColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.alignment !== 'Left') {
+        if ((passwordFieldSettings.alignment && passwordFieldSettings.alignment !== 'Left') && this.passwordFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = passwordFieldSettings.alignment;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.color !== 'black') {
+        if ((passwordFieldSettings.color && passwordFieldSettings.color !== 'black') && this.passwordFieldPropertyChanged.isColorChanged) {
             drawingObject.color = passwordFieldSettings.color;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.fontFamily !== 'Helvetica') {
+        if ((passwordFieldSettings.fontFamily && passwordFieldSettings.fontFamily !== 'Helvetica') && this.passwordFieldPropertyChanged.isFontFamilyChanged) {
             drawingObject.fontFamily = passwordFieldSettings.fontFamily;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.fontSize !== 10) {
+        if ((passwordFieldSettings.fontSize && passwordFieldSettings.fontSize !== 10) && this.passwordFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = passwordFieldSettings.fontSize;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.fontStyle) {
+        if (passwordFieldSettings.fontStyle && this.passwordFieldPropertyChanged.isFontStyleChanged) {
             (drawingObject as any).fontStyle = this.getFontStyleName(passwordFieldSettings.fontStyle, drawingObject);
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.name) {
+        if (passwordFieldSettings.name && this.passwordFieldPropertyChanged.isNameChanged) {
             drawingObject.name = passwordFieldSettings.name;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.tooltip) {
+        if (passwordFieldSettings.tooltip && this.passwordFieldPropertyChanged.isToolTipChanged) {
             drawingObject.tooltip = passwordFieldSettings.tooltip;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.thickness !== 1) {
+        if ((passwordFieldSettings.thickness && passwordFieldSettings.thickness !== 1) && this.passwordFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = passwordFieldSettings.thickness;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.maxLength) {
+        if (passwordFieldSettings.maxLength && this.passwordFieldPropertyChanged.isMaxLengthChanged) {
             drawingObject.maxLength = passwordFieldSettings.maxLength;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && passwordFieldSettings.visibility) {
+        if (passwordFieldSettings.visibility && this.passwordFieldPropertyChanged.isVisibilityChanged) {
             drawingObject.visibility = passwordFieldSettings.visibility;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(passwordFieldSettings.isPrint)) {
+        if (!isNullOrUndefined(passwordFieldSettings.isPrint) && this.passwordFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = passwordFieldSettings.isPrint;
         }
     }
 
     private updateCheckBoxFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
         let checkBoxFieldSettings: any = this.pdfViewer.checkBoxFieldSettings;
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isReadOnly)) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isReadOnly) && this.checkBoxFieldPropertyChanged.isReadOnlyChanged) {
             drawingObject.isReadonly = checkBoxFieldSettings.isReadOnly;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isRequired)) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isRequired) && this.checkBoxFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = checkBoxFieldSettings.isRequired;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.backgroundColor !== 'white') {
+        if ((checkBoxFieldSettings.backgroundColor && checkBoxFieldSettings.backgroundColor !== 'white') && this.checkBoxFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = checkBoxFieldSettings.backgroundColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.borderColor !== 'black') {
+        if ((checkBoxFieldSettings.borderColor && checkBoxFieldSettings.borderColor !== 'black') && this.checkBoxFieldPropertyChanged.isBorderColorChanged) {
             drawingObject.borderColor = checkBoxFieldSettings.borderColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.name) {
+        if (checkBoxFieldSettings.name && this.checkBoxFieldPropertyChanged.isNameChanged) {
             drawingObject.name = checkBoxFieldSettings.name;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.tooltip) {
+        if (checkBoxFieldSettings.tooltip && this.checkBoxFieldPropertyChanged.isToolTipChanged) {
             drawingObject.tooltip = checkBoxFieldSettings.tooltip;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.thickness !== 1) {
+        if ((checkBoxFieldSettings.thickness && checkBoxFieldSettings.thickness !== 1) && this.checkBoxFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = checkBoxFieldSettings.thickness;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && checkBoxFieldSettings.visibility) {
+        if (checkBoxFieldSettings.visibility && this.checkBoxFieldPropertyChanged.isVisibilityChanged) {
             drawingObject.visibility = checkBoxFieldSettings.visibility;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isPrint)) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isPrint) && this.checkBoxFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = checkBoxFieldSettings.isPrint;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(checkBoxFieldSettings.isChecked)) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isChecked) && this.checkBoxFieldPropertyChanged.isCheckedChanged) {
             drawingObject.isChecked = checkBoxFieldSettings.isChecked;
         }
     }
 
     private updateRadioButtonFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
         let radioButtonFieldSettings: any = this.pdfViewer.radioButtonFieldSettings;
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isReadOnly)) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isReadOnly) && this.radioButtonFieldPropertyChanged.isReadOnlyChanged) {
             drawingObject.isReadonly = radioButtonFieldSettings.isReadOnly;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isRequired)) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isRequired) && this.radioButtonFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = radioButtonFieldSettings.isRequired;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.backgroundColor !== 'white') {
+        if ((radioButtonFieldSettings.backgroundColor && radioButtonFieldSettings.backgroundColor !== 'white') && this.radioButtonFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = radioButtonFieldSettings.backgroundColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.borderColor !== 'black') {
+        if ((radioButtonFieldSettings.borderColor && radioButtonFieldSettings.borderColor !== 'black') && this.radioButtonFieldPropertyChanged.isBorderColorChanged) {
             drawingObject.borderColor = radioButtonFieldSettings.borderColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.name) {
+        if (radioButtonFieldSettings.name && this.radioButtonFieldPropertyChanged.isNameChanged) {
             drawingObject.name = radioButtonFieldSettings.name;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.tooltip) {
+        if (radioButtonFieldSettings.tooltip && this.radioButtonFieldPropertyChanged.isToolTipChanged) {
             drawingObject.tooltip = radioButtonFieldSettings.tooltip;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.thickness !== 1) {
+        if ((radioButtonFieldSettings.thickness && radioButtonFieldSettings.thickness !== 1) && this.radioButtonFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = radioButtonFieldSettings.thickness;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && radioButtonFieldSettings.visibility) {
+        if (radioButtonFieldSettings.visibility && this.radioButtonFieldPropertyChanged.isVisibilityChanged) {
             drawingObject.visibility = radioButtonFieldSettings.visibility;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isPrint)) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isPrint) && this.radioButtonFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = radioButtonFieldSettings.isPrint;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(radioButtonFieldSettings.isSelected)) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isSelected) && this.radioButtonFieldPropertyChanged.isSelectedChanged) {
             drawingObject.isSelected = radioButtonFieldSettings.isSelected;
         }
     }
 
     private updateDropdownFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
         let dropdownFieldSettings: any = this.pdfViewer.DropdownFieldSettings;
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(dropdownFieldSettings.isReadOnly)) {
+        if (!isNullOrUndefined(dropdownFieldSettings.isReadOnly) && this.dropdownFieldPropertyChanged.isReadOnlyChanged) {
             drawingObject.isReadonly = dropdownFieldSettings.isReadOnly;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(dropdownFieldSettings.isRequired)) {
+        if (!isNullOrUndefined(dropdownFieldSettings.isRequired) && this.dropdownFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = dropdownFieldSettings.isRequired;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.backgroundColor !== 'white') {
+        if ((dropdownFieldSettings.backgroundColor && dropdownFieldSettings.backgroundColor !== 'white') && this.dropdownFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = dropdownFieldSettings.backgroundColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.borderColor !== 'black') {
+        if ((dropdownFieldSettings.borderColor && dropdownFieldSettings.borderColor !== 'black') && this.dropdownFieldPropertyChanged.isBorderColorChanged) {
             drawingObject.borderColor = dropdownFieldSettings.borderColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.alignment !== 'Left') {
+        if ((dropdownFieldSettings.alignment && dropdownFieldSettings.alignment !== 'Left') && this.dropdownFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = dropdownFieldSettings.alignment;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.color !== 'black') {
+        if ((dropdownFieldSettings.color && dropdownFieldSettings.color !== 'black') && this.dropdownFieldPropertyChanged.isColorChanged) {
             drawingObject.color = dropdownFieldSettings.color;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.fontFamily !== 'Helvetica') {
+        if ((dropdownFieldSettings.fontFamily && dropdownFieldSettings.fontFamily !== 'Helvetica') && this.dropdownFieldPropertyChanged.isFontFamilyChanged) {
             drawingObject.fontFamily = dropdownFieldSettings.fontFamily;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.fontSize !== 10) {
+        if ((dropdownFieldSettings.fontSize && dropdownFieldSettings.fontSize !== 10) && this.dropdownFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = dropdownFieldSettings.fontSize;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.fontStyle) {
+        if (dropdownFieldSettings.fontStyle && this.dropdownFieldPropertyChanged.isFontStyleChanged) {
             (drawingObject as any).fontStyle = this.getFontStyleName(dropdownFieldSettings.fontStyle, drawingObject);;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.name) {
+        if (dropdownFieldSettings.name && this.dropdownFieldPropertyChanged.isNameChanged) {
             drawingObject.name = dropdownFieldSettings.name;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.tooltip) {
+        if (dropdownFieldSettings.tooltip && this.dropdownFieldPropertyChanged.isToolTipChanged) {
             drawingObject.tooltip = dropdownFieldSettings.tooltip;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.thickness !== 1) {
+        if ((dropdownFieldSettings && dropdownFieldSettings.thickness !== 1) && this.dropdownFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = dropdownFieldSettings.thickness;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.visibility) {
+        if (dropdownFieldSettings.visibility && this.dropdownFieldPropertyChanged.isVisibilityChanged) {
             drawingObject.visibility = dropdownFieldSettings.visibility;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(dropdownFieldSettings.isPrint)) {
+        if (!isNullOrUndefined(dropdownFieldSettings.isPrint) && this.dropdownFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = dropdownFieldSettings.isPrint;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && dropdownFieldSettings.options) {
+        if (dropdownFieldSettings.options && this.dropdownFieldPropertyChanged.isOptionChanged) {
             drawingObject.options = drawingObject.options && drawingObject.options.length > 0 ? drawingObject.options : dropdownFieldSettings.options;
         }
     }
 
     private updatelistBoxFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
         let listBoxFieldSettings: any = this.pdfViewer.listBoxFieldSettings;
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(listBoxFieldSettings.isReadOnly)) {
+        if (!isNullOrUndefined(listBoxFieldSettings.isReadOnly) && this.listBoxFieldPropertyChanged.isReadOnlyChanged) {
             drawingObject.isReadonly = listBoxFieldSettings.isReadOnly;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(listBoxFieldSettings.isRequired)) {
+        if (!isNullOrUndefined(listBoxFieldSettings.isRequired) && this.listBoxFieldPropertyChanged.isRequiredChanged) {
             drawingObject.isRequired = listBoxFieldSettings.isRequired;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.backgroundColor !== 'white') {
+        if ((listBoxFieldSettings.backgroundColor && listBoxFieldSettings.backgroundColor !== 'white') && this.listBoxFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = listBoxFieldSettings.backgroundColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.borderColor !== 'black') {
+        if ((listBoxFieldSettings.borderColor && listBoxFieldSettings.borderColor !== 'black') && this.listBoxFieldPropertyChanged.isBorderColorChanged) {
             drawingObject.borderColor = listBoxFieldSettings.borderColor;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.alignment !== 'Left') {
+        if ((listBoxFieldSettings.alignment && listBoxFieldSettings.alignment !== 'Left') && this.listBoxFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = listBoxFieldSettings.alignment;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.color !== 'black') {
+        if ((listBoxFieldSettings.color && listBoxFieldSettings.color !== 'black') && this.listBoxFieldPropertyChanged.isColorChanged) {
             drawingObject.color = listBoxFieldSettings.color;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.fontFamily !== 'Helvetica') {
+        if ((listBoxFieldSettings.fontFamily && listBoxFieldSettings.fontFamily !== 'Helvetica') && this.listBoxFieldPropertyChanged.isFontFamilyChanged) {
             drawingObject.fontFamily = listBoxFieldSettings.fontFamily;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.fontSize !== 10) {
+        if ((listBoxFieldSettings.fontSize && listBoxFieldSettings.fontSize !== 10) && this.listBoxFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = listBoxFieldSettings.fontSize;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.fontStyle) {
+        if (listBoxFieldSettings.fontStyle && this.listBoxFieldPropertyChanged.isFontStyleChanged) {
             (drawingObject as any).fontStyle = this.getFontStyleName(listBoxFieldSettings.fontStyle, drawingObject);;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.name) {
+        if (listBoxFieldSettings.name && this.listBoxFieldPropertyChanged.isNameChanged) {
             drawingObject.name = listBoxFieldSettings.name;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.tooltip) {
+        if (listBoxFieldSettings.tooltip && this.listBoxFieldPropertyChanged.isToolTipChanged) {
             drawingObject.tooltip = listBoxFieldSettings.tooltip;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.thickness !== 1) {
+        if ((listBoxFieldSettings.thickness && listBoxFieldSettings.thickness !== 1) && this.listBoxFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = listBoxFieldSettings.thickness;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.visibility) {
+        if (listBoxFieldSettings.visibility && this.listBoxFieldPropertyChanged.isVisibilityChanged) {
             drawingObject.visibility = listBoxFieldSettings.visibility;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && !isNullOrUndefined(listBoxFieldSettings.isPrint)) {
+        if (!isNullOrUndefined(listBoxFieldSettings.isPrint) && this.listBoxFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = listBoxFieldSettings.isPrint;
         }
-        if ((isFormDesignerToolbarVisible || isSetFormFieldMode) && listBoxFieldSettings.options) {
+        if (listBoxFieldSettings.options && this.listBoxFieldPropertyChanged.isOptionChanged) {
             drawingObject.options = drawingObject.options && drawingObject.options.length > 0 ? drawingObject.options : listBoxFieldSettings.options;
         }
     }
-
+    
     private updateSignInitialFieldProperties(signatureField: any, isInitialField: boolean, isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean) {
         let initialFieldSettings: any = this.pdfViewer.initialFieldSettings;
         let signatureFieldSettings: any = this.pdfViewer.signatureFieldSettings;
@@ -6154,6 +6253,120 @@ export class FormDesigner {
             this.signatureFieldPropertyChanged.isNameChanged = !isNullOrUndefined(newSignatureFieldSettings.name);
             this.signatureFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(newSignatureFieldSettings.isPrint);
         }
+    }
+    /**
+     * @private
+     */
+    public updateTextFieldSettings(textFieldSettings: any) {
+        this.textFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(textFieldSettings.isReadOnly);
+        this.textFieldPropertyChanged.isRequiredChanged = !isNullOrUndefined(textFieldSettings.isRequired);
+        this.textFieldPropertyChanged.isValueChanged = !isNullOrUndefined(textFieldSettings.value);
+        this.textFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(textFieldSettings.backgroundColor);
+        this.textFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(textFieldSettings.borderColor);
+        this.textFieldPropertyChanged.isAlignmentChanged = !isNullOrUndefined(textFieldSettings.alignment);
+        this.textFieldPropertyChanged.isColorChanged = !isNullOrUndefined(textFieldSettings.color);
+        this.textFieldPropertyChanged.isFontFamilyChanged = !isNullOrUndefined(textFieldSettings.fontFamily);
+        this.textFieldPropertyChanged.isFontSizeChanged = !isNullOrUndefined(textFieldSettings.fontSize)
+        this.textFieldPropertyChanged.isFontStyleChanged = !isNullOrUndefined(textFieldSettings.fontStyle);
+        this.textFieldPropertyChanged.isNameChanged = !isNullOrUndefined(textFieldSettings.name);
+        this.textFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(textFieldSettings.tooltip);
+        this.textFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(textFieldSettings.thickness);
+        this.textFieldPropertyChanged.isMaxLengthChanged = !isNullOrUndefined(textFieldSettings.maxLength);
+        this.textFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(textFieldSettings.visibility);
+        this.textFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(textFieldSettings.isPrint);
+        this.textFieldPropertyChanged.isMultilineChanged = !isNullOrUndefined(textFieldSettings.isMultiline);
+    }
+    /**
+     * @private
+     */
+    public updatePasswordFieldSettings(passwordFieldSettings: any) {
+        this.passwordFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(passwordFieldSettings.isReadOnly);
+        this.passwordFieldPropertyChanged.isRequiredChanged = !isNullOrUndefined(passwordFieldSettings.isRequired);
+        this.passwordFieldPropertyChanged.isValueChanged = !isNullOrUndefined(passwordFieldSettings.value);
+        this.passwordFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(passwordFieldSettings.backgroundColor);
+        this.passwordFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(passwordFieldSettings.borderColor);
+        this.passwordFieldPropertyChanged.isAlignmentChanged = !isNullOrUndefined(passwordFieldSettings.alignment);
+        this.passwordFieldPropertyChanged.isColorChanged = !isNullOrUndefined(passwordFieldSettings.color);
+        this.passwordFieldPropertyChanged.isFontFamilyChanged = !isNullOrUndefined(passwordFieldSettings.fontFamily);
+        this.passwordFieldPropertyChanged.isFontSizeChanged = !isNullOrUndefined(passwordFieldSettings.fontSize)
+        this.passwordFieldPropertyChanged.isFontStyleChanged = !isNullOrUndefined(passwordFieldSettings.fontStyle);
+        this.passwordFieldPropertyChanged.isNameChanged = !isNullOrUndefined(passwordFieldSettings.name);
+        this.passwordFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(passwordFieldSettings.tooltip);
+        this.passwordFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(passwordFieldSettings.thickness);
+        this.passwordFieldPropertyChanged.isMaxLengthChanged = !isNullOrUndefined(passwordFieldSettings.maxLength);
+        this.passwordFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(passwordFieldSettings.visibility);
+        this.passwordFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(passwordFieldSettings.isPrint);
+    }
+    /**
+     * @private
+     */
+    public updateCheckBoxFieldSettings(checkBoxFieldSettings: any) {
+        this.checkBoxFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(checkBoxFieldSettings.isReadOnly);
+        this.checkBoxFieldPropertyChanged.isRequiredChanged = !isNullOrUndefined(checkBoxFieldSettings.isRequired);
+        this.checkBoxFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(checkBoxFieldSettings.backgroundColor);
+        this.checkBoxFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(checkBoxFieldSettings.borderColor);
+        this.checkBoxFieldPropertyChanged.isNameChanged = !isNullOrUndefined(checkBoxFieldSettings.name);
+        this.checkBoxFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(checkBoxFieldSettings.tooltip);
+        this.checkBoxFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(checkBoxFieldSettings.thickness);
+        this.checkBoxFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(checkBoxFieldSettings.visibility);
+        this.checkBoxFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(checkBoxFieldSettings.isPrint);
+        this.checkBoxFieldPropertyChanged.isCheckedChanged = !isNullOrUndefined(checkBoxFieldSettings.isChecked);
+    }
+    /**
+     * @private
+     */
+    public updateRadioButtonFieldSettings(radioButtonFieldSettings: any) {
+        this.radioButtonFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(radioButtonFieldSettings.isReadOnly);
+        this.radioButtonFieldPropertyChanged.isRequiredChanged = !isNullOrUndefined(radioButtonFieldSettings.isRequired);
+        this.radioButtonFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(radioButtonFieldSettings.backgroundColor);
+        this.radioButtonFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(radioButtonFieldSettings.borderColor);
+        this.radioButtonFieldPropertyChanged.isNameChanged = !isNullOrUndefined(radioButtonFieldSettings.name);
+        this.radioButtonFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(radioButtonFieldSettings.tooltip);
+        this.radioButtonFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(radioButtonFieldSettings.thickness);
+        this.radioButtonFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(radioButtonFieldSettings.visibility);
+        this.radioButtonFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(radioButtonFieldSettings.isPrint);
+        this.radioButtonFieldPropertyChanged.isSelectedChanged = !isNullOrUndefined(radioButtonFieldSettings.isSelected);
+    }
+    /**
+     * @private
+     */
+    public updateDropDownFieldSettings(dropdownFieldSettings: any) {
+        this.dropdownFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(dropdownFieldSettings.isReadOnly);
+        this.dropdownFieldPropertyChanged.isRequiredChanged = !isNullOrUndefined(dropdownFieldSettings.isRequired);
+        this.dropdownFieldPropertyChanged.isValueChanged = !isNullOrUndefined(dropdownFieldSettings.value);
+        this.dropdownFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(dropdownFieldSettings.backgroundColor);
+        this.dropdownFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(dropdownFieldSettings.borderColor);
+        this.dropdownFieldPropertyChanged.isAlignmentChanged = !isNullOrUndefined(dropdownFieldSettings.alignment);
+        this.dropdownFieldPropertyChanged.isColorChanged = !isNullOrUndefined(dropdownFieldSettings.color);
+        this.dropdownFieldPropertyChanged.isFontFamilyChanged = !isNullOrUndefined(dropdownFieldSettings.fontFamily);
+        this.dropdownFieldPropertyChanged.isFontSizeChanged = !isNullOrUndefined(dropdownFieldSettings.fontSize)
+        this.dropdownFieldPropertyChanged.isFontStyleChanged = !isNullOrUndefined(dropdownFieldSettings.fontStyle);
+        this.dropdownFieldPropertyChanged.isNameChanged = !isNullOrUndefined(dropdownFieldSettings.name);
+        this.dropdownFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(dropdownFieldSettings.tooltip);
+        this.dropdownFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(dropdownFieldSettings.thickness);
+        this.dropdownFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(dropdownFieldSettings.visibility);
+        this.dropdownFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(dropdownFieldSettings.isPrint);
+        this.dropdownFieldPropertyChanged.isOptionChanged = !isNullOrUndefined(dropdownFieldSettings.options);
+    }
+    /**
+     * @private
+     */
+    public updateListBoxFieldSettings(listBoxFieldSettings: any) {
+        this.listBoxFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(listBoxFieldSettings.isReadOnly);
+        this.listBoxFieldPropertyChanged.isRequiredChanged = !isNullOrUndefined(listBoxFieldSettings.isRequired);
+        this.listBoxFieldPropertyChanged.isBackgroundColorChanged = !isNullOrUndefined(listBoxFieldSettings.backgroundColor);
+        this.listBoxFieldPropertyChanged.isBorderColorChanged = !isNullOrUndefined(listBoxFieldSettings.borderColor);
+        this.listBoxFieldPropertyChanged.isAlignmentChanged = !isNullOrUndefined(listBoxFieldSettings.alignment);
+        this.listBoxFieldPropertyChanged.isColorChanged = !isNullOrUndefined(listBoxFieldSettings.color);
+        this.listBoxFieldPropertyChanged.isFontFamilyChanged = !isNullOrUndefined(listBoxFieldSettings.fontFamily);
+        this.listBoxFieldPropertyChanged.isFontSizeChanged = !isNullOrUndefined(listBoxFieldSettings.fontSize)
+        this.listBoxFieldPropertyChanged.isFontStyleChanged = !isNullOrUndefined(listBoxFieldSettings.fontStyle);
+        this.listBoxFieldPropertyChanged.isNameChanged = !isNullOrUndefined(listBoxFieldSettings.name);
+        this.listBoxFieldPropertyChanged.isToolTipChanged = !isNullOrUndefined(listBoxFieldSettings.tooltip);
+        this.listBoxFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(listBoxFieldSettings.thickness);
+        this.listBoxFieldPropertyChanged.isVisibilityChanged = !isNullOrUndefined(listBoxFieldSettings.visibility);
+        this.listBoxFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(listBoxFieldSettings.isPrint);
+        this.listBoxFieldPropertyChanged.isOptionChanged = !isNullOrUndefined(listBoxFieldSettings.options);
     }
 
     private getFontStyleName(fontStyle: any, drawingObject: PdfFormFieldBaseModel): any {

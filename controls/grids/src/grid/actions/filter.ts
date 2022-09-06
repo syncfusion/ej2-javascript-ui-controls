@@ -555,7 +555,7 @@ export class Filter implements IAction {
         const getFlvalue: Date | number | string = (this.column.type === 'date' || this.column.type === 'datetime') ?
             new Date(filterValue as string) : parseFloat(filterValue as string);
         if ((this.column.type === 'date' || this.column.type === 'datetime') && filterValue &&
-            (filterValue as string).split(',').length > 1) {
+            Array.isArray(this.value) && (filterValue as string).split(',').length > 1) {
             this.values[this.column.field] = (((filterValue as string)).split(',')).map((val: string) => {
                 if (val === '') {
                     val = null;

@@ -2,7 +2,7 @@ import { KeyboardEventArgs, removeClass, addClass, extend } from '@syncfusion/ej
 import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
-import { parents, getUid, appendChildren } from '../base/util';
+import { parents, getUid, appendChildren, isComplexField, getObject } from '../base/util';
 import * as events from '../base/constant';
 import { AriaService } from '../services/aria-service';
 import { ServiceLocator } from '../services/service-locator';
@@ -118,7 +118,8 @@ export class DetailRow {
                         parentID: gObj.element.id,
                         parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
                         parentKeyField: gObj.childGrid.queryString,
-                        parentKeyFieldValue: data[gObj.childGrid.queryString],
+                        parentKeyFieldValue: isComplexField(gObj.childGrid.queryString) ?
+                        getObject(gObj.childGrid.queryString, data) : data[gObj.childGrid.queryString],
                         parentRowData: data
                     };
                     if (gObj.isReact) {

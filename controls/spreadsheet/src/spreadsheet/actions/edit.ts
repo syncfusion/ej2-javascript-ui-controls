@@ -903,7 +903,7 @@ export class Edit {
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(
                     applyCF, <ApplyCFArgs>{ indexes: [this.editCellData.rowIndex, this.editCellData.colIndex], isAction: true,
-                        refreshAll: evtArgs.isFormulaDependent });
+                        refreshAll: evtArgs.isFormulaDependent, isEdit: true });
             }
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);

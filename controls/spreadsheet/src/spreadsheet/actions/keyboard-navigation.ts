@@ -38,7 +38,7 @@ export class KeyboardNavigation {
     private keyDownHandler(e: KeyboardEvent): void {
         const target: Element = e.target as Element;
         if (this.parent.isEdit || this.parent.serviceLocator.getService<Dialog>(dialog).dialogInstance ||
-            target.id === `${this.parent.element.id}_name_box` || (target.classList.contains('e-ddl') &&
+            target.id === `${this.parent.element.id}_name_box` || target.id === `${this.parent.element.id}_SearchBox` || (target.classList.contains('e-ddl') &&
                 target.classList.contains('e-input-focus'))) {
             return;
         }

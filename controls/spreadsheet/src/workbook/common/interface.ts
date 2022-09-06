@@ -529,6 +529,7 @@ export interface ApplyCFArgs {
     prevVal?: string;
     isRender?: boolean;
     refreshAll?: boolean;
+    isEdit?: boolean;
 }
 /** @hidden */
 export interface CFArgs {

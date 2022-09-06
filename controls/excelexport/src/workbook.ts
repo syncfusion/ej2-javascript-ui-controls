@@ -1431,7 +1431,7 @@ export class Workbook {
             picture.lastColOffset = iCurOffset + (iCurWidth * 1024 / iColWidth);
             let colHiddenWidth = 0;
             if(sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
-            colHiddenWidth = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 :sheet.columns[iCurCol].width );
+            colHiddenWidth = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 :sheet.columns[iCurCol - 1].width );
             else
             colHiddenWidth = this.ColumnWidthToPixels(8.43);
 

@@ -3191,6 +3191,58 @@ describe('QueryBuilder', () => {
             queryBuilder.setRulesFromSql("FirstName = 'Keerthi' AND HireDate BETWEEN '01/08/2022' AND '05/08/2022' AND Country = 'Erode'");
             expect(queryBuilder.rule.rules[1].value).toEqual(['01/08/2022', '05/08/2022']);
         });
+
+        it('EJ2-62949 - Rule template rendering issue when add group/condition', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate:'#template' },
+                { field: 'FirstName', label: 'First Name', type: 'string' },
+                { field: 'City', label: 'City', type: 'string' },
+            ];
+            let valueObj: Slider;
+            queryBuilder = new QueryBuilder({
+                dataSource: complexData,
+                columns: customFieldData,
+                separator: '.',
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'template-create') {
+                        let defaultNumber: number = 31;    
+                        let fieldObj: DropDownList = new DropDownList({
+                            dataSource: queryBuilder.columns, // tslint:disable-line
+                            fields: args.fields,
+                            value: args.rule.field,
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'field');
+                            }
+                        });
+                        let operatorObj: DropDownList = new DropDownList({
+                            dataSource: [{key: 'equal', value: 'equal'}, {key:'between', value:'between'}, {key:'notbetween', value:'notbetween'}], // tslint:disable-line
+                            fields: { text: 'key', value: 'value' },
+                            value: args.rule.operator,
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'operator');
+                            }
+                        });
+                        if (args.rule.value === '') {
+                            args.rule.value = defaultNumber;
+                        }
+                        valueObj = new Slider({
+                            value: args.rule.value as number, min: 30, max: 50,
+                            ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                            change: (e: any) => {
+                                let elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
+                                queryBuilder.notifyChange(e.value, elem, 'value');
+                            }
+                        });
+                        fieldObj.appendTo('#' + args.ruleID + '_filterkey');
+                        operatorObj.appendTo('#' + args.ruleID + '_operatorkey');
+                        valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                    }
+                }
+            }, '#querybuilder');
+            expect(queryBuilder.rule.rules[0].field).toEqual('');
+            queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], "group0");
+            expect(queryBuilder.rule.rules[0].field).toEqual('');
+        });
         
     });
 

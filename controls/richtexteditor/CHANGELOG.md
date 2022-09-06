@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.46 (2022-08-30)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I386619` - Now, when you switch to full screen, there is no longer a blank white space under the toolbar in the RTE.
+
 ## 20.2.44 (2022-08-16)
 
 ### RichTextEditor

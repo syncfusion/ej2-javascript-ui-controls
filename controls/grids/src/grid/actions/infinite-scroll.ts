@@ -870,7 +870,13 @@ export class InfiniteScroll implements IAction {
             }
             const index: number = this.requestType === 'delete' ? this.lastIndex : this.addRowIndex ? this.addRowIndex : this.firstIndex;
             query.skip(index);
-            query.take(1);
+            if (!isNullOrUndefined(this.parent.getDataModule().dataManager.dataSource.url) && (this.requestType === 'delete' ||
+                this.requestType === 'add')) {
+                query.take(initialBlocks * this.parent.pageSettings.pageSize);
+
+            } else {
+                query.take(1);
+            }
         }
     }
 

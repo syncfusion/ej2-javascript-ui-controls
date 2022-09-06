@@ -1366,6 +1366,11 @@ export class CartesianAxisLayoutPanel {
                         }
                         options.x = pointX = rect.x + rect.width - intervalLength;
                     }
+                        if (this.chart.primaryYAxis.opposedPosition && i === 0 && options.x <= rect.x) {
+                            intervalLength -= (rect.x - options.x);
+                            options.x += rect.x + (width / 2);
+                            pointX += rect.x + (width / 2)
+                        }
                     break;
                 }
             }

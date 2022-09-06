@@ -6141,7 +6141,16 @@ export class PdfViewerBase {
      */
      private getFormFieldsPageList(): any {
         // eslint-disable-next-line max-len
-        let formFieldsCollection = this.pdfViewer.formFieldCollection.map(a => a.properties.pageNumber);
+        let formFieldsCollection = this.pdfViewer.formFieldCollection.map(function(item){
+            if(!isNullOrUndefined(item.properties))
+            {
+                return item.properties.pageNumber;
+
+            }else{
+                return item.pageNumber + 1;
+
+            }
+        });
         let annotActionCollection = this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName == "formFields" || value.annotation.formFieldAnnotationType != undefined).map(a => a.pageIndex);
         let fullPageList = formFieldsCollection.concat(annotActionCollection);
         return fullPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
@@ -9687,6 +9696,47 @@ export class PdfViewerBase {
         for (let i: number = 0; i < existingCollection.length; i++) {
             for (let j: number = 0; j < newCollection.length; j++) {
                 if (existingCollection[i].AnnotName === newCollection[j].AnnotName) {
+                    let len: number = this.pdfViewer.annotationCollection.length;
+                    for(let x: number = 0; x < len; x++){
+                        if(this.pdfViewer.annotationCollection[x].annotationId===newCollection[j].AnnotName){
+                            // To update the comment panel values in a collections while importing the annotation with the same name. (EJ2-62092)
+                            this.pdfViewer.annotationCollection[x].comments = this.pdfViewer.annotationModule.getAnnotationComments(newCollection[j].Comments, newCollection[j], newCollection[j].Author);
+                            this.pdfViewer.annotationCollection[x].review = { state: newCollection[j].State, stateModel: newCollection[j].StateModel, modifiedDate: newCollection[j].ModifiedDate, author: newCollection[j].Author }
+                            this.pdfViewer.annotationCollection[x].note = newCollection[j].Note;
+                            let annot: any = this.pdfViewer.annotationCollection[x];
+                            if(existingCollection[i].AnnotType==="shape" && this.pdfViewer.annotationModule.shapeAnnotationModule){
+                                this.documentAnnotationCollections[pageIndex].shapeAnnotation[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_shape")
+                            }                            
+                            else if(existingCollection[i].AnnotType==="textMarkup" && this.pdfViewer.annotationModule.textMarkupAnnotationModule){
+                                this.documentAnnotationCollections[pageIndex].textMarkupAnnotation[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_textMarkup")
+                            }                            
+                            else if(existingCollection[i].AnnotType==="shape_measure" && this.pdfViewer.annotationModule.measureAnnotationModule){
+                                this.documentAnnotationCollections[pageIndex].measureShapeAnnotation[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_shape_measure")
+                            }                            
+                            else if(existingCollection[i].AnnotType==="stamp" &&  this.pdfViewer.annotationModule.stampAnnotationModule){
+                                this.documentAnnotationCollections[pageIndex].stampAnnotations[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_stamp")
+                            }                            
+                            else if(existingCollection[i].AnnotType==="freeText" && this.pdfViewer.annotationModule.freeTextAnnotationModule ){
+                                this.documentAnnotationCollections[pageIndex].freeTextAnnotation[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_freetext")
+                            }                            
+                            else if(existingCollection[i].AnnotType==="ink" && this.pdfViewer.annotationModule.inkAnnotationModule ){
+                                this.documentAnnotationCollections[pageIndex].signatureInkAnnotation[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_ink")
+                            }
+                        
+                            else if(existingCollection[i].AnnotType==="sticky"){
+                                this.documentAnnotationCollections[pageIndex].stickyNotesAnnotation[i] = newCollection[j];
+                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_sticky")
+                            }
+                            break;
+                        }
+                    }
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createCommentControlPanel(newCollection[j], (pageIndex+1),null,null, true);                     
                     newCollection.splice(j, 1);
                     j = j - 1;
                 }
@@ -9708,6 +9758,27 @@ export class PdfViewerBase {
             }
         }
         return newCollection;
+    }
+
+    // To update the comment panel values in a session storage while importing the annotation with the same name. (EJ2-62092)
+    private updateAnnotationsInSessionStorage(newCollection: any,annot: any,type: string): any {
+        let annotation: any = window.sessionStorage.getItem(this.documentId+type);
+        let annotObject: any = JSON.parse(annotation);
+        if(annotObject){
+            for(let b: number = 0 ;b < annotObject.length; b++){
+                if(annotObject[b].annotations){
+                    for ( let z: number = 0; z < annotObject[b].annotations.length; z++){
+                        if(annotObject[b].annotations[z].annotName === newCollection.AnnotName){
+                            annotObject[b].annotations[z].comments = annot.comments;
+                            annotObject[b].annotations[z].review = annot.review;
+                            annotObject[b].annotations[z].note = annot.note;
+                            break;
+                        }
+                    }
+                }
+            }
+            window.sessionStorage.setItem(this.documentId+type,JSON.stringify(annotObject));
+        }
     }
 
     /**
