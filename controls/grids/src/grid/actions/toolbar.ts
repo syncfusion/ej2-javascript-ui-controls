@@ -208,6 +208,17 @@ export class Toolbar {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
+        const tlbrLeftElement: Element = this.element.querySelector(".e-toolbar-left");
+        const tlbrCenterElement: Element = this.element.querySelector(".e-toolbar-center");
+        const tlbrRightElement: Element = this.element.querySelector(".e-toolbar-right");
+        const tlbrElement: Element = this.element;
+        const tlbrLeftWidth: number = tlbrLeftElement ? tlbrLeftElement.clientWidth : 0;
+        const tlbrCenterWidth: number = tlbrCenterElement ? tlbrCenterElement.clientWidth : 0;
+        const tlbrRightWidth: number = tlbrRightElement ? tlbrRightElement.clientWidth : 0;
+        const tlbrWidth: number = tlbrElement ? tlbrElement.clientWidth : 0;
+        if (tlbrLeftWidth > tlbrWidth || tlbrCenterWidth > tlbrWidth || tlbrRightWidth > tlbrWidth) {
+            this.toolbar.refreshOverflow();
+        }
     }
 
     private addReactToolbarPortals(args: Object[]): void {

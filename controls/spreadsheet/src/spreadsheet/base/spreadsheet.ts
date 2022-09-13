@@ -2312,7 +2312,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     private freeze(e: { row?: number, column?: number, triggerEvent?: boolean }): void {
-        if (!this.allowFreezePane) {
+        if (!this.allowFreezePane || e.row < 0 || e.column < 0) {
             return;
         }
         if (e.triggerEvent) {

@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WCharacterFormat } from '../index';
 import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
 import { DocumentHelper } from './viewer';
-import { HelperMethods, RtlInfo } from '../editor/editor-helper';
+import { HelperMethods, LtrRtlTextInfo, RtlInfo } from '../editor/editor-helper';
 import { BaselineAlignment, BiDirectionalOverride, CharacterRangeType } from '../../index';
 /**
  * @private
@@ -40,7 +40,7 @@ export class TextHelper {
     private paragraphMarkInfo: TextHeightInfo = {};
 
 
-    private static wordSplitCharacters: string[] = [String.fromCharCode(32), String.fromCharCode(33), String.fromCharCode(34), String.fromCharCode(35), String.fromCharCode(36), String.fromCharCode(37), String.fromCharCode(38), String.fromCharCode(39), String.fromCharCode(40), String.fromCharCode(41), String.fromCharCode(42), String.fromCharCode(43), String.fromCharCode(44), String.fromCharCode(45), String.fromCharCode(46), String.fromCharCode(47), String.fromCharCode(58), String.fromCharCode(59), String.fromCharCode(60), String.fromCharCode(61), String.fromCharCode(62), String.fromCharCode(63), String.fromCharCode(64), String.fromCharCode(91), String.fromCharCode(92), String.fromCharCode(93), String.fromCharCode(94), String.fromCharCode(95), String.fromCharCode(96), String.fromCharCode(123), String.fromCharCode(124), String.fromCharCode(125), String.fromCharCode(126), String.fromCharCode(1548), String.fromCharCode(1563), String.fromCharCode(1567), String.fromCharCode(8216), String.fromCharCode(8217), String.fromCharCode(8221), String.fromCharCode(12288), String.fromCharCode(8207) ];
+    private static wordSplitCharacters: string[] = [ String.fromCharCode(32), String.fromCharCode(33), String.fromCharCode(34), String.fromCharCode(35), String.fromCharCode(36), String.fromCharCode(37), String.fromCharCode(38), String.fromCharCode(39), String.fromCharCode(40), String.fromCharCode(41), String.fromCharCode(42), String.fromCharCode(43), String.fromCharCode(44), String.fromCharCode(45), String.fromCharCode(46), String.fromCharCode(47), String.fromCharCode(58), String.fromCharCode(59), String.fromCharCode(60), String.fromCharCode(61), String.fromCharCode(62), String.fromCharCode(63), String.fromCharCode(64), String.fromCharCode(91), String.fromCharCode(92), String.fromCharCode(93), String.fromCharCode(94), String.fromCharCode(95), String.fromCharCode(96), String.fromCharCode(123), String.fromCharCode(124), String.fromCharCode(125), String.fromCharCode(126), String.fromCharCode(1548), String.fromCharCode(1563), String.fromCharCode(8211), String.fromCharCode(8212), String.fromCharCode(8216), String.fromCharCode(8217), String.fromCharCode(8221), String.fromCharCode(12288), String.fromCharCode(8207) ];
 
     private static numberNonReversingCharacters: string[] = [String.fromCharCode(44), String.fromCharCode(46), String.fromCharCode(47), String.fromCharCode(58), String.fromCharCode(1548) ];
 
@@ -358,7 +358,7 @@ export class TextHelper {
     /**
      * @private
      */
-    public splitTextByConsecutiveLtrAndRtl(text: string, isTextBidi: boolean, isRTLLang: boolean, characterRangeTypes: CharacterRangeType[], isPrevLTRText: boolean, hasRTLCharacter: boolean): string[] {
+    public splitTextByConsecutiveLtrAndRtl(text: string, isTextBidi: boolean, isRTLLang: boolean, characterRangeTypes: CharacterRangeType[], isPrevLTRText: LtrRtlTextInfo, hasRTLCharacter: LtrRtlTextInfo): string[] {
         let charTypeIndex: number = characterRangeTypes.length;
         let splittedText: string[] = [];
         if (isNullOrUndefined(text) || text === '') {
@@ -375,7 +375,7 @@ export class TextHelper {
             let currentCharacterType: number = 0;
             let separateEachWordSplitChars: boolean = false;
 
-            if ((isNullOrUndefined(isPrevLTRText) ? !isPrevLTRText : isTextBidi) && this.isNumber(text[i])) {
+            if ((!isNullOrUndefined(isPrevLTRText.value) ? !isPrevLTRText.value : isTextBidi) && this.isNumber(text[i])) {
                 numberText += text[i];
                 currentCharacterType = 4;
             } else if (this.isWordSplitChar(text[i])) {
@@ -386,12 +386,12 @@ export class TextHelper {
                     wordSplitChars += text[i];
                 }
             } else if (this.isRTLText(text[i]) && !this.isNumber(text[i])) {
-                isPrevLTRText = false;
-                hasRTLCharacter = true;
+                isPrevLTRText.value = false;
+                hasRTLCharacter.value = true;
                 rtlText += text[i];
                 currentCharacterType = 1;
             } else {
-                isPrevLTRText = true;
+                isPrevLTRText.value = true;
                 ltrText += text[i];
             }
 
@@ -436,7 +436,7 @@ export class TextHelper {
             characterRangeTypes.push(CharacterRangeType.WordSplit);
         }
 
-        if (hasRTLCharacter || (!isNullOrUndefined(isPrevLTRText) && !isPrevLTRText)) {
+        if (hasRTLCharacter.value || (!isNullOrUndefined(isPrevLTRText.value) && !isPrevLTRText.value)) {
             for (let i = 1; i < splittedText.length; i++) {
                 //Combines the consecutive LTR, RTL, and Number (Number get combined only if it's splitted by non reversing characters (.,:)) 
                 //along with single in-between word split character.
@@ -446,7 +446,7 @@ export class TextHelper {
                     && characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.WordSplit
                     && (characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.Number
                         //Else handled to combine consecutive number when text bidi is false and middle word split character is not white space.
-                        || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
+                        || TextHelper.isNumberNonReversingCharacter(splittedText[i], isTextBidi))
                     && characterRangeTypes[i + charTypeIndex - 1] == characterRangeTypes[i + charTypeIndex + 1]) {
                     splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
                     splittedText.splice(i, 1);
@@ -501,7 +501,7 @@ export class TextHelper {
                     && i + charTypeIndex + 1 < characterRangeTypes.length
                     && characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.WordSplit
                     && (characterRangeTypes[i + charTypeIndex - 1] != CharacterRangeType.Number
-                        || this.isNumberNonReversingCharacter(splittedText[i], isTextBidi) || !isRTLLang)
+                        || TextHelper.isNumberNonReversingCharacter(splittedText[i], isTextBidi) || !isRTLLang)
                     && characterRangeTypes[i + charTypeIndex - 1] == characterRangeTypes[i + charTypeIndex + 1]) {
                     splittedText[i - 1] = splittedText[i - 1] + splittedText[i] + splittedText[i + 1];
                     splittedText.splice(i, 1);
@@ -572,7 +572,7 @@ export class TextHelper {
     /**
      * @private
      */
-    public isNumberNonReversingCharacter(character: string, isTextBidi: boolean): boolean {
+    public static isNumberNonReversingCharacter(character: string, isTextBidi: boolean): boolean {
         for (let i: number = 0; i < TextHelper.numberNonReversingCharacters.length; i++) {
             let ch: string = TextHelper.numberNonReversingCharacters[i];
             if (character[0] == ch && (ch.charCodeAt(0) == 47 ? !isTextBidi : true)) {

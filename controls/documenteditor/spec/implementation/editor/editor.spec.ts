@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, FieldElementBox, FieldInfo, TableWidget } from '../../../src/index';
+import { Editor, FieldElementBox, FieldInfo, TableWidget, TextElementBox } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { LineWidget, ImageElementBox,ParagraphWidget } from '../../../src/index';
@@ -541,6 +541,47 @@ describe('To check whether revisions are added after pressing enter inside table
         editor.selection.handleUpKey();
         editor.editor.onEnter();
         expect(editor.revisions.length).toBe(1);
+    });
+});
+describe('Removing newly created line after enableTrackChanges', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true });
+        DocumentEditor.Inject(Editor, Selection);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((): void => {
+        if (editor) {
+            editor.destroy();
+        }
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+    });
+    it('Removing newly created line after enableTrackChanges', () => {
+        editor.editor.insertText('HellowWorld');
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.enableTrackChanges = true;
+        editor.editor.onEnter();
+        editor.editor.onBackSpace();
+        let paraLength: number = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length;
+        let textElement1: string = (((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text;
+        let textElement2: string = (((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as TextElementBox).text;
+        expect(editor.revisions.length).toBe(0);
+        expect(textElement1).toBe('Hellow');
+        expect(textElement2).toBe('World');
+        expect(paraLength).toBe(1);
     });
 });
 // describe("Paste Validation", () => {

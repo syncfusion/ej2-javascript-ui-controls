@@ -805,12 +805,7 @@ export class SfdtExport {
                         if (this.selectedRevisionId.indexOf(revision.revisionID) === -1) {
                             this.selectedRevisionId.push(revision.revisionID);
                         }
-                        if (element.revisions[x].revisionType === 'Deletion') {
-                            element.revisions.pop();
-                        } else if (element.revisions[x].revisionType === 'Insertion') {
-                            element.revisions.pop();
-                            inline.text = element.text;
-                        } else {
+                        if (element.revisions[x].revisionType !== 'Deletion') {
                             inline.text = element.text;
                         }
                     }
@@ -845,7 +840,7 @@ export class SfdtExport {
         } else {
             inline = undefined;
         }
-        if (element.revisions.length > 0) {
+        if ((element.revisions.length > 0) && (this.isExport || !this.isExport && !this.owner.enableTrackChanges)) {
             inline.revisionIds = [];
             for (let x: number = 0; x < element.revisions.length; x++) {
                 //revisionIdes[x] = element.revisions[x];
@@ -1708,7 +1703,7 @@ export class SfdtExport {
         this.document.revisions = [];
         for (let i: number = 0; i < documentHelper.owner.revisions.changes.length; i++) {
             if (this.isExport ||
-                (!this.isExport && this.selectedRevisionId.indexOf(documentHelper.owner.revisions.changes[i].revisionID) !== -1)) {
+                (!this.isExport && !this.owner.enableTrackChanges && this.selectedRevisionId.indexOf(documentHelper.owner.revisions.changes[i].revisionID) !== -1)) {
                 this.document.revisions.push(this.writeRevision(documentHelper.owner.revisions.changes[i]));
             }
         }

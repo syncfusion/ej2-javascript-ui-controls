@@ -278,3 +278,67 @@ describe('open find pane and repalce and replaceAll functionality testing', () =
         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as TextElementBox).text).toBe('hellohello');
     });
 });
+describe('open find pane and testing the repalce ,undo and redo functionality', () => {
+    let editor: DocumentEditor = undefined;
+    let optionsPane: OptionsPane;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, OptionsPane, Search, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableOptionsPane: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        optionsPane = editor.optionsPaneModule;
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        optionsPane.destroy();
+        documentHelper = undefined;
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('open find pane and testing the repalce functionality', () => {
+        console.log('open find pane and testing the repalce functionality');
+        editor.openBlank();
+        editor.editor.insertText('hello world');
+        let optionsPane = editor.optionsPaneModule;
+        optionsPane.showHideOptionsPane(true);
+        (optionsPane as any).searchInput.value = 'world';
+        let replaceelementbox: any = (optionsPane as any).replaceWith;
+        replaceelementbox.value = 'hello';
+        optionsPane.onReplaceButtonClick();
+        expect(optionsPane.onReplaceButtonClick()).not.toThrowError;
+    });
+    it('Check the redo functionality', () => {
+        console.log('Check the redo functionality');
+        editor.openBlank();
+        editor.editor.insertText('h');
+        editor.editor.insertText('e');
+        editor.editor.insertText('l');
+        editor.editor.insertText('l');
+        editor.editor.insertText('o');
+        editor.editorHistory.undo();
+        editor.editorHistory.undo();
+        editor.editorHistory.undo();
+        editor.editorHistory.redo();
+        editor.editorHistory.redo();
+        editor.editorHistory.redo();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+    });
+    it('Check the undo functionality', () => {
+        console.log('Check the redo functionality');
+        editor.openBlank();
+        editor.editor.insertText('hello');
+        editor.editor.onEnter();
+        editor.editor.insertText('h');
+        expect(editor.editorHistory.undo()).not.toThrowError;
+    });
+});

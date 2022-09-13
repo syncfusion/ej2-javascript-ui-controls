@@ -751,16 +751,13 @@ export class DiagramScroller {
                 break;
             }
             /**
-             * In applyScrollLimit method the sign of deltaX and deltaY 
-             * will be changed ,so here we change the sign.
-             * similarly for bringIntoView and bringToCenter.
+             * EJ2-62912 - fitToPage is not working when we call it multiple times.
              */ 
-            if(factor === 1){deltaX*=-1;deltaY*=-1};
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 },true);
         } else {
             factor = 1 / this.currentZoom;
-            if(factor === 1){deltaX*=-1;deltaY*=-1};
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
+
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 },true);
         }
     }
     /**
@@ -813,6 +810,11 @@ export class DiagramScroller {
         const actualbounds: Rect = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
         let hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
         let voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
+        /**
+         * In applyScrollLimit method the sign of deltaX and deltaY 
+         * will be changed ,so here we change the sign.
+         * similarly for bringIntoView.
+         */
         hoffset*=-1;voffset*=-1;
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }

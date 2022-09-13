@@ -527,6 +527,13 @@
     top:0 !important;
     left: 0 !important;
   }
+
+  .e-daterangepicker.e-popup.e-popup-expand.e-control.e-lib.e-device.e-popup-open {
+    min-height:100%;
+    min-width: 100%;
+    height:100%;
+    width:100%;
+  }
 }
 
 .e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
@@ -539,5 +546,142 @@
   background-size: 250px 40px;
   min-height: 40px;
 }
+.e-daterangepick-mob-popup-wrap {
+
+    #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
+
+        .e-calendar,
+        .e-date-range-container {
+            min-height: 100%;
+            min-width: 100%;
+            height: 100%;
+            width: 100%;
+        }
+
+        .e-calendar-holder {
+            height: 100%;
+        }
+
+        .e-calendar-container {
+            height: 78%;
+        }
+        .e-content.e-month {
+            height: 90%;
+        }
+
+
+        .e-header,
+        .e-range-header {
+            height: 10%;
+        }
+
+        .e-separator {
+            margin: 0;
+        }
+
+        #{if( &, '&', '*')} .e-content.e-month {
+            height: 90%;
+
+            table {
+                height: 100%;
+                border-spacing: 0px 30px;
+            }
+        }
+    }
+
+}
+
+
+@media screen and(orientation: landscape) {
+    .e-daterangepick-mob-popup-wrap {
+
+        #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
+            .e-range-header {
+                float: left;
+                height: 100%;
+                border-right: 1.5px;
+                border-color: black;
+                width: 40%;
+                margin: 0;
+                display: block;
+                background-color: #3f51b5;
+            }
+
+            .e-calendar-holder {
+                height: 100%;
+                width: 100%;
+            }
+
+            .e-start-end {
+                display: block;
+                width: 100%;
+                text-align: -webkit-center;
+            }
+
+            .e-range-header .e-start-end .e-start-btn {
+                display: block;
+                width: 100%;
+                text-align: -webkit-center;
+                margin-top: 20%;
+                font-size: 20px;
+                box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+            }
+
+            .e-range-header .e-day-span {
+                font-size: 20px;
+                margin-top: 60%;
+                color: #fff;
+            }
+
+            .e-range-header .e-start-end .e-end-btn {
+                width: 100%;
+                text-align: -webkit-center;
+                margin-top: 20%;
+                font-size: 20px;
+                box-shadow: 0 5px 5px -3px rgb(0 0 0 / 20%), 0 8px 10px 1px rgb(0 0 0 / 14%), 0 3px 14px 2px rgb(0 0 0 / 12%);
+
+            }
+
+            .e-calendar-container {
+                height: 82%;
+            }
+
+            .e-content.e-month {
+                height: 80%;
+                table {
+                    border-spacing: unset;
+                }
+            }
+
+            .e-header {
+                height: 20%;
+            }
+
+            .e-calendar-holder {
+                width: 100%;
+            }
+
+            .e-date-range-container {
+                display: flex;
+            }
+
+            .e-calendar {
+              .e-end-date.e-selected.e-range-hover {
+                border-radius: 0 40% 40% 0;
+              }
+              .e-end-date.e-selected.e-range-hover{
+                border-radius: 0 40% 40% 0;
+              }
+            }
+
+        }
+    }
+}
+
+
+
+
+
+
 
 // sass-lint:enable-all

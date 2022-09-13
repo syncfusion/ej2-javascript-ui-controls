@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 20.2.49 (2022-09-13)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I398960` - Now chart axis scrollbar is working properly.
+- `#I399859` - Pie chart subtitle is overlapped with datalabel issue has been fixed.
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#I401042` - Now label stlye is applying properly for stock chart axis labels.
+
 ## 20.2.48 (2022-09-06)
 
 ### Chart

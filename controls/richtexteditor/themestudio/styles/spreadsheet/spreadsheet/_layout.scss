@@ -2985,4 +2985,24 @@
       }
     }
   }
+
+  @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+    .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+      & .e-tab-wrap:focus .e-text-wrap {
+        height: 32px;
+      }
+
+      &:not(.e-separator) .e-text-wrap {
+        height: 32px;
+      }
+
+      &:not(.e-separator) .e-tab-wrap {
+        height: 35px;
+      }
+
+      &.e-active {
+        margin: 0;
+      }
+    }
+  }
 }

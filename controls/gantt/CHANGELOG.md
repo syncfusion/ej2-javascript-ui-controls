@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.49 (2022-09-13)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I403222` - Console error occurs in resource view with enabled persistence issue has been fixed.
+
 ## 20.2.46 (2022-08-30)
 
 ### Gantt

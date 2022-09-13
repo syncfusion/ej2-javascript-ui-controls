@@ -1128,19 +1128,67 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       });
   
       it('Expand test for the parent record ', (done: Function) => {
-          actionComplete = (args?: Object): void => {
-              expect(gridObj.getVisibleRecords().length == 2).toBe(true);
-              done();
-          }
-          gridObj.grid.actionComplete = actionComplete;
           gridObj.collapseAll();
-          gridObj.filterByColumn("taskName", "startsWith", "Planning");
+		  gridObj.filterByColumn("taskName", "startsWith", "Plan timeline");
+		  expect(gridObj.getVisibleRecords()[0]['isInExpandState']).toBe(true);
+		  done();
        });
       afterAll(() => {
         destroy(gridObj);
       });
     });
 
+   describe('EJ2-63073: The checkbox selection is not working properly while removing the filter', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          allowFiltering: true,
+          filterSettings: { type: 'Menu', hierarchyMode: 'Parent' },
+          childMapping: 'subtasks',
+          height: 350,
+          autoCheckHierarchy: true,
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+            { field: 'taskName', headerText: 'Task Name', width: 220, showCheckbox: true },
+            { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+          ]
+        },
+        done
+      );
+    });
+
+    it('Selecting the records when first Filter applied ', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.filterModule.filteredResult.length == 5).toBe(true);
+        done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.filterByColumn("taskID", "lessthan", "6");
+      (<HTMLElement>gridObj.getRows()[0].querySelectorAll('.e-treecheckselect')[0]).click();
+      expect(gridObj.getCheckedRecords().length).toBe(5);
+    });
+    it('test the second filter applied ', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.filterModule.filteredResult.length == 4).toBe(true);
+        done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.filterByColumn("progress", "greaterthan", "40");
+    });
+    it('Check the selected Records when remove the single column alone', (done: Function) => {
+      gridObj.removeFilteredColsByField("taskID");
+      expect(gridObj.getCheckedRecords().length == 5).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
     it('memory leak', () => {
       profile.sample();
       let average: any = inMB(profile.averageChange)

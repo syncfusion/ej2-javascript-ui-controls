@@ -159,10 +159,6 @@ export class Filter {
                         this.addParentRecord(parent);
                     }
                 } else {
-                    if ((!this.parent.enableCollapseAll || !this.parent.initialRender && isNullOrUndefined(this.parent['dataResults']['result']))
-                    && parent['expanded'] === false && this.parent.getVisibleRecords().indexOf(record) === -1) {
-                        this.parent.expandRow(this.parent.getRows()[parent['index']], parent);
-                    }
                     this.addParentRecord(parent);
                 }
             }

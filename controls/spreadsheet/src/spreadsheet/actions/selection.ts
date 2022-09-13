@@ -513,18 +513,26 @@ export class Selection {
 
     private virtualContentLoadedHandler(args: { prevRowColCnt: SheetModel }): void { // do only for scroll down
         const sheet: SheetModel = this.parent.getActiveSheet();
-        let indexes: number[] = getRangeIndexes(sheet.selectedRange);
+        let indexes: number[];
         let isColSelected: boolean; let isRowSelected: boolean;
         sheet.selectedRange.split(' ').forEach((rng: string, idx: number) => {
             indexes = getRangeIndexes(rng);
             isRowSelected = (indexes[1] === 0 && indexes[3] === args.prevRowColCnt.colCount - 1);
             isColSelected = (indexes[0] === 0 && indexes[2] === args.prevRowColCnt.rowCount - 1);
-            if (isColSelected && isRowSelected) {
-                this.selectRangeByIdx([0, 0, sheet.rowCount - 1, sheet.colCount - 1], null, true, null, null, null, idx);
-            } else if (isColSelected) {
-                this.selectRangeByIdx([0, indexes[1], sheet.rowCount - 1, indexes[3]], null, true, null, null, null, idx);
-            } else if (isRowSelected) {
-                this.selectRangeByIdx([indexes[0], 0, indexes[2], sheet.colCount - 1], null, true, null, null, null, idx);
+            if (isRowSelected || isColSelected) {
+                if (isColSelected && isRowSelected) {
+                    indexes = [0, 0, sheet.rowCount - 1, sheet.colCount - 1];
+                } else if (isColSelected) {
+                    indexes = [0, indexes[1], sheet.rowCount - 1, indexes[3]];
+                } else {
+                    indexes = [indexes[0], 0, indexes[2], sheet.colCount - 1]
+                }
+                if (sheet.frozenRows || sheet.frozenColumns) {
+                    this.selectRangeByIdx(
+                        indexes, <MouseEvent>{ type: 'mousedown', ctrlKey: idx !== 0 }, false, false, false, false, undefined, true);
+                } else {
+                    this.selectRangeByIdx(indexes, null, true, null, null, null, idx);
+                }
             } else {
                 indexes = getRangeIndexes(rng);
                 const topIdx: number = this.parent.viewport.topIndex + this.parent.frozenRowCount(sheet);
@@ -751,7 +759,9 @@ export class Selection {
                 if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
-                promise = setPosition(this.parent, ele, range, clsName, false, isMultiRange,  isMultiRange && !e.target) as Promise<null> || promise;
+                promise = setPosition(
+                    this.parent, ele, range, clsName, preventAnimation, isMultiRange,  isMultiRange && !e.target) as Promise<null> ||
+                    promise;
             }
         }
         const eArgs: { action: string, sheetIndex: number } = { action: 'getCurrentEditSheetIdx', sheetIndex: null };

@@ -25,6 +25,7 @@ export class Scroll implements IAction {
     private widthService: ColumnWidthService;
     private pageXY: { x: number, y: number };
     private parentElement: HTMLElement;
+    private eventElement: HTMLElement | Document;
 
     /**
      * Constructor for the Grid scrolling.
@@ -322,13 +323,13 @@ export class Scroll implements IAction {
      */
     public addStickyListener(isAdd: boolean): void {
         this.parentElement = this.getScrollbleParent(this.parent.element.parentElement);
-        if (isAdd) {
-            if (this.parentElement) {
-                EventHandler.add(this.parentElement.tagName === 'HTML' || this.parentElement.tagName === 'BODY' ? document :
-                    this.parentElement, 'scroll', this.makeStickyHeader, this);
-            }
-        } else {
-            EventHandler.remove(this.parentElement, 'scroll', this.makeStickyHeader);
+        if (isAdd && this.parentElement) {
+            this.eventElement = this.parentElement.tagName === 'HTML' || this.parentElement.tagName === 'BODY' ? document :
+                this.parentElement;
+            EventHandler.add(this.eventElement, 'scroll', this.makeStickyHeader, this);
+        } else if (this.eventElement) {
+            EventHandler.remove(this.eventElement, 'scroll', this.makeStickyHeader);
+            this.eventElement = null;
         }
     }
 

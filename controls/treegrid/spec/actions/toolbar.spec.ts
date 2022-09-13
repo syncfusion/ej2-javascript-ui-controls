@@ -7,6 +7,7 @@ import { Edit } from '../../src/treegrid/actions/edit';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { select } from '@syncfusion/ej2-base';
 import { ITreeData } from '../../src';
+import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 
 
 /**
@@ -310,6 +311,39 @@ describe('TreeGrid Toolbar module', () => {
     });
   });
 
+  describe('EJ2-62825 - Script error thrown while checking the checkbox with toolbar template', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      let templete: string = '<div><div style="padding: 12px" title="search" ><input id="txt" type="search" style="padding: 0 5px"placeholder="search"></input><span id="searchbutton" class="e-search e-icons"></span></div></div>';
+      document.body.appendChild(createElement('div', { innerHTML: templete, id: 'search' }));
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          height: 350,
+          treeColumnIndex: 2,
+          allowPaging: true,
+          allowSelection: true,
+          toolbarTemplate:'#search',
+          selectionSettings: { persistSelection: true },
+          columns: [
+              { type: 'checkbox', width: 50 },
+              { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 70, textAlign: 'Right' },
+              { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+          ]
+        },done);
+      });
+
+    it('Checking the selection with toolbar template', (done: Function) => {
+      TreeGridObj.selectRow(1);
+      const toolbarElement = TreeGridObj.grid.toolbar;
+      expect(isNullOrUndefined(toolbarElement)).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
 
 
   it('memory leak', () => {

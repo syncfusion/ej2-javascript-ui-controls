@@ -1251,7 +1251,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.back();
                 break;
             case 32:
-                this.spaceKeyHandler(e);
+                let textAreaFocus;
+                if(!isNullOrUndefined(this.curUL)){
+                     textAreaFocus = this.curUL.querySelector('textarea') || this.curUL.querySelector('input');
+                }
+                if(isNullOrUndefined(textAreaFocus) || !(textAreaFocus.classList.contains('e-focused'))){
+                    this.spaceKeyHandler(e);
+                }
                 break;
         }
     }
@@ -1336,7 +1342,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.curUL.querySelector('.' + classNames.focused)) {
                 this.curUL.querySelector('.' + classNames.focused).classList.remove(classNames.focused);
             }
+            let textAreaFocus = li.querySelector('textarea') || li.querySelector('input');
             li.classList.add(classNames.focused);
+            if(!isNullOrUndefined(e)){
+                if(e.target === textAreaFocus){
+                    textAreaFocus.classList.add('e-focused');
+                }
+            }
             const checkboxElement: Element = li.querySelector('.' + classNames.checkboxWrapper);
             const checkIcon: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon + '.' + classNames.icon);
             this.removeHover();

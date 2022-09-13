@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { filterData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress } from "../../../src/index";
+import { SheetModel, getRangeAddress, Spreadsheet } from "../../../src/index";
 
 describe('Freeze pane ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -58,5 +58,18 @@ describe('Freeze pane ->', () => {
             expect(helper.invoke('getCell', [194, 0]).textContent).toBe('10305');
             done();
         });
+    });
+    it('SF-401876 -> Apply freeze pane issue when columns range selection are before the viewport', (done: Function) => {
+        sheet.selectedRange = 'A1:H11';
+        sheet.frozenRows = 0; sheet.frozenColumns = 0;
+        sheet.activeCell = 'A1';
+        sheet.topLeftCell = sheet.paneTopLeftCell = 'D1';
+        const spreadsheet: Spreadsheet = helper.getInstance();
+        spreadsheet.setProperties({ sheets: spreadsheet.sheets }, true);
+        helper.switchRibbonTab(5);
+        helper.click('#' + helper.id + '_freezepanes');
+        expect(sheet.frozenRows).toBe(0);
+        expect(sheet.frozenColumns).toBe(0);
+        done();
     });
 });

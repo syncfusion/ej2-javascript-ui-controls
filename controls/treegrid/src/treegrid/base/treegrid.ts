@@ -2329,6 +2329,19 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (args.requestType === 'save' && this.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
                 this.grid.refresh();
             }
+	    if (args.action === 'filter') {
+	        if (this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender) {
+		    this.expandAll();
+		}
+            }
+	    if (args.requestType === 'searching') {
+	        if (this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender) {
+		    this.expandAll();
+		}
+            }
+	    if (args.action === 'clearFilter' && this.enableCollapseAll) {
+	        this.collapseAll();
+           }
             if (this.action === 'indenting' || this.action === 'outdenting') {
                 this.action = this.action === 'indenting' ? 'indented' : 'outdented';
                 const selectedItem: Object[] = [this.selectedRecords];

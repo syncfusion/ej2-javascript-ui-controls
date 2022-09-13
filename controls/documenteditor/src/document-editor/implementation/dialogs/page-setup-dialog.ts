@@ -418,7 +418,7 @@ export class PageSetupDialog {
             this.paperSize.value = 'b4';
         } else if ((isPortrait && width === 515.9 && height === 728.5)
             || (!isPortrait && width === 728.5 && height === 515.9)) {
-            this.paperSize.value = 'letter';
+            this.paperSize.value = 'b5';
         } else {
             this.paperSize.value = 'customsize';
         }

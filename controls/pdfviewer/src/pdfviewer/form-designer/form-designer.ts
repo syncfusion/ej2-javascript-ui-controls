@@ -1945,6 +1945,7 @@ export class FormDesigner {
                 break;
         }
         obj.tooltip = !isNullOrUndefined(options.tooltip) ? options.tooltip : '';
+        this.setFormFieldIndex();
         let HTMLElement = null;
         if (isCollection) {
             this.addFieldCollection(obj);

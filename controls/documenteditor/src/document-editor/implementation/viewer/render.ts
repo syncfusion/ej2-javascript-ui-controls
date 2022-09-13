@@ -1080,7 +1080,7 @@ export class Renderer {
             this.leftPosition = this.pageLeft;
             this.topPosition = this.pageTop;
             let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
-            if (errorDetails.errorFound) {
+            if (errorDetails.errorFound && !this.isPrinting) {
                 color = '#FF0000';
                 let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                 for (let i: number = 0; i < errorDetails.elements.length; i++) {

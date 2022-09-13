@@ -2210,7 +2210,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             navIdx = this.getIndex(items[i], isUniqueId);
             idx = navIdx.pop();
             iitems = this.getItems(navIdx);
-            this.removeItem(iitems, navIdx, idx);
+            if(!isNullOrUndefined(idx)) {
+                this.removeItem(iitems, navIdx, idx);
+            }
         }
     }
 

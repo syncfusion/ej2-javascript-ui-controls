@@ -3,7 +3,7 @@ import { Dictionary } from '../../base/dictionary';
 import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
-import { WStyle, WParagraphStyle } from './style';
+import { WStyle, WParagraphStyle, WCharacterStyle } from './style';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Revision } from '../track-changes/track-changes';
 /* eslint-disable */
@@ -488,5 +488,23 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.getValue('complexScript'))) {
             this.complexScript = format.getValue('complexScript') as boolean;
         }
+    }
+
+    public hasValueWithParent(property: string): boolean {
+        // 2.1 Define direct VALUE
+        let hasValue: boolean = this.hasValue(property);
+        // 2.2 If SELF VALUE is NULL get BASE VALUE
+        // if (!hasValue && this.BaseFormat != null && this.BaseFormat is WCharacterFormat)
+        //     hasValue = (this.BaseFormat as WCharacterFormat).HasValueWithParent(propertyKey);
+        // 2.3 If VALUE not in hash, get CharStyle VALUE
+        if (!hasValue && !isNullOrUndefined(this.baseCharStyle) && this.baseCharStyle instanceof WCharacterStyle) {
+            hasValue = (this.baseCharStyle as WCharacterStyle).characterFormat.hasValue(property);
+        }
+        // 3. If VALUE is NULL get DEFAULT VALUE
+        let defFormat: WCharacterFormat = this.documentCharacterFormat();
+        if (!hasValue && !isNullOrUndefined(defFormat)) {
+            hasValue = defFormat.hasValue(property);
+        }
+        return hasValue;
     }
 }

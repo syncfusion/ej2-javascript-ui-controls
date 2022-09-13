@@ -325,7 +325,7 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I309407, EJ2-60617, EJ2-62809 ->', () => {
+        describe('I309407, EJ2-60617, EJ2-62809, EJ2-62885 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }], height: 1000,
@@ -362,6 +362,18 @@ describe('Editing ->', () => {
                 helper.edit('I1', 'text');
                 expect(getCell(0, 8, sheet).value).toBe("text");
                 expect(getCell(0, 9, sheet).value).not.toBe('text');
+                done();
+            });
+            it('Formula value is not calculated properly for percentage values', (done: Function) => {
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                helper.edit('A15', '=50% * 2');
+                helper.edit('A16', '=2 * 50%');
+                helper.edit('A17', '=50% - 1');
+                helper.edit('A18', '=1 - 50%');
+                expect(getCell(14, 0, sheet).value).toBe("1");
+                expect(getCell(15, 0, sheet).value).toBe("1");
+                expect(getCell(16, 0, sheet).value).toBe("-0.5");
+                expect(getCell(17, 0, sheet).value).toBe("0.5");
                 done();
             });
         });

@@ -495,4 +495,41 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    
+    describe('FitToPage not working when we call it multiple times ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_fitToPageIssue' });
+            ele.style.width = '100%';
+            document.body.appendChild(ele);
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 350, offsetY: 350 };
+            diagram = new Diagram({
+                width: '500px',
+                height: '500px',created:created,
+                nodes: [node],
+                scrollSettings: { padding: { right: 50, bottom: 50 } }
+            });
+            diagram.appendTo('#diagram_fitToPageIssue');
+            function created(){
+                diagram.fitToPage();
+            }
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Calling fit to page at runtime', (done: Function) => {
+           let scrollX =  diagram.scrollSettings.horizontalOffset;
+           let scrollY =  diagram.scrollSettings.verticalOffset;
+           diagram.fitToPage();
+           diagram.fitToPage();
+            expect(scrollX === diagram.scrollSettings.horizontalOffset && scrollY === diagram.scrollSettings.verticalOffset).toBe(true);
+            done();
+            console.log(scrollX);
+            console.log(scrollY);
+        });
+    });
 });

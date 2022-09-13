@@ -1552,7 +1552,8 @@ export class Filter {
                     for (let j: number = 0; j < filterCol.column.length; j++) {
                         const predicateCol: PredicateModel = {
                             field: getCellAddress(0, filterCol.column[j]).charAt(0),
-                            operator: this.getFilterOperator(filterCol.criteria[j]), value: filterCol.value[j].toString().split('*').join(''),
+                            operator: this.getFilterOperator(filterCol.criteria[j]), value: typeof filterCol.value[j] === 'string' ?
+                            (<string>filterCol.value[j]).split('*').join('') : filterCol.value[j],
                             predicate: filterCol.predicates && filterCol.predicates[j],
                             type: filterCol.dataType && filterCol.dataType[j]
                         };

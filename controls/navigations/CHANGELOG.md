@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.49 (2022-09-13)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I400719` - Script error thrown when we provided remove item is not available in the menu items has been fixed.
+
 ## 20.2.48 (2022-09-06)
 
 ### Menu

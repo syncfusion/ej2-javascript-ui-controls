@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.49 (2022-09-13)
+
+### Diagram
+
+#### Bug fixes
+
+- `#I399417` - Now, fit to page is working properly when we call it multiple times.
+
 ## 20.2.45 (2022-08-23)
 
 ### Diagram

@@ -379,7 +379,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             open: () => {
                 const row: HTMLTableRowElement = this.dlgObj.element.querySelector('table.e-xlfl-table>tr') as HTMLTableRowElement;
                 if (this.options.column.filterTemplate) {
-                    (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
+                    const templateField: string = isComplexField(this.options.column.field) ?
+                        getComplexFieldID(this.options.column.field) : this.options.column.field;
+                    (row.querySelector('#' + templateField + '-xlfl-frstvalue')as HTMLElement).focus();
                 } else {
                     //(row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus();
                 }

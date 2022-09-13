@@ -3296,7 +3296,11 @@ export class Drawing {
         if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) || this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) && (this.pdfViewer.selectedItems.formFields.length !== 0|| this.pdfViewer.selectedItems.annotations.length!==0)) {
             this.pdfViewer.clipboardData.pasteIndex = 1;
             this.pdfViewer.clipboardData.clipObject = this.copyObjects(); 
-        }          
+        } 
+        var isSearchboxDialogOpen = document.getElementById("pdfViewer_search_box").style.display != "none";
+        if(this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen){
+            this.pdfViewer.clipboardData.clipObject= {};
+        }         
         return this.pdfViewer.clipboardData.clipObject;
     }
     /**
@@ -3537,6 +3541,10 @@ export class Drawing {
             this.pdfViewer.renderDrawing(undefined, index);
             this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
         }
+        var isSearchboxDialogOpen = document.getElementById("pdfViewer_search_box").style.display != "none";
+        if(this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen){
+            this.pdfViewer.clipboardData.clipObject= {};
+        }  
     }
     /**
      * @private

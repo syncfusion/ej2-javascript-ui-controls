@@ -1115,6 +1115,13 @@ export interface BorderInfo {
 /**
  * @private
  */
+ export interface LtrRtlTextInfo {
+    value?: boolean
+}
+
+/**
+ * @private
+ */
 export interface FootNoteWidgetsInfo {
     footNoteWidgets: BodyWidget[];
     toBodyWidget: BodyWidget;

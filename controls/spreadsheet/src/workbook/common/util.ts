@@ -333,10 +333,19 @@ export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], 
                 }
             }
         }
-        let objKey: string; cIdxValue = cell.formula;
+        let objKey: string; let objValue: string; cIdxValue = cell.formula;
+        let newCIdxValue: string = cIdxValue;
         for (let j: number = 0; j < newAddress.length; j++) {
             objKey = Object.keys(newAddress[j])[0];
-            cIdxValue = cIdxValue.replace(new RegExp(objKey, 'gi'), newAddress[j][objKey].toUpperCase());
+            objValue = newAddress[j][objKey].toUpperCase();
+            const objKeyLen: number = objKey.length;
+            const positionIdx: number = newCIdxValue.indexOf(objKey);
+            let emptyString: string = "";
+            for (let idx: number = 0; idx < objValue.length; idx++) {
+                emptyString += " ";
+            }
+            cIdxValue = cIdxValue.slice(0, positionIdx) + objValue + cIdxValue.slice(positionIdx + objKeyLen);
+            newCIdxValue = newCIdxValue.slice(0, positionIdx) + emptyString + newCIdxValue.slice(positionIdx + objKeyLen);
         }
         return cIdxValue;
     } else {

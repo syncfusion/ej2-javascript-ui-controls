@@ -1732,6 +1732,9 @@
 
   .e-rte-table-popup.e-dialog .e-dlg-content {
     padding: 0;
+    @if $skin-name == 'FluentUI' {
+      margin-bottom: 0;
+    }
   }
 
   @if $skin-name == 'tailwind' {

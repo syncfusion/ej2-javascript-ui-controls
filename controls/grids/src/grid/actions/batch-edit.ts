@@ -922,7 +922,7 @@ export class BatchEdit {
             validation = isValOnly ? isNullOrUndefined(cols[i].validationRules) : false;
             if (!isAdd && this.checkNPCell(cols[i])) {
                 return i;
-            } else if (isAdd && !cols[i].template && cols[i].visible && cols[i].allowEditing &&
+            } else if (isAdd && (!cols[i].template || cols[i].field) && cols[i].visible && cols[i].allowEditing &&
                 !(cols[i].isIdentity && cols[i].isPrimaryKey) && !validation) {
                 return i;
             }

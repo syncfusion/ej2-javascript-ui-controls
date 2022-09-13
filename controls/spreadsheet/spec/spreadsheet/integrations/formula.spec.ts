@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, getCell, RowModel } from '../../../src/index';
+import { CellModel, getCell, RowModel, SheetModel } from '../../../src/index';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -273,6 +273,16 @@ describe('Spreadsheet formula module ->', () => {
                         done();
                     }, 100);
                 });
+            });
+            it('EJ2-63297 - String concatenation formula not works properly when the formula contains space with string value->', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=A1 & "test"' }, 'A86']);
+                const sheet: SheetModel = helper.getInstance().sheets[0];
+                expect(sheet.rows[85].cells[0].value).toBe('25test');
+                helper.invoke('updateCell', [{ formula: '=A1&"test"' }, 'A87']);
+                expect(sheet.rows[86].cells[0].value).toBe('25test');
+                helper.invoke('updateCell', [{ formula: '=A1 & " test"' }, 'A88']);
+                expect(sheet.rows[87].cells[0].value).toBe('25 test');
+                done();
             });
         });
         describe('I261427 ->', () => {
@@ -1330,7 +1340,7 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
-    describe('EJ2-62878 ->', () => {
+    describe('EJ2-62878, EJ2-62887 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }] }, {} ]}, done);
         });
@@ -1355,6 +1365,21 @@ describe('Spreadsheet formula module ->', () => {
                         done();
                     }, 10);
                 });
+            });
+        });
+        it('The formula reference not updated properly while pasting the formula with multiple cells', (done: Function) => {
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            helper.invoke('updateCell', [{ formula: '=A1+B1' }, 'B2']);
+            helper.invoke('updateCell', [{ formula: '=A1+AA1' }, 'B3']);
+            helper.invoke('updateCell', [{ formula: '=AA1+AAA1' }, 'B4']);
+            helper.invoke('updateCell', [{ formula: '=A1+AA1+AAA1' }, 'B5']);
+            helper.invoke('copy', ['B2:B5']).then(() => {
+                helper.invoke('paste', ['C2']);
+                expect(sheet.rows[1].cells[2].formula).toBe('=B1+C1');
+                expect(sheet.rows[2].cells[2].formula).toBe('=B1+AB1');
+                expect(sheet.rows[3].cells[2].formula).toBe('=AB1+AAB1');
+                expect(sheet.rows[4].cells[2].formula).toBe('=B1+AB1+AAB1');
+                done();
             });
         });
     });

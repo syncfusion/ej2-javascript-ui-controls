@@ -449,8 +449,10 @@ export class DateProcessor {
      * @private
      */
     protected getProjectStartDate(ganttProp: ITaskData, isLoad?: boolean): Date {
-
         if (!isNullOrUndefined(this.parent.cloneProjectStartDate)) {
+            if (typeof this.parent.cloneProjectStartDate === 'string') {
+                this.parent.cloneProjectStartDate = this.getDateFromFormat(this.parent.cloneProjectStartDate);
+            }
             const cloneStartDate: Date = this.checkStartDate(this.parent.cloneProjectStartDate);
             this.parent.cloneProjectStartDate = cloneStartDate;
             return new Date(cloneStartDate.getTime());

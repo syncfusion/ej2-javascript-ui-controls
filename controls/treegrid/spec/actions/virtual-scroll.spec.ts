@@ -981,4 +981,40 @@ describe('TreeGrid Virtual Scroll', () => {
       destroy(gridObj);
     });
   });
+
+  describe('EJ2-62928 - Script error throws when we filter the record using filter menu.', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                toolbar: ['Search'],
+                enableCollapseAll: true,
+                searchSettings: { ignoreCase: true, hierarchyMode: 'Both', key: '1' },
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120,allowEditing: false, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });  
+
+    it('Initial Filtering when hierarchyMode is Both', () => {
+        gridObj.filterByColumn('FIELD1', 'startswith', 'FRANK');
+		gridObj.collapseAll();
+		expect((gridObj.getRows()[0] as HTMLTableRowElement).getElementsByClassName('e-treegridcollapse').length).toBe(1);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

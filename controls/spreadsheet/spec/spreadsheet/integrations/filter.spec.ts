@@ -749,6 +749,25 @@ describe('Filter ->', () => {
                 });
             });
 
+            it('SF-403235 -> Filter state not maintained while loading JSON using openFromJson method ->', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(0);
+                spreadsheet.filterCollection = [{ sheetIndex: 0, filterRange: 'A1:H11', hasFilter: true, column: [3],
+                    criteria: ['notequal'], value: [20], dataType: ['number'], predicates: ['and'] }];
+                helper.invoke('refresh');
+                setTimeout((): void => {
+                    const filterPredicate: any = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(filterPredicate.length).toBe(1);
+                    expect(filterPredicate[0].value).toBe(20);
+                    expect(filterPredicate[0].type).toBe('number');
+                    expect(spreadsheet.sheets[0].rows[2].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[7].isFiltered).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                    done();
+                });
+            });
+
             // it('Filter with unchecked values after open from json', (done: Function) => {
             //     const spreadsheet: Spreadsheet = helper.getInstance();
             //     spreadsheet.applyFilter();

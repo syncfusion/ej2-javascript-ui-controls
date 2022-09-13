@@ -924,6 +924,8 @@ export interface ChangeEventArgs {
     value: string
     /** Defines the event name. */
     name?: string
+    /** Specifies whether the request should be saved automatically or focused out. */
+    isInteracted: boolean
 }
 
 /**

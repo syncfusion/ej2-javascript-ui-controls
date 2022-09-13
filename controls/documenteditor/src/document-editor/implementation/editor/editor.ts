@@ -7437,7 +7437,7 @@ export class Editor {
                     firstBlock = firstBlock.combineWidget(this.owner.viewer) as BlockWidget;
                     let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
                     if (prevWidget) {
-                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget)) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget) && !(prevWidget.containerWidget.lastChild instanceof ParagraphWidget && prevWidget.containerWidget.lastChild.isEndsWithPageBreak)) {
                             this.owner.viewer.cutFromTop(prevWidget.y + prevWidget.height);
 
                             this.documentHelper.layout.updateContainerWidget(firstBlock as Widget, prevWidget.containerWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
@@ -10205,6 +10205,10 @@ export class Editor {
             startPosition = this.documentHelper.selection.end;
             endPosition = this.documentHelper.selection.start;
         }
+        if (this.documentHelper.selection.isinEndnote || this.documentHelper.selection.isinFootnote) {
+            this.documentHelper.selection.footnoteReferenceElement(startPosition, endPosition);
+            startPosition = endPosition;
+        }
         let startInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
         let endInfo: ParagraphInfo = this.selection.getParagraphInfo(endPosition);
         let startIndex: string = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
@@ -11070,6 +11074,9 @@ export class Editor {
     }
     private deletePara(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, editAction: number): void {
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+        if (paragraph.isInsideTable || this.owner.enableTrackChanges) {
+            paragraph = paragraph.containerWidget.lastChild as ParagraphWidget;
+        }
         let selection: Selection = this.documentHelper.selection;
         let paragraphStart: number = selection.getStartOffset(paragraph);
         let endParagraphStartOffset: number = selection.getStartOffset(end.paragraph);
@@ -11109,7 +11116,8 @@ export class Editor {
                 paragraph.nextRenderedWidget === end.paragraph && end.offset === endParagraphStartOffset) ||
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
-                && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0))) {
+                && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
+                start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
             isCombineNextParagraph = true;
         }
         let paraEnd: TextPosition = end.clone();
@@ -11122,7 +11130,7 @@ export class Editor {
         }
         let isStartParagraph: boolean = start.paragraph === paragraph;
         if (end.paragraph === paragraph && end.currentWidget !== paragraph.lastChild ||
-            (end.currentWidget === paragraph.lastChild && (end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget) && (!((paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof CommentCharacterElementBox) && end.offset + 1 <= selection.getLineLength(paragraph.lastChild as LineWidget)))) ||
+            (end.currentWidget === paragraph.lastChild && end.offset <= selection.getLineLength(paragraph.lastChild as LineWidget)) ||
             paraReplace) {
             if (end.currentWidget.isFirstLine() && end.offset > paragraphStart || !end.currentWidget.isFirstLine() || paraReplace) {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
@@ -11388,9 +11396,6 @@ export class Editor {
             }
         }
         //Inserts new paragraph in the current text position.
-        if (paragraphAdv.isInsideTable || this.owner.enableTrackChanges) {
-            paragraphAdv.containerWidget.childWidgets.splice(insertIndex + 1, 1);
-        }
         paragraphAdv.containerWidget.childWidgets.splice(insertIndex, 0, paragraph);
         paragraph.index = blockIndex;
         paragraph.containerWidget = paragraphAdv.containerWidget;
@@ -13878,7 +13883,7 @@ export class Editor {
                     let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                     let previousIndex: number = previousParagraph.childWidgets.length - 1;
                     let lineWidget: LineWidget;
-                    if ((!paragraph.isEmpty() && !this.owner.enableTrackChanges) || (!paragraph.isEmpty() && (paragraph.childWidgets[0] as LineWidget).children[0] instanceof EditRangeEndElementBox)) {
+                    if (!paragraph.isEmpty()) {
                         for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
                             lineWidget = paragraph.childWidgets[i] as LineWidget;
                             previousParagraph.childWidgets.push(lineWidget);
@@ -14796,10 +14801,11 @@ export class Editor {
                     if (nextParagraph.childWidgets.length === 0) {
                         nextParagraph.childWidgets.push(new LineWidget(nextParagraph));
                     }
-                    this.removeBlock(nextParagraph);
                     this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
+                    this.removeBlock(nextParagraph);
                     //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
-                    this.addRemovedNodes(nextParagraph);
+                    if(this.editorHistory.currentBaseHistoryInfo.action !== "Insert")
+                        this.addRemovedNodes(nextParagraph);
                 }
             }
         }
@@ -15143,83 +15149,83 @@ export class Editor {
         const height: number = this.documentHelper.selection.sectionFormat.pageHeight;
         if (property === 'letter') {
             if (width < height) {
-                sectionFormat.pageWidth = 611.9;
-                sectionFormat.pageHeight = 791.9;
+                sectionFormat.pageWidth = 612;
+                sectionFormat.pageHeight = 792;
             } else {
-                sectionFormat.pageWidth = 791.9;
-                sectionFormat.pageHeight = 611.9;
+                sectionFormat.pageWidth = 792;
+                sectionFormat.pageHeight = 612;
             }
         } else if (property === 'tabloid') {
             if (width < height) {
-                sectionFormat.pageWidth = 791.9;
-                sectionFormat.pageHeight = 1223.9;
+                sectionFormat.pageWidth = 792;
+                sectionFormat.pageHeight = 1224;
             } else {
-                sectionFormat.pageWidth = 1223.9;
-                sectionFormat.pageHeight = 791.9;
+                sectionFormat.pageWidth = 1224;
+                sectionFormat.pageHeight = 792;
             }
         } else if (property === 'legal') {
             if (width < height) {
-                sectionFormat.pageWidth = 611.9;
-                sectionFormat.pageHeight = 1007.9;
+                sectionFormat.pageWidth = 612;
+                sectionFormat.pageHeight = 1008;
             } else {
-                sectionFormat.pageWidth = 1007.9;
-                sectionFormat.pageHeight = 611.9;
+                sectionFormat.pageWidth = 1008;
+                sectionFormat.pageHeight = 612;
             }
         } else if (property === 'statement') {
             if (width < height) {
-                sectionFormat.pageWidth = 396;
-                sectionFormat.pageHeight = 611.9;
+                sectionFormat.pageWidth = 392;
+                sectionFormat.pageHeight = 612;
             } else {
-                sectionFormat.pageWidth = 611.9;
-                sectionFormat.pageHeight = 396;
+                sectionFormat.pageWidth = 612;
+                sectionFormat.pageHeight = 392;
             }
         } else if (property === 'executive') {
             if (width < height) {
-                sectionFormat.pageWidth = 521.9;
-                sectionFormat.pageHeight = 755.9;
+                sectionFormat.pageWidth = 522;
+                sectionFormat.pageHeight = 756;
             } else {
-                sectionFormat.pageWidth = 755.9;
-                sectionFormat.pageHeight = 521.9;
+                sectionFormat.pageWidth = 756;
+                sectionFormat.pageHeight = 522;
             }
         } else if (property === 'a3') {
             if (width < height) {
-                sectionFormat.pageWidth = 841.8;
-                sectionFormat.pageHeight = 1190.4;
+                sectionFormat.pageWidth = 841.9;
+                sectionFormat.pageHeight = 1190.55;
             } else {
-                sectionFormat.pageWidth = 1190.4;
-                sectionFormat.pageHeight = 841.8;
+                sectionFormat.pageWidth = 1190.55;
+                sectionFormat.pageHeight = 841.9;
             }
         } else if (property === 'a4') {
             if (width < height) {
-                sectionFormat.pageWidth = 595.2;
-                sectionFormat.pageHeight = 841.8;
+                sectionFormat.pageWidth = 595.3;
+                sectionFormat.pageHeight = 841.9;
             } else {
-                sectionFormat.pageWidth = 841.8;
-                sectionFormat.pageHeight = 595.2;
+                sectionFormat.pageWidth = 841.9;
+                sectionFormat.pageHeight = 595.3;
             }
         } else if (property === 'a5') {
             if (width < height) {
-                sectionFormat.pageWidth = 419.5;
-                sectionFormat.pageHeight = 595.2;
+                sectionFormat.pageWidth = 419.55;
+                sectionFormat.pageHeight = 595.3;
             } else {
-                sectionFormat.pageWidth = 595.2;
-                sectionFormat.pageHeight = 419.5;
+                sectionFormat.pageWidth = 595.3;
+                sectionFormat.pageHeight = 419.55;
             }
         } else if (property === 'b4') {
             if (width < height) {
-                sectionFormat.pageWidth = 728.4;
-                sectionFormat.pageHeight = 1031.7;
+                sectionFormat.pageWidth = 728.5;
+                sectionFormat.pageHeight = 1031.8;
             } else {
-                sectionFormat.pageWidth = 1031.7;
-                sectionFormat.pageHeight = 728.4;
+                sectionFormat.pageWidth = 1031.8;
+                sectionFormat.pageHeight = 728.5;
             }
         } else if (property === 'b5') {
             if (width < height) {
-                sectionFormat.pageWidth = 515.8;
-                sectionFormat.pageHeight = 728.4;
+                sectionFormat.pageWidth = 515.9;
+                sectionFormat.pageHeight = 728.5;
             } else {
-                sectionFormat.pageWidth = 728.4;
-                sectionFormat.pageHeight = 515.8;
+                sectionFormat.pageWidth = 728.5;
+                sectionFormat.pageHeight = 515.9;
             }
         }
         this.onApplySectionFormat(undefined, sectionFormat);

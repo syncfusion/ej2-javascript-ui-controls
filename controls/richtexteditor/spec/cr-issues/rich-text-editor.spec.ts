@@ -1432,4 +1432,31 @@ describe('RTE CR issues', () => {
             expect( style == "line-through" ).toBe( true );
         } )
     } );
+    describe(' EJ2-62704  -  Rich Text Editor unique Id is not generated automatically when we do not set the Id property ', () => {
+        let rteObj: RichTextEditor;
+        const divElement: HTMLElement = createElement('div', {
+            className: 'defaultRTE' });
+        beforeEach((done: Function) => {
+            document.body.appendChild(divElement);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: [ 'Undo', 'Redo', '|',
+                        'Underline', 'StrikeThrough', '|'
+                    ]
+                }
+            });
+            const target: HTMLElement = document.querySelector('.defaultRTE');
+            rteObj.appendTo(target);
+            done();
+        });
+        afterEach((done: Function) => {
+            rteObj.destroy();
+            detach(divElement);
+            done();
+        });
+
+        it(' check the id genarated or not ', () => {
+            expect(rteObj.element.hasAttribute('id')).toBe(true);
+        });
+    });
 });

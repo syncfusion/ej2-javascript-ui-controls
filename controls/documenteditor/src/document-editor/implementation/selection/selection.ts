@@ -9089,8 +9089,7 @@ export class Selection {
         div.innerHTML = htmlContent;
         document.body.appendChild(div);
         if (navigator.userAgent.indexOf('Firefox') !== -1) {
-            div.tabIndex = 0;
-            div.focus();
+            div.contentEditable = 'true';
         }
         let range: Range = document.createRange();
         range.selectNodeContents(div);
@@ -10564,7 +10563,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public footnoteReferenceElement(start: TextPosition, end: TextPosition, inline: ElementBox): void {
+    public footnoteReferenceElement(start: TextPosition, end: TextPosition, inline?: ElementBox): void {
         let container: Widget = this.getContainerWidget(start.paragraph);
         let count: number = 0;
         if (container instanceof FootNoteWidget) {

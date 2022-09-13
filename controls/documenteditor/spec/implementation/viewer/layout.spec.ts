@@ -357,3 +357,70 @@ describe('Table with header validation in keepNext', () => {
         expect(yposition).toBe(162.6666600000001);
     });
 });
+
+describe('Switching Web layout after inserting an endnote', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+
+    it('Insering endnote and checking the position of the cursor after switching to web layout', () => {
+        console.log('Inserting the endnote and checking the position of the cursor after switching to web layout');
+        editor.editor.insertEndnote();
+        editor.layoutType = "Continuous";
+        editor.editor.layoutWholeDocument(true);
+        expect(editor.selection.start.hierarchicalPosition).toBe('0;0;0;0;1');
+        expect(editor.selection.end.hierarchicalPosition).toBe('0;0;0;0;1');
+    });
+});
+
+describe('Switching Web layout after inserting an footnote', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('Inserting the footnote and checking the position of the cursor after switching to web layout', () => {
+        console.log('Inserting the footnote and checking the position of the cursor after switching to web layout');
+        editor.editor.insertFootnote();
+        editor.layoutType = "Continuous";
+        editor.editor.layoutWholeDocument(true);
+         expect(editor.selection.start.hierarchicalPosition).toBe('0;0;0;0;1');
+         expect(editor.selection.end.hierarchicalPosition).toBe('0;0;0;0;1');
+    });
+});

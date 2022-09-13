@@ -3192,6 +3192,38 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.rule.rules[1].value).toEqual(['01/08/2022', '05/08/2022']);
         });
 
+        it('EJ2-62916 - Custom operator not set properly when we set one field is a prefix of other field as number', () => {
+            var customField = [
+                {
+                    field: '1',
+                    label: 'Number field',
+                    type: 'number',
+                },
+                {
+                    field: '12',
+                    label: 'Custom field',
+                    type: 'string',
+                    operators: [
+                        { value: 'in', key: 'In' },
+                        { value: 'notin', key: 'Not In' },
+                    ],
+                },
+            ];
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: customField
+            }, '#querybuilder');
+            var filterElem = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            filterElem.showPopup();
+            var items = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            items[1].click();
+            var filterElem1 = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
+            filterElem1.showPopup();
+            var items1 = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            expect(items1.length).toEqual(2);
+            expect(queryBuilder.rule.rules[0].operator).toEqual('in');
+        });
+
         it('EJ2-62949 - Rule template rendering issue when add group/condition', () => {
             let customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate:'#template' },

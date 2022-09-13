@@ -4042,7 +4042,7 @@
                  column = this.getColumn(field, columns[i].columns);
                  if (column) { break; }
              } else if (field && field.indexOf(this.separator) > -1) {
-                 if (columns[i].field === field.split(this.separator)[0]) {
+                 if (this.separator !== '' && columns[i].field === field.split(this.separator)[0]) {
                      column = columns[i];
                      break;
                  }

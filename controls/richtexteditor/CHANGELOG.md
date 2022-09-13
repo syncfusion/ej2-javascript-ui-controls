@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.49 (2022-09-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I396942` - Now, the Rich Text Editor unique Id is generated automatically when we do not set the Id property
+
 ## 20.2.46 (2022-08-30)
 
 ### RichTextEditor
@@ -19,6 +27,8 @@
 - `#I390850` - Now, the first list item will be removed properly when placing the cursor at the start of the first list item and pressing the backspace key.
 
 - `#I386938` - Now, resizing the image works properly even after resizing the Rich Text Editor using the browser window.
+
+- `#I90850` - Now the issue with ‘When selecting a list in the Rich Text Editor and pressing the shift key, the strike through and underlining styles are deleted’ has been resolved.
 
 - `#I396553` - Now, pressing the enter key after pressing backspace when the cursor is at the start of the first list item works properly in the `Firefox` browser.
 

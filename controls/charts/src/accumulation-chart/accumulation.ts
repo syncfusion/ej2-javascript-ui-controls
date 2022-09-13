@@ -1817,6 +1817,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             titleHeight,
             getAnchor, this.titleCollection, '', 'auto'
         );
+        if (!this.subTitle) {
         options.x = parseInt(this.series[0].radius) >= 80 || getAnchor != 'middle' ? options.x : this.accBaseModule.center.x;
         options.y = parseInt(this.series[0].radius) >= 80 ? options.y : (this.accBaseModule.center.y - this.accBaseModule.radius - padding 
                                                                          - titleHeight - legendHeight - expodeValue);
@@ -1826,7 +1827,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                         (this.accBaseModule.center.x + (titleSize.width / 2)) > (this.initialClipRect.x + this.initialClipRect.width) ?
                         (this.initialClipRect.x + this.initialClipRect.width) - (titleSize.width / 2) - this.initialClipRect.x : options.x;
             options.y = options.y < (this.initialClipRect.y - legendHeight) ? (this.initialClipRect.y - legendHeight) : options.y;
-        }
+        }}
         const element: Element = textElement(
             this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
         );

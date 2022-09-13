@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 20.2.49 (2022-09-13)
+
+- `#F176922` - Now, comments are not duplicated if a shape annotation is added inside an annotation.
+- `#SF-390997`,`#SF-392717`,`#SF-394607` - The signature is now displayed and properly positioned in change the width and height the document that was downloaded.
+- `#SF-398911` - Provided support for suppressing of the Digital signature without affecting download of the same.
+- `#SF-400958` - Now, Adding signature field programmatically and from UI level does not have same signature field name.
+
 ## 20.2.48 (2022-09-06)
 
 - `#SF-398958` -  Now, Script error does not occurs while adding signature and initial fields when enable form field is false.

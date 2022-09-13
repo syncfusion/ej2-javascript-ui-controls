@@ -1926,7 +1926,6 @@ export class TextPosition {
         textPosition.setPositionInternal(this);
         const currentIndex: string = this.getHierarchicalIndexInternal();
         const currentLine: LineWidget = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
-        const isAtLineStart: boolean = this.offset === 0 ? true : false;
         //Moves text position to end of line.
         this.moveToLineEndInternal(selection, true);
         const isMoveToLineEnd: boolean = !textPosition.isAtSamePosition(this);
@@ -1935,7 +1934,10 @@ export class TextPosition {
             this.moveDownInTable(selection);
         } else {
             this.moveNextPosition();
-            this.moveForward();
+            const isAtLineStart: boolean = this.offset === 0 ? true : false;
+            if (!isAtLineStart) {
+                this.moveForward();
+            }
         }
         const nextLine: LineWidget = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
         const lineStart: number = selection.getLeft(nextLine);

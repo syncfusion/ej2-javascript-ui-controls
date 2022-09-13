@@ -525,7 +525,7 @@ export class Layout {
     private layoutBlock(block: BlockWidget, index: number): BlockWidget {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
-            block.splitTextRangeByScriptType(0)
+            block.splitTextRangeByScriptType(0);
             block.splitLtrAndRtlText(0);
             block.combineconsecutiveRTL(0);
             nextBlock = this.layoutParagraph(block, index);
@@ -8629,7 +8629,17 @@ export class Layout {
                     continue;
                 }
 
-                if (characterRangeTypes[i] == CharacterRangeType.RightToLeft || characterRangeTypes[i] == CharacterRangeType.LeftToRight
+                /// When only one NumberNonReversingCharacter(.:,) is exists in between a two numbers and 
+                /// both these number and NumberNonReversingCharacter having a Bidi property,
+                /// MS Word consider this NumberNonReversingCharacter(.:,) as Number and re-order it accordingly.
+                if (i > 0 && i != characterRangeTypes.length - 1
+                    && characterRangeTypes[i] == CharacterRangeType.WordSplit && lineElementsBidiValues[i]
+                    && characterRangeTypes[i - 1] == CharacterRangeType.Number && lineElementsBidiValues[i - 1]
+                    && characterRangeTypes[i + 1] == CharacterRangeType.Number && lineElementsBidiValues[i + 1]
+                    && this.isNumberNonReversingCharacter(line.children[i])) {
+                    characterRangeTypes[i] = CharacterRangeType.Number;
+                }
+                else if (characterRangeTypes[i] == CharacterRangeType.RightToLeft || characterRangeTypes[i] == CharacterRangeType.LeftToRight
                     || characterRangeTypes[i] == CharacterRangeType.Number && rtlStartIndex != -1
                     || (isNullOrUndefined(isPrevLTRText) || !isPrevLTRText) && lineElementsBidiValues[i]) {
                     if (rtlStartIndex == -1 && characterRangeTypes[i] != CharacterRangeType.LeftToRight) {
@@ -8679,6 +8689,39 @@ export class Layout {
         }
         return paraBidi;
     }
+
+    private isNumberNonReversingCharacter(element: ElementBox): boolean {
+        if (element instanceof TextElementBox) {
+            let textRange: TextElementBox = (element as TextElementBox);
+            if (textRange.characterFormat.hasValueWithParent('localeIdBidi')) {
+                //Only these 10 word split characters (‘/’,‘:’,‘.’,‘,’,‘،’,‘#’,‘$’,‘%’,‘+’,‘-’) are behaving as number non reversing character based on language identifier.
+                let ch: number = textRange.text.charCodeAt(0);
+                //(‘/’) character is behaves as number non reversing character for some specific language identifiers.
+                if ((ch == 47 && !this.isNumberReverseLangForSlash(textRange.characterFormat.localeIdBidi))
+                    //(‘#’,‘$’,‘%’,‘+’,‘-’) characters are behaving as number non reversing character for some specific language identifiers.
+                    || ((ch == 35 || ch == 36 || ch == 37 || ch == 43 || ch == 45) && !this.isNumberReverseLangForOthers(textRange.characterFormat.localeIdBidi))
+                    //(‘,’,‘.’,‘:’,‘،’) characters are behaving as number non reversing character for any language identifier.
+                    || (ch == 44 || ch == 46 || ch == 58 || ch == 1548)) {
+                    return true;
+                }
+            } else {
+                return TextHelper.isNumberNonReversingCharacter(textRange.text, textRange.characterFormat.bidi);
+            }
+        }
+        return false;
+    }
+
+    private isNumberReverseLangForSlash(lang: number): boolean {
+        return (this.isNumberReverseLangForOthers(lang) || lang == 6145 || lang == 1164 || lang == 1125 ||
+            lang == 1120 || lang == 1123 || lang == 1065 || lang == 2137 ||
+            lang == 1114 || lang == 1119 || lang == 1152 || lang == 1056);
+    }
+    private isNumberReverseLangForOthers(lang: number): boolean {
+        return (lang == 14337 || lang == 15361 || lang == 5121 || lang == 3073 || lang == 2049 ||
+            lang == 11265 || lang == 13313 || lang == 12289 || lang == 4097 || lang == 8193 ||
+            lang == 16385 || lang == 1025 || lang == 10241 || lang == 7169 || lang == 9217);
+    }
+
     private isStartMarker(element: ElementBox): boolean {
         if (element instanceof CommentCharacterElementBox) {
             return element.commentType === 0;

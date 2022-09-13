@@ -410,6 +410,10 @@ export class TrackChangesPane {
                     this.addChanges(revision);
                 }
             }
+            for (let i = 0; i < this.renderedChanges.keys.length; i++) {
+                let changeView: ChangesSingleView = this.renderedChanges.get(this.renderedChanges.keys[i]);
+                changeView.updateRevisionIndexAndCount(i + 1, this.renderedChanges.keys.length);
+            }
             this.sortCollectionToDisplay();
             this.updateUsers();
             if (show) {
@@ -626,6 +630,7 @@ export class ChangesSingleView {
     public singleInnerDiv: HTMLElement;
     public acceptButtonElement: HTMLButtonElement;
     public rejectButtonElement: HTMLButtonElement;
+    public changesCount: HTMLElement;
     /***
      * @private
      */
@@ -636,6 +641,11 @@ export class ChangesSingleView {
         this.locale = new L10n('documenteditor', this.owner.defaultLocale);
         this.locale.setLocale(this.owner.locale);
         this.trackChangesPane = trackChangesPane;
+    }
+
+    public updateRevisionIndexAndCount(currentIndex: number, totalCount: number) {
+        this.changesCount.innerHTML = this.locale.getConstant('Changes') + ' ' + currentIndex.toString() +
+            ' ' + this.locale.getConstant('of') + ' ' + totalCount.toString();
     }
 
     public createSingleChangesDiv(revision: Revision): HTMLElement {
@@ -717,12 +727,12 @@ export class ChangesSingleView {
         }
         this.rejectButtonElement.addEventListener('click', this.rejectButtonClick.bind(this));
 
-        let changesCount: HTMLElement = createElement('div', { className: 'e-de-track-chngs-count', styles: 'float:right;' });
+        this.changesCount = createElement('div', { className: 'e-de-track-chngs-count', styles: 'float:right;' });
         let currentCount: number = this.owner.revisions.changes.indexOf(revision) + 1;
         let totalCount: number = this.owner.revisions.changes.length;
-        changesCount.innerHTML = this.locale.getConstant('Changes') + ' ' + currentCount.toString() +
+        this.changesCount.innerHTML = this.locale.getConstant('Changes') + ' ' + currentCount.toString() +
             ' ' + this.locale.getConstant('of') + ' ' + totalCount.toString();
-        buttonTotalDiv.appendChild(changesCount);
+        buttonTotalDiv.appendChild(this.changesCount);
 
         return this.outerSingleDiv;
     }

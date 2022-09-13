@@ -1,6 +1,5 @@
-import { Spreadsheet, setCellFormat } from '../../../src/index';
+import { Spreadsheet, setCellFormat, SheetModel, onContentScroll } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { filterData } from '../util/datasource.spec';
 
 export function checkPosition(ele: HTMLElement, pos: string[], isRtl?: boolean) {
     expect(ele.style.top).toBe(pos[0]);
@@ -455,6 +454,23 @@ describe('Selection ->', () => {
                         expect(rowHdr.querySelectorAll('.e-multi-range').length).toBe(0);
                         expect(content.querySelectorAll('.e-multi-range').length).toBe(0);
                         expect(content.querySelector('.e-selection').classList.contains('e-hide')).toBeTruthy();
+                        done();
+                    });
+                });
+            });
+            it('SF-402213 => Multirange column selection and scrolling', (done: Function) => {
+                helper.invoke('selectRange', ['B1:B100 C1:C100 D1:D100 E1:E100 A3:CV3']);
+                setTimeout(() => {
+                    const spreadsheet: any = helper.getInstance();
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    expect(sheet.selectedRange).toBe('B1:B100 C1:C100 D1:D100 E1:E100 A3:CV3');
+                    const sheetPanel: HTMLElement = document.getElementById(`${helper.id}_sheet_panel`);
+                    expect(sheetPanel.getElementsByClassName('e-selection').length).toBe(10);
+                    helper.invoke('getScrollElement').scrollLeft = 4953;
+                    spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 4953 });
+                    setTimeout(() => {
+                        expect(sheet.selectedRange.includes('A3:CV3')).toBeFalsy();
+                        expect(sheetPanel.getElementsByClassName('e-selection').length).toBe(10);
                         done();
                     });
                 });

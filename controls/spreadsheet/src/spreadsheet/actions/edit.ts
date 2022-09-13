@@ -24,7 +24,7 @@ export class Edit {
     private isCellEdit: boolean = true;
     private isNewValueEdit: boolean = true;
     private isAltEnter: boolean = false;
-    private validCharacters: string[] = ['+', '-', '*', '/', ',', '(', '=', '&'];
+    private validCharacters: string[] = ['+', '-', '*', '/', ',', '(', '=', '&', ':'];
     private formulaBarCurStartPos: number = null;
     private curEndPos: number = null;
     private curStartPos: number = null;

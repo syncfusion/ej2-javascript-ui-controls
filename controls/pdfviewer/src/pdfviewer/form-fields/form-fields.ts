@@ -1122,6 +1122,7 @@ export class FormFields {
 
                 if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
                     let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
+                    annot.bounds = {x: bounds.x * zoomvalue, y:bounds.y * zoomvalue,width: bounds.width * zoomvalue, height : bounds.height * zoomvalue };
                     this.updateSignatureDataInSession(annot, key);
                 } else {
                     this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
@@ -2480,6 +2481,8 @@ export class FormFields {
             }
             data.Bounds = annot.bounds;
             if (this.pdfViewer.formDesignerModule) {
+                let zoomvalue =this.pdfViewerBase.getZoomFactor();
+                annot.bounds = {x: currentLeft * zoomvalue, y:currentTop* zoomvalue,width: currentWidth * zoomvalue, height : currentHeight * zoomvalue };
                 this.updateSignatureDataInSession(annot, annot.id);
             }
             // eslint-disable-next-line

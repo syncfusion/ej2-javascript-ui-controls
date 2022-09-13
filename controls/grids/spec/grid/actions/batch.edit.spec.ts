@@ -3843,3 +3843,51 @@ describe('EJ2-61565-Custom commands inside command column disappear on back tab 
         destroy(gridObj);
     });
 });
+
+describe('EJ2-63046-Script error while batch adding if the primary key column is hidden and other columns are templates', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition: 'Top' },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Save'],
+                columns: [
+                    {
+                        field: 'EmployeeID',
+                        isPrimaryKey: true,
+                        visible: false,
+                        type: "number",
+                    },
+                    {
+                        field: 'FirstName',
+                        type: "string",
+                        template: '${FirstName} - 1',
+                        validationRules: { required: true },
+                    },
+                    {
+                        field: 'Address',
+                        type: "string",
+                        template: '${Address} - 1',
+                        validationRules: { required: true },
+                    },
+                ],
+            }, done);
+    });
+    it('click add action', () => {
+        expect(gridObj.isEdit).toBeFalsy();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+
+    it('check the focus', () => {
+        expect(gridObj.element.querySelector('.e-insertedrow.e-editedrow.e-batchrow')
+        .querySelectorAll('td')[0].classList.contains("e-active")).toBe(true);
+        expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(1);
+        expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+        expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

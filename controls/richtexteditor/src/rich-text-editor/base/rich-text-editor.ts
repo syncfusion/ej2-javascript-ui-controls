@@ -74,6 +74,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private touchModule: EJ2Touch;
     private defaultResetValue: string;
     private isResizeInitialized: boolean;
+    private isValueChangeBlurhandler: boolean;
     /**
      * @hidden
      * @deprecated
@@ -1069,6 +1070,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        this.needsID = true;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -1167,7 +1169,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isFocusOut = false;
         this.isRTE = false;
         this.isBlur = true;
-        this.needsID = true;
         this.defaultResetValue = null;
         this.isResizeInitialized = false;
 
@@ -2908,6 +2909,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.tableModule) && !isNOU(this.inputElement.querySelector('.e-table-box.e-rbox-select'))) { return; }
         this.setProperties({ value: this.getUpdatedValue() }, true);
         this.valueContainer.value = this.value;
+        this.isValueChangeBlurhandler= false; 
         this.invokeChangeEvent();
     }
     private updateIntervalValue(): void {
@@ -2964,6 +2966,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const value: string = this.getUpdatedValue();
             this.setProperties({ value: value });
             this.notify(events.toolbarRefresh, { args: e, documentNode: document });
+            this.isValueChangeBlurhandler= true;
             this.invokeChangeEvent();
             this.isFocusOut = true;
             this.isBlur = false;
@@ -3011,7 +3014,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             currentValue = this.value;
         }
         const eventArgs: ChangeEventArgs = {
-            value: currentValue
+            value: currentValue,
+            isInteracted: this.isValueChangeBlurhandler
         };
         if (this.value !== this.cloneValue) {
             this.trigger('change', eventArgs);

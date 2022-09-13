@@ -278,6 +278,8 @@ export class Selection {
 
     private headerSelection(checkAll?: boolean): void {
         let index: number = -1; let length: number = 0;
+        //This property used to maintain the check state of the currentview data after clear filtering
+        let multiFilterCheckState: boolean = false;
         if (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) {
             const filterResult: Object[] = this.parent.filterModule.filteredResult;
             if (this.filteredList.length === 0){
@@ -286,6 +288,10 @@ export class Selection {
             else{
                 if (this.filteredList !== filterResult) {
                     this.filteredList = filterResult;
+                    multiFilterCheckState =true;
+                }
+                 else {
+                    multiFilterCheckState = false;
                 }
             }
         }
@@ -302,6 +308,9 @@ export class Selection {
             for (let i: number = 0; i < data.length; i++) {
                 if (checkAll) {
                     if (data[i].checkboxState === 'check') {
+                        continue;
+                    }
+                    if (multiFilterCheckState) {
                         continue;
                     }
                     data[i].checkboxState = 'check';

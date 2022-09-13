@@ -9,7 +9,7 @@ import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
 import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
-import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo } from '../editor/editor-helper';
+import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo, LtrRtlTextInfo } from '../editor/editor-helper';
 import { HeaderFooterType, TabLeader, FootnoteType } from '../../base/types';
 import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
@@ -1394,9 +1394,9 @@ export class ParagraphWidget extends BlockWidget {
      * @private
      */
     public splitLtrAndRtlText(lineIndex: number): void {
-        let isPrevLTRText: boolean = null;
+        let isPrevLTRText: LtrRtlTextInfo = { value: null };
         let iIncrementer: number = 1;
-        let hasRTLCharacter: boolean = false;
+        let hasRTLCharacter: LtrRtlTextInfo = { value: null };
         let characterRangeTypes: CharacterRangeType[] = [];
         let isField: boolean = false;
         let documentHelper: DocumentHelper = this.bodyWidget.page.documentHelper;

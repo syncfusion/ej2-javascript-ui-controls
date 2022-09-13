@@ -47,50 +47,52 @@ export class Toolbar {
     }
 
     private refreshToolbar(args: RowSelectEventArgs): void {
-        const tObj: TreeGrid = this.parent; let indentElement: HTMLElement; let outdentElement: HTMLElement;
-        const indentID: string = tObj.element.id + '_gridcontrol_indent';
-        const outdentID: string = tObj.element.id + '_gridcontrol_outdent';
         const toolbarElement: Element = this.parent.grid.toolbarModule.getToolbar();
-        const indentEle: HTMLElement = toolbarElement.querySelector('#' + indentID);
-        const outdentEle: HTMLElement = toolbarElement.querySelector('#' + outdentID);
-        let row: HTMLTableRowElement = args.row as HTMLTableRowElement;
-        const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
-        if (!isNullOrUndefined(row[0])) {
-            row = row[0];
-        }
-        row = (!isNullOrUndefined(selectedrow) && selectedrow.rowIndex !== row.rowIndex) ? selectedrow : row;
-        if (indentEle !== null && outdentEle !== null) {
-            indentElement = toolbarElement.querySelector('#' + indentID).parentElement;
-            outdentElement  = toolbarElement.querySelector('#' + outdentID).parentElement;
-            if (row.rowIndex === 0 || tObj.getSelectedRowIndexes().length > 1) {
-                indentElement.classList.add('e-hidden');
-                outdentElement.classList.add('e-hidden');
+        if(!isNullOrUndefined(toolbarElement)){
+            const tObj: TreeGrid = this.parent; let indentElement: HTMLElement; let outdentElement: HTMLElement;
+            const indentID: string = tObj.element.id + '_gridcontrol_indent';
+            const outdentID: string = tObj.element.id + '_gridcontrol_outdent';
+            const indentEle: HTMLElement = toolbarElement.querySelector('#' + indentID);
+            const outdentEle: HTMLElement = toolbarElement.querySelector('#' + outdentID);
+            let row: HTMLTableRowElement = args.row as HTMLTableRowElement;
+            const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
+            if (!isNullOrUndefined(row[0])) {
+                row = row[0];
             }
-            else if (args['name'] !== 'rowDeselected' || (!isNullOrUndefined(selectedrow) && tObj.grid.isCheckBoxSelection)) {
-                const selectedItem: ITreeData = tObj.getCurrentViewRecords()[row.rowIndex];
-                if (!isNullOrUndefined(selectedItem)) {
-                    if ((selectedItem.level > (tObj.getCurrentViewRecords()[row.rowIndex - 1] as ITreeData).level)) {
+            row = (!isNullOrUndefined(selectedrow) && selectedrow.rowIndex !== row.rowIndex) ? selectedrow : row;
+            if (indentEle !== null && outdentEle !== null) {
+                indentElement = toolbarElement.querySelector('#' + indentID).parentElement;
+                outdentElement  = toolbarElement.querySelector('#' + outdentID).parentElement;
+                if (row.rowIndex === 0 || tObj.getSelectedRowIndexes().length > 1) {
+                    indentElement.classList.add('e-hidden');
+                    outdentElement.classList.add('e-hidden');
+                }
+                else if (args['name'] !== 'rowDeselected' || (!isNullOrUndefined(selectedrow) && tObj.grid.isCheckBoxSelection)) {
+                    const selectedItem: ITreeData = tObj.getCurrentViewRecords()[row.rowIndex];
+                    if (!isNullOrUndefined(selectedItem)) {
+                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[row.rowIndex - 1] as ITreeData).level)) {
+                            indentElement.classList.add('e-hidden');
+                        } else {
+                            indentElement.classList.remove('e-hidden');
+                        }
+                        if (selectedItem.level === (tObj.getCurrentViewRecords()[row.rowIndex - 1] as ITreeData).level) {
+                            indentElement.classList.remove('e-hidden');
+                        }
+                        if (selectedItem.level === 0) {
+                            outdentElement.classList.add('e-hidden');
+                        }
+                        if (selectedItem.level !== 0) {
+                            outdentElement.classList.remove('e-hidden');
+                        }
+                    }
+                }
+                if (args['name'] === 'rowDeselected' && isNullOrUndefined(selectedrow) && !tObj.grid.isCheckBoxSelection) {
+                    if (this.parent.toolbar['includes']('Indent')) {
                         indentElement.classList.add('e-hidden');
-                    } else {
-                        indentElement.classList.remove('e-hidden');
                     }
-                    if (selectedItem.level === (tObj.getCurrentViewRecords()[row.rowIndex - 1] as ITreeData).level) {
-                        indentElement.classList.remove('e-hidden');
-                    }
-                    if (selectedItem.level === 0) {
+                    if (this.parent.toolbar['includes']('Outdent')) {
                         outdentElement.classList.add('e-hidden');
                     }
-                    if (selectedItem.level !== 0) {
-                        outdentElement.classList.remove('e-hidden');
-                    }
-                }
-            }
-            if (args['name'] === 'rowDeselected' && isNullOrUndefined(selectedrow) && !tObj.grid.isCheckBoxSelection) {
-                if (this.parent.toolbar['includes']('Indent')) {
-                    indentElement.classList.add('e-hidden');
-                }
-                if (this.parent.toolbar['includes']('Outdent')) {
-                    outdentElement.classList.add('e-hidden');
                 }
             }
         }

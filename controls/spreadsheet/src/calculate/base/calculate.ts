@@ -1544,6 +1544,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     stack.push(s + this.tic);
                     i += 1;
                 } else {
+                    if (pFormula[i] === ' ' && i < pFormula.length - 1) {
+                        i += 1;
+                        continue;
+                    }
                     switch (pFormula[i]) {
                         case '#':
                             {
@@ -1567,6 +1571,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             {
                                 i = i + 1;
                                 let s: string = '';
+                                if (pFormula[i] === 'n') {
+                                    continue;
+                                }
                                 if (pFormula.substring(i).indexOf('Infinity') === 0) {
                                     s = 'Infinity';
                                     i += s.length;

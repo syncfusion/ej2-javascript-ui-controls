@@ -14,7 +14,7 @@ import { ConnectorType } from '../../accumulation-chart/model/enum';
 import { CornerRadius } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
-import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs } from '../../chart/index';
+import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs, Font, FontModel } from '../../chart/index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
 
@@ -1246,8 +1246,8 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options to customize the axis label.
      */
 
-    @Complex<StockChartFontModel>(Theme.axisLabelFont, StockChartFont)
-    public labelStyle: StockChartFontModel;
+    @Complex<FontModel>(Theme.axisLabelFont, Font)
+    public labelStyle: FontModel;
 
     /**
      * Specifies the title of an axis.

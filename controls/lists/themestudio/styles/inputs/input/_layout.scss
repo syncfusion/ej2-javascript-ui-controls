@@ -2502,7 +2502,7 @@
     @include input-ripple-animation;
   }
 
-  // sass-lint:disable no-vendor-prefixes  
+  // sass-lint:disable no-vendor-prefixes
   input.e-input#{$css}::-ms-clear,
   .e-float-input input::-ms-clear,
   .e-float-input.e-control-wrapper input::-ms-clear {
@@ -5226,6 +5226,43 @@
   .e-outline.e-float-input.e-control-wrapper textarea {
     @if $input-skin-name == 'material' {
       width: calc(100% - 1px);
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-numeric label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 80px);
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-numeric label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper.e-static-clear label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper.e-numeric.e-static-clear label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow {
+    @if $input-skin-name == 'material' {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-static-clear label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-icon {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 45px);
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-static-clear label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-icon {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 75px);
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-numeric.e-static-clear label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 110px);
     }
   }
 

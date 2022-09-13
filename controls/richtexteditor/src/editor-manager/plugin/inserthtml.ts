@@ -304,7 +304,7 @@ export class InsertHtml {
     private static getNodeCollection (range: Range, nodeSelection: NodeSelection, node: Node): Node[] {
         let nodes: Node[] = [];
         if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
-            range.startContainer.nodeName != 'BR' &&
+            range.startContainer.nodeName != 'BR' && range.startContainer.childNodes.length > 0 &&
             (range.startContainer.nodeName === 'TD' || (range.startContainer.nodeType !== 3 &&
             (node as HTMLElement).classList && (node as HTMLElement).classList.contains('pasteContent')))) {
             nodes.push(range.startContainer.childNodes[range.endOffset]);
@@ -351,7 +351,7 @@ export class InsertHtml {
                     (node as HTMLElement).firstElementChild.insertAdjacentElement('afterend', liNode);
                 }
             }
-            if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
+            if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH' || blockNode.nodeName === 'TR') {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
                 range.insertNode(tempSpan);
                 tempSpan.parentNode.replaceChild(node, tempSpan);

@@ -437,7 +437,7 @@
 @media (min-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: 600px;
   }
 }
@@ -445,7 +445,7 @@
 @media (max-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: auto;
 	}
 }
@@ -453,7 +453,7 @@
 @media (max-width: 768px) {
   .e-prompt-dialog.e-dialog.e-popup,
   .e-prompt-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: auto;
 }
 }
@@ -461,7 +461,7 @@
 @media (min-width: 768px) {
   .e-prompt-dialog.e-dialog.e-popup,
   .e-prompt-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: 600px;
 }
 }

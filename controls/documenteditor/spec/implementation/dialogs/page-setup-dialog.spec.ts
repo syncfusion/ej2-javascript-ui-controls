@@ -848,3 +848,113 @@ console.log('landscape page setup validation');
         dialog.closePageSetupDialog();
     });
 });
+describe('PageSetup Dialog Test Case Validation - 10', function () {
+    let selectionSectionFormat: SelectionSectionFormat;
+    let editor: DocumentEditor;
+    let dialog: PageSetupDialog;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(PageSetupDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enablePageSetupDialog = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.pageSetupDialogModule
+        dialog.show();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        selectionSectionFormat = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('letter page size', () => {
+        console.log('letter page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('letter');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('letter');
+        dialog.closePageSetupDialog();
+    });
+    it('tabloid page size', () => {
+        console.log('tabloid page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('tabloid');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('tabloid');
+        dialog.closePageSetupDialog();
+    });
+    it('Legal page size', () => {
+        console.log('Legal page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('legal');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('legal');
+        dialog.closePageSetupDialog();
+    });
+    it('statement page size', () => {
+        console.log('statement page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('statement');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('statement');
+        dialog.closePageSetupDialog();
+    });
+    it('executive page size', () => {
+        console.log('executive page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('executive');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('executive');
+        dialog.closePageSetupDialog();
+    });
+    it('a3 page size', () => {
+        console.log('a3 page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('a3');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('a3');
+        dialog.closePageSetupDialog();
+    });
+    it('a4 page size', () => {
+        console.log('a4 page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('a4');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('a4');
+        dialog.closePageSetupDialog();
+    });
+    it('a5 page size', () => {
+        console.log('a5 page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('a5');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('a5');
+        dialog.closePageSetupDialog();
+    });
+    it('b4 page size', () => {
+        console.log('b4 page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('b4');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('b4');
+        dialog.closePageSetupDialog();
+    });
+    it('b5 page size', () => {
+        console.log('b5 page size');
+        (dialog as any).portrait.checked = true;
+        editor.editorModule.onPaperSize('b5');
+        dialog.loadPageSetupDialog();
+        expect((dialog as any).paperSize.value).toBe('b5');
+        dialog.closePageSetupDialog();
+    });
+});
