@@ -94,6 +94,7 @@ export class HtmlEditor {
         this.parent.on(events.selectionRestore, this.onSelectionRestore, this);
         this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
         this.parent.on(events.paste, this.onPaste, this);
+        this.parent.on(events.tableclass, this.isTableClassAdded, this);
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -104,6 +105,16 @@ export class HtmlEditor {
             removeClass([this.parent.element], classes.CLS_RTE_READONLY);
         }
     }
+
+    private isTableClassAdded(): void  {
+        let tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
+        for (let i: number = 0; i < tableElement.length; i++) {
+            if(!tableElement[i].classList.contains('e-rte-table')){
+                tableElement[i].classList.add('e-rte-table')
+            }
+        }
+    }
+
     private onSelectionSave(): void {
         const currentDocument: Document = this.contentRenderer.getDocument();
         const range: Range = this.nodeSelectionObj.getRange(currentDocument);
@@ -644,6 +655,7 @@ export class HtmlEditor {
         this.parent.off(events.selectionRestore, this.onSelectionRestore);
         this.parent.off(events.readOnlyMode, this.updateReadOnly);
         this.parent.off(events.paste, this.onPaste);
+        this.parent.off(events.tableclass, this.isTableClassAdded);
     }
 
     private render(): void {

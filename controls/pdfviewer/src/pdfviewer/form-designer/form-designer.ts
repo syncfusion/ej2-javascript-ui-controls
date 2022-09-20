@@ -76,6 +76,7 @@ export class FormDesigner {
     private formFieldListItemDataSource: object[] = [];
     private isInitialField: boolean = false;
     private isSetFormFieldMode: boolean = false;
+    private increasedSize: number = 5;
     private signatureFieldPropertyChanged: any =
         {
             isReadOnlyChanged: false,
@@ -307,9 +308,29 @@ export class FormDesigner {
                 divElement.innerHTML = "";
                 divElement.style.position = 'initial';
             }
-            htmlElement.appendChild(divElement);
-            parentHtmlElement.appendChild(htmlElement);
-            textLayer.appendChild(parentHtmlElement);
+            if (formFieldAnnotationType === "Checkbox" && (Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+                //Creating outer div for checkbox in mobile device
+                let outerDiv: HTMLElement;
+                let bounds: any = drawingObject.bounds;
+                let outerDivHeight: number = bounds.height + this.increasedSize;
+                let outerDivWidth: number = bounds.width + this.increasedSize;
+                const outerDivAttribute: Object = {
+                    'id': drawingObject.id + '_outer_div',
+                    'className': 'e-pv-checkbox-outer-div'
+                };
+                outerDiv = createElement("div", outerDivAttribute);
+                outerDiv.setAttribute('style', 'height:' + outerDivHeight * zoomValue + 'px; width:' + outerDivWidth * zoomValue + 'px;left:' + bounds.x * zoomValue + 'px; top:' + bounds.y * zoomValue + 'px;' +
+                    'position:absolute; opacity: 1;');
+                htmlElement.appendChild(divElement);
+                outerDiv.addEventListener('click', this.setCheckBoxState.bind(this));
+                parentHtmlElement.appendChild(htmlElement);
+                textLayer.appendChild(outerDiv);
+                outerDiv.appendChild(parentHtmlElement);
+            } else {
+                htmlElement.appendChild(divElement);
+                parentHtmlElement.appendChild(htmlElement);
+                textLayer.appendChild(parentHtmlElement);
+            }
             if (formFieldAnnotationType === "RadioButton") {
                 if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
                     let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
@@ -326,13 +347,23 @@ export class FormDesigner {
                 }
             }
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
-            htmlElement.setAttribute(
-                'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-            );
+            if (formFieldAnnotationType === "Checkbox" && (Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+                htmlElement.setAttribute(
+                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
+                );
+            } else {
+                htmlElement.setAttribute(
+                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
+                );
+            }
             this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
             let field: IFormField = {
                 name: drawingObject.name, id: drawingObject.id, value: drawingObject.value, fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
@@ -860,13 +891,33 @@ export class FormDesigner {
                 }
             }
             const point: PointModel = cornersPointsBeforeRotation(signatureField.wrapper.children[0]).topLeft;
-            htmlElement.setAttribute(
-                'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-            );
+            if (currentData.formFieldAnnotationType === "Checkbox" && (Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+                //ReCreate outer div while zoom options
+                let outerDiv: HTMLElement;
+                let outerDivHeight: number = element.actualSize.height + this.increasedSize;
+                let outerDivWidth: number = element.actualSize.width + this.increasedSize;
+                const outerDivAttribute: Object = {
+                    'id': element.id + '_outer_div',
+                    'className': 'e-pv-checkbox-outer-div'
+                };
+                outerDiv = createElement("div", outerDivAttribute);
+                outerDiv.setAttribute('style', 'height:' + outerDivHeight * zoomValue + 'px; width:' + outerDivWidth * zoomValue + 'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'position:absolute; opacity: 1;');
+                outerDiv.appendChild(parentHtmlElement);
+                outerDiv.addEventListener('click', this.setCheckBoxState.bind(this));
+                textLayer.appendChild(outerDiv);
+                htmlElement.setAttribute('style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';');
+            } else {
+                htmlElement.setAttribute('style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';');
+            }
             currentData.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
             if (currentData.signatureBound && signatureField.wrapper.children[1]) {
                 var signPoint = signatureField.wrapper.children[1].bounds;
@@ -1459,7 +1510,9 @@ export class FormDesigner {
             else
                 labelElement.style.cursor = 'pointer';
             checkboxDiv = createElement("div", { className: "e-pv-checkbox-div" });
-            checkboxDiv.addEventListener('click', this.setCheckBoxState.bind(this));
+            if (!Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
+                checkboxDiv.addEventListener('click', this.setCheckBoxState.bind(this));
+            }
             (checkboxDiv as HTMLElement).id = drawingObject.id + "_input";
             if (drawingObject.isChecked) {
                 innerSpan = createElement("span", { className: "e-pv-checkbox-span e-pv-cb-checked" });
@@ -1665,66 +1718,74 @@ export class FormDesigner {
     }
 
     private setCheckBoxState(event: Event) {
-        let minCheckboxWidth: number = 20;
-        let isChecked: boolean = false;
-        if ((event.target as Element).id !=='undefined_input' && !(this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].isReadonly) {
-            if (event.target && (event.target as Element).firstElementChild && (event.target as any).firstElementChild.className === "e-pv-checkbox-span e-pv-cb-checked") {
-                (event.target as Element).firstElementChild.classList.remove("e-pv-cb-checked");
-                (event.target as Element).firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
-                isChecked = false;
-            } else if ((event.target as Element).className === "e-pv-checkbox-span e-pv-cb-checked") {
-                (event.target as Element).classList.remove("e-pv-cb-checked");
-                (event.target as Element).classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
-                isChecked = false;
+        if ((Browser.isDevice || this.pdfViewer.enableDesktopMode) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
+            let minCheckboxWidth: number = 20;
+            let isChecked: boolean = false;
+            let checkTarget: Element;
+            if (Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                checkTarget = document.getElementById((event.target as Element).id.split("_")[0] + '_input');
             } else {
-                (event.target as Element).firstElementChild.classList.remove("e-pv-cb-unchecked");
-                (event.target as Element).firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-checked");
-                isChecked = true;
+                checkTarget = (event.target as Element);
             }
-            var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
-            if (isChecked) {
-                if ((event.target as Element).firstElementChild.className.indexOf("e-pv-cb-checked") !== -1) {
-                    let checkboxWidth = parseInt((event.target as any).parentElement.style.width, 10)
-                    if (checkboxWidth > minCheckboxWidth) {
-                        (event.target as any).firstElementChild.style.borderWidth = "3px";
-                    } else if (checkboxWidth <= 15) {
-                        (event.target as any).firstElementChild.style.borderWidth = "1px";
-                    } else {
-                        (event.target as any).firstElementChild.style.borderWidth = "2px";
-                    }
+            if ((event.target as Element).id !== 'undefined_input' && !(this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].isReadonly && !this.pdfViewer.designerMode) {
+                if (checkTarget && checkTarget.firstElementChild && checkTarget.firstElementChild.className === "e-pv-checkbox-span e-pv-cb-checked") {
+                    checkTarget.firstElementChild.classList.remove("e-pv-cb-checked");
+                    checkTarget.firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
+                    isChecked = false;
+                } else if (checkTarget.className === "e-pv-checkbox-span e-pv-cb-checked") {
+                    checkTarget.classList.remove("e-pv-cb-checked");
+                    checkTarget.classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
+                    isChecked = false;
+                } else {
+                    checkTarget.firstElementChild.classList.remove("e-pv-cb-unchecked");
+                    checkTarget.firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-checked");
+                    isChecked = true;
                 }
-            }
-            var formFieldsData = JSON.parse(data);
-            for (let i: number = 0; i < formFieldsData.length; i++) {
-                if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
-                    (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
-                    (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].isChecked = isChecked;
-                    let oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.isChecked;
-                    formFieldsData[i].FormField.isChecked = isChecked;
-                    this.pdfViewerBase.formFieldCollection[i].FormField.isChecked = formFieldsData[i].FormField.isChecked;
-                    if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
-                        let checkboxElement: Element = document.getElementById(formFieldsData[i].Key.split("_")[0] + "_input").firstElementChild;
-                        if (isChecked) {
-                            if (checkboxElement.classList.contains('e-pv-cb-unchecked'))
-                                checkboxElement.classList.remove('e-pv-cb-unchecked');
-                            checkboxElement.classList.add("e-pv-cb-checked");
+                var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+                if (isChecked) {
+                    if (checkTarget.firstElementChild.className.indexOf("e-pv-cb-checked") !== -1) {
+                        let checkboxWidth = parseInt((event.target as any).parentElement.style.width, 10)
+                        if (checkboxWidth > minCheckboxWidth) {
+                            (checkTarget.firstElementChild as any).style.borderWidth = "3px";
+                        } else if (checkboxWidth <= 15) {
+                            (checkTarget.firstElementChild as any).style.borderWidth = "1px";
                         } else {
-                            if (checkboxElement.classList.contains('e-pv-cb-checked'))
-                                checkboxElement.classList.remove('e-pv-cb-checked');
-                            checkboxElement.classList.add("e-pv-cb-unchecked");
+                            (checkTarget.firstElementChild as any).style.borderWidth = "2px";
                         }
                     }
-                    this.updateFormFieldCollections(this.pdfViewerBase.formFieldCollection[i].FormField);
-                    this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
-                        false, false, false, false, false, false, false, false,
-                        false, false, false, false, oldValue, isChecked);
-                    if (this.pdfViewer.annotation) {
-                        this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValue, isChecked);
+                }
+                var formFieldsData = JSON.parse(data);
+                for (let i: number = 0; i < formFieldsData.length; i++) {
+                    if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
+                        (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
+                        (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].isChecked = isChecked;
+                        let oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.isChecked;
+                        formFieldsData[i].FormField.isChecked = isChecked;
+                        this.pdfViewerBase.formFieldCollection[i].FormField.isChecked = formFieldsData[i].FormField.isChecked;
+                        if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
+                            let checkboxElement: Element = document.getElementById(formFieldsData[i].Key.split("_")[0] + "_input").firstElementChild;
+                            if (isChecked) {
+                                if (checkboxElement.classList.contains('e-pv-cb-unchecked'))
+                                    checkboxElement.classList.remove('e-pv-cb-unchecked');
+                                checkboxElement.classList.add("e-pv-cb-checked");
+                            } else {
+                                if (checkboxElement.classList.contains('e-pv-cb-checked'))
+                                    checkboxElement.classList.remove('e-pv-cb-checked');
+                                checkboxElement.classList.add("e-pv-cb-unchecked");
+                            }
+                        }
+                        this.updateFormFieldCollections(this.pdfViewerBase.formFieldCollection[i].FormField);
+                        this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                            false, false, false, false, false, false, false, false,
+                            false, false, false, false, oldValue, isChecked);
+                        if (this.pdfViewer.annotation) {
+                            this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValue, isChecked);
+                        }
                     }
                 }
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
             }
-            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
         }
     }
 

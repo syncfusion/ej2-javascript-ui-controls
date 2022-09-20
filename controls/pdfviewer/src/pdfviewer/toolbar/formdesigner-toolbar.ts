@@ -81,6 +81,23 @@ export class FormDesignerToolbar {
     }
 
     /**
+     * @private
+     */
+    public resetFormDesignerToolbar(): void {
+        this.adjustViewer(false);
+        if (this.pdfViewer.isFormDesignerToolbarVisible) {
+            this.toolbarElement.style.display = '';
+            this.isToolbarHidden = false;
+            this.adjustViewer(true);
+            this.pdfViewer.isFormDesignerToolbarVisible = true;
+        }
+        else {
+            this.toolbarElement.style.display = 'none';
+            this.isToolbarHidden = true;
+            this.pdfViewer.isFormDesignerToolbarVisible = false;
+        }
+    }
+    /**
      * @param element
      * @param isInitialLoading
      * @param element

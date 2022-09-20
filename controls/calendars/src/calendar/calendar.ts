@@ -111,6 +111,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected todayButtonEvent: MouseEvent | KeyboardEvent;
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
+    protected previousDates: boolean = false;
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      *
@@ -966,7 +967,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const numCells: number = this.weekNumber ? 8 : 7;
         let tdEles: HTMLElement[];
         if (this.calendarMode === 'Gregorian') {
-            tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate);
+            tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate, e);
         } else {
             tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
         }
@@ -977,7 +978,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
         }
     }
-    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean): HTMLElement[] {
+    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean, e?:Event): HTMLElement[] {
         const tdEles: HTMLElement[] = [];
         const cellsCount: number = 42;
         const todayDate: Date = isTodayDate ? new Date(+currentDate) : this.getDate(new Date(), this.timezone);
@@ -1068,6 +1069,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             // if (args.isDisabled && +this.value === +args.date) {
             //     this.setProperties({ value: null }, true);
             // }
+            let currentTarget: any;
+            if ( !isNullOrUndefined(e) && e.type == 'click') {
+            currentTarget = e.currentTarget; }
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
                     const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
@@ -1077,7 +1081,23 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
                         || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
-                    } else {
+                    } if (!isNullOrUndefined(currentTarget) && currentTarget.innerText === tdEle.innerText && this.previousDates && currentTarget.classList.contains(SELECTED)) {
+                        removeClass([tdEle], SELECTED);
+                        this.previousDates = false;
+                        const copyValues: Date[] = this.copyValues(values);
+                        for (let i: number = 0; i < copyValues.length; i++) {
+                            const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                            const formatOptions: object = { format: null, type: 'date', skeleton: 'short', calendar: type };
+                            const localDateString: string = this.globalize.formatDate(date, formatOptions);
+                            const tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
+                            if (localDateString === tempDateString) {
+                                const index: number = copyValues.indexOf(copyValues[i]);
+                                copyValues.splice(index, 1);
+                            }
+                        }
+                        this.setProperties({ values: copyValues }, true);
+                    }
+                    else {
                         this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
                     }
                 }
@@ -2451,8 +2471,8 @@ export class Calendar extends CalendarBase {
     protected renderMonths(e?: Event, value?: Date, isCustomDate?: boolean): void {
         super.renderMonths(e, this.value, isCustomDate);
     }
-    protected renderDays(currentDate: Date, value?: Date, isMultiSelect?: boolean, values?: Date[], isCustomDate?: boolean): HTMLElement[] {
-        const tempDays: HTMLElement[] = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
+    protected renderDays(currentDate: Date, value?: Date, isMultiSelect?: boolean, values?: Date[], isCustomDate?: boolean, e?: Event): HTMLElement[] {
+        const tempDays: HTMLElement[] = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate, e);
         if (this.isMultiSelection) {
             super.validateValues(this.isMultiSelection, this.values);
         }
@@ -2488,9 +2508,14 @@ export class Calendar extends CalendarBase {
         if (eve.classList.contains(OTHERMONTH)) {
             if (this.isMultiSelection) {
                 const copyValues: Date[] = this.copyValues(this.values);
+                if (copyValues.toString().indexOf(this.getIdValue(e, null).toString()) === -1) {
                 copyValues.push(this.getIdValue(e, null));
                 this.setProperties({ values: copyValues }, true);
                 this.setProperties({ value: this.values[this.values.length - 1] }, true);
+                }
+                else {
+                  this.previousDates = true;
+                }
             } else {
                 this.setProperties({ value: this.getIdValue(e, null) }, true);
             }

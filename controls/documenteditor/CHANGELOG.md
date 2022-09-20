@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 20.2.50 (2022-09-20)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I398138` - Resolved the script error while deleting the content at the end of the document.
+- `#I398155` - Resolved the content overlapping issue while inserting section break.
+- `#I401956` - Resolved the page number insertion issue in the header/footer.
+- `#I398142` - Resolved the script error while switching the properties pane.
+- `#I407009` - Resolved the track changes preservation issue while deleting the text.
+- `#I403326` - Resolved the script error while deleting the text inside the table.
+- `#I402272` - Resolved the text insertion issue inside the textbox shape.
+- `#I399011` - Resolved the form field selection issue.
+- `#I401957` - Resolved the table layouting issue after modifying the cell width.
+- `#I401952` - Resolved the paper format preservation issue in the page setup dialog.
+- `#I396264` - Added alert dialog to notify unsupported file type while opening the document.
+
 ## 20.2.49 (2022-09-13)
 
 ### Document Editor
@@ -117,7 +135,7 @@
 - `#I379350` - Resolved layouting issue due to list format.
 - `#I383921` - Resolved ok button disabled after selecting bookmark in hyperlink dialog.
 
-#### New Feature
+#### New Features
 
 - `#I381313` - Added API to get clipboard content.
 

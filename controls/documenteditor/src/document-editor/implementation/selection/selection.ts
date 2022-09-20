@@ -8895,7 +8895,34 @@ export class Selection {
      */
     public getCurrentFormField(checkFieldResult?: boolean): FieldElementBox {
         let field: FieldElementBox;
-        field = this.getHyperlinkField(true);
+        if (checkFieldResult || this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+            this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
+            for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
+                let formField: FieldElementBox = this.documentHelper.formFields[i];
+                let start: TextPosition = this.start;
+                let end: TextPosition = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset: number = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                    let fieldStart: TextPosition = new TextPosition(this.owner);
+                    fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset)
+                    let fieldEndElement: FieldElementBox = formField.fieldEnd;
+                    offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                    let fieldEnd: TextPosition = new TextPosition(this.owner);
+                    fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                    if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                        && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                        field = formField;
+                        break;
+                    }
+                }
+            }
+        } else {
+            field = this.getHyperlinkField(true);
+        }
         if (field instanceof FieldElementBox && field.fieldType === 0 && !isNullOrUndefined(field.formFieldData)) {
             return field;
         }

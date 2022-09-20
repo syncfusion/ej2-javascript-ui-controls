@@ -2,13 +2,20 @@
 
 ## [Unreleased]
 
-## 20.2.48 (2022-09-06)
+## 20.2.50 (2022-09-20)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I399576` - Issue with Custom operator not set properly when we set one field is a prefix of other field as number in query builder has been fixed.
+
+## 20.2.48 (2022-09-06)
+
+### QueryBuilder
+
+#### Bug Fixes
+
 - `#I375472` - Issue with Change event not trigger for changing field for default column to rule template column in query builder has been fixed.
 
 ## 20.2.46 (2022-08-30)

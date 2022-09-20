@@ -20,8 +20,9 @@ import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { RowSelectEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
 import { infiniteGroupData } from '../../../spec/grid/base/datasource.spec';
+import { CommandColumn } from '../../../src/grid/actions/command-column';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze, Aggregate);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, Freeze, CommandColumn, Aggregate);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -1772,6 +1773,47 @@ describe('EJ2-55291 - Need to maintain scroll position with the updateRow method
 
     it('check scroll position while using updateRow method', () => {
         expect(gridObj.getContent().firstElementChild.scrollTop).toBe(1000);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-0000 - Need to maintain scroll position with the updateRow method => ', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 20 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { headerText: 'Manage Records', width: 160,
+                        commands: [{ buttonOption: { content: 'View', cssClass: 'command-button chi-button -sm' }}],
+                    }
+                ],
+                actionComplete: actionComplete
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+
+    it('scroll to bottom', function (done) {
+        gridObj.getContent().firstElementChild.scrollTop = 2500;
+        setTimeout(done, 200);
+    });
+
+    it('called updateRow method', () => {
+        expect(gridObj.getRows()[0].querySelector('.e-unboundcelldiv').children.length).toBe(1);
     });
 
     afterAll(() => {

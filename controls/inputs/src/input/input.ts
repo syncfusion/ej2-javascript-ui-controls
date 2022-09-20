@@ -79,7 +79,7 @@ export namespace Input {
         }
         validateInputType(inputObject.container, args.element);
         inputObject = setPropertyValue(args, inputObject);
-        createSpanElement(inputObject, makeElement);
+        createSpanElement(inputObject.container, makeElement);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         privateInputObj = inputObject;
         return inputObject;
@@ -435,11 +435,12 @@ export namespace Input {
      * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
      */
     export function calculateWidth(element: any, container: HTMLElement): void {
+        let elementWidth: number = element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'));
         if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
             }
-            if (element.clientWidth < container.getElementsByClassName('e-float-text-content')[0].clientWidth || element.clientWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
+            if (elementWidth < container.getElementsByClassName('e-float-text-content')[0].clientWidth || elementWidth === container.getElementsByClassName('e-float-text-content')[0].clientWidth) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.add('e-float-text-overflow');
             }
         }
@@ -661,7 +662,7 @@ export namespace Input {
             const inputObj: InputObject = { container: container};
             input.classList.remove(CLASSNAMES.INPUT);
             createFloatingInput(args, inputObj, makeElement);
-            createSpanElement(inputObj, makeElement);
+            createSpanElement(inputObj.container, makeElement);
             calculateWidth(args.element, inputObj.container);
             const isPrependIcon: boolean = container.classList.contains('e-float-icon-left');
             if (isNullOrUndefined(iconEle)) {
@@ -702,12 +703,12 @@ export namespace Input {
      * @param {createElementParams} makeElement
      * - Element which is need to create the span
      */
-    export function createSpanElement(inputObject: InputObject, makeElement: createElementParams): void {
-        if (inputObject.container.classList.contains('e-outline') && inputObject.container.getElementsByClassName('e-float-text')[0]) {
+    export function createSpanElement(inputObject: any, makeElement: createElementParams): void {
+        if (inputObject.classList.contains('e-outline') && inputObject.getElementsByClassName('e-float-text')[0]) {
             const labelSpanElement: HTMLElement = makeElement('span', { className: CLASSNAMES.FLOATTEXTCONTENT });
-            labelSpanElement.innerHTML = inputObject.container.getElementsByClassName('e-float-text')[0].innerHTML;
-            inputObject.container.getElementsByClassName('e-float-text')[0].innerHTML = '';
-            inputObject.container.getElementsByClassName('e-float-text')[0].appendChild(labelSpanElement);
+            labelSpanElement.innerHTML = inputObject.getElementsByClassName('e-float-text')[0].innerHTML;
+            inputObject.getElementsByClassName('e-float-text')[0].innerHTML = '';
+            inputObject.getElementsByClassName('e-float-text')[0].appendChild(labelSpanElement);
         }
     }
 

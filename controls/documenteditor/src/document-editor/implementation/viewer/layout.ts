@@ -277,11 +277,16 @@ export class Layout {
         //Header layout
         let headerFooterWidget: HeaderFooterWidget = viewer.getCurrentPageHeaderFooter(section, true);
         if (headerFooterWidget) {
-            if (headerFooterWidget.page) {
-                const parentHeader: HeaderFooterWidget = headerFooterWidget;
-                headerFooterWidget = parentHeader.clone();
-                headerFooterWidget.parentHeaderFooter = parentHeader;
+            const parentHeader: HeaderFooterWidget = headerFooterWidget;
+            if (isNullOrUndefined(headerFooterWidget.page)) {
+                headerFooterWidget.page = page;
+                headerFooterWidget.height = 0;
+                this.clearBlockWidget(headerFooterWidget.childWidgets, true, true, true);
+                viewer.updateHFClientArea(section.sectionFormat, true);
+                this.layoutHeaderFooterItems(viewer, headerFooterWidget);
             }
+            headerFooterWidget = parentHeader.clone();
+            headerFooterWidget.parentHeaderFooter = parentHeader;
             this.clearBlockWidget(headerFooterWidget.childWidgets, true, true, true);
             const header: HeaderFooterWidget = headerFooterWidget;
             header.page = page;
@@ -294,11 +299,16 @@ export class Layout {
         //Footer Layout
         headerFooterWidget = viewer.getCurrentPageHeaderFooter(section, false);
         if (headerFooterWidget) {
-            if (headerFooterWidget.page) {
-                const parentHeader: HeaderFooterWidget = headerFooterWidget;
-                headerFooterWidget = parentHeader.clone();
-                headerFooterWidget.parentHeaderFooter = parentHeader;
+            const parentHeader: HeaderFooterWidget = headerFooterWidget;
+            if (isNullOrUndefined(headerFooterWidget.page)) {
+                headerFooterWidget.page = page;
+                headerFooterWidget.height = 0;
+                this.clearBlockWidget(headerFooterWidget.childWidgets, true, true, true);
+                viewer.updateHFClientArea(section.sectionFormat, false);
+                this.layoutHeaderFooterItems(viewer, headerFooterWidget);
             }
+            headerFooterWidget = parentHeader.clone();
+            headerFooterWidget.parentHeaderFooter = parentHeader;
             this.clearBlockWidget(headerFooterWidget.childWidgets, true, true, true);
             const footer: HeaderFooterWidget = headerFooterWidget;
             footer.page = page;
@@ -384,14 +394,16 @@ export class Layout {
                 }
                 if (element instanceof ShapeElementBox) {
                     let firstBlock: BlockWidget = element.textFrame.firstChild as BlockWidget;
-                    do {
-                        if (firstBlock instanceof ParagraphWidget) {
-                            this.linkFieldInParagraph(firstBlock);
-                        } else {
-                            this.linkFieldInTable(firstBlock as TableWidget);
-                        }
-                        /* eslint-disable no-cond-assign */
-                    } while (firstBlock = firstBlock.nextWidget as BlockWidget);
+                    if (firstBlock) {
+                        do {
+                            if (firstBlock instanceof ParagraphWidget) {
+                                this.linkFieldInParagraph(firstBlock);
+                            } else {
+                                this.linkFieldInTable(firstBlock as TableWidget);
+                            }
+                            /* eslint-disable no-cond-assign */
+                        } while (firstBlock = firstBlock.nextWidget as BlockWidget);
+                    }
                 } else if(element instanceof CommentCharacterElementBox) {
                     let comment: CommentElementBox = this.getCommentById(element.commentId);
                     if (!isNullOrUndefined(comment)) {

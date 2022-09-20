@@ -458,6 +458,10 @@ export class DatePicker extends Calendar implements IInput {
     public render(): void {
         this.initialize();
         this.bindEvents();
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+            this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+        }
         this.renderComplete();
         this.setTimeZone(this.serverTimezoneOffset);
     }
@@ -2151,11 +2155,18 @@ export class DatePicker extends Calendar implements IInput {
                 break;
             case 'width':
                 this.setWidth(newProp.width);
+                Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'floatLabelType':
                 this.floatLabelType = newProp.floatLabelType;
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'enableMask':
                 if (this.enableMask) {

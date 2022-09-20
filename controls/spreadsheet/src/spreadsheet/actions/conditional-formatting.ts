@@ -525,6 +525,7 @@ export class ConditionalFormatting {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cfRule: ConditionalFormatModel[] = args.cfModel || sheet.conditionalFormats;
         let indexes: number[][] = [args.indexes];
+        let isEditCellUpdated: boolean = false;
         if (args.refreshAll) {
             indexes = [[this.parent.viewport.topIndex + this.parent.frozenRowCount(sheet), this.parent.viewport.leftIndex +
                 this.parent.frozenColCount(sheet), this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex]];
@@ -552,11 +553,11 @@ export class ConditionalFormatting {
                 !this.checkRange(indexes, cfRule[i]))) {
                 continue;
             }
-            if (this.updateCF(args, sheet, <ConditionalFormat>cfRule[i])) break;
+            isEditCellUpdated = this.updateCF(args, sheet, <ConditionalFormat>cfRule[i], isEditCellUpdated);
         }
     }
 
-    private updateCF(args: ApplyCFArgs, sheet: SheetModel, cf: ConditionalFormat): boolean {
+    private updateCF(args: ApplyCFArgs, sheet: SheetModel, cf: ConditionalFormat, isEditCellUpdated?: boolean): boolean {
         let value1: string; let value2: string;
         if (cf.value) {
             const valueArr: string[] = cf.value.split(',').filter((value: string) => !!value.trim());
@@ -604,10 +605,9 @@ export class ConditionalFormatting {
             (isIconSets = (cf.type.includes('Three') || cf.type.includes('Four') || cf.type.includes('Five'))))) {
             this.updateResult(cf, sheet, isDataBar, isColorScale, isAverage, isTopBottom, isIconSets, value1);
         }
-        let isApply: boolean;
-        const updateCF: Function = (rIdx: number, cIdx: number, cell: CellModel, td: HTMLElement): boolean => {
+        const updateCF: Function = (rIdx: number, cIdx: number, cell: CellModel, td: HTMLElement): void => {
             const cellVal: string = cell && !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
-            let dateEventArgs: DateFormatCheckArgs;
+            let isApply: boolean; let dateEventArgs: DateFormatCheckArgs;
             let isValueCFRule: boolean = true;
             switch (cf.type) {
                 case 'GreaterThan':
@@ -667,8 +667,11 @@ export class ConditionalFormatting {
                 this.parent.trigger(
                     'beforeConditionalFormat', <ConditionalFormatEventArgs>{ conditionalFormat: cf, cell: cell, element: td, apply: isApply,
                         address: getCellAddress(rIdx, cIdx) });
-                if (!isApply && args.isEdit) {
+                if (!isApply && args.isEdit && !isEditCellUpdated) {
                     let style: CellStyleModel;
+                    if (args.indexes[0] === rIdx && args.indexes[1] === cIdx) {
+                        isEditCellUpdated = true;
+                    }
                     if (cf.cFColor) {
                         if (td.className.includes('e-' + cf.cFColor.toLowerCase())) {
                             td.classList.remove('e-' + cf.cFColor.toLowerCase());
@@ -691,6 +694,9 @@ export class ConditionalFormatting {
                 }
             }
             if (isApply) {
+                if (args.isEdit && (args.indexes[0] === rIdx && args.indexes[1] === cIdx)) {
+                    isEditCellUpdated = true;
+                }
                 removeClass([td], ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt']);
                 if (cf.cFColor) {
                     td.classList.add('e-' + cf.cFColor.toLowerCase());
@@ -698,7 +704,6 @@ export class ConditionalFormatting {
                 }
                 Object.assign(td.style, style);
             }
-            return isApply && args.isEdit;
         };
         if (args.ele) {
             updateCF(args.indexes[0], args.indexes[1], args.cell, args.ele);
@@ -707,15 +712,14 @@ export class ConditionalFormatting {
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const topLeftIdx: number[] = getCellIndexes(sheet.topLeftCell);
             for (let i: number = 0; i < rangeArr.length; i++) {
-                this.updateRange(sheet, getRangeIndexes(rangeArr[i]), frozenRow, frozenCol, topLeftIdx, updateCF, args.indexes, args.isEdit);
+                this.updateRange(sheet, getRangeIndexes(rangeArr[i]), frozenRow, frozenCol, topLeftIdx, updateCF);
             }
         }
-        return isApply && args.isEdit;
+        return isEditCellUpdated;
     }
 
     private updateRange(
-        sheet: SheetModel, rangeIdx: number[], frozenRow: number, frozenCol: number, topLeftIdx: number[], invokeFn: Function,
-        indexes?: number[], isEdit?: boolean): boolean {
+        sheet: SheetModel, rangeIdx: number[], frozenRow: number, frozenCol: number, topLeftIdx: number[], invokeFn: Function): void {
         rangeIdx[0] = rangeIdx[0] < frozenRow ? (rangeIdx[0] < topLeftIdx[0] ? topLeftIdx[0] : rangeIdx[0]) :
             (rangeIdx[0] < this.parent.viewport.topIndex + frozenRow ? this.parent.viewport.topIndex + frozenRow : rangeIdx[0]);
         rangeIdx[1] = rangeIdx[1] < frozenCol ? (rangeIdx[1] < topLeftIdx[1] ? topLeftIdx[1] : rangeIdx[1]) :
@@ -725,7 +729,6 @@ export class ConditionalFormatting {
         rangeIdx[3] = rangeIdx[3] < frozenCol ? (rangeIdx[3] < topLeftIdx[1] ? topLeftIdx[1] - 1 : rangeIdx[3]) :
             (rangeIdx[3] > this.parent.viewport.rightIndex ? this.parent.viewport.rightIndex : rangeIdx[3]);
         let td: HTMLElement;
-        let isCFUpdated: boolean = false;
         for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
             if (frozenRow && i === frozenRow) {
                 i = this.parent.viewport.topIndex + frozenRow;
@@ -734,7 +737,6 @@ export class ConditionalFormatting {
                 continue;
             }
             for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
-                if (isEdit && indexes && (indexes[0] !== i || indexes[1] !== j)) continue;
                 if (frozenCol && j === frozenCol) {
                     j = this.parent.viewport.leftIndex + frozenCol;
                 }
@@ -743,13 +745,10 @@ export class ConditionalFormatting {
                 }
                 td = this.parent.getCell(i, j);
                 if (td) {
-                    isCFUpdated = invokeFn(i, j, getCell(i, j, sheet), td);
-                    if (isCFUpdated) break;
+                    invokeFn(i, j, getCell(i, j, sheet), td);
                 }
             }
-            if (isCFUpdated) break;
         }
-        return isCFUpdated;
     }
 
     private applyIconSet(val: string, cf: ConditionalFormat, cellEle: HTMLElement): void {

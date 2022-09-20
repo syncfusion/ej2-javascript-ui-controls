@@ -405,10 +405,11 @@ describe('Chart Control', () => {
             loaded = (args: Arg): void => {
                 let series1: Series = <Series>args.chart.series[0];
                 dataLabel = document.getElementById('container_Series_0_Point_0_Text_0');
-                expect(series1.points[0].regions[0].y > parseFloat(dataLabel.getAttribute('y'))).toBe(true);
+                expect(series1.points[0].regions[0].y < parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[0].marker.dataLabel.visible = true;
             chartObj.series[0].marker.dataLabel.position = 'Top';
             chartObj.series[0].marker.dataLabel.alignment = 'Far';
             chartObj.refresh();
@@ -417,7 +418,7 @@ describe('Chart Control', () => {
             loaded = (args: Arg): void => {
                 let series1: Series = <Series>args.chart.series[0];
                 dataLabel = document.getElementById('container_Series_0_Point_0_Text_0');
-                expect(series1.points[0].regions[0].y > parseFloat(dataLabel.getAttribute('y'))).toBe(true);
+                expect(series1.points[0].regions[0].y < parseFloat(dataLabel.getAttribute('y'))).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

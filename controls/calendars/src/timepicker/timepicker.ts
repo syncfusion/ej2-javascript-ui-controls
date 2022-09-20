@@ -635,6 +635,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.anchor = this.inputElement;
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputEleValue = this.getDateObject(this.inputElement.value);
+        if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+            this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+        }
         this.renderComplete();
     }
     private setTimeAllowEdit(): void {
@@ -2701,6 +2704,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'width':
                 setStyleAttribute(this.inputWrapper.container, { 'width': this.setWidth(newProp.width) });
                 this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
+                Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'format':
                 this.setProperties({ format: newProp.format }, true);
@@ -2750,6 +2757,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.floatLabelType = newProp.floatLabelType;
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'strictMode':
                 this.invalidValueString = null;

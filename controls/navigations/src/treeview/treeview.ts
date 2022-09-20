@@ -3606,23 +3606,33 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (!isNOU(this.nodeTemplateFn)){
                     this.destroyTemplate(liEle);
                 }
-                textEle.innerHTML = eventArgs.innerHtml;
-                let inpEle: HTMLElement = <HTMLElement>select('.' + TREEINPUT, textEle);
-                this.inputObj = Input.createInput(
-                    {
-                        element: inpEle as HTMLInputElement,
-                        properties: {
-                            enableRtl: this.enableRtl,
-                        }
-                    },
-                    this.createElement);
-                this.inputObj.container.setAttribute('style', style);
-                inpEle.focus();
-                let inputEle: HTMLInputElement = <HTMLInputElement>inpEle;
-                inputEle.setSelectionRange(0, inputEle.value.length);
-                this.wireInputEvents(inpEle);
+                if((this as any).isReact) {
+                    setTimeout(() => {
+                        this.renderTextBox(eventArgs, textEle, style);
+                    }, 5);
+                } else {
+                    this.renderTextBox(eventArgs, textEle, style);
+                }
             }
         });
+    }
+
+    private renderTextBox(eventArgs : NodeEditEventArgs, textEle: Element, style: string): void {
+        textEle.innerHTML = eventArgs.innerHtml;
+        let inpEle: HTMLElement = <HTMLElement>select('.' + TREEINPUT, textEle);
+        this.inputObj = Input.createInput(
+            {
+                element: inpEle as HTMLInputElement,
+                properties: {
+                    enableRtl: this.enableRtl,
+                }
+            },
+            this.createElement);
+        this.inputObj.container.setAttribute('style', style);
+        inpEle.focus();
+        let inputEle: HTMLInputElement = <HTMLInputElement>inpEle;
+        inputEle.setSelectionRange(0, inputEle.value.length);
+        this.wireInputEvents(inpEle);
     }
 
     private updateOldText(liEle: Element): void {

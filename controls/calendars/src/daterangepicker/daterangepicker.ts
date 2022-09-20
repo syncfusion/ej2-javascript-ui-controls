@@ -737,6 +737,10 @@ export class DateRangePicker extends CalendarBase {
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+            this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+        }
         this.renderComplete();
     }
     /**
@@ -4546,6 +4550,10 @@ export class DateRangePicker extends CalendarBase {
             switch (prop) {
             case 'width':
                 this.setEleWidth(this.width);
+                Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'separator':
                 this.previousEleValue = this.inputElement.value;
@@ -4729,6 +4737,9 @@ export class DateRangePicker extends CalendarBase {
                 this.floatLabelType = newProp.floatLabelType;
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'start':
                 this.setProperties({ start: newProp.start }, true);

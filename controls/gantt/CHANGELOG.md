@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.2.50 (2022-09-20)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I404007` - Filter Menu not closed when focus is removed issue has been fixed.
+- `#I403823` - Custom Column values not updated when editing in tab issue has been fixed.
+- `#I403221` - Issue in deleting parent record in resource view has been fixed.
+
 ## 20.2.49 (2022-09-13)
 
 ### Gantt

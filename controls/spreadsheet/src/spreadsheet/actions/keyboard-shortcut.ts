@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, fillRange, HideShowEventArgs, renderInsertDlg, toggleFormulaBar } from '../common/index';
-import { findDlg, gotoDlg, initiateFilterUI } from '../common/index';
+import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind, getRangeIndexes, InsertDeleteModelArgs, hideShow, applyNumberFormatting, insertModel } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog, getFormatFromType } from '../../workbook/index';
 import { setCell, getCell } from '../../workbook/base/cell';
@@ -69,7 +69,10 @@ export class KeyboardShortcut {
             else if (e.keyCode === 18) {     /** alt = active tab focus */
                 e.preventDefault();
                 const activeCell: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-                if (!this.parent.getCell(activeCell[0], activeCell[1]).querySelector('.e-filter-btn')) {
+                const args: FilterInfoArgs = { sheetIdx: this.parent.activeSheetIndex };
+                this.parent.notify(getFilterRange, args);
+                if (!(args.hasFilter && args.filterRange && args.filterRange[0] === activeCell[0] && args.filterRange[1] <= activeCell[1] &&
+                    args.filterRange[3] >= activeCell[1])) {
                     if (!closest(document.activeElement as Element, '.e-dropdown-btn') && !closest(document.activeElement as Element, '.e-split-btn')) {
                         if (!closest(document.activeElement as Element, '.e-popup-open')) {
                             for (let i: number = 0; i <= this.parent.ribbonModule.ribbon.items.length; i++) {

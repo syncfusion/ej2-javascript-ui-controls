@@ -402,9 +402,9 @@ export class DataLabel {
             this.locationX = location.x;
             const alignmentValue: number = textSize.height + (this.borderWidth * 2) + this.markerHeight +
                 this.margin.bottom + this.margin.top + padding;
-            location.y = (dataLabel.position === 'Auto') ? location.y :
+            location.x = (dataLabel.position === 'Auto') ? location.x :
                 this.calculateAlignment(
-                    alignmentValue, location.y, dataLabel.alignment,
+                    alignmentValue, location.x, dataLabel.alignment,
                     this.isRectSeries(series) ? point.yValue < 0 : false
                 );
             // calculating position

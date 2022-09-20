@@ -8,7 +8,7 @@ import { CheckBox, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 import { SelectionRowFormat, SelectionTableFormat, SelectionCellFormat } from '../index';
-import { TableWidget, TableCellWidget } from '../viewer/page';
+import { TableWidget, TableCellWidget, TableRowWidget } from '../viewer/page';
 import { classList } from '@syncfusion/ej2-base';
 import { HelperMethods } from '../editor/editor-helper';
 import { EditorHistory } from '../editor-history/index';
@@ -274,11 +274,28 @@ export class TablePropertiesDialog {
             }
         }
         if (!this.preferredCellWidthCheckBox.checked && !this.preferredCellWidthCheckBox.indeterminate) {
-            if (isNullOrUndefined(selection.cellFormat.preferredWidth) || selection.cellFormat.preferredWidth === 0) {
+            if (isNullOrUndefined(selection.cellFormat.preferredWidth) || selection.cellFormat.preferredWidth !== 0) {
                 this.cellFormat.preferredWidthType = 'Point';
                 this.cellFormat.preferredWidth = 0;
             }
         } else {
+            const ownerTable: TableWidget = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable;
+            const containerWidth: number = ownerTable.getOwnerWidth(true);
+            const tableWidth: number = ownerTable.getTableClientWidth(containerWidth);
+            for (let i: number = 0; i < ownerTable.childWidgets.length; i++) {
+                let rowWidget: TableRowWidget = ownerTable.childWidgets[i] as TableRowWidget;
+                for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
+                    let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                    if (this.cellFormat.preferredWidthType === 'Percent' && cellWidget.cellFormat.preferredWidthType === 'Point') {
+                        cellWidget.cellFormat.preferredWidthType = 'Percent';
+                        cellWidget.cellFormat.preferredWidth = cellWidget.cellFormat.preferredWidth / tableWidth * 100;
+                    }
+                    else if (this.cellFormat.preferredWidthType === 'Point' && cellWidget.cellFormat.preferredWidthType === 'Percent') {
+                        cellWidget.cellFormat.preferredWidthType = 'Point';
+                        cellWidget.cellFormat.preferredWidth = cellWidget.cellFormat.cellWidth;
+                    }
+                }
+            }
             if (this.cellFormat.preferredWidthType === 'Percent') {
                 if (!this.tableFormat.hasValue('preferredWidth') && !this.tableFormat.hasValue('preferredWidthType')
                     && this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidth === 0) {

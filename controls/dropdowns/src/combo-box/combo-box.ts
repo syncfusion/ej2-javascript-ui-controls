@@ -703,6 +703,7 @@ export class ComboBox extends DropDownList {
             this.preventFocus = false;
         }
         this.onFocus(e);
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
     }
     protected dropDownClick(e: MouseEvent): void {
         e.preventDefault();

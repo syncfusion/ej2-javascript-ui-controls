@@ -592,7 +592,7 @@
 }
 
 
-@media screen and(orientation: landscape) {
+@media screen and (orientation: landscape) {
     .e-daterangepick-mob-popup-wrap {
 
         #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {

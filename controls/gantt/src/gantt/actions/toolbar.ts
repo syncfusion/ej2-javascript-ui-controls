@@ -415,7 +415,7 @@ export class Toolbar {
             const isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
             // eslint-disable-next-line
-            edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?
+            edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
                 enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
                 && gObj.editModule.cellEditModule.isCellEdit) {

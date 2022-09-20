@@ -647,6 +647,12 @@ export class PdfViewerBase {
     // eslint-disable-next-line
     public focusField: any = [];
     private isMoving: boolean;
+    /**
+     * EJ2CORE-813 - This flag is represent current device is 'iPad' or 'iPhone' or'iPod' device.
+     * @private
+     */
+    // eslint-disable-next-line
+     public isDeviceiOS: Boolean = ((['iPad Simulator','iPhone Simulator','iPod Simulator','iPad','iPhone','iPod'] as any).includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document));
 
     /**
      * Initialize the constructor of PDFViewerBase
@@ -3985,7 +3991,7 @@ export class PdfViewerBase {
         // eslint-disable-next-line max-len
         if (touchPoints.length === 1 && !((event.target as HTMLElement).classList.contains('e-pv-touch-select-drop') || (event.target as HTMLElement).classList.contains('e-pv-touch-ellipse'))) {
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pageCount > 0 && !this.isThumb && !((event.target as HTMLElement).classList.contains('e-pv-hyperlink'))) {
-                this.handleTaps(touchPoints);
+                this.handleTaps(touchPoints , event);
             }
             if (!isBlazor() || !Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.handleTextBoxTaps(touchPoints);
@@ -4057,20 +4063,47 @@ export class PdfViewerBase {
         return isDesignerMode;
     }
 
-    private handleTaps(touchPoints: TouchList): void {
-        if (!this.singleTapTimer) {
-            this.singleTapTimer = setTimeout(
-                () => {
-                    this.onSingleTap(touchPoints);
-                    // eslint-disable-next-line
-                }, 300);
-            this.tapCount++;
-        } else {
-            if (this.pdfViewer.enablePinchZoom) {
+    private handleTaps(touchPoints: TouchList, event: TouchEvent): void {
+        //EJ2CORE-813 - Implemented focus removing logic for iOS devices
+        if(this.isDeviceiOS){
+            const obj: IElement = findActiveElement(event, this, this.pdfViewer);
+            // eslint-disable-next-line
+            let isRemoveFocus : boolean = !this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot && (obj && this.pdfViewer.selectedItems.annotations[0]? (obj as any).id !== this.pdfViewer.selectedItems.annotations[0].id : true ) && document.activeElement.classList.contains('free-text-input') && this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations);
+            if (!this.singleTapTimer) {
+                this.singleTapTimer = setTimeout(
+                    () => {
+                        if(isRemoveFocus){
+                            this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
+                            this.focusViewerContainer(true);
+                        }
+                        this.onSingleTap(touchPoints);
+                        // eslint-disable-next-line
+                    }, 300);
                 this.tapCount++;
-                clearTimeout(this.singleTapTimer);
-                this.singleTapTimer = null;
-                this.onDoubleTap(touchPoints);
+            } else {
+                if (this.pdfViewer.enablePinchZoom) {
+                    this.tapCount++;
+                    clearTimeout(this.singleTapTimer);
+                    this.singleTapTimer = null;
+                    this.onDoubleTap(touchPoints);
+                }
+            }
+        }
+        else{
+            if (!this.singleTapTimer) {
+                this.singleTapTimer = setTimeout(
+                    () => {
+                        this.onSingleTap(touchPoints);
+                        // eslint-disable-next-line
+                    }, 300);
+                this.tapCount++;
+            } else {
+                if (this.pdfViewer.enablePinchZoom) {
+                    this.tapCount++;
+                    clearTimeout(this.singleTapTimer);
+                    this.singleTapTimer = null;
+                    this.onDoubleTap(touchPoints);
+                }
             }
         }
     }
@@ -4080,11 +4113,17 @@ export class PdfViewerBase {
                 this.inputTapCount = 0;
             }, 300);
         this.inputTapCount++;
-        // eslint-disable-next-line
-        let timer: any = setTimeout(
-            () => {
-                this.onTextBoxDoubleTap(touchPoints);
-            }, 200);
+        //EJ2CORE-813 - Removing timer function for iOS Devices
+        if(this.isDeviceiOS){
+            // eslint-disable-next-line
+            this.onTextBoxDoubleTap(touchPoints);
+        }
+        else{
+            let timer: any = setTimeout(
+                () => {
+                    this.onTextBoxDoubleTap(touchPoints);
+                }, 200);
+        }
         if (this.inputTapCount > 2) {
             this.inputTapCount = 0;
         }
@@ -4095,6 +4134,10 @@ export class PdfViewerBase {
             if (this.pdfViewer.selectedItems.annotations.length !== 0) {
                 if (this.pdfViewer.annotationModule) {
                     let currentAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
+                    //EJ2CORE-813 - Removing focus from all active free text elements before focusing on free text annotation on iOS devices
+                    if(this.isDeviceiOS && document.activeElement.classList.contains('free-text-input') && (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations))){
+                        this.focusViewerContainer(true);
+                    }
                     this.pdfViewer.annotationModule.annotationSelect(currentAnnotation.annotName, currentAnnotation.pageIndex, currentAnnotation, null, true);
                 }
                 if (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations) === true) {
@@ -4103,7 +4146,7 @@ export class PdfViewerBase {
                     elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
                     // eslint-disable-next-line max-len
                     this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
-                } else if (this.pdfViewer.selectedItems.annotations[0].enableShapeLabel === true) {
+                } else if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].enableShapeLabel === true) {
                     const elmtPosition: PointModel = {};
                     elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
                     elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;

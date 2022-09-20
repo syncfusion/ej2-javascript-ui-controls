@@ -645,6 +645,23 @@ describe('Clipboard ->', () => {
                     });
                 });
             });
+            it('EJ2-60701 -> Merge not working while cut paste the selected column contains merged cells', (done: Function) => {
+                helper.invoke('merge', ['A5:B7']);
+                helper.invoke('cut', ['A1:C100']).then(() => {
+                    helper.invoke('selectRange', ['M1']);
+                    helper.invoke('paste');
+                    setTimeout(() => {
+                        const sheet: SheetModel = helper.getInstance().sheets[0];
+                        expect(sheet.rows[4].cells[0]).toBeNull();
+                        expect(sheet.rows[4].cells[1]).toBeNull();
+                        expect(sheet.rows[5].cells[0]).toBeNull();
+                        expect(sheet.rows[5].cells[1]).toBeNull();
+                        expect(sheet.rows[4].cells[12].rowSpan).toBe(3);
+                        expect(sheet.rows[4].cells[12].colSpan).toBe(2);
+                        done();
+                    });
+                });
+            });
         });
         describe('EJ2-56522 ->', () => {
             beforeEach((done: Function) => {

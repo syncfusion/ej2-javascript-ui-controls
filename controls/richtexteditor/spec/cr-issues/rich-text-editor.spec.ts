@@ -6,6 +6,7 @@ import { FormValidator } from "@syncfusion/ej2-inputs";
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
+import { ChangeEventArgs } from '../../src';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -1457,6 +1458,77 @@ describe('RTE CR issues', () => {
 
         it(' check the id genarated or not ', () => {
             expect(rteObj.element.hasAttribute('id')).toBe(true);
+        });
+    });
+    describe('EJ2-63023 - Need to include args in ValueChange event to differentiate the eventCall based on focusOut and autoSave in RTE', () => {
+        let rteObj: RichTextEditor;
+        var autoSave: boolean;
+        var blurSave: boolean;
+        let editNode: HTMLElement;
+        const elementDiv: HTMLElement=createElement("div",{className:"outerRTE",innerHTML: '<p class="test-paragraph">RichTextEditor</p>'});
+            beforeAll((done: Function) => {
+            document.body.appendChild(elementDiv)
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                change: (e: ChangeEventArgs)=>{
+                    autoSave = e.isInteracted
+                },
+                blur: (event: ChangeEventArgs)=>{
+                    blurSave = event.isInteracted
+                }
+            });
+            rteObj.saveInterval = 10;
+            rteObj.dataBind();
+            editNode = (rteObj as any).inputElement;
+            done();
+        });
+        it("AutoSave the value in interval time", (done) => {
+            rteObj.focusIn();
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(true);
+                (rteObj as any).inputElement.innerHTML = `<div><p>First p node-2</p></div>`;
+                expect(rteObj.value !== '<div><p>First p node-2</p></div>').toBe(true);
+                setTimeout(() => {
+                    expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
+                    expect(autoSave).toBe(false);
+                    done();
+                }, 400);
+            }, 400);
+        });
+        it("focus out from RTE, blur event", (done) => {
+            rteObj.focusOut();
+            setTimeout(() => {
+                expect(blurSave).toBe(true);
+                done();
+            }, 110);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('EJ2-63042 - Tooltip not shown for NumberFormat and BulletFormat List in RTE Toolbar items', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'NumberFormatList', 'BulletFormatList'
+                    ]
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the tooltip', () => {
+            expect(document.querySelectorAll('.e-toolbar-item.e-template').length).toEqual(2);
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List');
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
         });
     });
 });

@@ -1504,6 +1504,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
         this.notify(events.bindCssClass, {cssClass: this.cssClass});
+        this.notify(events.tableclass, {});
         this.renderComplete();
     }
 
@@ -2092,6 +2093,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.value = this.serializeValue(((this.enableHtmlEncode) ? this.encode(decode(val)) : val));
                 }
                 this.updatePanelValue();
+                if(this.inputElement){
+                    this.notify(events.tableclass, {});
+                }
                 this.setPlaceHolder();
                 this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
                 if (this.enableXhtml) {

@@ -355,6 +355,9 @@ export class SheetRender implements IRenderer {
         if (this.parent.createdHandler) {
             if ((this.parent.createdHandler as { observers: object }).observers) {
                 this.parent[created].observers = (this.parent.createdHandler as { observers: object }).observers;
+                if ((this.parent as any).isAngular && (this.parent.createdHandler as { currentObservers: object }).currentObservers) {
+                    this.parent[created].currentObservers = (this.parent.createdHandler as { currentObservers: object }).currentObservers;
+                }
             } else {
                 this.parent.setProperties({ created: this.parent.createdHandler }, true);
             }

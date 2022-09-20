@@ -535,13 +535,14 @@ describe('Chart Control - Box and Whisker Series', () => {
             chartObj.loaded = (args: Object): void => {
                 svg = getElement('container_Series_0_Point_1_Symbol');
                 svg1 = getElement('container_Series_0_Point_1_Text_5');
-                expect(+svg.getAttribute('cy') < +svg1.getAttribute('y')).toBe(true);
+                expect(+svg.getAttribute('cy') > +svg1.getAttribute('y')).toBe(true);
                 svg = getElement('container_Series_0_Point_7_Symbol');
                 svg1 = getElement('container_Series_0_Point_7_Text_5');
-                expect(+svg.getAttribute('cy') < +svg1.getAttribute('y')).toBe(true);
+                expect(+svg.getAttribute('cy') > +svg1.getAttribute('y')).toBe(true);
                 done();
             };
             chartObj.series[0].marker.dataLabel.alignment = 'Near';
+            chartObj.series[0].marker.dataLabel.visible = true;
             chartObj.refresh(); unbindResizeEvents(chartObj);
         });
         it('Checking data label alignment as far', (done: Function) => {

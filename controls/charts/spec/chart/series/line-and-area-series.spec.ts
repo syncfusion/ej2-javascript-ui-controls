@@ -1339,15 +1339,33 @@ describe('Chart Control Series', () => {
 
         it('Checking Data label alignment except Auto position in Bottom Position - far', (done: Function) => {
             loaded = (args: Object): void => {
-                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_TextShape_0');
+                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_Text_0');
                 expect(hiddenShape != null).toBe(true);
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
-                let elementHeight: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('height');
+                let elementY: number = +document.getElementById('container_Series_1_Point_1_Text_0').getAttribute('y');
+                let elementHeight: number = +document.getElementById('container_Series_1_Point_1_Symbol').getAttribute('height');
                 let symbolLocation = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                expect(elementY < (symbolLocation + elementHeight)).toBe(true);
+                expect(elementY > (symbolLocation + elementHeight)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series = [chartObj.series[0], {
+                name: 'series1', type: 'Line', fill: '#ACE5FF', width: 3,
+                animation: { enable: false },
+                dataSource: [
+                    { x: new Date(2000, 6, 11), y: 45 },
+                    { x: new Date(2002, 3, 7), y: 40 },
+                    { x: new Date(2004, 3, 6), y: 45 },
+                    { x: new Date(2006, 3, 30), y: 40 },
+                    { x: new Date(2008, 3, 8), y: 45 },
+                    { x: new Date(2010, 3, 8), y: 20 }
+                ], xName: 'x', yName: 'y',
+                marker: {
+                    visible: true,
+                    dataLabel: {
+                        visible: true
+                    }
+                }
+            }];
             chartObj.series[1].marker.dataLabel.alignment = 'Far';
             chartObj.refresh();
         });
@@ -1365,26 +1383,44 @@ describe('Chart Control Series', () => {
             loaded = (args: Object): void => {
                 let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_TextShape_0');
                 expect(hiddenShape == null).toBe(true);
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                elementY = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
+                elementY = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 symbolLocation = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                let elementHeight: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('height');
-                expect(elementY > (symbolLocation - elementHeight - elementHeight)).toBe(true);
+                let elementHeight: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('height');
+                expect(elementY < (symbolLocation - elementHeight - elementHeight)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.position = 'Outer';
-            chartObj.series[1].marker.dataLabel.alignment = 'Near';
+            chartObj.series = [chartObj.series[0], {
+                name: 'series1', type: 'Line', fill: '#ACE5FF', width: 3,
+                animation: { enable: false },
+                dataSource: [
+                    { x: new Date(2000, 6, 11), y: 45 },
+                    { x: new Date(2002, 3, 7), y: 40 },
+                    { x: new Date(2004, 3, 6), y: 45 },
+                    { x: new Date(2006, 3, 30), y: 40 },
+                    { x: new Date(2008, 3, 8), y: 45 },
+                    { x: new Date(2010, 3, 8), y: 20 }
+                ], xName: 'x', yName: 'y',
+                marker: {
+                    visible: true,
+                    dataLabel: {
+                        visible: true
+                    }
+                }
+            }];
+            chartObj.series[0].marker.dataLabel.position = 'Outer';
+            chartObj.series[0].marker.dataLabel.alignment = 'Near';
             chartObj.refresh();
         });
 
         it('Checking Datalabel alignment except Auto position in Outer Position - far', (done: Function) => {
             loaded = (args: Object): void => {
-                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_TextShape_0');
+                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_Text_0');
                 expect(hiddenShape != null).toBe(true);
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
-                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
+                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].x;
                 expect(elementY < (symbolLocation)).toBe(true);
                 done();
             };
@@ -1395,10 +1431,10 @@ describe('Chart Control Series', () => {
 
         it('Checking Datalabel alignment except Auto position in Outer Position - middle', (done: Function) => {
             loaded = (args: Object): void => {
-                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_TextShape_0');
+                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_Text_0');
                 expect(hiddenShape != null).toBe(true);
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
-                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
+                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].x;
                 expect(elementY < (symbolLocation)).toBe(true);
                 done();
             };
@@ -1411,37 +1447,37 @@ describe('Chart Control Series', () => {
             loaded = (args: Object): void => {
                 let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_TextShape_0');
                 expect(hiddenShape == null).toBe(true);
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                expect(elementY > (symbolLocation)).toBe(true);
-                elementY = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
+                expect(elementY < (symbolLocation)).toBe(true);
+                elementY = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 symbolLocation = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                let elementHeight: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('height');
-                expect(elementY > (symbolLocation - elementHeight - elementHeight)).toBe(true); done();
+                let elementHeight: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('height');
+                expect(elementY < (symbolLocation - elementHeight - elementHeight)).toBe(true); done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.position = 'Top';
-            chartObj.series[1].marker.dataLabel.alignment = 'Near';
+            chartObj.series[0].marker.dataLabel.position = 'Top';
+            chartObj.series[0].marker.dataLabel.alignment = 'Near';
             chartObj.refresh();
         });
 
         it('Checking Data label alignment except Auto position in Middle Position - near', (done: Function) => {
             loaded = (args: Object): void => {
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                expect(elementY > (symbolLocation)).toBe(true);
+                expect(elementY < (symbolLocation)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.position = 'Middle';
-            chartObj.series[1].marker.dataLabel.alignment = 'Near';
+            chartObj.series[0].marker.dataLabel.position = 'Middle';
+            chartObj.series[0].marker.dataLabel.alignment = 'Near';
             chartObj.refresh();
         });
 
         it('Checking Data label alignment except Auto position in Middle Position - far', (done: Function) => {
             loaded = (args: Object): void => {
-                let elementY: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
-                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
+                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].x;
                 expect(elementY < (symbolLocation)).toBe(true);
                 done();
             };
@@ -1454,7 +1490,7 @@ describe('Chart Control Series', () => {
                 let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
                 let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
                 let height: number = document.getElementById('container_Series_1_Point_2_Text_0').getBoundingClientRect().height;
-                expect((elementY - (height / 4)) == (symbolLocation)).toBe(true);
+                expect((elementY) < (symbolLocation)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1489,9 +1525,8 @@ describe('Chart Control Series', () => {
 
         it('Checking Overlap data', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('containerShapeGroup2').childNodes.length == 3).toBe(true);
-                expect(document.getElementById('container_Series_2_Point_0_TextShape_0') == null).toBe(true);
-                expect(document.getElementById('container_Series_2_Point_2_TextShape_0') == null).toBe(true); done();
+                expect(document.getElementById('container_Series_2_Point_0_TextShape_0') != null).toBe(true);
+                expect(document.getElementById('container_Series_2_Point_2_TextShape_0') != null).toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].marker.dataLabel.margin = {

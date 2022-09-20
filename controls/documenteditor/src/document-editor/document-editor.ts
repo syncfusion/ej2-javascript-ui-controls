@@ -2230,7 +2230,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'RemovedIgnore': 'Do you want to remove the ignored exceptions?',
         'Information': 'Information',
         'Yes': 'Yes',
-        'No': 'No'
+        'No': 'No',
+        'Unsupported format': 'The file format you have selected isn\'t supported. Please choose valid format.'
     };
     /* eslint-enable */
     // Public Implementation Starts

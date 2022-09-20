@@ -923,7 +923,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this.created) {
             if (this[created].observers) {
                 if (this[created].observers.length > 0) {
-                    this.createdHandler = { observers: this[created].observers };
+                    let observerObject: Object = { observers: this[created].observers };
+                    if ((this as any).isAngular) {
+                        observerObject = { observers: this[created].observers,  currentObservers: this[created].observers };
+                        this[created].currentObservers = [];
+                    }
+                    this.createdHandler = observerObject;
                     this[created].observers = [];
                 }
             } else {

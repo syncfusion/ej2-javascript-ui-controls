@@ -1668,7 +1668,13 @@ export class FormFields {
                                 FormFieldsData[l].Selected = false;
                             }
                         }
-                        currentData.Selected = true;
+                        if (target.value == currentData.Value) {
+                            currentData.Selected = true;
+                            break;
+                        }
+                        else {
+                            currentData.Selected = false;
+                        }
                     } else if (target.type === 'checkbox') {
                         for (let l: number = 0; l < FormFieldsData.length; l++) {
                             // eslint-disable-next-line

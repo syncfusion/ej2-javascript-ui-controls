@@ -8385,6 +8385,12 @@ export class Page {
     }
 
     public destroy(): void {
+        if (this.headerWidget.page === this) {
+            this.headerWidget.page = undefined;
+        }
+        if (this.footerWidget.page === this) {
+            this.footerWidget.page = undefined;
+        }
         if (this.headerWidgetIn && !isNullOrUndefined(this.headerWidgetIn.parentHeaderFooter)) {
             if (this.viewer && this.documentHelper.owner.editor) {
                 this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidgetIn);

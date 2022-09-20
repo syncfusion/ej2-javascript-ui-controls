@@ -12,6 +12,11 @@ export const destroyed: string = 'destroy';
  * @hidden
  * @deprecated
  */
+export const tableclass: string = 'tableclass';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const load: string = 'load';
 /**
  * Specifies Rich Text Editor internal events

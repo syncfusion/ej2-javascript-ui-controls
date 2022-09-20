@@ -364,4 +364,50 @@ describe('Toolbar - view html', () => {
             expect((rteObj as any).element.querySelector("rte-placeholder")).toBe(null);
         });
     });
+
+    describe("EJ2-62919 - Checking the table class is added in the preview mode to code view", () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                actionBegin: (e) => {
+                    expect(e.name === 'actionBegin').toBe(true);
+                },
+                actionComplete: (e) => {
+                    expect(e.name === 'actionComplete').toBe(true);
+                },
+                change: (e) => {
+                    expect(e.value === rteObj.inputElement.innerHTML).toBe(true);
+                }
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('Test - Checking the table class is added in the preview to code view', () => {
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            rteObj.contentModule.getEditPanel().innerHTML = '<table><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>';
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            rteObj.enableHtmlEncode = true;
+            rteObj.dataBind();
+            expect((<any>rteObj).value === '&lt;table class="e-rte-table"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;p&gt;Provide the tool bar support, its also customizable.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;').toBe(true);
+            expect((<any>rteObj).getHtml() === '&lt;table class="e-rte-table"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;p&gt;Provide the tool bar support, its also customizable.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;').toBe(true);
+            rteObj.enableHtmlEncode = false;
+            rteObj.dataBind();
+            expect((<any>rteObj).getHtml() === '<table class="e-rte-table"><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>').toBe(true);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML === '<table class="e-rte-table"><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>').toBe(true);
+            rteObj.sourceCodeModule.mouseDownHandler();
+        });
+    });
 });

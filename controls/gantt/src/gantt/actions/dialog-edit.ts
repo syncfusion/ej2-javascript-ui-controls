@@ -1673,8 +1673,21 @@ export class DialogEdit {
         const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
         const inputModel: TreeGridModel = this.beforeOpenArgs[itemName];
         const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
-        const resourceData: Record<string, unknown>[] = <Record<string, unknown>[]>extend([], [], ganttObj.resources, true);
-        this.parent.dataOperation.updateResourceUnit(resourceData);
+        let resourceData: Object[] = [];
+        if (this.parent.viewType === 'ResourceView') {
+            for (let i: number = 0; i < ganttObj.currentViewData.length; i++) {
+                for (let j: number = 0; j < ganttObj.resources.length; j++) {
+                    if (ganttObj.currentViewData[i][ganttObj.taskFields.id] === ganttObj.resources[j][resourceSettings.id] && 
+                        (ganttObj.currentViewData[i].hasChildRecords || isNullOrUndefined(ganttObj.currentViewData[i].parentItem))) {
+                        resourceData.push(ganttObj.resources[j]);
+                    }
+                }
+            }
+        }
+	else {
+            resourceData = extend([], [], ganttObj.resources, true) as Object[];
+        }
+	this.parent.dataOperation.updateResourceUnit(resourceData);
         if (!isNullOrUndefined(rowResource)) {
             let count: number;
             const rowResourceLength: number = rowResource.length;

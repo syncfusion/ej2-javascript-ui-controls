@@ -2545,22 +2545,28 @@ export class DocumentHelper {
      * @private
      */
     public linkPageToHeaderFooter(currentPage: Page): void {
-        if (currentPage.headerWidgetIn && currentPage.footerWidgetIn
-            && isNullOrUndefined(currentPage.headerWidgetIn.parentHeaderFooter)
-            && isNullOrUndefined(currentPage.footerWidgetIn.parentHeaderFooter)) {
-            for (let i: number = 0; i < this.pages.length; i++) {
-                let page: Page = this.pages[i];
-                if (page != currentPage) {
-                    if (page.headerWidgetIn.parentHeaderFooter === currentPage.headerWidgetIn) {
-                        page.headerWidgetIn = currentPage.headerWidget;
-                        page.headerWidgetIn.page = page;
-                        page.footerWidgetIn = currentPage.footerWidget;
-                        page.footerWidgetIn.page = page;
-                        break;
-                    }
-                }
-            }
+        if (currentPage.headerWidget.page === currentPage) {
+            currentPage.headerWidget.page = undefined;
         }
+        if (currentPage.footerWidget.page === currentPage) {
+            currentPage.footerWidget.page = undefined;
+        }
+        // if (currentPage.headerWidgetIn && currentPage.footerWidgetIn
+        //     && isNullOrUndefined(currentPage.headerWidgetIn.parentHeaderFooter)
+        //     && isNullOrUndefined(currentPage.footerWidgetIn.parentHeaderFooter)) {
+        //     for (let i: number = 0; i < this.pages.length; i++) {
+        //         let page: Page = this.pages[i];
+        //         if (page != currentPage) {
+        //             if (page.headerWidgetIn.parentHeaderFooter === currentPage.headerWidgetIn) {
+        //                 page.headerWidgetIn = currentPage.headerWidget;
+        //                 page.headerWidgetIn.page = page;
+        //                 page.footerWidgetIn = currentPage.footerWidget;
+        //                 page.footerWidgetIn.page = page;
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
     }
     /**
      * Removes specified page.
@@ -2578,7 +2584,6 @@ export class DocumentHelper {
         if (page.footerWidgetIn) {
             page.footerWidgetIn.page = undefined;
         }
-        this.linkPageToHeaderFooter(page);
         let index: number = this.pages.indexOf(page);
         // if (index > -1) {
         this.pages.splice(index, 1);
@@ -3123,6 +3128,7 @@ export class DocumentHelper {
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
+                this.linkPageToHeaderFooter(this.pages[j]);
                 this.removePage(this.pages[j]);
                 j--;
             }
@@ -3227,9 +3233,6 @@ export class DocumentHelper {
         }
         let textFrame: TextFrame = (shape.element as ShapeElementBox).textFrame;
         if (textFrame.childWidgets.length === 0) {
-            return isEmpty;
-        } else if (textFrame.childWidgets.length === 1 && textFrame.childWidgets[0] instanceof ParagraphWidget && ((textFrame.childWidgets[0] as ParagraphWidget).childWidgets.length === 0 ||
-        ((textFrame.childWidgets[0] as ParagraphWidget).childWidgets.length === 1 && ((textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length === 0))) {
             return isEmpty;
         } else {
             return false;

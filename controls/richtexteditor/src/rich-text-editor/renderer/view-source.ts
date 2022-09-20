@@ -238,6 +238,7 @@ export class ViewSource {
         this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
         this.parent.formatter.enableUndo(this.parent);
         this.parent.invokeChangeEvent();
+        this.parent.notify(events.tableclass, {});
     }
 
     private getTextAreaValue(): string {

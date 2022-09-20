@@ -181,9 +181,6 @@ describe('DateTimepicker', () => {
             }
             expect(datetimepicker.element.getAttribute('aria-expanded')).toBe('true');
         });
-        it('element ARIA placeholder testing', () => {
-            expect(datetimepicker.element.getAttribute('aria-placeholder')).toEqual(null);
-        });
         it('element placeholder testing', () => {
             expect(datetimepicker.element.getAttribute('placeholder')).toEqual(null);
         });
@@ -694,7 +691,6 @@ describe('DOM Wrapper Testing with basic properites', () => {
     it('placeholder testing', () => {
         datetimepicker = new DateTimePicker({ placeholder: "select DateTime" });
         datetimepicker.appendTo('#dateTime');
-        expect(datetimepicker.inputElement.getAttribute('aria-placeholder')).toEqual('select DateTime');
     });
     it('Empty value testing', () => {
         datetimepicker = new DateTimePicker({ placeholder: "select DateTime", renderDayCell: onRender, value: new Date('2/1/2018 12:00 PM') });
@@ -707,9 +703,6 @@ describe('DOM Wrapper Testing with basic properites', () => {
     });
     it('enabled false input element ARIA-DISABELD testing', () => {
         expect(datetimepicker.inputElement.getAttribute('aria-disabled')).toEqual('true');
-    });
-    it('placeholder ARIA-PLACEHOLDER testing', () => {
-        expect(datetimepicker.inputElement.getAttribute('aria-placeholder')).toEqual(null);
     });
     it('placeholder attribute testing', () => {
         expect(datetimepicker.inputElement.getAttribute('placeholder')).toEqual(null);

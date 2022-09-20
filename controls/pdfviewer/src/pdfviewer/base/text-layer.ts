@@ -297,8 +297,20 @@ export class TextLayer {
         const childElement: any = element.getElementsByClassName('foreign-object');
         if (childElement) {
             for (let i: number = 0; i < childElement.length; i++) {
-                if (childElement[i].parentElement.className === 'e-pv-text-layer') {
-                    element.removeChild(childElement[0]);
+                if (Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                    //Remove the outer div element of checkbox and other formfields in pichzoom
+                    if (childElement[i].parentElement.className === 'e-pv-text-layer' && childElement[0].parentElement.className !== 'e-pv-checkbox-outer-div') {
+                        element.removeChild(childElement[0]);
+                    } else if (childElement[i].parentElement.className === 'e-pv-checkbox-outer-div') {
+                        let outerDivParent: Element = document.getElementById(childElement[0].parentElement.id);
+                        if (outerDivParent) {
+                            outerDivParent.parentElement.remove();
+                        }
+                    }
+                } else {
+                    if (childElement[i].parentElement.className === 'e-pv-text-layer') {
+                        element.removeChild(childElement[0]);
+                    }
                 }
             }
         }

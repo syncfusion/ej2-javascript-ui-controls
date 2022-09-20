@@ -687,6 +687,10 @@ export class DateTimePicker extends DatePicker {
                 this.inputElement.tabIndex = -1;
             }
         }
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+            this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-date-time-icon');
+        }
         this.renderComplete();
     }
     private setValue(): void {
@@ -1841,6 +1845,10 @@ export class DateTimePicker extends DatePicker {
                 break;
             case 'width':
                 this.setWidth(newProp.width);
+                Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-date-time-icon');
+                }
                 break;
             case 'readonly':
                 Input.setReadonly(this.readonly, this.inputElement);
@@ -1849,6 +1857,9 @@ export class DateTimePicker extends DatePicker {
                 this.floatLabelType = newProp.floatLabelType;
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-date-time-icon');
+                }
                 break;
             case 'scrollTo':
                 if (this.checkDateValue(new Date(this.checkValue(newProp.scrollTo)))) {

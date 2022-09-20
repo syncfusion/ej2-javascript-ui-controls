@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.2.50 (2022-09-20)
+
+### Calendar
+
+#### Bug Fixes
+
+- `#I403191` - The issue "change event argument contains duplicate dates while using multiselection" has been resolved
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

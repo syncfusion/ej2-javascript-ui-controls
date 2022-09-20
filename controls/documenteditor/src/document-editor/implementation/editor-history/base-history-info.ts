@@ -566,6 +566,12 @@ export class BaseHistoryInfo {
                         if (isNullOrUndefined(block)) {
                             let nextBlock: BlockWidget = this.documentHelper.selection.getNextParagraphBlock(lastNode.getSplitWidgets().pop() as BlockWidget);
                             this.owner.selection.getNextRenderedBlock((lastNode as ParagraphWidget));
+                            let startParagraph: BlockWidget = this.owner.selection.start.paragraph;
+                            if (nextBlock && startParagraph && startParagraph.bodyWidget instanceof BodyWidget
+                                && !startParagraph.isInsideTable && !this.owner.selection.isinEndnote && !this.owner.selection.isinFootnote
+                                && !startParagraph.bodyWidget.equals(nextBlock.bodyWidget)) {
+                                nextBlock = undefined;
+                            }
                             if (isNullOrUndefined(nextBlock)) {
                                 //Sets the selection as starting of last paragraph.
                                 this.owner.selection.selectParagraphInternal(lastNode as ParagraphWidget, true);

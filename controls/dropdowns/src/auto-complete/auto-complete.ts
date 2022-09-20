@@ -520,6 +520,10 @@ export class AutoComplete extends ComboBox {
                         this.inputWrapper.container,
                         this.createElement);
                     this.inputWrapper.buttons[0] = button;
+                    Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+                    if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
+                        this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                    }   
                     if (this.inputWrapper && this.inputWrapper.buttons && this.inputWrapper.buttons[0]) {
                         EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
                     }

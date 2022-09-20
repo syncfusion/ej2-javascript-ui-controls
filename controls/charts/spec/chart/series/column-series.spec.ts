@@ -695,7 +695,7 @@ describe('Column Series', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.alignment = 'Far';
+            chartObj.series[0].marker.dataLabel.alignment = 'Far';
             chartObj.refresh();
         });
 
@@ -722,35 +722,39 @@ describe('Column Series', () => {
                 done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.position = 'Outer';
-            chartObj.series[1].marker.dataLabel.alignment = 'Near';
+            chartObj.series[0].marker.dataLabel.position = 'Outer';
+            chartObj.series[0].marker.dataLabel.alignment = 'Near';
             chartObj.refresh();
         });
 
         it('Checking Data label alignment except Auto position - Outer Position  - alignment far', (done: Function) => {
             loaded = (args: Object): void => {
-                let xLocation = +document.getElementById('container_Series_1_Point_5_TextShape_0').getAttribute('x');
+                let xLocation = +document.getElementById('container_Series_0_Point_5_Text_0').getAttribute('x');
                 let width = +document.getElementById('container_ChartAreaBorder').getAttribute('width');
               //  expect(xLocation > width).toBe(true);
-                let elementYLocation: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
-                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
+                let elementYLocation: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('y');
+                let symbolLocation: number = (<Points>(<Series>chartObj.series[0]).points[2]).symbolLocations[0].y;
                 expect(elementYLocation < (symbolLocation)).toBe(true); done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.alignment = 'Far';
+            chartObj.series[0].marker.visible = true;
+            chartObj.series[0].marker.dataLabel.visible = true;
+            chartObj.series[0].marker.dataLabel.alignment = 'Far';
             chartObj.refresh();
         });
 
         it('Checking Data label alignment except Auto position - Outer Position - alignment center', (done: Function) => {
             loaded = (args: Object): void => {
-                let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_TextShape_0');
+                let hiddenShape: HTMLElement = document.getElementById('container_Series_0_Point_1_Text_0');
                 expect(hiddenShape != null).toBe(true);
-                let elementYLocation: number = +document.getElementById('container_Series_1_Point_2_TextShape_0').getAttribute('y');
-                let symbolLocation: number = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
+                let elementYLocation: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('y');
+                let symbolLocation: number = (<Points>(<Series>chartObj.series[0]).points[2]).symbolLocations[0].y;
                 expect(elementYLocation < (symbolLocation)).toBe(true); done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[1].marker.dataLabel.alignment = 'Center';
+            chartObj.series[0].marker.visible = true;
+            chartObj.series[0].marker.dataLabel.visible = true;
+            chartObj.series[0].marker.dataLabel.alignment = 'Center';
             chartObj.refresh();
         });
         it('Checking Data label alignment except Auto position - Top Position', (done: Function) => {

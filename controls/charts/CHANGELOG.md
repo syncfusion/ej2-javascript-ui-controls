@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.2.50 (2022-09-20)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I404375` - Now alignment of the data label is working properly.
+- `#F177357` - Now interval for axis is calculating properly for zoomed data.
+
 ## 20.2.49 (2022-09-13)
 
 ### Chart

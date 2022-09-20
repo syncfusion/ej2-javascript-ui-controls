@@ -620,6 +620,9 @@ export class Toolbar {
                         this.annotationToolbarModule.resetToolbar();
                     }
                     this.deSelectItem(this.formDesignerItem);
+                    if (this.formDesignerToolbarModule) {
+                        this.formDesignerToolbarModule.resetFormDesignerToolbar();
+                    }
                 } else if (this.pdfViewerBase.pageCount > 0) {
                     var obj : any = this.pdfViewerBase.getElement('_currentPageInputContainer')
                     if(obj){

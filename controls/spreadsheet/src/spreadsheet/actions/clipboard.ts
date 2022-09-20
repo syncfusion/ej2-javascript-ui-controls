@@ -442,7 +442,12 @@ export class Clipboard {
                             if (cell) {
                                 if (cell.isLocked || isNullOrUndefined(cell.isLocked)) {
                                     if ((isRowSelected || isColSelected) && (cell.rowSpan !== undefined || cell.colSpan !== undefined)) {
-                                        continue;
+                                        if (cell.rowSpan > 1 || cell.colSpan > 1) {
+                                            this.parent.notify(setMerge, <MergeArgs>{ merge: false, range: [i, j, i, j], type: 'All' });
+                                            cell = null;
+                                        } else {
+                                            continue;
+                                        }
                                     } else {
                                         cell = null;
                                     }

@@ -528,7 +528,7 @@ export class Edit {
                 this.parent.dataOperation.updateMappingData(ganttData, 'work');
                 this.parent.dataOperation.updateMappingData(ganttData, 'duration');
                 this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
-            } else if (key === 'taskType') {
+            } else if (key === tasks.type) {
                 ganttObj.setRecordValue('taskType', data[key], ganttData.ganttProperties, true);
                 //this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
             } else if (ganttObj.customColumns.indexOf(key) !== -1) {
@@ -1642,10 +1642,14 @@ export class Edit {
         for (let i: number = 0; i < selectedRecords.length; i++) {
             if (selectedRecords[i].parentItem) {
                 const data: IGanttData = selectedRecords[i];
-                const ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
-                for (let j: number = 0; j < ids.length; j++) {
-                    deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j].toString())]);
-                }
+                deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(data.ganttProperties.rowUniqueID)]);
+            }
+            else {
+                const resourceParent: IGanttData = this.parent.flatData.filter((data: IGanttData) => {
+                    return (parseInt(data.ganttProperties.taskId) == parseInt(selectedRecords[i].ganttProperties.taskId) &&
+                    data.hasChildRecords);       
+                })[0];
+                deleteRecords.push(resourceParent);
             }
         }
         this.deleteRow(deleteRecords);
@@ -2080,6 +2084,14 @@ export class Edit {
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         setValue('action', args.action, eventArgs);
         this.parent.isOnDelete = false;
+        if (this.parent.viewType === 'ResourceView') {
+            const updateUnAssignedResources: IGanttData[] = eventArgs.data.filter((data: IGanttData) => {
+                return !data.hasChildRecords;
+            })
+            for (let i: number = 0; i < updateUnAssignedResources.length; i++) {
+                this.checkWithUnassignedTask(updateUnAssignedResources[i]);
+            }
+        }
         this.parent.trigger('actionComplete', eventArgs);
         this.deletedTaskDetails = [];
         this.parent.initiateEditAction(false);

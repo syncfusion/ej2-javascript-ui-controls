@@ -48,7 +48,9 @@ export class Double {
         const actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
         let niceInterval: number = delta / actualDesiredIntervalsCount;
         if (!isNullOrUndefined(axis.desiredIntervals)) {
-            return niceInterval;
+            if (this.isAutoIntervalOnBothAxis(axis)) {
+                return niceInterval;
+            }
         }
 
         const minInterval: number = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
@@ -67,7 +69,14 @@ export class Double {
      *
      * @private
      */
-
+    public isAutoIntervalOnBothAxis(axis: Axis): boolean {
+        if (((axis.zoomFactor < 1 || axis.zoomPosition > 0) && this.chart.enableAutoIntervalOnBothAxis)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
     public getActualRange(axis: Axis, size: Size): void {
         this.initializeDoubleRange(axis);
         if ((!axis.startFromZero) && (this.isColumn > 0)) {

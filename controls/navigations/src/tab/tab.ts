@@ -1407,8 +1407,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         } else {
             if (this.overflowMode === 'MultiRow') {
-                let bar: HTEle = <HTEle>select('.' + CLS_INDICATOR, this.element);
-                setStyle(bar, { 'top': trg.offsetHeight + trg.offsetTop + 'px', 'height': '' });
+                const top: number = this.headerPlacement === 'Bottom' ? trg.offsetTop : trg.offsetHeight + trg.offsetTop;
+                setStyle(bar, { 'top': top + 'px', 'height': '' });
             } else {
                 setStyle(bar, { 'top': '', 'height': '' });
             }

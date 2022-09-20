@@ -1872,7 +1872,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
-                    if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                    if (this.itemTemplate && (this.element.tagName === 'EJS-COMBOBOX' || this.element.tagName === 'EJS-DROPDOWNLIST') && this.allowFiltering) {
                         setTimeout(
                             () => {
                                 this.updateActionCompleteDataValues(ulElement, list);
@@ -2434,6 +2434,10 @@ export class DropDownList extends DropDownBase implements IInput {
         this.setFields();
         this.inputWrapper.container.style.width = formatUnit(this.width);
         this.inputWrapper.container.classList.add('e-ddl');
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
+        if (!isNullOrUndefined(this.inputWrapper) && !isNullOrUndefined(this.inputWrapper.buttons[0]) && this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0] && this.floatLabelType !== 'Never') {
+            this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+        }
         this.wireEvent();
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
@@ -2482,7 +2486,7 @@ export class DropDownList extends DropDownBase implements IInput {
             attributes(this.inputElement, { 'aria-labelledby': floatLabelElement.id });
         }
         this.renderComplete();
-    }
+        }
 
     private setFooterTemplate(popupEle: HTMLElement): void {
         let compiledString: Function;
@@ -2623,7 +2627,7 @@ export class DropDownList extends DropDownBase implements IInput {
             case 'dataSource': break;
             case 'htmlAttributes': this.setHTMLAttributes();
                 break;
-            case 'width': this.setEleWidth(newProp.width); break;
+            case 'width': this.setEleWidth(newProp.width); Input.calculateWidth(this.inputElement, this.inputWrapper.container); break;
             case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement); break;
             case 'filterBarPlaceholder':
                 if (this.filterInput) {
@@ -2636,7 +2640,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 this.setReadOnly();
                 break;
-            case 'cssClass': this.setCssClass(newProp.cssClass, oldProp.cssClass); break;
+            case 'cssClass': this.setCssClass(newProp.cssClass, oldProp.cssClass); Input.calculateWidth(this.inputElement, this.inputWrapper.container); break;
             case 'enableRtl': this.setEnableRtl(); break;
             case 'enabled': this.setEnable(); break;
             case 'text': if (newProp.text === null) {
@@ -2758,6 +2762,9 @@ export class DropDownList extends DropDownBase implements IInput {
             case 'floatLabelType':
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, newProp.floatLabelType, this.placeholder, this.createElement);
+                if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0] && this.floatLabelType !== 'Never') {
+                   this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }  
                 break;
             case 'showClearButton':
                 Input.setClearButton(newProp.showClearButton, this.inputElement, this.inputWrapper, null, this.createElement);
@@ -2945,6 +2952,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         addClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
         this.onFocus(e);
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
     }
     /**
      * Moves the focus from the component if the component is already focused.
@@ -2962,6 +2970,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.targetElement().blur();
         }
         removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
+        Input.calculateWidth(this.inputElement, this.inputWrapper.container);
     }
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.

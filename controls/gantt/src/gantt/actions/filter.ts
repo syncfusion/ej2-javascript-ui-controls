@@ -241,45 +241,10 @@ export class Filter {
             }
         }
     }
-    private setPosition(li: Element, ul: HTMLElement): void {
-        const gridPos: ClientRect = this.parent.element.getBoundingClientRect();
-        const liPos: ClientRect = li.getBoundingClientRect();
-        let left: number = liPos.right + window.scrollX;
-        const top: number = liPos.top + window.scrollY;
-
-        if (gridPos.right < (left + ul.offsetWidth)) {
-            if ((liPos.left - ul.offsetWidth) > gridPos.left) {
-                left = (liPos.left - ul.offsetWidth);
-            } else {
-                left -= (left + ul.offsetWidth) - gridPos.right;
-            }
-        }
-        ul.style.top = top + 'px';
-        ul.style.left = left + 'px';
-    }
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
         addClass([element], 'e-gantt');
-        document.querySelector('#' + this.parent.controlId).appendChild(element);
-        let targetElement: HTMLElement;
-        if (this.parent.showColumnMenu) {
-            targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
-            element.style.zIndex = targetElement.parentElement.style.zIndex;
-            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
-                this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
-            }
-            else {
-                this.setPosition(targetElement, getValue('filterModel.dialogObj.element', args));
-            }
-        } else {
-            targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
-            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
-                getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args));
-            }
-            else {
-                getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
-            }
-        }
+        document.querySelector('#' + this.parent.treeGrid.grid.element.id).appendChild(element);
         if (this.parent.treeGrid.filterSettings.type === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }

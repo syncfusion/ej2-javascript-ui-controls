@@ -5489,7 +5489,7 @@ describe('XHTML validation', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table></table>   <span></span><p></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table>   <span></span><p></p></div>');
         rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
@@ -5501,7 +5501,7 @@ describe('XHTML validation', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><table contenteditable="true"> </table></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><table contenteditable="true" class="e-rte-table"> </table></div>');
     });
     it("Underline tag", function () {
         rteObj.value = "<p>Rich <u>Text</u> Editor</p><p>Sync<u>fusion</u></p>";
@@ -5571,7 +5571,7 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table></table>   <span></span><p></p></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table>   <span></span><p></p></div>');
         rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
@@ -5583,7 +5583,7 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = false;
         rteObj.enableXhtml = true;
         rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML).toBe('<div><table contenteditable="true"> </table></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><table contenteditable="true" class="e-rte-table"> </table></div>');
     });
     it("Underline tag", function () {
         rteObj.value = "<p>Rich <u>Text</u> Editor</p><p>Sync<u>fusion</u></p>";

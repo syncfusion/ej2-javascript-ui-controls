@@ -372,6 +372,35 @@ describe('Schedule Week view', () => {
             expect(dialogElement.classList.contains('e-popup-close')).toBeTruthy();
         });
 
+        it('EJ2-63543 - Previous/Next icons shown when the min max date is set in hours', () => {
+            const model: ScheduleModel = {
+                currentView: 'Week',
+                minDate: new Date(2017, 8, 28),
+                selectedDate: new Date(2017, 9, 5),
+                maxDate: new Date(2017, 9, 12)
+            };
+            schObj = util.createSchedule(model, []);
+            const prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            const nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            schObj.minDate = new Date(2017, 9, 1);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 7, 23, 30, 0);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            schObj.currentView = 'Day';
+            schObj.minDate = new Date(2017, 9, 4);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 4, 23, 59, 0);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+        });
+
         it('EJ2-50109 - Add icon shows on mobile when disabled adding events', () => {
             const model: ScheduleModel = {
                 currentView: 'Week',

@@ -532,7 +532,7 @@ export class HeaderRenderer {
             firstDate = util.getWeekFirstDate(util.resetTime(this.parent.selectedDate), this.parent.firstDayOfWeek);
             lastDate = util.addDays(firstDate, 7 * this.parent.activeViewOptions.interval);
         }
-        if (this.parent.currentView === 'Month') {
+        else if (this.parent.currentView === 'Month') {
             const isCustomMonth: boolean = !isNullOrUndefined(this.parent.activeViewOptions.displayDate) ||
                 this.parent.activeViewOptions.numberOfWeeks > 0;
             firstDate = isCustomMonth ? this.parent.activeView.getStartDate() : util.firstDateOfMonth(this.parent.selectedDate);
@@ -540,10 +540,10 @@ export class HeaderRenderer {
                 util.lastDateOfMonth(util.addMonths(firstDate, this.parent.activeViewOptions.interval - 1));
         }
         if (!isNullOrUndefined(prevNavEle)) {
-            this.toolbarObj.enableItems(prevNavEle, firstDate > this.parent.minDate);
+            this.toolbarObj.enableItems(prevNavEle, firstDate > util.resetTime(this.parent.minDate));
         }
         if (!isNullOrUndefined(nextNavEle)) {
-            this.toolbarObj.enableItems(nextNavEle, lastDate < this.parent.maxDate);
+            this.toolbarObj.enableItems(nextNavEle, lastDate < util.resetTime(this.parent.maxDate));
         }
         this.setCalendarMinMaxDate();
     }

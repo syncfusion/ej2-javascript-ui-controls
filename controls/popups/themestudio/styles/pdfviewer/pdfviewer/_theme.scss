@@ -142,7 +142,10 @@
   }
 
   .e-toolbar.e-pv-toolbar .e-toolbar-pop .e-pv-zoom-drop-down-container {
-    display: none;
+    display: block;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: auto;
   }
 
   .e-pv-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text,

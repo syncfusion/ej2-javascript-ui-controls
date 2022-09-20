@@ -171,9 +171,6 @@ describe('TimePicker', () => {
             }
             expect(timeObj.element.getAttribute('aria-expanded')).toBe('true');
         });
-        it('element ARIA placeholder testing', () => {
-            expect(timeObj.element.getAttribute('aria-placeholder')).toEqual(null);
-        });
         it('element placeholder testing', () => {
             expect(timeObj.element.getAttribute('placeholder')).toEqual(null);
         });
@@ -623,7 +620,6 @@ describe('TimePicker', () => {
         it('element ARIA placeholder testing', () => {
             timeObj = new TimePicker({ placeholder: 'Select Time', floatLabelType: 'Never' });
             timeObj.appendTo('#timepicker2');
-            expect(timeObj.element.getAttribute('aria-placeholder')).toEqual('Select Time');
         });
         it('element placeholder testing', () => {
             timeObj = new TimePicker({ placeholder: 'Select Time', floatLabelType: 'Never' });
@@ -710,9 +706,6 @@ describe('TimePicker', () => {
         it('enabled false input element ARIA-DISABELD testing', () => {
             expect(timeObj.element.getAttribute('aria-disabled')).toEqual('true');
         });
-        it('placeholder ARIA-PLACEHOLDER testing', () => {
-            expect(timeObj.element.getAttribute('aria-placeholder')).toEqual(timeObj.placeholder);
-        });
         it('placeholder attribute testing', () => {
             expect(timeObj.element.getAttribute('placeholder')).toEqual(timeObj.placeholder);
         });
@@ -734,9 +727,6 @@ describe('TimePicker', () => {
                 timepicker.destroy();
             }
             document.body.innerHTML = '';
-        });
-        it('placeholder ARIA-PLACEHOLDER testing', () => {
-            expect(timeObj.element.getAttribute('aria-placeholder')).toEqual(null);
         });
         it('placeholder attribute testing', () => {
             expect(timeObj.element.getAttribute('placeholder')).toEqual(null);
@@ -1017,7 +1007,6 @@ describe('TimePicker', () => {
             timeObj.placeholder = 'select';
             timeObj.dataBind();
             expect(timeObj.element.getAttribute('placeholder')).toBe(timeObj.placeholder);
-            expect(timeObj.element.getAttribute('aria-placeholder')).toBe(timeObj.placeholder);
         });
         it('min testing', () => {
             timeObj.min = new Date("12/12/2016 10:00 AM");

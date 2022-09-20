@@ -2373,9 +2373,9 @@ export class Editor {
         this.insertSection(selection, true);
         this.updateEndPosition();
         this.reLayout(selection, true);
-        if (this.owner.layoutType === 'Continuous') {
-            this.layoutWholeDocument();
-        }
+        //if (this.owner.layoutType === 'Continuous') {
+        this.layoutWholeDocument();
+        //}
     }
 
     private combineRevisionWithBlocks(elementBox: ElementBox, revisionType?: RevisionType): void {
@@ -3004,11 +3004,11 @@ export class Editor {
         if (!this.editorHistory.isUndoing) {
             this.insertRemoveHeaderFooter(newBodyWidget.sectionIndex, true);
         }
-        if (this.documentHelper.viewer instanceof PageLayoutViewer) {
-            //update header and footer for splitted widget
+        // if (this.documentHelper.viewer instanceof PageLayoutViewer) {
+        //     //update header and footer for splitted widget
 
-            this.documentHelper.layout.layoutHeaderFooter(newBodyWidget, this.owner.viewer as PageLayoutViewer, newBodyWidget.page);
-        }
+        //     this.documentHelper.layout.layoutHeaderFooter(newBodyWidget, this.owner.viewer as PageLayoutViewer, newBodyWidget.page);
+        // }
         //Update Child item index from 0 for new Section
         this.updateBlockIndex(0, newBodyWidget.firstChild as BlockWidget);
         // Start sinfting from first block
@@ -7289,6 +7289,7 @@ export class Editor {
             let page: Page = this.documentHelper.pages[i];
             if ((i + 1 === 1) && page.bodyWidgets[0].sectionFormat.differentFirstPage &&
                 node.headerFooterType.indexOf('FirstPage') !== -1) {
+                this.updateHeaderFooterWidgetToPageInternal(page, node, node.headerFooterType.indexOf('Header') !== -1);
                 return;
             }
             if (page.index === 0 && page.bodyWidgets[0].sectionFormat.differentFirstPage &&
@@ -11074,9 +11075,6 @@ export class Editor {
     }
     private deletePara(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, editAction: number): void {
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
-        if (paragraph.isInsideTable || this.owner.enableTrackChanges) {
-            paragraph = paragraph.containerWidget.lastChild as ParagraphWidget;
-        }
         let selection: Selection = this.documentHelper.selection;
         let paragraphStart: number = selection.getStartOffset(paragraph);
         let endParagraphStartOffset: number = selection.getStartOffset(end.paragraph);
@@ -11243,9 +11241,9 @@ export class Editor {
                     this.addRemovedNodes(paragraph);
                     if (!isNullOrUndefined(block) && !isStartParagraph && !paraReplace) {
                         this.delBlock = block;
-                        var nextSection = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
+                        let nextSection: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
                         if (nextSection && !section.equals(nextSection) && section.index !== nextSection.index) {
-                            var bodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
+                            let bodyWidget: BodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
                             this.deleteSection(selection, nextSection, bodyWidget, editAction);
                         }
                     }
@@ -11271,7 +11269,7 @@ export class Editor {
 
                         this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, offset.toString());
                     }
-                } else if (paragraph === start.paragraph && isNullOrUndefined(nextWidget) && !isNullOrUndefined(prevParagraph)) {
+                } else if (paragraph === start.paragraph && (isNullOrUndefined(nextWidget) || (!isNullOrUndefined(nextWidget) && section.index !== nextWidget.bodyWidget.index)) && !isNullOrUndefined(prevParagraph)) {
                     let offset: number = this.selection.getParagraphLength(prevParagraph);
                     // if (isNullOrUndefined(block)) {
                     selection.editPosition = this.selection.getHierarchicalIndex(prevParagraph, offset.toString());
@@ -11334,7 +11332,18 @@ export class Editor {
         }
         if (this.documentHelper.headersFooters[bodyWidget.sectionIndex]) {
             bodyWidget.removedHeaderFooters = [];
-            bodyWidget.removedHeaderFooters.push(this.documentHelper.headersFooters.splice(bodyWidget.sectionIndex, 1)[0]);
+            let headerFooters: HeaderFooters = this.documentHelper.headersFooters.splice(bodyWidget.sectionIndex, 1)[0];
+            let keys: string[] = Object.keys(headerFooters);
+            for (let i: number = 0; i < keys.length; i++) {
+                let headerWidgetIn: HeaderFooterWidget = headerFooters[keys[i]];
+                //if (headerWidgetIn.page) {
+                this.removeFieldInWidget(headerWidgetIn);
+                // Remove content control
+                this.removeFieldInWidget(headerWidgetIn, false, true);
+                //}
+                headerWidgetIn.page = undefined;
+            }
+            bodyWidget.removedHeaderFooters.push(headerFooters);
         }
         this.updateSectionIndex(undefined, nextSection, false);
         this.addRemovedNodes(bodyWidget);
@@ -16351,7 +16360,6 @@ export class Editor {
     private updateGridForTableDialog(table: TableWidget, shiftNextItem: boolean): void {
         if (table.tableHolder) {
             table.updateRowIndex(0);
-            table.calculateGrid();
             table.isGridUpdated = false;
         }
         this.documentHelper.layout.reLayoutTable(table);

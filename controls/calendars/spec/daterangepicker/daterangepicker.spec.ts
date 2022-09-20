@@ -945,14 +945,12 @@ describe('DateRangePicker', () => {
                 daterangepicker = new DateRangePicker();
                 daterangepicker.appendTo('#date');
                 expect(daterangepicker.placeholder === 'Select the Date Range' && daterangepicker.element.getAttribute("placeholder") === 'Select the Date Range').toBe(true);
-                expect(daterangepicker.element.getAttribute('aria-placeholder')).toBe('Select the Date Range');
             });
             it('Element Model placeholder testing ', () => {
                 ele.setAttribute('placeholder', 'Select the Date Range');
                 daterangepicker = new DateRangePicker({ placeholder: 'Select Range' });
                 daterangepicker.appendTo('#date');
                 expect(daterangepicker.placeholder === 'Select Range' && daterangepicker.element.getAttribute("placeholder") === 'Select Range').toBe(true);
-                expect(daterangepicker.element.getAttribute('aria-placeholder')).toBe('Select Range');
             });
             it('Element disable testing', () => {
                 ele.setAttribute('disabled', '');
@@ -4194,14 +4192,12 @@ describe('DateRangePicker', () => {
             daterangepicker.locale = 'de';
             daterangepicker.dataBind();
             expect(daterangepicker.locale === 'de').toBe(true);
-            expect(daterangepicker.element.getAttribute('aria-placeholder') === daterangepicker.l10n.getConstant('placeholder')).toBe(true);
         });
         it('Update Locale test case(ja)', function () {
             daterangepicker = createControl({ placeholder: 'Select Range' });
             daterangepicker.locale = 'ja';
             daterangepicker.dataBind();
             expect(daterangepicker.locale === 'ja').toBe(true);
-            expect(daterangepicker.element.getAttribute('aria-placeholder') === daterangepicker.l10n.getConstant('placeholder')).toBe(true);
         });
         it('Update Locale range test case', function () {
             daterangepicker = createControl({ startDate: new Date('02/24/2017'), endDate: new Date('08/10/2017') });

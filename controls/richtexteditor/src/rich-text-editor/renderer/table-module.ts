@@ -1042,6 +1042,15 @@ export class Table {
         this.parent.formatter.process(
             this.parent, (delKey) ? cmd : args, (args as ClickEventArgs).originalEvent, value);
         (this.contentModule.getEditPanel() as HTMLElement).focus();
+        if (this.parent.inputElement.innerHTML === null || this.parent.inputElement.innerHTML === '') {
+            if (this.parent.enterKey === 'DIV') {
+                this.contentModule.getEditPanel().innerHTML = '<div><br/></div>';
+            } else if (this.parent.enterKey === 'BR') {
+                this.contentModule.getEditPanel().innerHTML = '<br/>';
+            } else {
+                this.contentModule.getEditPanel().innerHTML = '<p><br/></p>';
+            }
+        }
         this.removeResizeElement();
         this.hideTableQuickToolbar();
     }

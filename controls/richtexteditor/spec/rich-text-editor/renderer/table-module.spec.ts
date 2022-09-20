@@ -4280,4 +4280,56 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
+    describe("EJ2-62919 - Hovering over the elements inside the table body in Rich Text Editor", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<table><tr><td><p>Provide the tool bar support, it's also customizable.</p></td></tr></table>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Hovering over the elements inside the table body', () => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("td").firstChild;
+            setCursorPoint(node, 0);
+            node.focus();
+            let tableElm = document.querySelector('table');
+            expect(tableElm.classList.contains('e-rte-table')).toBe(true);
+        });
+    });
+
+    describe("EJ2-62919 - Remove the table at initial render", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<table><tr><td><p>Provide the tool bar support, it's also customizable.</p></td></tr></table>`,
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableRemove']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Remove the table at initial render', () => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            var domSelection = new NodeSelection();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            let tableCell = document.querySelector('tr').querySelector('td');
+            domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+            (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML === '<p></br></p>');
+        });
+    });
 });

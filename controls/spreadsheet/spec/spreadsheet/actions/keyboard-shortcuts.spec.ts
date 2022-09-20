@@ -224,7 +224,18 @@ describe('Spreadsheet formula bar module ->', () => {
                 });
             }, 20);
         });
-
+        it('SF-401897 -> Alt ribbon header text focus shortcut testing', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => {} })
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
+            helper.invoke('selectRange', ['B1']);
+            helper.click(`#${helper.id}_sorting`);
+            helper.click(`#${helper.id}_applyfilter`);
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => {} })
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeFalsy();
+            done();
+        });
     });
 
     describe('CR-Issues->', () => {

@@ -681,16 +681,44 @@ export class Toolbar {
             return;
         }
         if (file) {
-            if (file.name.substr(file.name.lastIndexOf('.')) === '.sfdt') {
+            let formatType: string = file.name.substr(file.name.lastIndexOf('.'));
+            if (formatType === '.sfdt') {
                 const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
                     this.container.documentEditor.open(fileReader.result as string);
                 };
                 fileReader.readAsText(file);
             } else {
-                this.convertToSfdt(file);
+                if (this.isSupportedFormatType(formatType)) {
+                    this.convertToSfdt(file);
+                }
+                else {
+                    const localizeValue: L10n = new L10n('documenteditor', this.documentEditor.defaultLocale);
+                    DialogUtility.alert({
+                        content: localizeValue.getConstant('Unsupported format'),
+                        closeOnEscape: true, showCloseIcon: true,
+                        position: { X: 'Center', Y: 'Center' }
+                    });
+                }
             }
             this.container.documentEditor.documentName = file.name.substr(0, file.name.lastIndexOf('.'));
+        }
+    }
+    private isSupportedFormatType(formatType: string): boolean {
+        switch (formatType) {
+            case ".dotx":
+            case ".docx":
+            case ".docm":
+            case ".dotm":
+            case ".dot":
+            case ".doc":
+            case ".rtf":
+            case ".txt":
+            case ".xml":
+            case ".html":
+                return true;
+            default:
+                return false;
         }
     }
     private convertToSfdt(file: File): void {
@@ -851,7 +879,7 @@ export class Toolbar {
             (protectionType === 'FormFieldsOnly' || protectionType === 'CommentsOnly'))) {
             this.enableDisableUndoRedo();
         }
-        if (this.documentEditor.documentHelper.isTrackedOnlyMode) {
+        if (this.documentEditor.documentHelper.isTrackedOnlyMode && this.containsItem(id + TRACK_ID)) {
             this.toolbar.enableItems(document.getElementById(id + TRACK_ID).parentElement, false)
         }
     }

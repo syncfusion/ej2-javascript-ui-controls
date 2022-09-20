@@ -412,7 +412,9 @@ export class Render {
             this.parent.isEdit = false;
             this.parent.notify(events.editReset, {});
             this.parent.notify(events.tooltipDestroy, {});
-            this.parent.notify(events.commandColumnDestroy, { type : 'refreshCommandColumn' } );
+            if (args && args.requestType !== 'infiniteScroll') {
+                this.parent.notify(events.commandColumnDestroy, { type : 'refreshCommandColumn' } );
+            }
             this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = <Object[]>dataArgs.result;
             gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
