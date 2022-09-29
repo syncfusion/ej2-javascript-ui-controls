@@ -1596,7 +1596,7 @@ describe('Quick Popups', () => {
             util.triggerMouseEvent(appElements[1], 'click');
             util.triggerMouseEvent(appElements[2], 'click');
             util.triggerMouseEvent(eventPopup.querySelector('.e-delete-icon'), 'click');
-            const quickDialog: Element = document.querySelector('.e-quick-dialog');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             expect(quickDialog.querySelector('.e-dlg-header').innerHTML).toEqual('Delete Multiple Events');
             expect(quickDialog.querySelector('.e-dlg-content').innerHTML).toEqual('Are you sure you want to delete the selected events?');

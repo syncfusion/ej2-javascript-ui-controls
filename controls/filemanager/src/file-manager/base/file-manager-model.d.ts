@@ -209,7 +209,8 @@ export interface FileManagerModel extends ComponentModel{
      *  minFileSize: 0,
      *  maxFileSize: 30000000,
      *  allowedExtensions: '',
-     *  autoClose: false
+     *  autoClose: false,
+     *  directoryUpload: false
      * }
      */
     uploadSettings?: UploadSettingsModel;

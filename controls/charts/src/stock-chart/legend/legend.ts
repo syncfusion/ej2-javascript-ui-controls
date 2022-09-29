@@ -99,13 +99,22 @@ import { LocationModel } from "../../common";
     public mode: LegendMode;
 
     /**
-     * Option to customize the padding between legend items.
+     * Option to customize the padding around the legend items.
      *
      * @default 8
      */
 
     @Property(8)
     public padding: number;
+
+    /**
+     * Option to customize the padding between legend items.
+     *
+     * @default 20
+     */
+
+     @Property(20)
+     public itemPadding: number;
 
     /**
      * Legend in stock chart can be aligned as follows:
@@ -166,10 +175,10 @@ import { LocationModel } from "../../common";
     /**
      * Padding between the legend shape and text in stock chart.
      *
-     * @default 5
+     * @default 8
      */
 
-    @Property(5)
+    @Property(8)
     public shapePadding: number;
 
     /**
@@ -342,10 +351,12 @@ export class StockLegend extends BaseLegend {
     public getLegendBounds(availableSize: Size, legendBound: Rect, legend: StockChartLegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBound);
         const padding: number = legend.padding;
+        const itemPadding: number = legend.itemPadding;
         this.isTitle = legend.title ? true : false;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
         let extraWidth: number = 0;
         let extraHeight: number = 0;
+        let legendOption : LegendOptions;
         const arrowHeight: number = this.arrowHeight;
         const arrowWidth: number = this.arrowWidth;
         const verticalArrowSpace: number = this.isVertical && !legend.enablePages ? arrowHeight : 0;
@@ -369,7 +380,8 @@ export class StockLegend extends BaseLegend {
         let legendEventArgs: IStockLegendRenderEventArgs;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render: boolean = false;
-        for (const legendOption of this.legendCollections) {
+        for (let i: number = 0; i < this.legendCollections.length; i++) {
+            legendOption = this.legendCollections[i];
             if (regSup.test(legendOption.text)) {
                 legendOption.text = getUnicodeText(legendOption.text, regSup);
             }
@@ -389,7 +401,7 @@ export class StockLegend extends BaseLegend {
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
             if (legendOption.render) {
                 render = true;
-                legend_Width = shapePadding + shapeWidth + legendOption.textSize.width + padding;
+                legend_Width = shapePadding + shapeWidth + legendOption.textSize.width + (!this.isVertical ? (i==0) ? padding : itemPadding : padding);
                 row_Width = row_Width + legend_Width;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
@@ -432,7 +444,7 @@ export class StockLegend extends BaseLegend {
         rect: Rect, count: number, firstLegend: number): void {
         const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
         const padding: number = this.legend.padding;
-        if ((previousBound + (legendOptions.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
+        if ((previousBound + (legendOptions.textSize.width + textPadding - this.legend.itemPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
             this.isVertical) {
             legendOptions.location.x = start.x;
             legendOptions.location.y = (count === firstLegend) ? prevLegend.location.y :
@@ -442,7 +454,7 @@ export class StockLegend extends BaseLegend {
             legendOptions.location.y = prevLegend.location.y;
         }
         const availwidth: number = (this.legendBounds.width + this.legendBounds.x) - (legendOptions.location.x +
-            textPadding - this.legend.shapeWidth / 2);
+            textPadding - this.legend.itemPadding - this.legend.shapeWidth / 2);
         legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle);
     }
     /** @private */

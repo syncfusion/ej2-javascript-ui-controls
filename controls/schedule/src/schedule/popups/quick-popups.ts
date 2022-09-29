@@ -345,7 +345,7 @@ export class QuickPopups {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0',
                         'aria-disabled': this.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-pressed': 'false', 'aria-grabbed': 'true', 'aria-label': this.parent.getAnnouncementString(eventData)
+                        'aria-pressed': 'false', 'aria-label': this.parent.getAnnouncementString(eventData)
                     }
                 });
                 let templateElement: HTMLElement[];
@@ -466,6 +466,8 @@ export class QuickPopups {
                 subjectElement.focus();
             }
             return;
+        } else if (this.quickPopup.element) {
+            this.destroyPopupButtons('quickPopup');
         }
         const temp: Record<string, any> = {};
         temp[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
@@ -535,6 +537,8 @@ export class QuickPopups {
             this.parent.selectedElements = [];
             if (isSameTarget) {
                 return;
+            } else if (this.quickPopup.element) {
+                this.destroyPopupButtons('quickPopup');
             }
             const eventData: Record<string, any> = <Record<string, any>>events.event;
             const quickEventPopup: HTMLElement = createElement('div', { className: cls.EVENT_POPUP_CLASS });
@@ -1075,7 +1079,10 @@ export class QuickPopups {
                     this.quickPopup.element.style.display = 'block';
                     this.quickPopup.element.style.height = formatUnit((popupType === 'EditEventInfo') ? 65 : window.innerHeight);
                 } else {
-                    this.quickPopup.offsetX = 10;
+                    const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.virtualScrollModule.isHorizontalScroll
+                        && !isNullOrUndefined(closest(target, '.' + cls.CONTENT_TABLE_CLASS));
+                    const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
+                    this.quickPopup.offsetX = isVirtualScroll && !this.parent.enableRtl ? (util.getTranslateX(conTable) + 10) : 10;
                     this.quickPopup.collision = { X: this.parent.enableRtl ? 'flip' : 'none', Y: 'fit' };
                     this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: this.parent.enableRtl ? 'bottom' : 'top' };
                     this.quickPopup.dataBind();
@@ -1083,7 +1090,11 @@ export class QuickPopups {
                     const collide: string[] = isCollide(this.quickPopup.element, this.parent.element);
                     if (collide.indexOf(this.parent.enableRtl ? 'left' : 'right') > -1) {
                         this.quickPopup.offsetX = -(target as HTMLElement).offsetWidth - 10 - this.quickPopup.element.offsetWidth;
+                        if (isVirtualScroll && !this.parent.enableRtl) {
+                            this.quickPopup.offsetX = util.getTranslateX(conTable) + this.quickPopup.offsetX;
+                        }
                         this.quickPopup.dataBind();
+                        this.quickPopup.refreshPosition(null, true);
                         const leftCollide: string[] = isCollide(this.quickPopup.element, this.parent.element);
                         if (leftCollide.indexOf('left') > -1) {
                             this.quickPopup.position = { X: 'center', Y: 'center' };
@@ -1092,9 +1103,8 @@ export class QuickPopups {
                             this.quickPopup.dataBind();
                         }
                     }
-                    if (this.parent.virtualScrollModule && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
-                        const element: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
-                        const translateY: number = util.getTranslateY(element);
+                    if (this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
+                        const translateY: number = util.getTranslateY(conTable);
                         this.quickPopup.offsetY = translateY;
                         this.quickPopup.dataBind();
                     }
@@ -1363,6 +1373,7 @@ export class QuickPopups {
         this.destroyQuickPopup();
         this.destroyMorePopup();
         this.destroyQuickDialog();
+        this.dialogEvent = null;
         this.parent = null;
         this.l10n = null;
         this.isCrudAction = null;

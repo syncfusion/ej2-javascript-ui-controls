@@ -403,6 +403,18 @@ export class SheetTabs {
             this.tabInstance.dataBind();
         }
         this.parent.notify(workbookFormulaOperation, { action: 'renameUpdation', value: args.value, pName: pName });
+        if (this.parent.allowChart) {
+            let range: string[];
+            this.parent.chartColl.forEach((chart: { range: string }): void => {
+                if (chart.range.includes('!')) {
+                    range = chart.range.split('!');
+                    if (range[0].toLowerCase() === pName.toLowerCase()) {
+                        range[0] = args.value;
+                        chart.range = range.join('!');
+                    }
+                }
+            });
+        }
     }
 
     private hideSheet(args: { sheetIndex: number, triggerEvent?: boolean }): void {

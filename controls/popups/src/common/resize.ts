@@ -197,7 +197,7 @@ function onMouseDown(e: MouseEvent): void {
         containerElement = this.target === 'body' || 'document.body' || document.body ? null : this.targetEle;
         maxWidth = this.targetEle.clientWidth;
         maxHeight = this.targetEle.clientHeight;
-	}
+    }
     const target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
     EventHandler.add(target, 'mousemove', onMouseMove, this);
     EventHandler.add(document, 'mouseup', onMouseUp, this);

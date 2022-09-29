@@ -5807,8 +5807,6 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
 
     // });
 
-  
-
 
 });
 export interface DataInfo {

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.47 (2022-09-29)
+
+### DropDownButton
+
+#### New Features
+
+- `#I375776` - Provided the focusout event support to the DropDownButton component.
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I388868` - Script error occurs while using `beforeOpen` event in DropDownButton issue has been resolved
+
 ## 19.4.40 (2021-12-28)
 
 ### DropDownButton

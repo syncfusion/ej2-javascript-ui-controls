@@ -8,11 +8,11 @@
       }
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-de-para-dlg-container .e-input-group {
       width: 192px !important;
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-de-para-dlg-heading {
       color: $de-dlg-heading-main-header;
@@ -78,7 +78,7 @@
 
     .e-de-rtl-btn-div {
       font-size: $de-para-dlg-rtl-btn-font-size;
-      margin-right:  $de-para-dlg-rtl-btn-margin-right;
+      margin-right: $de-para-dlg-rtl-btn-margin-right;
       width: $de-para-dlg-rtl-btn-width;
     }
 

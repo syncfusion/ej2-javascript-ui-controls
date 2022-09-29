@@ -37,6 +37,7 @@ export class StackingAreaSeries extends LineBase {
         let startPoint: number = 0;
         let point1: ChartLocation;
         let point2: ChartLocation;
+        let emptyPointDirection:  string = '';
         if (pointsLength > 0) {
             point1 = getCoordinate(visiblePoints[0].xValue, origin, xAxis, yAxis, isInverted, series);
             lineDirection = lineDirection.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
@@ -82,6 +83,7 @@ export class StackingAreaSeries extends LineBase {
                 }
             }
         }
+        
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
             const connectPoints: { first: Points, last: Points } = this.getFirstLastVisiblePoint(series.points);
             const chart: Chart = this.chart;
@@ -112,11 +114,22 @@ export class StackingAreaSeries extends LineBase {
             }
         }
         const options: PathOption = new PathOption(
-            series.chart.element.id + '_Series_' + series.index, series.interior, series.border.width, series.border.color,
+            series.chart.element.id + '_Series_' + series.index, series.interior, 0, 'transparent',
             series.opacity, series.dashArray, lineDirection);
         this.appendLinePath(options, series, '');
+
+        /**
+          * To draw border for the path directions of area
+          */
+        if (series.border.width != 0) {
+            emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(lineDirection));
+            const options: PathOption = new PathOption(
+                series.chart.element.id + '_Series_border_' + series.index, 'transparent', series.border.width, series.border.color ? series.border.color : series.interior,
+                1, series.dashArray, emptyPointDirection);
+            this.appendLinePath(options, series, '');
+        }
         this.renderMarker(series);
-    }
+}
     /**
      * Animates the series.
      *

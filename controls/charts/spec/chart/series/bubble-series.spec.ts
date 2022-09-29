@@ -1533,4 +1533,3 @@ describe('checking bubble chart render in Canvas Mode.', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
-

@@ -5,7 +5,7 @@
 
 import { IToolsItems, IDropDownItemModel, IRichTextEditor, IListDropDownModel  } from '../base/interface';
 
-export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist'];
+export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'audiolayoutoption', 'videolayoutoption', 'videoalign', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist'];
 
 export let tools: { [key: string]: IToolsItems } = {
     'alignments': {
@@ -241,6 +241,20 @@ export let tools: { [key: string]: IToolsItems } = {
         'command': 'Images',
         'subCommand': 'Image'
     },
+    'audio': {
+        'id': 'Audio',
+        'icon': 'e-audio',
+        'tooltip': 'Insert Audio',
+        'command': 'Audios',
+        'subCommand': 'Audio'
+    },
+    'video': {
+        'id': 'Video',
+        'icon': 'e-video',
+        'tooltip': 'Insert Video',
+        'command': 'Videos',
+        'subCommand': 'Video'
+    },
     'filemanager': {
         'id': 'FileManager',
         'icon': 'e-rte-file-manager',
@@ -268,6 +282,62 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'Replace',
         'command': 'Images',
         'subCommand': 'Replace'
+    },
+    'audioreplace': {
+        'id': 'AudioReplace',
+        'icon': 'e-audio-replace',
+        'tooltip': 'Audio Replace',
+        'command': 'Audios',
+        'subCommand': 'AudioReplace'
+    },
+    'audioremove': {
+        'id': 'AudioRemove',
+        'icon': 'e-audio-remove',
+        'tooltip': 'Audio Remove',
+        'command': 'Audios',
+        'subCommand': 'AudioRemove'
+    },
+    'audiolayoutoption': {
+        'id': 'AudioLayoutOption',
+        'icon': 'e-audio-display',
+        'tooltip': 'Audio LayoutOption',
+        'command': 'Audios',
+        'subCommand': 'AudioLayoutOption'
+    },
+    'videoreplace': {
+        'id': 'VideoReplace',
+        'icon': 'e-video-replace',
+        'tooltip': 'Video Replace',
+        'command': 'Videos',
+        'subCommand': 'VideoReplace'
+    },
+    'videoalign': {
+        'id': 'VideoAlign',
+        'icon': 'e-video-align',
+        'tooltip': 'Video Align',
+        'command': 'Videos',
+        'subCommand': 'VideoAlign'
+    },
+    'videoremove': {
+        'id': 'VideoRemove',
+        'icon': 'e-video-remove',
+        'tooltip': 'Video Remove',
+        'command': 'Videos',
+        'subCommand': 'VideoRemove'
+    },
+    'videolayoutoption': {
+        'id': 'VideoLayoutOption',
+        'icon': 'e-video-display',
+        'tooltip': 'Video LayoutOption',
+        'command': 'Videos',
+        'subCommand': 'VideoLayoutOption'
+    },
+    'videodimension': {
+        'id': 'VideoDimension',
+        'icon': 'e-video-dimension',
+        'tooltip': 'Video Dimension',
+        'command': 'Videos',
+        'subCommand': 'VideoDimension'
     },
     'align': {
         'id': 'Align',
@@ -507,14 +577,38 @@ export let imageAlignItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-justify-right', command: 'Images', subCommand: 'JustifyRight' },
 ];
 
-let displayLocale: { [ket: string]: string }[] = [
-    { locale: 'imageDisplayDropDownInline', value: 'Inline' },
-    { locale: 'imageDisplayDropDownBreak', value: 'Break' }
+export let videoAlignItems: IDropDownItemModel[] = [
+    { iconCss: 'e-icons e-justify-left', command: 'Videos', subCommand: 'JustifyLeft' },
+    { iconCss: 'e-icons e-justify-center', command: 'Videos', subCommand: 'JustifyCenter' },
+    { iconCss: 'e-icons e-justify-right', command: 'Videos', subCommand: 'JustifyRight' },
 ];
 
+let displayLocale: { [ket: string]: string }[] = [
+    { locale: 'imageLayoutOptionDropDownInline', value: 'Inline' },
+    { locale: 'imageLayoutOptionDropDownBreak', value: 'Break' }
+];
+
+let audioLayoutOptionLocale: { [ket: string]: string }[] = [
+    { locale: 'audioLayoutOptionDropDownInline', value: 'Inline' },
+    { locale: 'audioLayoutOptionDropDownBreak', value: 'Break' }
+];
+let videoLayoutOptionLocale: { [ket: string]: string }[] = [
+    { locale: 'videoLayoutOptionDropDownInline', value: 'Inline' },
+    { locale: 'videoLayoutOptionDropDownBreak', value: 'Break' }
+];
 export let imageDisplayItems: IDropDownItemModel[] = [
     { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
     { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },
+];
+
+export let audioLayoutOptionItems: IDropDownItemModel[] = [
+    { text: 'Inline', cssClass: 'e-audio-inline', command: 'Audios', subCommand: 'Inline' },
+    { text: 'Break', cssClass: 'e-audio-break', command: 'Audios', subCommand: 'Break' },
+];
+
+export let videoLayoutOptionItems: IDropDownItemModel[] = [
+    { text: 'Inline', cssClass: 'e-video-inline', command: 'Videos', subCommand: 'Inline' },
+    { text: 'Break', cssClass: 'e-video-break', command: 'Videos', subCommand: 'Break' },
 ];
 
 export let tableCellItems: IDropDownItemModel[] = [
@@ -652,6 +746,12 @@ export function updateDropDownLocale(self: IRichTextEditor): void {
     });
     imageDisplayItems.forEach((item: IDropDownItemModel, i: number) => {
         imageDisplayItems[i].text = getLocale(self, displayLocale, imageDisplayItems[i]);
+    });
+    audioLayoutOptionItems.forEach((item: IDropDownItemModel, i: number) => {
+        audioLayoutOptionItems[i].text = getLocale(self, audioLayoutOptionLocale, audioLayoutOptionItems[i]);
+    });
+    videoLayoutOptionItems.forEach((item: IDropDownItemModel, i: number) => {
+        videoLayoutOptionItems[i].text = getLocale(self, videoLayoutOptionLocale, videoLayoutOptionItems[i]);
     });
     tableRowsItems.forEach((item: IDropDownItemModel, i: number) => {
         tableRowsItems[i].text = getLocale(self, tableRowLocale, tableRowsItems[i]);

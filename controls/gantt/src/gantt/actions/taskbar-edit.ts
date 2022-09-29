@@ -121,6 +121,9 @@ export class TaskbarEdit extends DateProcessor {
     }
 
     private mouseClickHandler(e: PointerEvent): void {
+        if (!this.parent.editSettings.allowTaskbarEditing){
+            return;
+        }
         const targetElement: Element = this.getElementByPosition(e);
         const element: Element = parentsUntil(targetElement, cls.taskBarMainContainer);
         if (this.parent.selectionModule && this.parent.selectionModule.enableSelectMultiTouch) {
@@ -641,10 +644,14 @@ export class TaskbarEdit extends DateProcessor {
         this.stopScrollTimer();
         this.scrollTimer = window.setInterval(
             () => {
-                if (direction === 'right' || direction === 'bottom') {
+                if (direction === 'right') {
                     this.timerCount = (this.timerCount + 1) >= this.parent.timelineModule.totalTimelineWidth ?
                         this.parent.timelineModule.totalTimelineWidth : (this.timerCount + 1);
-                } else {
+                }
+                else if(direction === 'bottom') {
+                    this.timerCount = this.timerCount + 1;                
+                } 
+                else {
                     this.timerCount = (this.timerCount - 1) < 0 ? 0 : (this.timerCount - 1);
                 }
                 if (direction === 'bottom' || direction === 'top') {
@@ -1789,8 +1796,14 @@ export class TaskbarEdit extends DateProcessor {
             }
             if ((this.parent.virtualScrollModule && this.parent.enableVirtualization &&
                  !this.elementOffsetLeft) || !this.parent.enableVirtualization) {
-                this.elementOffsetLeft = this.taskBarEditElement.offsetLeft;
-                this.elementOffsetTop = this.taskBarEditElement.offsetTop + scrollTop;
+                    if (this.taskBarEditElement.children[0].classList.contains('e-manualparent-main-container')) {
+                        this.elementOffsetLeft = this.taskBarEditElement.children[0]['offsetLeft'] + this.taskBarEditElement.offsetLeft;
+                        this.elementOffsetTop = ((this.taskBarEditElement.offsetTop - 5) + this.taskBarEditElement.children[0]['offsetTop']) + scrollTop;
+                    }
+                    else {
+                        this.elementOffsetLeft = this.taskBarEditElement.offsetLeft;
+                        this.elementOffsetTop = this.taskBarEditElement.offsetTop + scrollTop;
+                    }
                 this.elementOffsetWidth = this.taskBarEditElement.offsetWidth;
                 this.elementOffsetHeight = this.taskBarEditElement.offsetHeight;
             }

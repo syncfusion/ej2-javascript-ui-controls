@@ -240,6 +240,8 @@ export interface ICollectionChangeEventArgs {
     element: NodeModel | ConnectorModel;
     /** returns the action of diagram */
     cause: DiagramAction;
+    /** returns the string of the DiagramAction*/
+    diagramAction: string;
     /** returns the state of the event */
     state: EventState;
     /** returns the type of the collection change */
@@ -322,6 +324,8 @@ export interface IPropertyChangeEventArgs {
     element: (NodeModel | ConnectorModel | Diagram);
     /** returns the action is nudge or not */
     cause: DiagramAction;
+    /** returns the string of the DiagramAction*/
+    diagramAction: string;
     /** returns the old value of the property that is being changed */
     oldValue: DiagramModel | NodeModel | ConnectorModel;
     /** returns the new value of the node property that is being changed */
@@ -353,6 +357,8 @@ export interface IBlazorPropertyChangeEventArgs {
     element: DiagramPropertyChangeObject;
     /** returns the action is nudge or not */
     cause: DiagramAction;
+    /** returns the string of the DiagramAction*/
+    diagramAction: string;
     /** returns the old value of the property that is being changed */
     oldValue: DiagramPropertyChangeObject;
     /** returns the new value of the node property that is being changed */
@@ -637,6 +643,23 @@ export interface IBlazorMouseEventArgs {
 }
 
 /**
+ * elementDraw triggered when node or connector are drawn with drawing tool
+ * 
+ */
+ export interface  IElementDrawEventArgs{
+    /**returns the node or connector which we draw with drawing tool */
+    source:NodeModel|ConnectorModel;
+    /**returns the state of drawing tool event */
+    state:State;
+    /**returns the node or connector about to be drawn */
+    objectType:string;
+    /**returns the node shape name or connector type */
+    elementType:string;
+   /**returns whether to cancel the drawing shape or connector in the start state */
+    cancel:Boolean; 
+}
+
+/**
  * scrollArgs notifies when the scroller had updated
  *
  */
@@ -855,6 +878,8 @@ export interface IBlazorHistoryChangeArgs {
 export interface IHistoryChangeArgs {
     /** returns a collection of objects that are changed in the last undo/redo */
     source: (NodeModel | ConnectorModel)[];
+    /** returns a string array of changed property of node/connector */
+    sourceId: string[];
     /** returns an array of objects, where each object represents the changes made in last undo/redo */
     change: SelectorModel;
     /** returns the cause of the event */

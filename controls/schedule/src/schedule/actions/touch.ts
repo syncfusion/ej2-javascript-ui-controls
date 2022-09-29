@@ -35,7 +35,7 @@ export class ScheduleTouch {
     }
 
     private scrollHandler(e: ScrollEventArgs): void {
-        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
+        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action || !this.parent.allowSwiping ||
             (e.originalEvent && ((<HTMLElement>e.originalEvent.target).classList.contains(cls.APPOINTMENT_CLASS) ||
                 closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS)))) {
             return;
@@ -89,7 +89,7 @@ export class ScheduleTouch {
     }
 
     private swipeHandler(e: SwipeEventArgs): void {
-        if (!this.isScrollTriggered || this.parent.uiStateValues.action) { return; }
+        if (!this.isScrollTriggered || this.parent.uiStateValues.action || !this.parent.allowSwiping) { return; }
         this.isScrollTriggered = false;
         const swipeDate: Date = e.swipeDirection === 'Left' ?
             this.parent.activeView.renderDates[0] : this.parent.activeView.renderDates.slice(-1)[0];

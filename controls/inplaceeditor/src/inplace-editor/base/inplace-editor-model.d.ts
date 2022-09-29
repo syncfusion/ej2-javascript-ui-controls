@@ -8,7 +8,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface InPlaceEditorModel extends ComponentModel{
 
     /**
-     * Specifies the name of the field which is used to map data to the server. 
+     * Specifies the name of the field which is used to map data to the server.
      * If name is not given, then component ID is taken as mapping field name.
      *
      * {% codeBlock src='inplace-editor/name/index.md' %}{% endcodeBlock %}
@@ -39,13 +39,13 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Defines whether to allow the cross-scripting site or not.
-     * 
+     *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
 
     /**
-     * It enables or disables the parsing of HTML string content into HTML DOM elements for In-place Editor. 
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for In-place Editor.
      * If the value of the property is set to false, the In-place Editor value will be displayed as HTML string instead of HTML DOM elements.
      *
      * @default true
@@ -54,7 +54,7 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
-     * 
+     *
      * @default ''
      */
     cssClass?: string;
@@ -140,7 +140,7 @@ export interface InPlaceEditorModel extends ComponentModel{
      *
      * - `Never`: The corresponding field value will never be set initially in the component.
      * - `Always`: The corresponding field value will be set initially in the component.
-     * 
+     *
      * @default 'Never'
      */
     textOption?: textOptionType;
@@ -152,7 +152,7 @@ export interface InPlaceEditorModel extends ComponentModel{
      * - `Cancel`: Cancel's the editing and resets the old content.
      * - `Submit`: Submit the edited content to the server.
      * - `Ignore`: No action is perform with this type and allows to have many containers open.
-     * 
+     *
      * @default 'Submit'
      */
     actionOnBlur?: ActionBlur;
@@ -169,7 +169,7 @@ export interface InPlaceEditorModel extends ComponentModel{
 
     /**
      * Specifies whether to enable editing mode or not.
-     * 
+     *
      * @default false
      */
     disabled?: boolean;

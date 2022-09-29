@@ -23,7 +23,7 @@ export function renderAdornerLayer(
         const svgAdornerSvg: SVGElement = createSvg(pdfViewer.element.id + index + '_diagramAdorner_svg', pageBound.width, pageBound.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer' + index);
         svgAdornerSvg.setAttribute('style', 'pointer-events:none;');
-        pdfViewer.adornerSvgLayer = createSvgElement('g', { 'id': pdfViewer.element.id + '_diagramAdorner' }) as SVGSVGElement;
+        pdfViewer.adornerSvgLayer = createSvgElement('g', { 'id': pdfViewer.element.id + index + '_diagramAdorner' }) as SVGSVGElement;
         pdfViewer.adornerSvgLayer.setAttribute('style', ' pointer-events: all; ');
         svgAdornerSvg.appendChild(pdfViewer.adornerSvgLayer);
         divElement.appendChild(svgAdornerSvg);
@@ -34,7 +34,7 @@ export function renderAdornerLayer(
         } else {
             cavas.parentElement.appendChild(divElement);
         }
-        const svgSelector: SVGElement = createSvgElement('g', { 'id': pdfViewer.element.id + '_SelectorElement' });
+        const svgSelector: SVGElement = createSvgElement('g', { 'id': pdfViewer.element.id + index + '_SelectorElement' });
         pdfViewer.adornerSvgLayer.appendChild(svgSelector);
         setAttributeSvg(svgAdornerSvg, { style: 'pointer-events:none;' });
     }

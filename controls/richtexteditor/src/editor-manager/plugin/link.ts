@@ -82,7 +82,8 @@ export class LinkCommand {
             let range: Range = domSelection.getRange(this.parent.currentDocument);
             if (range.endContainer.nodeName === '#text' && range.startContainer.textContent.length === (range.endOffset + 1) &&
             range.endContainer.textContent.charAt(range.endOffset) === ' ' && range.endContainer.nextSibling.nodeName === 'A') {
-                domSelection.setSelectionText(this.parent.currentDocument, range.startContainer, range.endContainer, range.startOffset, range.endOffset + 1);
+                domSelection.setSelectionText(this.parent.currentDocument, range.startContainer, range.endContainer,
+                                              range.startOffset, range.endOffset + 1);
                 range = domSelection.getRange(this.parent.currentDocument);
             }
             const  text : boolean = isNOU(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()

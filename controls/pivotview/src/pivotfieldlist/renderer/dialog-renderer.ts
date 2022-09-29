@@ -230,7 +230,8 @@ export class DialogRenderer {
                 'tabindex': '0',
                 title: this.parent.localeObj.getConstant('fieldList'),
                 'aria-disabled': 'false',
-                'aria-label': this.parent.localeObj.getConstant('fieldList')
+                'aria-label': this.parent.localeObj.getConstant('fieldList'),
+                'role': 'button'
             }
         });
         this.parent.element.appendChild(toggleFieldList);

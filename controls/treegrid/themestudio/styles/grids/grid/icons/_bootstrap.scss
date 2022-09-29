@@ -1,8 +1,9 @@
 @include export-module('grid-bootstrap-icons') {
+
   /*! component icons */
 
   .e-icon-check::before {
-    content:  '\e7ff';
+    content: '\e7ff';
   }
 
   #{&}.e-grid,
@@ -183,7 +184,7 @@
     &.e-rtl {
       .e-icon-rowdragicon::before {
         content: '\e330';
-       }
+      }
     }
 
     .e-ccsearch-icon.e-cc-cancel::before,

@@ -2,7 +2,7 @@
  * Open properties.
  */
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
-import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
+import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs, OpenArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
 import { sheetCreated, protectSheetWorkBook, getRangeAddress, beginAction } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel } from '../base/index';
@@ -27,7 +27,7 @@ export class WorkbookOpen {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         if ((options as any).jsonObject) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            this.fetchSuccess((options as any).jsonObject as string, null, true);
+            this.fetchSuccess((options as any).jsonObject as string, null, null, true);
             return;
         }
         const formData: FormData = new FormData();
@@ -85,7 +85,7 @@ export class WorkbookOpen {
                     });
                 }
             })
-            .then((data: string) => this.fetchSuccess(data, eventArgs))
+            .then((data: string) => this.fetchSuccess(data, eventArgs, (options as OpenArgs).orginalFile))
             .catch((error: OpenFailureArgs) => this.fetchFailure(error));
     }
 
@@ -97,7 +97,7 @@ export class WorkbookOpen {
         this.parent.isOpen = false;
     }
 
-    private fetchSuccess(data: string, eventArgs: OpenOptions, isOpenFromJson?: boolean): void {
+    private fetchSuccess(data: string, eventArgs: OpenOptions, file?: File, isOpenFromJson?: boolean): void {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
             'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -105,6 +105,9 @@ export class WorkbookOpen {
         workbookData = (typeof data === 'string') ? JSON.parse(data) : data;
         const impData: WorkbookModel = workbookData.Workbook;
         if (openError.indexOf(impData as string) > -1) {
+            if (file) {
+                eventArgs.file = file;
+            }
             this.parent.notify(
                 openSuccess, { context: this, data: <string>impData, guid: workbookData.Guid, eventArgs: eventArgs,
                     isOpenFromJson: isOpenFromJson });

@@ -138,19 +138,19 @@ export class MDXQuery {
         return query;
     }
     private static getPagingQuery(rowQuery: string, columnQuery: string): PagingQuery {
-        // let colCurrentPage: number = (Math.ceil(this.engine.columnCount / this.pageSettings.columnSize) < this.pageSettings.columnCurrentPage || this.pageSettings.columnCurrentPage === 0) ? ((Math.ceil(this.engine.columnCount / this.pageSettings.columnSize) < this.pageSettings.columnCurrentPage && this.engine.columnCount > 0) ? Math.ceil(this.engine.columnCount / this.pageSettings.columnSize) : this.pageSettings.columnCurrentPage) : this.pageSettings.columnCurrentPage;
-        // let rowCurrentPage: number = (Math.ceil(this.engine.rowCount / this.pageSettings.rowSize) < this.pageSettings.rowCurrentPage || this.pageSettings.rowCurrentPage === 0) ? ((Math.ceil(this.engine.rowCount / this.pageSettings.rowSize) < this.pageSettings.rowCurrentPage && this.engine.rowCount > 0) ? Math.ceil(this.engine.rowCount / this.pageSettings.rowSize) : this.pageSettings.rowSize) : this.pageSettings.rowCurrentPage;
+        // let colCurrentPage: number = (Math.ceil(this.engine.columnCount / this.pageSettings.columnPageSize) < this.pageSettings.currentColumnPage || this.pageSettings.currentColumnPage === 0) ? ((Math.ceil(this.engine.columnCount / this.pageSettings.columnPageSize) < this.pageSettings.currentColumnPage && this.engine.columnCount > 0) ? Math.ceil(this.engine.columnCount / this.pageSettings.columnPageSize) : this.pageSettings.currentColumnPage) : this.pageSettings.currentColumnPage;
+        // let rowCurrentPage: number = (Math.ceil(this.engine.rowCount / this.pageSettings.rowPageSize) < this.pageSettings.currentRowPage || this.pageSettings.currentRowPage === 0) ? ((Math.ceil(this.engine.rowCount / this.pageSettings.rowPageSize) < this.pageSettings.currentRowPage && this.engine.rowCount > 0) ? Math.ceil(this.engine.rowCount / this.pageSettings.rowPageSize) : this.pageSettings.rowPageSize) : this.pageSettings.currentRowPage;
         rowQuery = rowQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         columnQuery = columnQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         let rowQueryCpy: string = rowQuery;
         // let axisQuery: pagingQuery = {
-        //     rowQuery: rowQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')},' + (((rowCurrentPage === 0 ? 1 : rowCurrentPage) - 1) * (this.pageSettings.rowSize)) + ',' + this.pageSettings.rowSize + ')') : '',
-        //     columnQuery: columnQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')},' + (((colCurrentPage === 0 ? 1 : colCurrentPage) - 1) * (this.pageSettings.columnSize)) + ',' + this.pageSettings.columnSize + ')') : ''
+        //     rowQuery: rowQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + rowQuery + (!this.isMondrian && columnQuery !== '' ? ',' + columnQuery : '') + ')},' + (((rowCurrentPage === 0 ? 1 : rowCurrentPage) - 1) * (this.pageSettings.rowPageSize)) + ',' + this.pageSettings.rowPageSize + ')') : '',
+        //     columnQuery: columnQuery !== '' ? ('\nSUBSET ({ ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')},' + (((colCurrentPage === 0 ? 1 : colCurrentPage) - 1) * (this.pageSettings.columnPageSize)) + ',' + this.pageSettings.columnPageSize + ')') : ''
         // }
-        let calRowPage: number = (this.pageSettings.rowCurrentPage - 1) * this.pageSettings.rowSize;
-        let calColPage: number = (this.pageSettings.columnCurrentPage - 1) * this.pageSettings.columnSize;
-        let calRowSize: number = this.pageSettings.rowSize * 3;
-        let calColumnSize: number = this.pageSettings.columnSize * 3;
+        let calRowPage: number = (this.pageSettings.currentRowPage - 1) * this.pageSettings.rowPageSize;
+        let calColPage: number = (this.pageSettings.currentColumnPage - 1) * this.pageSettings.columnPageSize;
+        let calRowSize: number = this.pageSettings.rowPageSize * 3;
+        let calColumnSize: number = this.pageSettings.columnPageSize * 3;
         calRowPage = (this.engine.rowCount < (calRowPage + calRowSize)) ?
             (this.engine.rowCount > calRowSize ? (this.engine.rowCount - calRowSize) : 0) : calRowPage;
         this.engine.pageRowStartPos = calRowPage;

@@ -172,6 +172,9 @@ export class CheckBoxFilterBase {
     }
 
     private searchBoxKeyUp(e?: KeyboardEvent): void {
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+            this.parent.showMaskRow(undefined, this.dialogObj.element);
+        }
         if (this.isCheckboxFilterTemplate) {
             this.parent.notify('refreshCheckbox', { event: e });
         } else {
@@ -332,8 +335,13 @@ export class CheckBoxFilterBase {
         const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
         content.appendChild(this.sBox);
         this.wireEvents();
-        createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null }, this.parent.createElement);
-        showSpinner(this.spinner);
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+            this.parent.showMaskRow(undefined, this.dialogObj.element);
+        } else {
+            createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null },
+                          this.parent.createElement);
+            showSpinner(this.spinner);
+        }
         this.getAllData();
     }
 
@@ -886,6 +894,8 @@ export class CheckBoxFilterBase {
 
     private clickHandler(e: MouseEvent): void {
         const target: Element = e.target as Element;
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
+            && parentsUntil(target, 'e-mask-ftrchk')) { return; }
         const elem: Element = parentsUntil(target, 'e-checkbox-wrapper');
         if (parentsUntil(target, 'e-searchbox')) {
             this.searchBoxClick(e);

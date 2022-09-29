@@ -672,7 +672,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
             expect(schObj.eventsData.length).toEqual(10);
-            const quickDialog: Element = document.querySelector('.e-quick-dialog');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
@@ -690,7 +690,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
             expect(schObj.eventsData.length).toEqual(10);
-            const quickDialog: Element = document.querySelector('.e-quick-dialog');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
@@ -767,7 +767,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
             expect(schObj.eventsData.length).toEqual(10);
-            const quickDialog: Element = document.querySelector('.e-quick-dialog');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
@@ -785,7 +785,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
             expect(schObj.eventsData.length).toEqual(10);
-            const quickDialog: Element = document.querySelector('.e-quick-dialog');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
@@ -938,7 +938,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(appElement, 'dblclick');
             expect(schObj.eventsData.length).toEqual(19);
             (schObj.eventWindow.dialogObject.element.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLInputElement).click();
-            const quickDialog: Element = document.querySelector('.e-quick-dialog');
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
@@ -1223,7 +1223,6 @@ describe('Vertical View Event Render Module', () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(24);
                 expect((eventElementList[6].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
-                expect(eventElementList[6].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
             const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
@@ -1260,7 +1259,6 @@ describe('Vertical View Event Render Module', () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(25);
                 expect((eventElementList[0].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('week');
-                expect(eventElementList[0].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
             const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
@@ -1284,7 +1282,6 @@ describe('Vertical View Event Render Module', () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(26);
                 expect((eventElementList[2].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('timeline');
-                expect(eventElementList[2].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
             (schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement).click();

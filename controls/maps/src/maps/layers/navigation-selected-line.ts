@@ -34,9 +34,6 @@ export class NavigationLine {
         let dashArray: string;
         let pathOption: PathOption;
         let direction: number;
-        let markerWidth: number;
-        let arcId: string;
-        let radius: number;
         let showArrow: boolean;
         let arrowColor: string;
         let arrowSize: number;
@@ -161,13 +158,10 @@ export class NavigationLine {
     /**
      * To destroy the layers.
      *
-     * @param {Maps} maps - Specifies the instance of the map
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.maps = null;
     }
 }

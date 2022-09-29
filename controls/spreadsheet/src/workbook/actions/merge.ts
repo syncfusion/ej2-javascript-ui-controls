@@ -1,7 +1,7 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell, getSheet } from '../base/index';
 import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
 import { insertMerge, activeCellChanged, pasteMerge, getCellIndexes, checkIsFormula, applyCF, ApplyCFArgs } from './../common/index';
-import { getCellAddress, workbookFormulaOperation } from './../common/index';
+import { getCellAddress, workbookFormulaOperation, refreshChart } from './../common/index';
 import { extend, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -39,6 +39,9 @@ export class WorkbookMerge {
         if (args.isAction) { this.parent.notify('actionComplete', { eventArgs: args, action: 'merge' }); }
         if (args.sheetIndex === this.parent.activeSheetIndex) {
             this.parent.notify('selectRange', { address: getSheet(this.parent, args.sheetIndex).selectedRange, skipChecking: true });
+            if (this.parent.chartColl && this.parent.chartColl.length) {
+                this.parent.notify(refreshChart, { range: args.range });
+            }
         }
     }
     private mergeAll(args: MergeArgs): void {

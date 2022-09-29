@@ -1014,4 +1014,655 @@ describe('Gantt taskbar editing', () => {
         });
 
     });
+    describe('Connector line from parent to child', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Dependency editing - child to parent', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[8];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '3SF';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[8].ganttProperties.predecessorsName).toBe('3SF');
+        });
+        it('Dependency editing - parent to child', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[6];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '6SS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[6].ganttProperties.predecessorsName).toBe('6SS');
+        });
+        it('Dependency editing - parent to parent', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[13];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '9SS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[13].ganttProperties.predecessorsName).toBe('9SS');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+
+    });
+    describe('Dialog editing - predecessor Tab', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(4);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('Dialog Dependency tab editing-- child to parent', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe("21FS");
+                }
+            };
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "21-Phase 2";
+            input.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Dialog editing - predecessor Tab parent to parent', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(2);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('Dependency tab editing', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe("12FS");
+                }
+            };
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "12-Implementation Phase";
+            input.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Dialog editing - predecessor Tab Multiple predecessors', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(6);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('Dependency tab editing', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe("7FS,3FS,4FS,5FS");
+                }
+            };
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "7-Design";
+            input.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Add new record with parent predecessor', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    toolbar: ['Add'],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openAddDialog();
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('Dependency tab editing', () => {
+            debugger
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'add') {
+                    expect(args.data.Predecessor).toBe("2FS");
+                }
+            };
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "2-Planning";
+            input.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Invalid Connector line', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Dependency editing - parent to parent', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[1];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '2SS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe(null);
+        });
+        it('Dependency editing - parent to child', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[2];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '2SS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe(null);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });
+    describe('Custom task mode Connector line', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: scheduleModeData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        endDate: 'EndDate',
+                        child: 'Children',
+                        manual: 'isManual',
+                        dependency: 'Predecessor'
+                    },
+                    taskMode: 'Custom',
+                    enableContextMenu: true,
+                    splitterSettings: {
+                        columnIndex: 8
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Dependency editing - manual parent to manual parent', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[4];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '1SS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[4].ganttProperties.predecessorsName).toBe('1SS');
+        });
+        it('Dependency editing - manual parent to parent', () => {
+            debugger
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[9];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '5SS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[9].ganttProperties.predecessorsName).toBe('5SS');
+        });
+        it('Dependency editing - manual parent to child', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[3];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '5FS';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[3].ganttProperties.predecessorsName).toBe('5FS');
+        });
+        it('Dependency editing - child to manual parent', () => {
+            ganttObj.actionBegin = (args: any) => {
+                if (args.requestType == "validateLinkedTask") {
+                    args.validateMode.preserveLinkWithEditing = false;
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[0];
+            ganttObj.editModule.taskbarEditModule.finalPredecessor = '8FF';
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.flatData[0].ganttProperties.predecessorsName).toBe('8FF');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });
+    describe('Dialog Edit for custom taskmode', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: scheduleModeData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        endDate: 'EndDate',
+                        child: 'Children',
+                        manual: 'isManual',
+                        dependency: 'Predecessor'
+                    },
+                    taskMode: 'Custom',
+                    enableContextMenu: true,
+                    splitterSettings: {
+                        columnIndex: 8
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel']
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(1);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('Dependency tab editing', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'add') {
+                    expect(args.data.Predecessor).toBe("6FS");
+                }
+            };
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "6-Child Task 1";
+            input.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Add new Record', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: scheduleModeData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        endDate: 'EndDate',
+                        child: 'Children',
+                        manual: 'isManual',
+                        dependency: 'Predecessor'
+                    },
+                    taskMode: 'Custom',
+                    enableContextMenu: true,
+                    splitterSettings: {
+                        columnIndex: 8
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel']
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openAddDialog();
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+        });
+        it('Add dependancy', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'add') {
+                    expect(args.data.Predecessor).toBe("1FS");
+                }
+            };
+            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+            triggerMouseEvent(add, 'click');
+            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+            input.dataSource = input.dataSource.dataSource.json;
+            input.value = "1-Parent Task 1";
+            input.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
 });

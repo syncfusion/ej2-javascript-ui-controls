@@ -56,7 +56,8 @@
 
       #{if(&, '&', '*')} .e-fixed-head {
         position: absolute;
-        top: 0;.e-rtl #{if(&, '&', '*')} {
+        top: 0;
+        .e-rtl #{if(&, '&', '*')} {
           left: 33px;
         }
       }
@@ -68,13 +69,49 @@
     position: relative;
   }
 
-  #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata {
+  #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata,
+  #{&}.e-popup.e-mention .e-dropdownbase.e-nodata {
     color: $ddl-nodata-font-color;
     cursor: default;
     font-family: $ddl-list-font-family;
     font-size: 14px;
     padding: 14px 16px;
     text-align: center;
+  }
+
+  .e-mention.e-popup {
+    background: $ddl-list-active-border-color;
+    border: 0;
+    box-shadow: 0 2px 3px 1px $mention-list-box-shadow-color;
+    margin-top: 2px;
+    position: absolute;
+  }
+
+  .e-mention .e-dropdownbase .e-list-item .e-highlight {
+    display: inline;
+    font-weight: bold;
+    vertical-align: baseline;
+  }
+
+  .e-mention .e-mention-chip,
+  .e-mention .e-mention-chip:hover {
+    color: $mention-active-font-color;
+  }
+
+  .e-mention .e-mention-chip::selection {
+    color: $mention-gradient-color;
+    background: $mention-active-font-color;
+  }
+
+  .e-mention.e-editable-element {
+    border: 2px solid $ddl-list-border-color;
+    height: auto;
+    min-height: 120px;
+    width: 100%;
+  }
+
+  .e-form-mirror-div {
+    white-space: pre-wrap;
   }
 
   .e-bigger.e-ddl .e-dropdownbase.e-nodata,

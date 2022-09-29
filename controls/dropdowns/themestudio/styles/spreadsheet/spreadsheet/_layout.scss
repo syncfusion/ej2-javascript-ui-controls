@@ -1,5 +1,6 @@
 @import '../ribbon/mixin.scss';
 @include export-module('spreadsheet-layout') {
+
   /*! spreadsheet layout */
   .e-spreadsheet {
     display: block;
@@ -7,7 +8,7 @@
 
     & .e-delete-sheet-dlg.e-dialog {
       @if $skin-name == 'FluentUI' {
-        height: 211px !important; // sass-lint:disable-line no-important
+        height: 211px !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -24,8 +25,8 @@
 
     & .e-custom-format-dlg.e-dialog {
       @if $sheet-skin != 'material' {
-        height: 510px !important; // sass-lint:disable-line no-important
-        width: 530px !important; // sass-lint:disable-line no-important
+        height: 510px !important; /* stylelint-disable-line declaration-no-important */
+        width: 530px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-footer-content {
@@ -45,16 +46,16 @@
     @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
       & .e-dlg-header-content {
         padding: 18px;
-        }
       }
+    }
     @if $skin-name == 'bootstrap5' {
       & .e-dlg-header-content {
         padding: 12px;
-        }
       }
+    }
 
     & .e-unprotectworksheet-dlg.e-dialog {
-      left: 0 !important; // sass-lint:disable-line no-important
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
@@ -82,7 +83,7 @@
     }
 
     & .e-reenterpwd-dlg.e-dialog {
-      left: 0 !important; // sass-lint:disable-line no-important
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
@@ -100,7 +101,7 @@
           & .e-header {
             font-size: 14px;
             line-height: 16px;
-        }
+          }
 
           & .e-input {
             margin-top: 10px;
@@ -135,6 +136,10 @@
         padding: 0%;
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           border-radius: 5px;
+        }
+
+        @if $skin-name == 'FluentUI' or $skin-name == 'FluentUI-dark' {
+          margin-bottom: $bigger-find-tool-margin-bottom;
         }
 
         & .e-input-group {
@@ -318,7 +323,7 @@
 
       & .e-column-header,
       & .e-sheet-content {
-        width: 100% !important; // sass-lint:disable-line no-important
+        width: 100% !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -502,13 +507,13 @@
               width: 100%;
             }
 
-            &[style*='vertical-align: top;'] {
+            &[style *= 'vertical-align: top;'] {
               .e-wrap-content {
                 top: 0;
               }
             }
 
-            &[style*='vertical-align: middle;'] {
+            &[style *= 'vertical-align: middle;'] {
               .e-wrap-content {
                 bottom: initial;
                 transform: translateY(-50%);
@@ -525,7 +530,7 @@
               position: absolute;
               z-index: -1;
             }
-        }
+          }
 
           .e-iconsetspan {
             float: left;
@@ -534,8 +539,8 @@
             vertical-align: bottom;
             width: 15px;
             z-index: 2;
+          }
         }
-    }
 
         & .e-header-cell {
           font-size: 12px;
@@ -597,7 +602,7 @@
 
     & .e-sheet-content .e-table {
       .e-zero .e-cell,
-      .e-zero-start .e-cell ,
+      .e-zero-start .e-cell,
       .e-zero-end .e-cell  {
         border-bottom-width: 0;
       }
@@ -616,8 +621,8 @@
     & .e-sheet .e-ss-overlay-active .e-ss-overlay-t {
       background-color: $selection-border-color;
       cursor: ns-resize;
-      left: 50%;
       position: absolute;
+      right: 50%;
       top: 0;
       transform: translate(-50%, -50%);
     }
@@ -634,8 +639,8 @@
     & .e-sheet .e-ss-overlay-active .e-ss-overlay-b {
       background-color: $selection-border-color;
       cursor: ns-resize;
-      left: 50%;
       position: absolute;
+      right: 50%;
       top: 100%;
       transform: translate(-50%, -50%);
     }
@@ -713,17 +718,17 @@
       }
 
       &.e-mac-safari {
-        & .e-main-panel::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+        & .e-main-panel::-webkit-scrollbar {
           width: 7px;
         }
 
-        & .e-scroller::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+        & .e-scroller::-webkit-scrollbar {
           height: 7px;
         }
 
         // Safari with Mac OS
-        & .e-main-panel::-webkit-scrollbar-thumb, // sass-lint:disable-line no-vendor-prefixes
-        & .e-scroller::-webkit-scrollbar-thumb { // sass-lint:disable-line no-vendor-prefixes
+        & .e-main-panel::-webkit-scrollbar-thumb,
+        & .e-scroller::-webkit-scrollbar-thumb {
           background-color: $mac-scrollbar-background;
           border-radius: 4px;
         }
@@ -815,7 +820,7 @@
 
     & .e-sheet .e-datavisualization-chart .e-control.e-chart {
       height: 100%;
-      position: initial !important; // sass-lint:disable-line no-important
+      position: initial !important; /* stylelint-disable-line declaration-no-important */
       width: 100%;
     }
 
@@ -823,7 +828,7 @@
       height: 100%;
       overflow: hidden;
       padding: 4px;
-      position: initial !important; // sass-lint:disable-line no-important
+      position: initial !important; /* stylelint-disable-line declaration-no-important */
       width: 100%;
     }
 
@@ -882,7 +887,7 @@
         background-color: $content-bg-color-alt2;
       }
 
-      &> div {
+      & > div {
         display: inline-block;
       }
 
@@ -988,7 +993,7 @@
     }
 
     .e-hide {
-      display: none !important; // sass-lint:disable-line no-important
+      display: none !important; /* stylelint-disable-line declaration-no-important */
     }
 
     .e-selection {
@@ -1046,10 +1051,10 @@
       border: 2px solid $selection-border-color;
       pointer-events: none;
 
-      &[style*='height: 1px;'],
-      &[style*='width: 1px;'],
-      &[style*='height: 0px;'],
-      &[style*='width: 0px;'] {
+      &[style *= 'height: 1px;'],
+      &[style *= 'width: 1px;'],
+      &[style *= 'height: 0px;'],
+      &[style *= 'width: 0px;'] {
         border-width: 1px;
       }
     }
@@ -1122,7 +1127,7 @@
       }
 
       & .e-toolbar .e-btn:not(.e-tbar-btn) {
-        font-weight: 400;
+        font-weight: normal;
         padding-bottom: 0;
         padding-top: 0;
 
@@ -1173,7 +1178,6 @@
             }
           }
         }
-
       }
 
       & .e-toolbar .e-toolbar-item .e-btn {
@@ -1185,19 +1189,19 @@
 
         & .e-chart-icon,
         & .e-chart-type-icon {
-          font-size: 30px !important; // sass-lint:disable-line no-important
+          font-size: 30px !important; /* stylelint-disable-line declaration-no-important */
           margin-right: 5px;
           padding: 0 5px;
           width: 30px;
         }
 
         & .e-switch-row-column-icon {
-          font-size: 18px !important; // sass-lint:disable-line no-important
+          font-size: 18px !important; /* stylelint-disable-line declaration-no-important */
           margin-right: 5px;
         }
 
         & .e-addchart-icon {
-          font-size: 18px !important; // sass-lint:disable-line no-important
+          font-size: 18px !important; /* stylelint-disable-line declaration-no-important */
           margin-right: -5px;
         }
 
@@ -1449,7 +1453,7 @@
       pointer-events: none;
       position: absolute;
       z-index: 1;
-     }
+    }
 
     & .e-rowresize-handler {
       border-top: 1px solid;
@@ -1471,7 +1475,7 @@
 
       .e-input-group {
         border: 0;
-        box-shadow: none !important; // sass-lint:disable-line no-important
+        box-shadow: none !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-ddl-icon {
@@ -1499,7 +1503,7 @@
 
     & .e-customsort-dlg.e-dialog {
       @if $skin-name == 'material' {
-        height: 360px !important; // sass-lint:disable-line no-important
+        height: 360px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
@@ -1587,7 +1591,6 @@
         }
       }
     }
-
 
     & .e-datavalidation-dlg {
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
@@ -1725,7 +1728,7 @@
 
     & .e-hyperlink-dlg.e-dialog,
     .e-edithyperlink-dlg.e-dialog {
-      max-height: 640px !important; // sass-lint:disable-line no-important
+      max-height: 640px !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-dlg-header-content {
         @if $skin-name == 'FluentUI' {
@@ -1792,7 +1795,7 @@
               & .e-header {
                 font-size: 14px;
                 line-height: 16px;
-               }
+              }
 
               & .e-text {
                 @if $skin-name != 'material' and $skin-name != 'material-dark' {
@@ -1885,7 +1888,7 @@
     }
 
     & .e-protectworkbook-dlg.e-dialog {
-      left: 0 !important; // sass-lint:disable-line no-important
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
@@ -1912,7 +1915,7 @@
     }
 
     & .e-unprotectworkbook-dlg.e-dialog {
-      left: 0 !important; // sass-lint:disable-line no-important
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
@@ -1940,7 +1943,7 @@
     }
 
     & .e-importprotectworkbook-dlg.e-dialog {
-      left: 0 !important; // sass-lint:disable-line no-important
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
@@ -1988,16 +1991,12 @@
       height: 18px;
       margin-right: -1px;
       padding: 0;
-      position: absolute;
+      position: relative;
       right: 0;
       width: 20px;
       z-index: 2;
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
         bottom: 1px;
-      }
-      @if $sheet-skin == 'material' or $sheet-skin == 'material-dark' {
-        bottom: .5px;
-        right: .5px;
       }
     }
   }
@@ -2007,7 +2006,7 @@
 
     & .e-container {
       box-shadow: none;
-      width: 270px !important; // sass-lint:disable-line no-important
+      width: 270px !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-selected-value {
         display: flex;
@@ -2017,11 +2016,11 @@
 
   .e-spreadsheet.e-col-resizing {
     cursor: col-resize;
-    }
+  }
 
   .e-spreadsheet.e-row-resizing {
     cursor: row-resize;
-    }
+  }
 
   .e-dropdown-popup {
     &.e-numformat-ddb ul {
@@ -2176,13 +2175,13 @@
           & .e-is7 {
             height: 6%;
             padding: 18px 16px;
-        }
+          }
 
           & .e-iconsetspan {
             display: inline-block;
             height: 100%;
             width: 20%;
-            }
+          }
 
           & .e-is2 {
             height: 25.3%;
@@ -2198,9 +2197,8 @@
               height: 25%;
               padding: 2px 12px;
               width: 50%;
-           }
-        }
-
+            }
+          }
 
           & .e-is4 {
             height: 19%;
@@ -2214,8 +2212,8 @@
               height: 33%;
               padding: 2px 12px;
               width: 50%;
-       }
-    }
+            }
+          }
 
           & .e-is6 {
             height: 12.6%;
@@ -2227,8 +2225,8 @@
               height: 50%;
               padding: 2px 12px;
               width: 50%;
-              }
-        }
+            }
+          }
 
           & .e-is8 {
             height: 19%;
@@ -2242,9 +2240,9 @@
               height: 33%;
               width: 50%;
             }
-           }
           }
         }
+      }
     }
 
     &.e-popup.e-menu-popup.e-border-color ul {
@@ -2299,7 +2297,7 @@
           & .e-bar1-text {
             height: 40%;
             padding: 18px 16px;
-            }
+          }
 
           & .e-column1-cont,
           & .e-bar1-cont {
@@ -2323,8 +2321,8 @@
               margin: 0;
               padding: 10px;
               width: 55px;
-              }
             }
+          }
         }
       }
     }
@@ -2364,8 +2362,8 @@
               margin: 0;
               padding: 10px;
               width: 55px;
-              }
             }
+          }
         }
       }
     }
@@ -2407,8 +2405,8 @@
               margin: 0;
               padding: 10px;
               width: 55px;
-              }
             }
+          }
         }
       }
     }
@@ -2430,7 +2428,7 @@
           & .e-scatter-text {
             height: 40%;
             padding: 18px 16px;
-           }
+          }
 
           & .e-scatter-cont {
             height: 60%;
@@ -2442,12 +2440,12 @@
               margin: 0;
               padding: 10px;
               width: 100%;
-              }
             }
+          }
         }
       }
     }
-   }
+  }
 
   .e-spreadsheet-function-dlg.e-dialog {
     min-height: $dlg-min-height;
@@ -2463,7 +2461,7 @@
 
       & .e-dlg-header {
         font-size: 16px;
-        font-weight: 400;
+        font-weight: normal;
       }
     }
 
@@ -2598,11 +2596,11 @@
   .e-bigger.e-spreadsheet {
     @if $skin-name == 'FluentUI' {
       & .e-protect-dlg.e-dialog {
-        height: 790px !important; // sass-lint:disable-line no-important
+        height: 790px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-delete-sheet-dlg.e-dialog {
-        height: 240px !important; // sass-lint:disable-line no-important
+        height: 240px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-merge-alert-dlg.e-dialog {
@@ -2618,7 +2616,7 @@
       }
 
       .e-spreadsheet-function-dlg.e-dialog {
-        height: 515px !important; // sass-lint:disable-line no-important
+        height: 515px !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -2784,9 +2782,9 @@
     }
 
     & .e-customsort-dlg.e-dialog {
-      width: 590px !important; // sass-lint:disable-line no-important
+      width: 590px !important; /* stylelint-disable-line declaration-no-important */
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' or $skin-name == 'FluentUI' {
-        width: 630px !important; // sass-lint:disable-line no-important
+        width: 630px !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -2859,6 +2857,25 @@
         padding-right: 0;
       }
     }
+
+    & .e-validation-list {
+
+      @if $skin-name != 'FluentUI' and $skin-name != 'FluentUI-dark' and $skin-name != 'material' and $skin-name != 'material-dark' and $skin-name != 'highcontrast' {
+        width: $bigger-validation-list-width;
+      }
+
+      & .e-ddl-icon.e-search-icon {
+
+        @if $skin-name == 'material' or $skin-name == 'material-dark' {
+          bottom: $bigger-validation-list-icon-bottom;
+        }
+
+        @if $skin-name != 'FluentUI' and $skin-name != 'FluentUI-dark' and $skin-name != 'material' and $skin-name != 'material-dark' and $skin-name != 'tailwind' and $skin-name != 'tailwind-dark' {
+          min-height: $bigger-validation-list-icon-height-width;
+          min-width: $bigger-validation-list-icon-height-width;
+        }
+      }
+    }
   }
 
   .e-bigger.e-dropdown-popup,
@@ -2878,11 +2895,11 @@
   .e-bigger .e-spreadsheet .e-hyperlink-dlg.e-dialog {
     @if $skin-name == 'FluentUI' {
       & .e-dlg-content .e-link-dialog .e-content .e-cont {
-        margin:  0 0 16px 24px;
+        margin: 0 0 16px 24px;
       }
 
       & .e-dlg-header-content {
-        padding:  24px 24px 16px;
+        padding: 24px 24px 16px;
       }
     }
   }

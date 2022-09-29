@@ -8,7 +8,7 @@ import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel, ResizeSettingsModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
-import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable, getNumberFormat } from './util';
+import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable, getNumberFormat, getTransformValues } from './util';
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
@@ -31,7 +31,7 @@ import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, Be
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
 import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
-import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, freezeTable, ClipMode, freezeMode } from './enum';
+import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, freezeTable, ClipMode, freezeMode, IndicatorType } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';
 import { ColumnQueryModeType, RowRenderingDirection } from './enum';
 import { Data } from '../actions/data';
@@ -46,7 +46,7 @@ import { ColumnWidthService } from '../services/width-controller';
 import { AriaService } from '../services/aria-service';
 import { FocusStrategy } from '../services/focus-strategy';
 import { SortSettingsModel, SelectionSettingsModel, FilterSettingsModel, SearchSettingsModel, EditSettingsModel } from './grid-model';
-import { SortDescriptorModel, PredicateModel, RowDropSettingsModel, GroupSettingsModel, TextWrapSettingsModel } from './grid-model';
+import { SortDescriptorModel, PredicateModel, RowDropSettingsModel, GroupSettingsModel, TextWrapSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { InfiniteScrollSettingsModel } from './grid-model';
 import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';
 import { PageSettings } from '../models/page-settings';
@@ -816,6 +816,21 @@ export class EditSettings extends ChildProperty<EditSettings> {
 }
 
 /**
+ * Configures the Loading Indicator of the Grid.
+ */
+export class LoadingIndicator extends ChildProperty<LoadingIndicator> {
+    /**
+     * Defines the loading indicator. The available loading indicator are:
+     * * Spinner
+     * * Shimmer
+     *
+     * @default Spinner
+     */
+    @Property('Spinner')
+    public indicatorType: IndicatorType;
+}
+
+/**
  * Represents the Grid component.
  * ```html
  * <div id="grid"></div>
@@ -857,6 +872,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private movableColumns: Column[] = [];
     private media: { [key: string]: MediaQueryList } = {};
     private isFreezeRefresh: boolean = false;
+    private headerMaskTable: Element;
+    private movableHeaderMaskTable: Element;
+    private rightHeaderMaskTable: Element;
+    private contentMaskTable: Element;
+    private movableContentMaskTable: Element;
+    private rightContentMaskTable: Element;
+    private footerContentMaskTable: Element;
+    private movableFooterContentMaskTable: Element;
+    private rightFooterContentMaskTable: Element;
+    private maskRowContentScroll: boolean;
     /** @hidden */
     public invokedFromMedia: boolean;
     /** @hidden */
@@ -1211,6 +1236,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Complex<PageSettingsModel>({}, PageSettings)
     public pageSettings: PageSettingsModel;
+
+    /**
+     * Configures the Loading Indicator of the Grid.
+     *
+     * @default {indicatorType: 'Spinner'}
+     */
+    @Complex<LoadingIndicatorModel>({}, LoadingIndicator)
+    public loadingIndicator: LoadingIndicatorModel;
+
+    /**
+     * Specifies the shimmer effect for Grid virtual and infinite scrolling.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableVirtualMaskRow: boolean;
 
     /**
      * If `enableVirtualization` set to true, then the Grid will render only the rows visible within the view-port
@@ -2715,6 +2756,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             Copy: 'Copy',
             Group: 'Group by this column',
             Ungroup: 'Ungroup by this column',
+            GroupButton: 'Group button',
+            UnGroupAria: 'ungroup button',
+            GroupSeperator: 'Separator for the grouped columns',
+            UnGroupIcon: 'ungroup the grouped column ',
+            GroupedSortIcon: 'sort the grouped column ',
+            GroupedDrag: 'Drag the grouped column',
+            GroupCaption:' is groupcaption cell',
+            CheckBoxLabel: 'checkbox',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
             AutoFitAll: 'Autofit all columns',
@@ -2760,7 +2809,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             SortByNewest: 'Sort by Newest',
             SortSmallestToLargest: 'Sort Smallest to Largest',
             SortLargestToSmallest: 'Sort Largest to Smallest',
-            Sort: 'Sort'
+            Sort: 'Sort',
+            FilterDescription: 'Press Alt Down to open filter Menu',
+            SortDescription: 'Press Enter to sort',
+            ColumnMenuDescription: 'Press Alt Down to open Column Menu',
+            GroupDescription: 'Press Ctrl space to group',
+            ColumnHeader: ' column header ',
+            TemplateCell: ' is template cell',
+            CommandColumnAria: 'is Command column column header ',
+            DialogEdit: 'Dialog edit',
+            ClipBoard: 'clipboard',
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -2837,8 +2895,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.addListener();
         this.updateDefaultCursor();
         this.updateStackedFilter();
-        this.showSpinner();
+        if (this.loadingIndicator.indicatorType === 'Spinner') {
+            this.showSpinner();
+        }
         this.notify(events.initialEnd, {});
+        if (this.loadingIndicator.indicatorType === 'Shimmer') {
+            this.refreshMaskRow();
+        }
         if (this.refreshing) {
             this.trigger('created');
         }
@@ -2863,6 +2926,479 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.isExportGrid) {
             hideSpinner(this.element);
         }
+    }
+
+    public showMaskRow(axisDirection?: string, dialogElement?: Element): void {
+        const gridHeader: Element = this.getHeaderContent().firstChild as Element;
+        const gridContent: Element = this.getContent().firstChild as Element;
+        const gridFooter: Element = this.getFooterContent() as Element;
+        if (dialogElement) {
+            const dialogHolder: Element = dialogElement.querySelector('.e-checkboxlist');
+            const maskRowCount: number = Math.floor(dialogHolder.getBoundingClientRect().height / this.getRowHeight());
+            const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk" style="width: 100%;">'
+                + '<div class="e-checkbox-wrapper" style="width: 100%;"><input class="e-chk-hidden">'
+                + this.getShimmerTemplate() + this.getShimmerTemplate() + '</div></div>';
+            dialogHolder.innerHTML = '';
+            for (let i: number = 0; i < maskRowCount; i++) {
+                dialogHolder.innerHTML += maskTemplate;
+                const maskSpan: Element[] = [].slice.call(dialogHolder
+                    .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
+                maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
+                maskSpan[1].classList.add('e-mask-checkbox-filter-span-intent');
+            }
+            return;
+        }
+        if ((!this.enableRtl && !(this.getHeaderContent() as HTMLElement).style.paddingRight)
+            || (this.enableRtl && !(this.getHeaderContent() as HTMLElement).style.paddingLeft)) {
+            (gridContent as HTMLElement).style.overflowY = 'hidden';
+        }
+        if (!this.isInitialLoad && !this.getColumns().length) {
+            const contentHeight: number = gridContent.getBoundingClientRect().height;
+            const maskTableHeight: number = contentHeight === 0 ? this.allowPaging ? this.pageSettings.pageSize * this.getRowHeight()
+                : window.innerHeight : contentHeight;
+            const contentRowCount: number = Math.ceil(maskTableHeight / this.getRowHeight());
+            if (this.rowRenderingMode !== 'Vertical') {
+                this.headerMaskTable = this.createEmptyMaskTable(gridHeader, 1);
+            }
+            this.contentMaskTable = this.createEmptyMaskTable(gridContent, contentRowCount);
+            return;
+        }
+        this.maskRowContentScroll = this.enableVirtualization && axisDirection ? true : false;
+        if (!this.contentMaskTable && !(this.isFrozenGrid() && this.enableColumnVirtualization && axisDirection === 'X')) {
+            let content: Element = gridContent;
+            if (this.isFrozenGrid()) {
+                if (!this.isInitialLoad && !this.enableVirtualization && this.frozenRows && this.height !== 'auto') {
+                    const contentHeight: number = content.getBoundingClientRect().height - (this.frozenRows * this.getRowHeight());
+                    (content as HTMLElement).style.height = contentHeight + 'px';
+                }
+                content = content.querySelector('.e-frozen-left-content, .e-frozen-right-content');
+            } else if (this.enableVirtualization) {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.contentMaskTable = this.createMaskTable(content, this.getContentMaskColumns(), axisDirection);
+        }
+        if (!this.headerMaskTable && (this.isFrozenGrid() || (this.enableColumnVirtualization && axisDirection === 'X'))
+            && !((this.isFrozenGrid() && ((this.enableVirtualization && axisDirection === 'Y')
+            || (this.enableColumnVirtualization && axisDirection === 'X')
+            || (this.enableInfiniteScrolling && axisDirection === 'down'))))) {
+            let content: Element = gridHeader;
+            if (this.isFrozenGrid()) {
+                content = content.querySelector('.e-frozen-left-header, .e-frozen-right-header');
+            } else if (this.enableColumnVirtualization && axisDirection === 'X') {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.headerMaskTable = this.createMaskTable(content, this.getContentMaskColumns(), axisDirection);
+        }
+        if (!this.movableHeaderMaskTable && this.isFrozenGrid() && !((this.enableVirtualization && axisDirection === 'Y')
+            || (this.enableInfiniteScrolling && axisDirection === 'down'))) {
+            let content: Element = gridHeader.querySelector('.e-movableheader');
+            if (this.enableColumnVirtualization) {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.movableHeaderMaskTable = this.createMaskTable(content, this.getMovableContentMaskColumns(), axisDirection);
+        }
+        if (!this.rightHeaderMaskTable && this.isFrozenGrid() && this.getFrozenMode() === 'Left-Right'
+            && !((this.enableVirtualization && axisDirection === 'Y') || (this.enableInfiniteScrolling && axisDirection === 'down'))) {
+            this.rightHeaderMaskTable = this.createMaskTable(gridHeader
+                .querySelector('.e-frozen-right-header'), this.getRightContentMaskColumns(), axisDirection);
+        }
+        if (!this.movableContentMaskTable && this.isFrozenGrid()) {
+            let content: Element = gridContent.querySelector('.e-movablecontent');
+            if (this.enableColumnVirtualization) {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.movableContentMaskTable = this.createMaskTable(content, this.getMovableContentMaskColumns(), axisDirection);
+        }
+        if (!this.rightContentMaskTable && this.isFrozenGrid() && this.getFrozenMode() === 'Left-Right') {
+            this.rightContentMaskTable = this.createMaskTable(gridContent
+                .querySelector('.e-frozen-right-content'), this.getRightContentMaskColumns(), axisDirection);
+        }
+        if (gridFooter && gridFooter.querySelector('.e-summaryrow')) {
+            const gridFooterContent: Element = gridFooter.firstChild as Element;
+            if (!this.footerContentMaskTable) {
+                let footerContent: Element = gridFooterContent;
+                if (this.isFrozenGrid()) {
+                    footerContent = footerContent.querySelector('.e-frozen-left-footercontent, .e-frozen-right-footercontent');
+                }
+                this.footerContentMaskTable = this.createMaskTable(footerContent);
+            }
+            if (this.isFrozenGrid()) {
+                if (!this.movableFooterContentMaskTable) {
+                    this.movableFooterContentMaskTable = this.createMaskTable(gridFooterContent
+                        .querySelector('.e-movablefootercontent'));
+                }
+                if (this.getFrozenMode() === 'Left-Right' && !this.rightFooterContentMaskTable) {
+                    this.rightFooterContentMaskTable = this.createMaskTable(gridFooterContent
+                        .querySelector('.e-frozen-right-footercontent'));
+                }
+            }
+        }
+        if (!(this.enableVirtualization && axisDirection)) {
+            EventHandler.add(gridContent, 'scroll', this.translateMaskRow, this);
+        }
+    }
+
+    private getContentMaskColumns(): Column[] {
+        let columns: Column[] = this.getColumns();
+        if (this.isFrozenGrid()) {
+            if (this.getFrozenMode() === 'Left' || this.getFrozenMode() === 'Left-Right') {
+                columns = this.frozenColumns ? columns.slice(0, this.frozenColumns) : this.getFrozenLeftColumns();
+            } else if (this.getFrozenMode() === 'Right') {
+                columns = this.getFrozenRightColumns();
+            }
+        }
+        return columns;
+    }
+
+    private getMovableContentMaskColumns(): Column[] {
+        const gridColumns: Column[] = this.getColumns();
+        const columns: Column[] = this.frozenColumns ? gridColumns.slice(this.frozenColumns, gridColumns.length)
+            : this.getMovableColumns();
+        return columns;
+    }
+
+    private getRightContentMaskColumns(): Column[] {
+        return this.getFrozenRightColumns();
+    }
+
+    private createEmptyMaskTable(maskElement: Element, rowCount: number): Element {
+        const table: Element = this.createElement('table', { className: 'e-table e-masked-table'});
+        const tbody: Element = this.createElement('tbody', { className: 'e-masked-tbody'});
+        const row: Element = this.createElement('tr', { className: 'e-masked-row e-row', attrs: {
+            style: 'height: ' + this.getRowHeight() + 'px;'
+        } });
+        const cell: Element = this.createElement('td', { className: 'e-masked-cell e-rowcell' });
+        cell.innerHTML = this.getShimmerTemplate();
+        row.appendChild(cell);
+        for (let i: number = 0; i < rowCount; i++) {
+            tbody.appendChild(row.cloneNode(true));
+        }
+        table.appendChild(tbody);
+        maskElement.appendChild(table);
+        return table;
+    }
+
+    private createMaskTable(element: Element, columns?: Column[], axisDirection?: string): Element {
+        const parentElement: Element = element;
+        const header: boolean = closest(parentElement, '.e-gridheader') ? true : false;
+        const content: boolean = closest(parentElement, '.e-gridcontent') ? true : false;
+        const footer: boolean = closest(parentElement, '.e-gridfooter') ? true : false;
+        const gridContent: Element = this.getContent().firstChild as Element;
+        const gridContentScrollHeight: number = gridContent.scrollHeight;
+        const table: Element = parentElement.querySelector('table') as Element;
+        if (this.isFrozenGrid()) {
+            if (content) {
+                (parentElement as HTMLElement).style.overflow = 'hidden';
+            }
+            (parentElement as HTMLElement).style.position = 'relative';
+        }
+        const maskTable: Element = table.cloneNode() as Element;
+        maskTable.removeAttribute('role');
+        maskTable.removeAttribute('id');
+        maskTable.removeAttribute('aria-multiselectable');
+        maskTable.removeAttribute('aria-colcount');
+        maskTable.removeAttribute('aria-rowcount');
+        (maskTable as HTMLElement).style.position = 'absolute';
+        (maskTable as HTMLElement).style.zIndex = '1';
+        (maskTable as HTMLElement).style.width = table.getBoundingClientRect().width + 'px';
+        if (header && !(this.enableColumnVirtualization && axisDirection === 'X')) {
+            (maskTable as HTMLElement).style.transform = 'translate(0px,'
+                + table.querySelector('thead').getBoundingClientRect().height + 'px)';
+        }
+        maskTable.setAttribute('class', 'e-table e-masked-table');
+        const maskColgroup: Element = table.querySelector('colgroup').cloneNode(true) as Element;
+        maskColgroup.removeAttribute('id');
+        maskColgroup.setAttribute('class', 'e-masked-colgroup');
+        maskTable.appendChild(maskColgroup);
+        if (header && this.enableColumnVirtualization && axisDirection === 'X') {
+            const row: Element = this.createMaskRow(maskColgroup, columns);
+            const thead: Element = table.querySelector('thead');
+            const rows: Element[] = [].slice.call(thead.querySelectorAll('tr'));
+            const maskTHead: Element = thead.cloneNode() as Element;
+            maskTHead.removeAttribute('role');
+            maskTHead.setAttribute('class', 'e-masked-thead');
+            const rowCount: number = rows.length;
+            for (let i: number = 0; i < rowCount; i++) {
+                maskTHead.appendChild(row.cloneNode(true));
+                (maskTHead.childNodes[i] as HTMLElement).style.height = rows[i].getBoundingClientRect().height + 'px';
+            }
+            maskTable.appendChild(maskTHead);
+        }
+        const maskTBody: Element = table.querySelector('tbody').cloneNode() as Element;
+        maskTBody.removeAttribute('role');
+        maskTBody.setAttribute('class', 'e-masked-tbody');
+        const tbody: Element = table.querySelector('tbody');
+        if (content || (header && this.isFrozenGrid())) {
+            const rowCountElement: Element = gridContent;
+            let rowCount: number = header && this.isFrozenGrid() ? this.frozenRows
+                : Math.ceil(rowCountElement.getBoundingClientRect().height / this.getRowHeight());
+            if (tbody.querySelector('.e-emptyrow') || !tbody.childNodes.length || (content && this.childGrid)) {
+                const row: Element = this.createMaskRow(maskColgroup, columns);
+                const altRow: Element = row.cloneNode(true) as Element;
+                altRow.classList.add('e-altrow');
+                for (let i: number = 0; i < rowCount; i++) {
+                    const altNumber: number = content && this.isFrozenGrid() && this.frozenRows ? this.frozenRows + 1 : 1;
+                    maskTBody.appendChild((i + altNumber) % 2 === 0 ? altRow.cloneNode(true) : row.cloneNode(true));
+                }
+            } else {
+                const rowsQuery: string = 'tr:not([style*="display:none"]):not([style*="display: none"])';
+                const rows: Element[] = [].slice.call(tbody.querySelectorAll(rowsQuery));
+                const addEditRow: Element = tbody.querySelector('.e-addedrow, .e-editedrow');
+                let addEditRowIndex: number;
+                if (addEditRow) {
+                    addEditRowIndex = rows.indexOf(addEditRow);
+                    if (addEditRow.classList.contains('e-addedrow')) {
+                        rows.splice(addEditRowIndex, 2);
+                    } else {
+                        rows.splice(addEditRowIndex, 1);
+                    }
+                }
+                rowCount = (header && this.isFrozenGrid()) || (this.enableVirtualization && axisDirection) ? rows.length
+                    : rowCount <= rows.length ? rowCount : rows.length;
+                for (let i: number = 0; i < rowCount; i++) {
+                    maskTBody.appendChild(this.applyMaskRow(rows[i].cloneNode(true) as Element, rows[i].getBoundingClientRect().height));
+                }
+                if (addEditRow && addEditRow.classList.contains('e-editedrow')) {
+                    const addEditMaskRow: HTMLElement = maskTBody.childNodes[addEditRowIndex] as HTMLElement;
+                    addEditMaskRow.style.height = this.getRowHeight() + 'px';
+                    addEditMaskRow.classList.add('e-row');
+                    if (addEditRow.classList.contains('e-altrow')) {
+                        addEditMaskRow.classList.add('e-altrow');
+                    }
+                }
+            }
+        }
+        maskTable.appendChild(maskTBody);
+        if (footer) {
+            const tfoot: Element = table.querySelector('tfoot');
+            const maskTFoot: Element = tfoot.cloneNode() as Element;
+            maskTFoot.setAttribute('class', 'e-masked-tfoot');
+            const rows: Element[] = [].slice.call(tfoot.querySelectorAll('tr'));
+            for (let i: number = 0; i < rows.length; i++) {
+                maskTFoot.appendChild(this.applyMaskRow(rows[i].cloneNode(true) as Element, rows[i].getBoundingClientRect().height));
+            }
+            maskTable.appendChild(maskTFoot);
+        }
+        parentElement.insertBefore(maskTable, parentElement.firstChild);
+        if (header && this.isFrozenGrid() && tbody
+            .getBoundingClientRect().height < maskTable.querySelector('tbody').getBoundingClientRect().height) {
+            const maskTableHolderHeight: number = maskTable.querySelector('tbody')
+                .getBoundingClientRect().height - tbody.getBoundingClientRect().height;
+            const maskTableHolder: Element = this.createElement('div', { className: 'e-masked-table-holder', attrs: {
+                style: 'height: ' + maskTableHolderHeight + 'px;'
+            } });
+            parentElement.appendChild(maskTableHolder);
+        } else if (header && this.isFrozenGrid() && !(this.enableColumnVirtualization && axisDirection === 'X')) {
+            (maskTable as HTMLElement).style.height = parentElement
+                .getBoundingClientRect().height - table.querySelector('thead').getBoundingClientRect().height + 'px';
+        }
+        if (content && !(this.enableVirtualization && axisDirection)) {
+            let minScrollTop: number = gridContentScrollHeight - maskTable.getBoundingClientRect().height;
+            minScrollTop = minScrollTop < 0 ? 0 : minScrollTop;
+            let scrollTop: number = gridContent.scrollTop <= minScrollTop ? gridContent.scrollTop : minScrollTop;
+            if (this.enableVirtualization) {
+                scrollTop -= getTransformValues(closest(parentElement, '.e-virtualtable')).height;
+            }
+            (maskTable as HTMLElement).style.transform = 'translate(0px,' + scrollTop + 'px)';
+        }
+        return maskTable;
+    }
+
+    private applyMaskRow(row: Element, rowHeight: number): Element {
+        const maskRow: Element = row;
+        maskRow.removeAttribute('role');
+        maskRow.removeAttribute('aria-rowindex');
+        maskRow.removeAttribute('data-rowindex');
+        maskRow.removeAttribute('data-uid');
+        maskRow.classList.add('e-masked-row');
+        (maskRow as HTMLElement).style.height = rowHeight + 'px';
+        const maskCells: Element[] = [].slice.call(maskRow.childNodes);
+        for (let i: number = 0; i < maskCells.length; i++) {
+            const maskCell: Element = maskCells[i];
+            const displayAsCheckBoxCell: boolean = maskCell.firstChild && (maskCell.firstChild as Element).classList
+                && (maskCell.firstChild as Element).classList.contains('e-checkbox-wrapper');
+            maskCell.removeAttribute('role');
+            maskCell.removeAttribute('tabindex');
+            maskCell.removeAttribute('aria-label');
+            maskCell.removeAttribute('data-colindex');
+            maskCell.removeAttribute('aria-colindex');
+            maskCell.removeAttribute('index');
+            maskCell.removeAttribute('ej-mappingname');
+            maskCell.removeAttribute('ej-mappingvalue');
+            maskCell.removeAttribute('e-mappinguid');
+            maskCell.removeAttribute('aria-expanded');
+            maskCell.classList.add('e-masked-cell');
+            maskCell.innerHTML = this.getShimmerTemplate();
+            if (maskCell.classList.contains('e-recordplusexpand') || maskCell.classList.contains('e-recordpluscollapse')) {
+                (maskCell.firstChild as HTMLElement).classList.add('e-mask-group-intent');
+            } else if (maskCell.classList.contains('e-gridchkbox') || displayAsCheckBoxCell) {
+                (maskCell.firstChild as HTMLElement).classList.add('e-mask-checkbox-intent');
+            } else if (maskCell.classList.contains('e-rowdragdrop')) {
+                (maskCell.firstChild as HTMLElement).classList.add('e-mask-drag-intent');
+            } else if (maskCell.classList.contains('e-indentcell')) {
+                maskCell.innerHTML = '';
+            }
+        }
+        return maskRow;
+    }
+
+    private createMaskRow(refColgroup: Element, refColumns: Column[]): Element {
+        const colgroup: Element = refColgroup;
+        const columns: Column[] = refColumns;
+        const row: Element = this.createElement('tr', { className: 'e-masked-row e-row' });
+        if (this.rowRenderingMode !== 'Vertical') {
+            (row as HTMLElement).style.height = this.getRowHeight() + 'px';
+        }
+        const td: Element = this.createElement('td', { className: 'e-masked-cell e-rowcell' });
+        for (let i: number = 0, colIndex: number = 0; i < colgroup.childNodes.length; i++) {
+            const col: HTMLElement = colgroup.childNodes[i] as HTMLElement;
+            const localTD: HTMLElement = td.cloneNode() as HTMLElement;
+            localTD.innerHTML = this.getShimmerTemplate();
+            if (!(col.classList.contains('e-group-intent') || col.classList.contains('e-detail-intent')
+                || col.classList.contains('e-drag-intent'))) {
+                if (this.rowRenderingMode === 'Vertical' && columns[colIndex]) {
+                    localTD.setAttribute('data-cell', columns[colIndex].headerText ? columns[colIndex].headerText
+                        : columns[colIndex].field);
+                }
+                if (col.style.display === 'none') {
+                    localTD.classList.add('e-hide');
+                } else {
+                    localTD.style.textAlign = columns[colIndex] && columns[colIndex].textAlign ? columns[colIndex].textAlign.toLowerCase()
+                        : this.enableRtl ? 'right' : 'left';
+                    if (columns[colIndex] && (columns[colIndex].type === 'checkbox' || columns[colIndex].displayAsCheckBox)) {
+                        (localTD.firstChild as HTMLElement).classList.add('e-mask-checkbox-intent');
+                    }
+                }
+                colIndex++;
+            } else {
+                if (col.classList.contains('e-group-intent')) {
+                    (localTD.firstChild as HTMLElement).classList.add('e-mask-group-intent');
+                } else if (col.classList.contains('e-detail-intent')) {
+                    (localTD.firstChild as HTMLElement).classList.add('e-mask-detail-intent');
+                } else if (col.classList.contains('e-drag-intent')) {
+                    (localTD.firstChild as HTMLElement).classList.add('e-mask-drag-intent');
+                }
+            }
+            row.appendChild(localTD);
+        }
+        return row;
+    }
+
+    private getShimmerTemplate(): string {
+        if (this.maskRowContentScroll) {
+            return '<span class="e-mask e-skeleton e-skeleton-text"></span>';
+        }
+        return '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave"></span>';
+    }
+
+    public addShimmerEffect(): void {
+        this.maskRowContentScroll = false;
+        const maskSpan: Element[] = [].slice.call(this.element.querySelectorAll('.e-mask:not(.e-shimmer-wave)'));
+        for (let i: number = 0; i < maskSpan.length; i++) {
+            if (maskSpan[i]) {
+                maskSpan[i].classList.add('e-shimmer-wave');
+            }
+        }
+    }
+
+    private translateMaskRow(e: MouseEvent): void {
+        const target: Element = e.target as Element;
+        const maskTables: NodeListOf<Element> = target.querySelectorAll('.e-masked-table');
+        for (let i: number = 0; i < maskTables.length; i++) {
+            const maskTable: Element = maskTables[i];
+            if (maskTable) {
+                let minScrollTop: number = target.scrollHeight - maskTable.getBoundingClientRect().height;
+                minScrollTop = minScrollTop < 0 ? 0 : minScrollTop;
+                let scrollTop: number = target.scrollTop <= minScrollTop ? target.scrollTop : minScrollTop;
+                if (this.enableVirtualization) {
+                    scrollTop -= getTransformValues(closest(maskTable, '.e-virtualtable')).height;
+                }
+                (maskTable as HTMLElement).style.transform = 'translate(0px,' + scrollTop + 'px)';
+            }
+        }
+    }
+
+    public removeMaskRow(): void {
+        const gridContent: Element = this.getContent().firstChild as Element;
+        EventHandler.remove(gridContent, 'scroll', this.translateMaskRow);
+        const maskTables: Element[] = [this.headerMaskTable, this.movableHeaderMaskTable, this.rightHeaderMaskTable,
+            this.contentMaskTable, this.movableContentMaskTable, this.rightContentMaskTable, this.footerContentMaskTable,
+            this.movableFooterContentMaskTable, this.rightFooterContentMaskTable];
+        for (let i: number = 0; i < maskTables.length; i++) {
+            const maskTable: Element = maskTables[i];
+            if (maskTable) {
+                if (this.isFrozenGrid() && !closest(maskTable, '.e-gridfooter')) {
+                    const parent: Element = maskTable.parentElement;
+                    (parent as HTMLElement).style.overflow = '';
+                    (parent as HTMLElement).style.position = '';
+                    if (closest(maskTable, '.e-frozen-left-header') || closest(maskTable, '.e-movableheader')
+                        || closest(maskTable, '.e-frozen-right-header')) {
+                        const maskTableHolder: Element = parent.querySelector('.e-masked-table-holder');
+                        if (maskTableHolder) {
+                            remove(maskTableHolder);
+                        }
+                    }
+                }
+                remove(maskTable);
+            }
+        }
+        this.headerMaskTable = null; this.movableHeaderMaskTable = null; this.rightHeaderMaskTable = null;
+        this.contentMaskTable = null; this.movableContentMaskTable = null; this.rightContentMaskTable = null;
+        this.footerContentMaskTable = null; this.movableFooterContentMaskTable = null; this.rightFooterContentMaskTable = null;
+    }
+
+    private refreshMaskRow(): void {
+        const gridHeader: Element = this.getHeaderContent().firstChild as Element;
+        const gridContent: Element = this.getContent().firstChild as Element;
+        if (!this.isInitialLoad && !this.getColumns().length) {
+            return;
+        }
+        if (this.contentMaskTable) {
+            let content: Element = gridContent;
+            if (this.isFrozenGrid()) {
+                content = content.querySelector('.e-frozen-left-content, .e-frozen-right-content');
+            } else if (this.enableVirtualization) {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.refreshMaskRowColgroupWidth(content);
+        }
+        if (this.headerMaskTable && this.isFrozenGrid()) {
+            this.refreshMaskRowColgroupWidth(gridHeader.querySelector('.e-frozen-left-header, .e-frozen-right-header'));
+        }
+        if (this.movableHeaderMaskTable && this.isFrozenGrid()) {
+            let content: Element = gridHeader.querySelector('.e-movableheader');
+            if (this.enableColumnVirtualization) {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.refreshMaskRowColgroupWidth(content);
+        }
+        if (this.rightHeaderMaskTable && this.isFrozenGrid() && this.getFrozenMode() === 'Left-Right') {
+            this.refreshMaskRowColgroupWidth(gridHeader.querySelector('.e-frozen-right-header'));
+        }
+        if (this.movableContentMaskTable && this.isFrozenGrid()) {
+            let content: Element = gridContent.querySelector('.e-movablecontent');
+            if (this.enableColumnVirtualization) {
+                content = content.querySelector('.e-virtualtable');
+            }
+            this.refreshMaskRowColgroupWidth(content);
+        }
+        if (this.rightContentMaskTable && this.isFrozenGrid() && this.getFrozenMode() === 'Left-Right') {
+            this.refreshMaskRowColgroupWidth(gridContent.querySelector('.e-frozen-right-content'));
+        }
+    }
+
+    private refreshMaskRowColgroupWidth(content: Element): void {
+        const table: Element = content.querySelector('table:not(.e-masked-table)');
+        const colgroup: Element = table.querySelector(literals.colGroup).cloneNode(true) as Element;
+        const maskTable: Element = content.querySelector('.e-masked-table');
+        colgroup.removeAttribute('id');
+        colgroup.setAttribute('class', 'e-masked-colgroup');
+        for (let i: number = 0; i < colgroup.childNodes.length; i++) {
+            (colgroup.childNodes[i] as Element).removeAttribute('class');
+        }
+        remove(maskTable.querySelector('.e-masked-colgroup'));
+        maskTable.insertBefore(colgroup, maskTable.firstChild);
+        (maskTable as HTMLElement).style.width = (table as Element).getBoundingClientRect().width + 'px';
     }
 
     private updateStackedFilter(): void {
@@ -4040,14 +4576,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
                 for (let j: number = 0; j < rows.length; j++) {
                     const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
-                    if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index)) {
-                        for (let i: number = 0; i < rowsObj[cells].length; i++) {
-                            const cell: Cell<Column> = rowsObj[cells][i];
-                            if (cell.isTemplate) {
-                                const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                                const td: Element = this.getCellFromIndex(j, i - indent);
-                                cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
-                            }
+                    for (let i: number = 0; i < rowsObj[cells].length; i++) {
+                        const cell: Cell<Column> = rowsObj[cells][i];
+                        if (cell.isTemplate) {
+                            const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
+                            const td: Element = this.getCellFromIndex(j, i - indent);
+                            cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
                         }
                     }
                 }
@@ -5541,7 +6075,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.headerModule = rendererFactory.getRenderer(RenderType.Header);
         this.contentModule = rendererFactory.getRenderer(RenderType.Content);
         this.printModule = new Print(this, this.scrollModule);
-        this.clipboardModule = new Clipboard(this);
+        this.clipboardModule = new Clipboard(this, this.serviceLocator);
         this.renderModule.render();
         this.eventInitializer();
         this.createGridPopUpElement();
@@ -7298,7 +7832,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private enableInfiniteAggrgate(): void {
-        if (this.enableInfiniteScrolling && this.groupSettings.columns.length && !this.groupSettings.disablePageWiseAggregates) {
+        if (this.enableInfiniteScrolling && this.groupSettings.columns.length && !this.groupSettings.disablePageWiseAggregates
+            && !this.groupSettings.enableLazyLoading) {
             this.setProperties({ groupSettings: { disablePageWiseAggregates: true } }, true);
         }
     }

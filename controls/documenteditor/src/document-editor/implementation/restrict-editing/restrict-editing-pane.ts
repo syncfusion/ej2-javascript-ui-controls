@@ -473,6 +473,82 @@ export class RestrictEditing {
             this.base64.destroy();
         }
         this.base64 = undefined;
+        if (this.addedUser) {
+            this.addedUser.destroy();
+            this.addedUser = undefined;
+        }
+        if (this.allowFormat) {
+            this.allowFormat.destroy();
+            this.allowFormat = undefined;
+        }
+        if (this.protectionTypeDrop) {
+            this.protectionTypeDrop.destroy();
+            this.protectionTypeDrop = undefined;
+        }
+        if (this.highlightCheckBox) {
+            this.highlightCheckBox.destroy();
+            this.highlightCheckBox = undefined;
+        }
+        if (this.addUser) {
+            this.addUser.innerHTML = '';
+            this.addUser.remove();
+            this.addUser = undefined;
+        }
+        if (this.restrictPane) {
+            this.restrictPane.innerHTML = '';
+            this.restrictPane.remove();
+            this.restrictPane = undefined;
+        }
+        if (this.enforceProtection) {
+            this.enforceProtection.innerHTML = '';
+            this.enforceProtection.remove();
+            this.enforceProtection = undefined;
+        }
+        if (this.stopProtection) {
+            this.stopProtection.innerHTML = '';
+            this.stopProtection.remove();
+            this.stopProtection = undefined;
+        }
+        if (this.stopProtectionDiv) {
+            this.stopProtectionDiv.innerHTML = '';
+            this.stopProtectionDiv.remove();
+            this.stopProtectionDiv = undefined;
+        }
+        if (this.stopReadOnlyOptions) {
+            this.stopReadOnlyOptions.innerHTML = '';
+            this.stopReadOnlyOptions.remove();
+            this.stopReadOnlyOptions = undefined;
+        }
+        if (this.contentDiv1) {
+            this.contentDiv1.innerHTML = '';
+            this.contentDiv1.remove();
+            this.contentDiv1 = undefined;
+        }
+        if (this.contentDiv2) {
+            this.contentDiv2.innerHTML = '';
+            this.contentDiv2.remove();
+            this.contentDiv2 = undefined;
+        }
+        if (this.closeButton) {
+            this.closeButton.innerHTML = '';
+            this.closeButton.remove();
+            this.closeButton = undefined;
+        }
+        if (this.userWholeDiv) {
+            this.userWholeDiv.innerHTML = '';
+            this.userWholeDiv.remove();
+            this.userWholeDiv = undefined;
+        }
+        if (this.restrictPaneWholeDiv) {
+            this.restrictPaneWholeDiv.innerHTML = '';
+            this.restrictPaneWholeDiv.remove();
+            this.restrictPaneWholeDiv = undefined;
+        }
+        this.usersCollection = [];
+        this.usersCollection = undefined;
+        this.previousProtectionType = undefined;
+        this.currentHashValue = undefined;
+        this.currentSaltValue = undefined;
         this.documentHelper = undefined;
     }
 }

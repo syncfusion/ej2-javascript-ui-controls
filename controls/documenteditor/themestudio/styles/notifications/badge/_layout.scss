@@ -29,7 +29,7 @@
       border-radius: $badge-pill-border-radius;
       @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         padding: $badge-pill-padding;
-       }
+      }
     }
 
     &.e-badge-ghost {

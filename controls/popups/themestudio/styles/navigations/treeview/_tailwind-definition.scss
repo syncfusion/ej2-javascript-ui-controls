@@ -1,5 +1,5 @@
 /*! TreeView's tailwind theme wise override definitions and variables */
-// sass-lint:disable-all
+/* stylelint-disable */
 $treeview-font-size: $text-sm !default;
 $treeview-icon-font-size: 20px !default;
 $treeview-image-font-size: 20px !default;
@@ -87,7 +87,7 @@ $treeview-font-family: $font-family !default;
 $treeview-drag-icon-font-size: 20px !default;
 $treeview-drag-icon-padding: 6px !default;
 $treeview-drag-icon-margin: 0 8px 10px -20px;
-$treeview-drag-icon-padding-right: 4px!default;
+$treeview-drag-icon-padding-right: 4px !default;
 $treeview-rtl-drag-margin: 10px -13px -1px 0;
 
 $ripple-size: -7px !default;

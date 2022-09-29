@@ -548,7 +548,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 const td: HTMLElement = document.createElement('td');
                 td.classList.add('e-dashboard-gridline');
                 this.setAttributes({ value: { row: i.toString(), col: j.toString(), sizeX: '1', sizeY: '1' } }, td);
-                td.setAttribute('id', '' + j);
                 this.setPanelPosition(td, i, j);
                 this.setHeightAndWidth(td, { row: i, col: j, sizeX: 1, sizeY: 1 });
                 tr.appendChild(td);

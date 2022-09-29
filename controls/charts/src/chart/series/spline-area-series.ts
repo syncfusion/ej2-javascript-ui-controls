@@ -9,6 +9,7 @@ import { Series, Points } from './chart-series';
 import { SplineBase } from './spline-base';
 import { Axis } from '../../chart/axis/axis';
 
+
 /**
  * `SplineAreaSeries` module used to render the spline area series.
  */
@@ -36,6 +37,7 @@ export class SplineAreaSeries extends SplineBase {
         let point: Points;
         let pointIndex: number = 0;
         realPoints = this.filterEmptyPoints(series);
+        let emptyPointDirection:  string = '';
         for (let i: number = 0; i < realPoints.length; i++) {
             point = realPoints[i];
             if (point.x === null || point.x === '') {
@@ -83,17 +85,32 @@ export class SplineAreaSeries extends SplineBase {
             if (((i + 1 < pointsLength && !points[i + 1].visible) || i === pointsLength - 1)
                 && pt2 && startPoint) {
                 startPoint = getCoordinate(point.xValue, origin, xAxis, yAxis, isInverted, series);
-                direction = direction.concat('L ' + (startPoint.x) + ' ' + (startPoint.y));
+                direction = direction.concat('L ' + (startPoint.x) + ' ' + (startPoint.y) + ' ');
             }
         }
         this.appendLinePath(
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index,
-                series.interior, series.border.width, series.border.color,
+                series.interior, 0, 'transparent',
                 series.opacity, series.dashArray, direction
             ),
             series, ''
         );
+
+         /**
+          * To draw border for the path directions of area
+          */
+        if (series.border.width != 0) {
+            emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
+            this.appendLinePath(
+                new PathOption(
+                    series.chart.element.id + '_Series_border_' + series.index,
+                    'transparent', series.border.width, series.border.color ? series.border.color : series.interior,
+                    1, series.dashArray, emptyPointDirection
+                ),
+                series, ''
+            );
+        }
         this.renderMarker(series);
     }
 

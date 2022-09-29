@@ -3,7 +3,7 @@ import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion,
 import { getActualProperties, IFilterMUI, Filter as GridFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
-import { getValue, isNullOrUndefined, remove, createElement, addClass, closest } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, remove, createElement, addClass, closest, EventHandler } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -54,11 +54,14 @@ export class Filter {
         this.parent.on('actionComplete', this.actionComplete, this);
         this.parent.on('columnMenuOpen', this.columnMenuOpen, this);
     }
+    private wireEvents(a:string): void {
+        EventHandler.add(document.getElementById(a), 'click', this.mouseClickHandler, this);
 
+    }
     private initiateFiltering(column: ColumnModel): void {
         const treeColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.treeGridModule.treeGridColumns);
         column.allowFiltering = column.allowFiltering === false ? false : true;
-        if (column.allowFiltering && this.parent.filterSettings.type === 'Menu' && !column.filter) {
+        if (column.allowFiltering && (this.parent.filterSettings.type === 'Menu' || this.parent.filterSettings.type === 'Excel') && !column.filter) {
             column.filter = { ui: this.getCustomFilterUi(column) };
         }
         if (treeColumn) {
@@ -87,7 +90,14 @@ export class Filter {
         }
         return filterUI;
     }
-
+    private mouseClickHandler(e: PointerEvent): void {
+        if (closest(e.target as Element,".e-excelfilter")){
+            this.parent.treeGrid.grid.notify("click",e);
+        }
+    }
+    private unWireEvents(): void {
+        EventHandler.remove(this.parent.element, 'click', this.mouseClickHandler);
+    }
     private getDatePickerFilter(columnName: string): IFilterMUI {
         const parent: Gantt = this.parent;
         const timeValue: number = (columnName === parent.taskFields.startDate) || (columnName === parent.taskFields.baselineStartDate)
@@ -212,6 +222,15 @@ export class Filter {
         }
     }
     private actionComplete(args: GroupEventArgs): void {
+        if (!isNullOrUndefined(args['filterModel'])) {
+            if (!isNullOrUndefined(args['filterModel']['dialogObj'])) {
+                if (!isNullOrUndefined(args['filterModel']['dialogObj']['element'])) {
+                    if (this.parent.filterSettings.type === 'Excel'){
+                        this.wireEvents(args['filterModel']['dialogObj']['element'].id);
+                    }
+                }  
+            }
+        }
         if (args.requestType === filterAfterOpen) {
             if (this.parent.treeGrid.filterSettings.type === 'Menu') {
                 this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
@@ -229,11 +248,14 @@ export class Filter {
             if ((args.columnName === predecessor && isNullOrUndefined(getValue(predecessor, filterValues)))
                 || (args.columnName === resource && isNullOrUndefined(getValue(resource, filterValues)))) {
                 const element: HTMLElement = this.filterMenuElement.querySelector('.e-dropdownlist');
-                const instanceObj: DropDownList = getValue('ej2_instances[0]', element);
-                instanceObj.index = 2;
-                instanceObj.dataBind();
+                let instanceObj: DropDownList;
+                if (!isNullOrUndefined(element)) {
+                    instanceObj = getValue('ej2_instances[0]', element);
+                    instanceObj.index = 2;
+                    instanceObj.dataBind();
+                }
             } else if (args.columnName === taskID && isNullOrUndefined(getValue(taskID, filterValues)) && this.parent.treeGrid.filterSettings.type === 'Menu') {
-                const element: HTMLElement = this.filterMenuElement.querySelector('.e-numerictextbox');
+                const element: HTMLElement = this.filterMenuElement.querySelector('.e-flmenu-input');
                 const instanceObj: NumericTextBox = getValue('ej2_instances[0]', element);
                 if (!isNullOrUndefined(instanceObj) && isNullOrUndefined(this.parent.columnByField[args.columnName].format)) {
                     instanceObj.format = 'n';
@@ -265,5 +287,6 @@ export class Filter {
      */
     public destroy(): void {
         this.removeEventListener();
+        this.unWireEvents();
     }
 }

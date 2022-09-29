@@ -2,38 +2,6 @@
 
 ## [Unreleased]
 
-## 20.2.44 (2022-08-16)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#F176236` - Now, the drag and drop functionality will work fine in the Internet Explorer V11.
-
-## 20.2.43 (2022-08-08)
-
-### Kanban
-
-#### Bug Fixes
-
-- `I392686` - Now, the drag and drop between the cards will work fine when showAddButton is enabled with the Kanban columns.
-
-- `I393080` - Now, the column border of the dragged clone cells will render properly.
-
-- `I393078` - Now, the drag and drop between the cards will work fine with out any flickering.
-
-- `#F176345` - Now, the Sort Comparer Function's API link will work properly.
-
-## 20.2.38 (2022-07-12)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#I385821` - Now, the server-side modified data is returned to the client side while performing the `CRUD` operation.
-
-- `#I390524`, `#F175935` - Now, when dropping the card into an empty column will render it.
-
 ## 20.1.60 (2022-06-14)
 
 ### Kanban

@@ -71,7 +71,7 @@ export class TextLayer {
                 // eslint-disable-next-line
                 let bounds: any = textBounds[i];
                 // eslint-disable-next-line max-len
-                const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '0' } });
+                const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '-1' } });
                 const textContent: string = textContents[i];
                 textDiv.textContent = textContent.replace(/&nbsp;/g, ' ');
                 // eslint-disable-next-line

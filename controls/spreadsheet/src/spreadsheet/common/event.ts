@@ -12,8 +12,6 @@ export const refreshSheetTabs: string = 'refreshSheetTabs';
 /** @hidden */
 export const isFormulaBarEdit: string = 'isFormulaBarEdit';
 /** @hidden */
-export const initialLoad: string = 'initialLoad';
-/** @hidden */
 export const contentLoaded: string = 'contentLoaded';
 /** @hidden */
 export const mouseDown: string = 'mouseDown';

@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-inplace-editor",
-	"version": "20.2.36",
+	"version": "19.8.3",
 	"description": "A package of Essential JS 2 Inplace editor components, which is used to edit and update the value dynamically in server.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-inplace-editor.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-inplace-editor.es2015.js",
+	"es2015": "./dist/es6/ej2-inplace-editor.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*",

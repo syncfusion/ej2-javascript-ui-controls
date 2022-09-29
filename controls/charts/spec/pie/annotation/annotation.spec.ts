@@ -280,7 +280,7 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as point with exact data', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '252.718px' || (element as HTMLElement).style.left == '252.97px').toBe(true);
+                expect((element as HTMLElement).style.left == '251.218px' || (element as HTMLElement).style.left == '251.47px').toBe(true);
                 expect((element as HTMLElement).style.top == '248.034px' || (element as HTMLElement).style.top == '246.754px').toBe(true);
                 let legendEle: Element = getElement('container_chart_legend_text_0');
                 chartObj.loaded = null;
@@ -417,10 +417,10 @@ describe('Accumumation Control', () => {
                 element = getElement('container_Secondary_Element');
                 expect(element.children[0].childElementCount).toBe(2);
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '335.5px' || (element as HTMLElement).style.left == '341.5px').toBe(true);
+                expect((element as HTMLElement).style.left == '715px' || (element as HTMLElement).style.left == '340px').toBe(true);
                 expect((element as HTMLElement).style.top == '218px' || (element as HTMLElement).style.top == '216.5px').toBe(true);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '311.391px' || (element as HTMLElement).style.left == '317.391px').toBe(true);
+                expect((element as HTMLElement).style.left == '690.888px' || (element as HTMLElement).style.left == '315.891px').toBe(true);
                 expect((element as HTMLElement).style.top == '226px' || (element as HTMLElement).style.top == '224.5px').toBe(true);
                 done();
             };
@@ -433,10 +433,10 @@ describe('Accumumation Control', () => {
             template1.innerHTML = '<div>${chart.title}</div>';
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '342.781px' || (element as HTMLElement).style.left == '348.835px').toBe(true);
+                expect((element as HTMLElement).style.left == '722.281px' || (element as HTMLElement).style.left == '347.335px').toBe(true);
                 expect((element as HTMLElement).style.top == '136.324px' || (element as HTMLElement).style.top == '134.226px').toBe(true);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '318.672px' || (element as HTMLElement).style.left == '324.725px').toBe(true);
+                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '323.225px').toBe(true);
                 expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.226px').toBe(true);
                 done();
             };
@@ -456,7 +456,7 @@ describe('Accumumation Control', () => {
                 element = getElement('container_Annotation_0');
                 expect(element).toBe(null);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '318.672px' || (element as HTMLElement).style.left == '324.725px').toBe(true);
+                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '323.225px').toBe(true);
                 expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.226px').toBe(true);
                 done();
             };

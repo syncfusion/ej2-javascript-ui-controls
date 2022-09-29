@@ -133,6 +133,7 @@ describe('smithChart component Spec', () => {
             };
             smithChart.refresh();
         });*/
+
         it('Checking to print in multiple element', () => {
             smithChart.loaded = (args: Object): void => {
                 smithChart.print(['container', 'tempElement']);

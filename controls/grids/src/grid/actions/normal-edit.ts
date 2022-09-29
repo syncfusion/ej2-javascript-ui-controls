@@ -271,7 +271,12 @@ export class NormalEdit {
                 if (endEditArgs.cancel) {
                     return;
                 }
-                gObj.showSpinner();
+                if (this.parent.loadingIndicator.indicatorType === 'Spinner') {
+                    gObj.showSpinner();
+                }
+                if (this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                }
                 gObj.notify(events.updateData, endEditArgs);
             });
         } else {
@@ -350,6 +355,7 @@ export class NormalEdit {
                 this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
             }
         }
+        this.parent.removeMaskRow();
         this.parent.hideSpinner();
     }
 
@@ -385,6 +391,7 @@ export class NormalEdit {
     }
 
     private editFailure(e: ReturnType): void {
+        this.parent.removeMaskRow();
         this.parent.trigger(events.actionFailure, ({ error: e }));
         this.parent.hideSpinner();
         this.parent.log('actionfailure', { error: e });

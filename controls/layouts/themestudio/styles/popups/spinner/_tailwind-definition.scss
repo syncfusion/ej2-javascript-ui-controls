@@ -1,9 +1,11 @@
 $skin-name: 'tailwind';
 $theme: 'Tailwind';
+
 //Layout Variables Start
 $spin-padding: 10px;
 $spin-label-margin-top: 10px;
 $spin-label-font-size: $text-sm;
+
 //Layout Variables End
 
 //Normal Variables Start
@@ -12,6 +14,7 @@ $spin-overlay-background: $overlay-bg-color;
 $spin-label-font-family: $font-family;
 $spin-overlay-stroke-color: $primary;
 $spin-overlay-font-color: $white;
+
 //Normal Variables End
 
 //Theme based other styles start
@@ -48,7 +51,7 @@ $spin-boot5-stroke-color: $primary;
   animation: material-spinner-rotate .75s linear infinite;
 }
 
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @keyframes material-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -61,7 +64,6 @@ $spin-boot5-stroke-color: $primary;
   }
 }
 
-// sass-lint:disable no-vendor-prefixes
 @keyframes fabric-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -73,4 +75,5 @@ $spin-boot5-stroke-color: $primary;
     transform: rotate(360deg);
   }
 }
+
 //Theme based other styles end

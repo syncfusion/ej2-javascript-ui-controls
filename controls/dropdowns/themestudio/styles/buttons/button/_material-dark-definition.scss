@@ -44,6 +44,7 @@ $btn-primary-outline: $btn-bgcolor 0 solid !default;
 $btn-icon-margin-top: -2px !default;
 $btn-small-icon-top-bottom-padding: 6px !default;
 $btn-focus-outline-round: $btn-bgcolor 0 solid !default;
+
 //enddefault
 
 //hover
@@ -54,6 +55,7 @@ $btn-warning-hover-color: #fff !default;
 $btn-danger-hover-color: #fff !default;
 $btn-link-hover-color: #20b0e9 !default;
 $btn-success-hover-color: #fff !default;
+
 //endhover
 
 //active
@@ -261,6 +263,7 @@ $btn-flat-warning-disabled-border-color: $btn-flat-border-color !default;
 $btn-flat-danger-disabled-border-color: $btn-flat-border-color !default;
 $btn-ripple-flat-success-bgcolor: transparent !default;
 $btn-ripple-flat-warning-bgcolor: transparent !default;
+
 //endflatbutton
 
 //outline
@@ -291,6 +294,7 @@ $btn-outline-danger-disabled-border-color: rgba($grey-700, .3) !default;
 $btn-outline-primary-color: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-bgcolor: $btn-primary-focus-bgcolor !default;
 $btn-outline-primary-focus-color: $btn-primary-focus-color !default;
+
 //endoutline
 
 //roundbutton
@@ -302,6 +306,7 @@ $btn-round-hover-color: $btn-color !default;
 $btn-round-hover-border-color: $btn-round-hover-bgcolor !default;
 $btn-round-active-color: $btn-active-color !default;
 $btn-round-focus-color: $btn-focus-color !default;
+
 //endroundbutton
 
 //dimensions

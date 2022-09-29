@@ -1,4 +1,5 @@
 @include export-module('pager-material-icons') {
+
   /*! component icons */
 
   #{&}.e-pager,
@@ -18,24 +19,28 @@
 
     .e-icon-next::before {
       content: '\e913';
-    }&.e-rtl {
+    }
+    &.e-rtl {
       & .e-icon-last.e-lastpage::before,
       & .e-icon-last.e-lastpage:hover,
       & .e-icon-last.e-lastpagedisabled::before {
         content: '\e896';
-    }& .e-icon-first.e-firstpage::before,
+      }
+      & .e-icon-first.e-firstpage::before,
       & .e-icon-first.e-firstpage:hover,
       & .e-icon-first.e-firstpagedisabled::before {
         content: '\e897';
-    }& .e-icon-prev.e-prevpage::before,
+      }
+      & .e-icon-prev.e-prevpage::before,
       & .e-icon-prev.e-prevpage:hover,
       & .e-icon-prev.e-prevpagedisabled::before {
         content: '\e913';
-    }& .e-icon-next.e-nextpage::before,
+      }
+      & .e-icon-next.e-nextpage::before,
       & .e-icon-next.e-nextpage:hover,
       & .e-icon-next.e-nextpagedisabled::before {
         content: '\e904';
       }
     }
-	}
+  }
 }

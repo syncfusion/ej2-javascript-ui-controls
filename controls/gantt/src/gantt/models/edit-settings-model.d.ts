@@ -56,8 +56,8 @@ export interface EditSettingsModel {
     showDeleteConfirmDialog?: boolean;
 
     /**
-     * Enabled or disables taskbar resizing, taskbar dragging, progress bar resizing and
-     * predecessor draw action in chart side.
+     * Enable or disable the taskbar editing, such as updating start date, end date,
+     * progress and dependency tasks values, through user interaction.
      *
      * @default false
      */

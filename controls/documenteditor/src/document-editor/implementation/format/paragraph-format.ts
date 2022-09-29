@@ -359,7 +359,7 @@ export class WParagraphFormat {
         return documentHelper;
     }
     private setPropertyValue(property: string, value: Object, clearProperty?:boolean): void {
-        if (isNullOrUndefined(value) || value === ''&& !clearProperty) {
+        if (isNullOrUndefined(value) || value === '' && !clearProperty) {
             value = WParagraphFormat.getPropertyDefaultValue(property);
         }
         if (isNullOrUndefined(this.uniqueParagraphFormat)) {

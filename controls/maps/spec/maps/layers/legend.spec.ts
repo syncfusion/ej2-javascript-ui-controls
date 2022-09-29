@@ -1588,7 +1588,7 @@ describe('Map marker properties tesing', () => {
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
                 trigger.clickEvent(spec);
                 expect(spec.getAttribute('fill')).toBe("#E5E5E5");
-                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0_Group");
                 expect(spec.children[0].getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
             }
@@ -1605,7 +1605,7 @@ describe('Map marker properties tesing', () => {
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
                 trigger.clickEvent(spec);
                 expect(spec.getAttribute('fill')).toBe("#E5E5E5");
-                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
+                spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0_Group");
                 expect(spec.children[0].getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
                 trigger.clickEvent(spec);

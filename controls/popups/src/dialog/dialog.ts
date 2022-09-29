@@ -183,6 +183,7 @@ const DLG_ESCAPE_CLOSED: string = 'escape';
 const DLG_OVERLAYCLICK_CLOSED: string = 'overlayClick';
 const DLG_DRAG : string = 'e-draggable';
 
+
 /**
  * Provides information about a BeforeOpen event.
  */
@@ -773,6 +774,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Event()
     public destroyed: EmitType<Event>;
+    protected needsID: boolean;
     /*
      * * Constructor for creating the widget
      *
@@ -782,6 +784,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     constructor(options?: DialogModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        this.needsID = true;
     }
     /**
      *Initialize the control rendering
@@ -1301,7 +1304,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             const primaryBtnFlag: boolean = true;
             for (let i: number = 0; i < this.buttons.length; i++) {
                 const buttonType: string = !isNullOrUndefined(this.buttons[i].type) ? this.buttons[i].type.toLowerCase() : 'button';
-                const btn: HTMLElement = this.createElement('button', { attrs: {type: buttonType }});
+                const btn: HTMLElement = this.createElement('button', { className: this.cssClass, attrs: {type: buttonType }});
                 this.buttonContent.push(btn.outerHTML);
             }
             this.setFooterTemplate();
@@ -1389,7 +1392,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if ((typeof template === 'string')) {
                 template = this.sanitizeHelper(template as string);
             }
-            if (this.isVue || typeof template !== 'string') { 
+            if (this.isVue || typeof template !== 'string') {
                 templateFn = compile(template as string);
                 templateValue = template as string;
             } else {
@@ -1533,16 +1536,23 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setCSSClass(oldCSSClass?: string): void {
-         if (this.cssClass) {
-            addClass([this.element], this.cssClass.split(' '));
-        }
         if (oldCSSClass) {
             removeClass([this.element], oldCSSClass.split(' '));
+            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
+                removeClass([this.dlgContainer], oldCSSClass.split(' '));
+            }
+        }
+        if (this.cssClass) {
+            addClass([this.element], this.cssClass.split(' '));
+            if (this.isModal && !isNullOrUndefined(this.dlgContainer)) {
+                addClass([this.dlgContainer], this.cssClass.split(' '));
+            }
         }
     }
 
     private setIsModal(): void {
         this.dlgContainer = this.createElement('div', { className: DLG_CONTAINER });
+        this.setCSSClass();
         this.element.classList.remove(DLG_SHOW);
         this.element.parentNode.insertBefore(this.dlgContainer, this.element);
         this.dlgContainer.appendChild(this.element);
@@ -2334,6 +2344,8 @@ export namespace DialogUtility {
         options.cssClass = !isNullOrUndefined(option.cssClass) ? option.cssClass : '';
         options.zIndex = !isNullOrUndefined(option.zIndex) ? option.zIndex : 1000;
         options.open = !isNullOrUndefined(option.open) ? option.open : null;
+        options.width = !isNullOrUndefined(option.width) ? option.width : '100%';
+        options.height = !isNullOrUndefined(option.height) ? option.height : 'auto';
         return options;
     }
 
@@ -2431,6 +2443,8 @@ export interface AlertDialogArgs {
     open?: EmitType<Object>
     // eslint-disable-next-line
     close?: EmitType<Object>
+    width?: string | number
+    height?: string | number
 }
 
 /**
@@ -2453,6 +2467,8 @@ export interface ConfirmDialogArgs {
     open?: EmitType<Object>
     // eslint-disable-next-line
     close?: EmitType<Object>
+    width?: string | number
+    height?: string | number
 }
 interface ResizeMouseEventArgs extends MouseEvent  {
     cancel?: boolean

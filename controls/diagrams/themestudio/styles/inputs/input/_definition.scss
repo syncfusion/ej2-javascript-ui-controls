@@ -166,52 +166,67 @@ $input-small-clear-icon-min-height: 18px;
 $input-small-clear-icon-min-width: 18px;
 $input-bigger-small-clear-icon: 12px;
 $input-clear-icon-font: '\e932';
+
 @mixin input-sizing {
   content: '';
 }
+
 @mixin input-height ($height) {
   content: '';
 }
+
 @mixin input-state-color ($color) {
   content: '';
 }
+
 @mixin input-selection {
   content: '';
 }
-// sass-lint:disable no-vendor-prefixes  
+/* stylelint-disable property-no-vendor-prefix */
 @mixin float-label-alignment {
   content: '';
 }
+
 @mixin input-group-animation {
   content: '';
 }
+
 @mixin input-group-animation-left {
   content: '';
 }
+
 @mixin input-group-animation-width {
   content: '';
 }
+
 @mixin input-group-animation-right {
   content: '';
 }
+
 @mixin input-group-animation-bg {
   content: '';
 }
+
 @mixin input-group-success-animation-bg {
   content: '';
 }
+
 @mixin input-group-warning-animation-bg {
   content: '';
 }
+
 @mixin input-group-error-animation-bg {
   content: '';
 }
+
 @mixin input-ripple-parent {
   content: '';
 }
+
 @mixin input-ripple-style {
   content: '';
 }
+
 @mixin input-ripple-animation {
   content: '';
 }

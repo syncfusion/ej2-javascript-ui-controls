@@ -101,6 +101,7 @@ export class Marker {
             markerEle = smithchart.renderer.drawPath(pathOptions) as SVGPathElement;
             break;
         }
+        markerEle.setAttribute('aria-label', 'x: ' + (location.x) + ', ' + 'y: ' + (location.y));
         return markerEle;
     }
 }

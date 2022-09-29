@@ -37,7 +37,6 @@ import { canDrawThumbs, avoidDrawSelector } from '../utility/constraints-util';
 import { AnnotationConstraints} from '../enum/enum';
 import { Diagram } from '../diagram';
 import { getSegmentThumbShapeHorizontal, getSegmentThumbShapeVertical } from '../objects/dictionary/common';
-
 /**
  * Renderer module is used to render basic diagram elements
  */
@@ -452,7 +451,7 @@ export class DiagramRenderer {
     public renderResizeHandle(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints, currentZoom: number,
         selectorConstraints?: SelectorConstraints, transform?: Transforms, canMask?: boolean, enableNode?: number,
-        nodeConstraints?: boolean, isSwimlane?: boolean)
+        nodeConstraints?: boolean, isSwimlane?: boolean, handleSize ?: number)
         :
         void {
         const left: number = element.offsetX - element.actualSize.width * element.pivot.x;
@@ -476,14 +475,14 @@ export class DiagramRenderer {
                         'resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'),
                         constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined,
                         canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' },
-                        undefined, 'e-diagram-resize-handle e-northwest');
+                        undefined, 'e-diagram-resize-handle e-northwest', handleSize);
                 }
                 if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
                     this.renderCircularHandle(
                         'resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'),
                         constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined,
                         canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' },
-                        undefined, 'e-diagram-resize-handle e-northeast');
+                        undefined, 'e-diagram-resize-handle e-northeast', handleSize);
                 }
                 if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
                     this.renderCircularHandle(
@@ -491,14 +490,14 @@ export class DiagramRenderer {
                         constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined,
                         canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' },
                         undefined,
-                        'e-diagram-resize-handle e-southwest');
+                        'e-diagram-resize-handle e-southwest', handleSize);
                 }
                 if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
                     this.renderCircularHandle(
                         'resizeSouthEast', element, left + width, top + height, canvas,
                         canShowCorner(selectorConstraints, 'ResizeSouthEast'), constraints & ThumbsConstraints.ResizeSouthEast, transform,
                         undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' },
-                        undefined, 'e-diagram-resize-handle e-southeast');
+                        undefined, 'e-diagram-resize-handle e-southeast', handleSize);
                 }
             }
             if (selectorConstraints & SelectorConstraints.ResizeNorth) {
@@ -506,28 +505,28 @@ export class DiagramRenderer {
                     'resizeNorth', element, left + width / 2, top, canvas,
                     canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined,
-                    'e-diagram-resize-handle e-north');
+                    'e-diagram-resize-handle e-north', handleSize);
             }
             if (selectorConstraints & SelectorConstraints.ResizeSouth) {
                 this.renderCircularHandle(
                     'resizeSouth', element, left + width / 2, top + height, canvas,
                     canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined,
-                    'e-diagram-resize-handle e-south');
+                    'e-diagram-resize-handle e-south', handleSize);
             }
             if (selectorConstraints & SelectorConstraints.ResizeWest) {
                 this.renderCircularHandle(
                     'resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'),
                     constraints & ThumbsConstraints.ResizeWest, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined,
-                    'e-diagram-resize-handle e-west');
+                    'e-diagram-resize-handle e-west', handleSize);
             }
             if (selectorConstraints & SelectorConstraints.ResizeEast) {
                 this.renderCircularHandle(
                     'resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'),
                     constraints & ThumbsConstraints.ResizeEast, transform, undefined,
                     canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined,
-                    'e-diagram-resize-handle e-east');
+                    'e-diagram-resize-handle e-east', handleSize);
             }
         }
     }
@@ -551,7 +550,7 @@ export class DiagramRenderer {
     public renderEndPointHandle(
         selector: ConnectorModel, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints,
         selectorConstraints: SelectorConstraints, transform: Transforms, connectedSource: boolean,
-        connectedTarget?: boolean, isSegmentEditing?: boolean, canShowBezierPoints?: boolean): void {
+        connectedTarget?: boolean, isSegmentEditing?: boolean, canShowBezierPoints?: boolean, handleSize ?: number): void {
         const sourcePoint: PointModel = selector.sourcePoint;
         const targetPoint: PointModel = selector.targetPoint;
         const wrapper: DiagramElement = selector.wrapper; let i: number; let segment: StraightSegment;
@@ -560,20 +559,20 @@ export class DiagramRenderer {
             canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
             constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource,
             undefined, { 'aria-label': 'Thumb to move the source point of the connector' }, undefined,
-            'e-diagram-endpoint-handle e-targetend');
+            'e-diagram-endpoint-handle e-targetend', handleSize);
         this.renderCircularHandle(
             'connectorTargetThumb', wrapper, targetPoint.x, targetPoint.y, canvas,
             canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
             constraints & ThumbsConstraints.ConnectorTarget, transform, connectedTarget,
             undefined, { 'aria-label': 'Thumb to move the target point of the connector' }, undefined,
-            'e-diagram-endpoint-handle e-targetend');
+            'e-diagram-endpoint-handle e-targetend', handleSize);
         if (isSegmentEditing) {
             if ((selector.type === 'Straight' || selector.type === 'Bezier') && selector.segments.length > 0) {
                 for (i = 0; i < selector.segments.length - 1; i++) {
                     segment = selector.segments[i] as StraightSegment | BezierSegment;
                     this.renderCircularHandle(
                         ('segementThumb_' + (i + 1)), wrapper, segment.point.x, segment.point.y, canvas, true,
-                        constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i);
+                        constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, handleSize);
                 }
             } else {
                 // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
@@ -623,7 +622,7 @@ export class DiagramRenderer {
                         canShowCorner(selectorConstraints, 'ConnectorSourceThumb'),
                         constraints & ThumbsConstraints.ConnectorSource, transform, undefined, undefined,
                         { 'aria-label': 'Thumb to move the source point of the connector' }, undefined,
-                        'e-diagram-bezier-handle e-source');
+                        'e-diagram-bezier-handle e-source', handleSize);
                     if (canShowCorner(selectorConstraints, 'ConnectorSourceThumb')) {
                         this.renderBezierLine(
                             'bezierLine_' + (i + 1) + '_1', wrapper, canvas, segment.points[0],
@@ -640,7 +639,7 @@ export class DiagramRenderer {
                         canvas, canShowCorner(selectorConstraints, 'ConnectorTargetThumb'),
                         constraints & ThumbsConstraints.ConnectorTarget, transform, undefined,
                         undefined, { 'aria-label': 'Thumb to move the target point of the connector' }, undefined,
-                        'e-diagram-bezier-handle e-target');
+                        'e-diagram-bezier-handle e-target', handleSize);
                     if (canShowCorner(selectorConstraints, 'ConnectorTargetThumb')) {
                         this.renderBezierLine(
                             'bezierLine_' + (i + 1) + '_2', wrapper, canvas, segment.points[1],
@@ -901,14 +900,17 @@ export class DiagramRenderer {
      * @param { string } className - Provide the class name for this element .
      * @private
      */
-    public renderCircularHandle(
+	 /**
+	 *Feature (EJ2-44346) Provide support to increase the size of the resize thumb
+	 */
+     public renderCircularHandle(
         id: string, selector: DiagramElement, cx: number, cy: number, canvas: HTMLCanvasElement | SVGElement,
         visible: boolean, enableSelector?: number, t?: Transforms, connected?: boolean, canMask?: boolean,
-        ariaLabel?: Object, count?: number, className?: string)
+        ariaLabel?: Object, count?: number, className?: string, handleSize ?: number)
         :
         void {
         const wrapper: DiagramElement = selector;
-        let radius: number = 7;
+        
         let newPoint: PointModel = { x: cx, y: cy };
 
         if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
@@ -917,31 +919,32 @@ export class DiagramRenderer {
             newPoint = transformPointByMatrix(matrix, newPoint);
         }
 
-        const options: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
+        const options: RectAttributes = this.getBaseAttributes(wrapper) as RectAttributes;
         options.stroke = 'black';
         options.strokeWidth = 1;
         if (count !== undefined) {
-            radius = 5;
             options.id = 'segmentEnd_' + count;
             options.fill = '#e2e2e2';
         } else {
-            radius = 7;
             options.fill = connected ? '#8CC63F' : 'white';
         }
-        options.centerX = (newPoint.x + t.tx) * t.scale;
-        options.centerY = (newPoint.y + t.ty) * t.scale;
-        options.radius = radius;
-        options.angle = 0;
+        options.cornerRadius =  handleSize/2;
+        options.angle = selector.rotateAngle;
         options.id = id;
         options.visible = visible;
         options.class = className;
+        options.width = handleSize;
+        options.height = handleSize;
+        options.x = (newPoint.x - options.width/t.scale * options.pivotX + t.tx ) * t.scale;
+        options.y = (newPoint.y - options.height/t.scale * options.pivotY + t.ty ) * t.scale;
         if (connected) {
             options.class += ' e-connected';
         }
         if (canMask) {
             options.visible = false;
         }
-        this.svgRenderer.drawCircle(canvas as SVGElement, options, enableSelector, ariaLabel);
+        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+       this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel );
     }
 
     /**

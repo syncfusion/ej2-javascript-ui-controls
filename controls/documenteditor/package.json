@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-documenteditor",
-	"version": "20.2.49",
+	"version": "19.36.0",
 	"description": "Feature-rich document editor control with built-in support for context menu, options pane and dialogs.",
 	"keywords": [
 		"ej2",
@@ -15,7 +15,7 @@
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-documenteditor.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-documenteditor.es2015.js",
+	"es2015": "./dist/es6/ej2-documenteditor.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*",

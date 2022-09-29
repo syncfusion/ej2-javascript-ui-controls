@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { print as printWindow, createElement } from '@syncfusion/ej2-base';
+import { print as printFunction, createElement } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { getElement, getClientElement } from '../utils/helper';
 import { IPrintEventArgs } from '../model/interface';
@@ -11,17 +11,13 @@ import { beforePrint } from '../model/constants';
  * @hidden
  */
 export class Print {
-    private control: Maps;
-    private printWindow: Window;
 
     /**
      * Constructor for Maps
      *
      * @param {Maps} control - Specifies the instance of the map
      */
-    constructor(control: Maps) {
-        this.control = control;
-    }
+    constructor(control: Maps) { }
 
     /**
      * To print the Maps
@@ -30,16 +26,16 @@ export class Print {
      * @returns {void}
      * @private
      */
-    public print(elements?: string[] | string | Element): void {
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+    public print(maps: Maps, elements?: string[] | string | Element): void {
+        let printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        printWindow.moveTo(0, 0);
+        printWindow.resizeTo(screen.availWidth, screen.availHeight);
         const argsData: IPrintEventArgs = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+            cancel: false, htmlContent: this.getHTMLContent(maps, elements), name: beforePrint
         };
-        this.control.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
+        maps.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
             if (!argsData.cancel) {
-                printWindow(argsData.htmlContent, this.printWindow);
+                printFunction(argsData.htmlContent, printWindow);
             }
         });
     }
@@ -51,20 +47,19 @@ export class Print {
      * @returns {Element} - Returns the div element
      * @private
      */
-    private getHTMLContent(elements?: string[] | string | Element): Element {
-        const elementRect: ClientRect = getClientElement(this.control.element.id);
+    private getHTMLContent(maps: Maps, elements?: string[] | string | Element): Element {
         let div: Element = createElement('div');
-        let divElement: Element = this.control.element.cloneNode(true) as Element;
-        if (this.control.isTileMap) {
+        let divElement: Element = maps.element.cloneNode(true) as Element;
+        if (maps.isTileMap) {
             for (let i: number = 0; i < divElement.childElementCount; i++) {
-                if (divElement.children[i].id === this.control.element.id + '_tile_parent') {
+                if (divElement.children[i].id === maps.element.id + '_tile_parent') {
                     (divElement.children[i] as HTMLElement).style.removeProperty('height');
                     (divElement.children[i] as HTMLElement).style.removeProperty('width');
                     (divElement.children[i] as HTMLElement).style.removeProperty('top');
                     (divElement.children[i] as HTMLElement).style.removeProperty('left');
                     (divElement.children[i] as HTMLElement).style.removeProperty('right');
                     (divElement.children[i] as HTMLElement).style.removeProperty('overflow');
-                    const svgElement: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+                    const svgElement: HTMLElement = document.getElementById(maps.element.id + '_Tile_SVG_Parent');
                     (divElement.children[i].children[0] as HTMLElement).style.overflow = 'hidden';
                     (divElement.children[i].children[0] as HTMLElement).style.position = 'absolute';
                     (divElement.children[i].children[0] as HTMLElement).style.height = svgElement.style.height;
@@ -102,13 +97,8 @@ export class Print {
     /**
      * To destroy the print.
      *
-     * @param {Maps} maps - Specifies the instance of the maps
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
-    }
+    public destroy(): void { }
 }

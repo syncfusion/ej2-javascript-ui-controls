@@ -39,7 +39,7 @@ describe('Resolve inconsistent behaviour of text selection inside an editable ta
       editor.selection.selectTable();
      expect( editor.selection.text.indexOf('s')).toBe(0);
     });
-  });
+ });
 
   describe('beforeXmlHttpRequestSend event validation', () => {
     let editor: DocumentEditor = undefined;
@@ -76,42 +76,41 @@ describe('Resolve inconsistent behaviour of text selection inside an editable ta
     });
   });
 
-let sfdtContent: any = {"sections":[{"blocks":[{"inlines":[{"text":"Hello world"}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"Arabic","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Arial","localeId":1033,"localeIdEastAsia":1033,"localeIdBidi":1025},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"ReadOnly","enforcement":true,"hashValue":"XOH98UiIqRYguZOJrdyhaiJT/ZAESiNUnJiY0c3mrcpjOjazZWA4P17WWfB2SsNCLasE1rGsOYn/nzzLVVab/w==","saltValue":"uuHnaH8T7/BkKwWc7htbWA==","cryptProviderType":"rsaAES","cryptAlgorithmClass":"hash","cryptAlgorithmType":"typeAny","cryptAlgorithmSid":"14","cryptSpinCount":"100000","dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013"};
-describe('Trying to unprotect document with wrong password validation', () => {
-  let editor: DocumentEditor = undefined;
-  let istriggered: boolean = false;
-  beforeAll(() => {
-    document.body.innerHTML = '';
-    let ele: HTMLElement = createElement('div', { id: 'container' });
-    document.body.appendChild(ele);
-    editor = new DocumentEditor({ isReadOnly: false, height: "800px" });
-    editor.enableAllModules();
-    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-    editor.beforeXmlHttpRequestSend = function (args: XmlHttpRequestEventArgs) {
-      istriggered = true;
-      args.cancel = true;
-    };
-    editor.appendTo('#container');
+  let sfdtContent: any = {"sections":[{"blocks":[{"inlines":[{"text":"Hello world"}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"Arabic","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Arial","localeId":1033,"localeIdEastAsia":1033,"localeIdBidi":1025},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"ReadOnly","enforcement":true,"hashValue":"XOH98UiIqRYguZOJrdyhaiJT/ZAESiNUnJiY0c3mrcpjOjazZWA4P17WWfB2SsNCLasE1rGsOYn/nzzLVVab/w==","saltValue":"uuHnaH8T7/BkKwWc7htbWA==","cryptProviderType":"rsaAES","cryptAlgorithmClass":"hash","cryptAlgorithmType":"typeAny","cryptAlgorithmSid":"14","cryptSpinCount":"100000","dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013"};
+  describe('Trying to unprotect document with wrong password validation', () => {
+    let editor: DocumentEditor = undefined;
+    let istriggered: boolean = false;
+    beforeAll(() => {
+      document.body.innerHTML = '';
+      let ele: HTMLElement = createElement('div', { id: 'container' });
+      document.body.appendChild(ele);
+      editor = new DocumentEditor({ isReadOnly: false, height: "800px" });
+      editor.enableAllModules();
+      (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+      (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+      (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+      (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+      editor.beforeXmlHttpRequestSend = function (args: XmlHttpRequestEventArgs) {
+        istriggered = true;
+        args.cancel = true;
+      };
+      editor.appendTo('#container');
+    });
+    afterAll((done) => {
+      editor.destroy();
+      document.body.removeChild(document.getElementById('container'));
+      editor = undefined;
+      document.body.innerHTML = '';
+      setTimeout(() => {
+        done();
+      }, 1000);
+    });
+    it('Unprotect document with wrong password validation', () => {
+      editor.open(sfdtContent);
+      editor.editor.stopProtection('');
+      expect(istriggered).toBe(true);
+    });
   });
-  afterAll((done) => {
-    editor.destroy();
-    document.body.removeChild(document.getElementById('container'));
-    editor = undefined;
-    document.body.innerHTML = '';
-    setTimeout(() => {
-      done();
-    }, 1000);
-  });
-  it('Unprotect document with wrong password validation', () => {
-    editor.open(sfdtContent);
-    editor.editor.stopProtection('');
-    expect(istriggered).toBe(true);
-  });
-});
-
 let pasteContent: any = {
 	"sections": [
 		{
@@ -2546,7 +2545,7 @@ let firstPageHeader: any = {"sections":[{"sectionFormat":{"pageWidth":595.299987
       editor.selection.selectAll();
       expect(editor.selection.text).toBe('Pam\r');
     });
- }); 
+ });
  describe('Check the continue header in table', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {

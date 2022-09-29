@@ -239,14 +239,16 @@ export class InfiniteScroll implements IAction {
 
     private makeGroupCollapseRequest(parentUid?: string): void {
         const gObj: IGrid = this.parent;
-        const rows: Element[] = gObj.getRows();
-        const index: number = getRowIndexFromElement(rows[rows.length - 1]);
+        const captionRows: Element[] = [].slice.call(gObj.getContentTable().querySelectorAll('tr'));
+        const rows: Element[] = gObj.groupSettings.enableLazyLoading ? captionRows : gObj.getRows();
+        const index: number = !gObj.groupSettings.enableLazyLoading ? getRowIndexFromElement(rows[rows.length - 1]) :
+            gObj.contentModule['visibleRows'].length - 1;
         const prevPage: number = this.parent.pageSettings.currentPage;
-        this.parent.pageSettings.currentPage = Math.ceil(index / this.parent.pageSettings.pageSize) + 1;
-        if (this.parent.pageSettings.currentPage > this.maxPage) {
+        if (prevPage >= this.maxPage) {
             gObj.hideSpinner();
             return;
         }
+        this.parent.pageSettings.currentPage = Math.ceil(index / this.parent.pageSettings.pageSize) + 1;
         const scrollArg: InfiniteScrollArgs = {
             requestType: 'infiniteScroll',
             currentPage: this.parent.pageSettings.currentPage,
@@ -456,6 +458,7 @@ export class InfiniteScroll implements IAction {
         isMovable?: boolean, isFrozenRows?: boolean, isFrozenRight?: boolean): void {
         const row: Row<Column>[] = !isFrozenRows ? this.generateRows(args.result, args.e) : rows;
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+        this.parent.removeMaskRow();
         if ((args.e as AddEventArgs).requestType === 'save' && (args.e as AddEventArgs).index && (args.e as AddEventArgs).data) {
             row[0].index = this.addRowIndex;
             this.addRowIndex = null;
@@ -754,8 +757,9 @@ export class InfiniteScroll implements IAction {
         const isInfinite: boolean = targetEle.classList.contains(literals.content);
         if (isInfinite && this.parent.enableInfiniteScrolling && !e.isLeft) {
             const scrollEle: Element = this.parent.getContent().firstElementChild;
+            const captionRows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
             this.prevScrollTop = scrollEle.scrollTop;
-            const rows: Element[] = this.parent.getRows();
+            const rows: Element[] = this.parent.groupSettings.enableLazyLoading ? captionRows : this.parent.getRows();
             if (!rows.length) {
                 return;
             }
@@ -775,7 +779,8 @@ export class InfiniteScroll implements IAction {
                 }
                 const rows: Element[] = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 const row: Element = rows[rows.length - 1];
-                const rowIndex: number = getRowIndexFromElement(row);
+                const rowIndex: number = !this.parent.groupSettings.enableLazyLoading ? getRowIndexFromElement(row) :
+                    this.parent.contentModule['visibleRows'].length - 1;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
                 args = {
                     requestType: 'infiniteScroll',
@@ -847,8 +852,19 @@ export class InfiniteScroll implements IAction {
             this.initialRender = false;
             this.intialPageQuery(query);
         } else {
-            if (!this.isInfiniteScroll && (this.requestType === 'delete' || this.requestType === 'add')) {
-                this.editPageQuery(query);
+            if ((this.requestType === 'delete' || this.requestType === 'add')) {
+                if (!this.isInfiniteScroll && !this.parent.groupSettings.enableLazyLoading) {
+                    this.editPageQuery(query);
+                } else if (this.parent.groupSettings.enableLazyLoading && !this.parent.infiniteScrollSettings.enableCache) {
+                    if (this.parent.infiniteScrollSettings.initialBlocks < this.parent.pageSettings.currentPage) {
+                        query.page(1, this.parent.pageSettings.pageSize * this.parent.pageSettings.currentPage);
+                    }
+                    else {
+                        query.page(1, this.parent.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks);
+                    }
+                } else {
+                    query.page(this.parent.pageSettings.currentPage, this.parent.pageSettings.pageSize);
+                }
             } else {
                 query.page(this.parent.pageSettings.currentPage, this.parent.pageSettings.pageSize);
             }

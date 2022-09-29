@@ -1,4 +1,5 @@
 @include export-module('h-scroll-theme') {
+
   /*! h-scroll theme */
   #{&}.e-hscroll {
 
@@ -15,7 +16,6 @@
           box-shadow: $hscroll-device-arrow-rtl-box-shadow;
         }
       }
-
     }
 
     &.e-scroll-device {
@@ -135,7 +135,6 @@
           }
         }
       }
-
     }
 
     .e-scroll-nav  {
@@ -155,8 +154,7 @@
 
       &:active::after {
         @include hscroll-btn-animation-after;
-     }
-
+      }
     }
   }
 }

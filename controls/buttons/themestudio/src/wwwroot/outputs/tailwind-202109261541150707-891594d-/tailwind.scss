@@ -1507,7 +1507,7 @@ $cbox-border-style: solid !default;
   /*! checkbox theme */
   .e-checkbox-wrapper,
   .e-css.e-checkbox-wrapper {
-    // sass-lint:disable no-vendor-prefixes
+    /* stylelint-disable property-no-vendor-prefix */
     -webkit-tap-highlight-color: transparent;
     @at-root {
       & .e-frame {
@@ -2274,7 +2274,7 @@ $chip-outline-danger-disabled-border-color: $content-bg-color-alt3 !default;
   }
 }
 
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @include export-module('chip-layout') {
   .e-chip-list {
     display: flex;

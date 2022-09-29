@@ -18,7 +18,7 @@ export class SpreadsheetHelper extends TestHelper {
         let dataBound: EmitType<Object> = () => {
             setTimeout(() => {
                 if (done) { done(); }
-            }, 500);
+            }, 50);
         };
         let options: SpreadsheetModel = {
             dataBound: dataBound,

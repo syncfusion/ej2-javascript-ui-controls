@@ -3,6 +3,7 @@
  */
 @import "base/fluent.scss";
 @import "accordion/fluent.scss";
+@import "appbar/fluent.scss";
 @import "drop-down-list/fluent.scss";
 @import "input/fluent.scss";
 @import "popup/fluent.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/fluent.scss";
 @import "radio-button/fluent.scss";
 @import "switch/fluent.scss";
+@import "floating-action-button/fluent.scss";
+@import "speed-dial/fluent.scss";
 @import "list-view/fluent.scss";
 @import "sortable/fluent.scss";
 @import "daterangepicker/fluent.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/fluent.scss";
 @import "splitter/fluent.scss";
 @import "excel-filter/fluent.scss";
+@import "skeleton/fluent.scss";
 @import "grid/fluent.scss";
 @import "file-manager/fluent.scss";
 @import "treegrid/fluent.scss";
@@ -63,8 +67,10 @@
 @import "progress-button/fluent.scss";
 @import "rich-text-editor/fluent.scss";
 @import "gantt/fluent.scss";
+@import "image-editor/fluent.scss";
 @import "inplace-editor/fluent.scss";
 @import "kanban/fluent.scss";
+@import "message/fluent.scss";
 @import "toast/fluent.scss";
 @import "pdfviewer/fluent.scss";
 @import "timepicker/fluent.scss";

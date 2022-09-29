@@ -1,5 +1,5 @@
 @include export-module('slider-layout') {
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   // sass-lint:disable no-important
 
   .e-control-wrapper.e-slider-container.e-material-slider .e-slider .e-handle {
@@ -31,10 +31,10 @@
       background-color: $slider-handle-bg-color;
       border: 0;
       border-radius: 8px;
-      // sass-lint:disable-all
+      /* stylelint-disable */
       cursor: -webkit-grab;
       cursor: grab;
-      // sass-lint:enable-all
+      /* stylelint-enable */
       opacity: 1;
 
       &.e-popup.e-popup-close {
@@ -68,10 +68,10 @@
       }
 
       &.e-tooltip-active {
-        // sass-lint:disable-all
+        /* stylelint-disable */
         cursor: -webkit-grabbing;
         cursor: grabbing;
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
 
       .e-arrow-tip {
@@ -123,10 +123,10 @@
         border-bottom-right-radius: 0%;
         border-top-left-radius: 50%;
         border-top-right-radius: 50%;
-        // sass-lint:disable-all
+        /* stylelint-disable */
         cursor: -webkit-grab;
         cursor: grab;
-        // sass-lint:enable-all
+        /* stylelint-enable */
         opacity: 1;
 
         &.e-material-tooltip-start {
@@ -134,10 +134,10 @@
         }
 
         &.e-tooltip-active {
-          // sass-lint:disable-all
+          /* stylelint-disable */
           cursor: -webkit-grabbing;
           cursor: grabbing;
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
 
         .e-arrow-tip {
@@ -681,7 +681,7 @@
           }
 
           .e-handle {
-            @if($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
+            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
               margin-left: $slider-handle-mobile-margin-left;
               top: $slider-handle-mobile-handle-top;
             }
@@ -892,7 +892,7 @@
 
           .e-handle {
             background: $grey-600;
-            transform: scale(.5) !important;
+            transform: scale(.5) !important;/* stylelint-disable-line declaration-no-important */
 
             &.e-handle-first {
               background-color: $grey-600;
@@ -1105,7 +1105,7 @@
 
             .e-button-icon::before {
               color: $slider-button-icon-bg-color;
-              @if($skin-name == 'FluentUI') {
+              @if ($skin-name == 'FluentUI') {
                 content: '\e75c';
                 font-size: 14px;
               }
@@ -1207,7 +1207,7 @@
           overflow: hidden;
           top: calc(50% - 4px);
         }
-        @if($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
           top: calc(50% - 3px);
         }
         @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
@@ -1646,8 +1646,7 @@
     .e-range {
       border-radius: $slider-range-border-radius;
       position: absolute;
-      transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, width 300ms ease-out,
-      height 300ms ease-out;
+      transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, width 300ms ease-out, height 300ms ease-out;
 
       &.e-drag-horizontal {
         cursor: pointer;
@@ -1689,16 +1688,16 @@
         }
 
         @if ($skin-name == 'material' or $skin-name == 'material-dark') {
-          // sass-lint:disable-all
+          /* stylelint-disable */
           cursor: -webkit-grab;
           cursor: grab;
-          // sass-lint:enable-all
+          /* stylelint-enable */
 
           &.e-handle-active {
-            // sass-lint:disable-all
+            /* stylelint-disable */
             cursor: -webkit-grabbing;
             cursor: grabbing;
-            // sass-lint:enable-all
+            /* stylelint-enable */
           }
 
           &.e-handle-start {
@@ -1747,7 +1746,7 @@
             border-color: $slider-tab-border-color;
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
             background-color: $slider-tab-background;
             border-color: $slider-tab-border-color;
@@ -1763,7 +1762,7 @@
             border: $slider-tab-border;
             box-shadow: $slider-tab-active-box-shadow;
           }
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
       }
 
@@ -1898,7 +1897,7 @@
               height: 16px;
               top: -8px;
             }
-            @if($skin-name == 'bootstrap5') {
+            @if ($skin-name == 'bootstrap5') {
               height: 18px;
               top: -11px;
             }
@@ -1907,7 +1906,7 @@
               top: -16px;
             }
 
-            @if($skin-name == 'FluentUI') {
+            @if ($skin-name == 'FluentUI') {
               height: 30px;
               top: -17px;
             }
@@ -1933,7 +1932,6 @@
             @if ($skin-name == 'bootstrap4') {
               height: 22px;
               top: -5px;
-
             }
             @if ($skin-name == 'bootstrap5') {
               height: 26px;
@@ -1969,7 +1967,7 @@
               left: 6px;
               width: calc(100% - 12px);
             }
-            @if($skin-name == 'bootstrap5') {
+            @if ($skin-name == 'bootstrap5') {
               background-position: center;
               left: 5px;
               width: 18px;
@@ -2099,7 +2097,6 @@
         @else {
           left: calc(50% - 14px);
         }
-
         top: 0;
         width: 28px;
         @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {

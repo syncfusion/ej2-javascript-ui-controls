@@ -12,12 +12,6 @@
 
 ### TreeMap
 
-#### Bug Fixes
-
-- `#F175858` - The TreeMap's title will now accept the provided font family.
-
-### TreeMap
-
 #### New Features
 
 - `#280380` - `isResized` argument is exposed in the `loaded` event arguments for indicating that the component is resized.

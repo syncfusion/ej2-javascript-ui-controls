@@ -1,11 +1,11 @@
 {
 	"name": "@syncfusion/ej2-kanban",
-	"version": "20.2.44",
+	"version": "19.10.6",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-kanban.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-kanban.es2015.js",
+	"es2015": "./dist/es6/ej2-kanban.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*",

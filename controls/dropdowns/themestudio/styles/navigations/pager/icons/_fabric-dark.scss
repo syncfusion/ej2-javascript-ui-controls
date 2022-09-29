@@ -1,5 +1,6 @@
 @include export-module('pager-fabric-dark-icons') {
-  /*!component icons*/
+
+  /* !component icons */
 
   #{&}.e-pager,
   .e-grid-menu {
@@ -43,8 +44,7 @@
       & .e-icon-next.e-nextpage:hover,
       & .e-icon-next.e-nextpagedisabled::before {
         content: '\e829';
-     }
-   }
+      }
+    }
   }
 }
-    

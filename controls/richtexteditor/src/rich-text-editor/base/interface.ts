@@ -10,12 +10,14 @@ import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
 import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
-import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
+import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
 import { Link } from '../renderer/link-module';
 import { Image } from '../renderer/image-module';
+import { Audio } from '../renderer/audio-module';
+import { Video } from '../renderer/video-module';
 import { Table } from '../renderer/table-module';
 import { ServiceLocator } from '../services/service-locator';
 import { UndoRedoCommands } from '../../markdown-parser/plugin/undo';
@@ -58,6 +60,28 @@ export interface IRichTextEditor extends Component<HTMLElement> {
      * }
      */
     insertImageSettings: ImageSettingsModel
+    /**
+     * Configures the image settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedTypes: ['wav', 'mp3', 'm4a','wma'],
+     * layoutOption: 'Inline', saveFormat: 'Blob',
+     * saveUrl:null, path: null,
+     * }
+     */
+    insertAudioSettings: AudioSettingsModel
+    /**
+     * Configures the video settings of the RTE.
+     *
+     * @default
+     * {
+     * allowedTypes: ['mp4', 'mov', 'wmv', 'avi'],
+     * layoutOption: 'Inline', width: '200px', saveFormat: 'Blob',
+     * height: '200px', saveUrl:null, path: null, resize: false
+     * }
+     */
+    insertVideoSettings: VideoSettingsModel
     fileManagerSettings: FileManagerSettingsModel
 
     tableSettings: TableSettingsModel
@@ -117,6 +141,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enterKeyModule?: EnterKeyAction
     enterKey?: EnterKey
     shiftEnterKey?: ShiftEnterKey
+    audioModule?: Audio
+    videoModule?: Video
     pasteCleanupModule?: PasteCleanup
     undoRedoModule?: UndoRedoManager
     quickToolbarModule?: QuickToolbar
@@ -157,6 +183,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     clipboardAction?: Function
     localeObj?: L10n
     invokeChangeEvent?(): void
+    addAudioVideoWrapper?(): void
     preventDefaultResize?(e?: FocusEvent | MouseEvent): void
     autoResize?(): void
     executeCommand?(commandName: CommandName, value?: string | HTMLElement): void
@@ -176,6 +203,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
 export interface IRenderer {
     linkQTBar?: BaseQuickToolbar
     imageQTBar?: BaseQuickToolbar
+    audioQTBar?: BaseQuickToolbar
+    videoQTBar?: BaseQuickToolbar
     tableQTBar?: BaseQuickToolbar
     textQTBar?: BaseQuickToolbar
     inlineQTBar?: BaseQuickToolbar
@@ -334,6 +363,8 @@ export interface IImageNotifyArgs {
     properties?: object
     selection?: NodeSelection
     selfImage?: Image
+    selfAudio?: Audio
+    selfVideo?: Video
     link?: HTMLInputElement | HTMLElement
     selectNode?: Node[]
     selectParent?: Node[]
@@ -362,6 +393,44 @@ export interface IImageCommandsArgs {
     /** Defines the class name to be added to the image */
     cssClass?: string
     /** Defines the image element to be edited */
+    selectParent?: Node[]
+}
+
+/**
+ * Provides information about a Audio added in the Rich Text Editor.
+ */
+export interface IAudioCommandsArgs {
+    /** Defines the src attribute of the audio */
+    url?: string
+    /** Defines the instance of the current selection */
+    selection?: NodeSelection
+    /** Defines the fileName of the audio */
+    fileName?: string
+    /** Defines the class name to be added to the audio */
+    cssClass?: string
+    /** Defines the audio element to be edited */
+    selectParent?: Node[]
+}
+
+/**
+ * Provides information about a Video added in the Rich Text Editor.
+ */
+export interface IVideoCommandsArgs {
+    /** Defines the src attribute of the video */
+    url?: string
+    /** Defines the instance of the current selection */
+    selection?: NodeSelection
+    /** Defines the minWidth, maxWidth and width of the video */
+    width?: { minWidth?: string | number; maxWidth?: string | number; width?: string | number }
+    /** Defines the minHeight, maxHeight and height of the video */
+    height?: { minHeight?: string | number; maxHeight?: string | number; height?: string | number }
+    /** Defines the fileName of the video */
+    fileName?: string | DocumentFragment
+    /** Defines the type of video link added */
+    isEmbedUrl?: boolean
+    /** Defines the class name to be added to the video */
+    cssClass?: string
+    /** Defines the video element to be edited */
     selectParent?: Node[]
 }
 
@@ -725,6 +794,16 @@ export interface AfterImageDeleteEventArgs {
     /** Defined the image element deleted */
     element: Node
     /** Defines the src attribute of the image element deleted */
+    src: string
+}
+
+/**
+ * Provides information about a AfterMediaDeleteEvent event.
+ */
+export interface AfterMediaDeleteEventArgs {
+    /** Defines the audio/video element deleted */
+    element: Node
+    /** Defines the src attribute of the audio/video element deleted */
     src: string
 }
 
@@ -1368,6 +1447,14 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         command: 'Images',
         subCommand: 'Image'
     },
+    'insertAudio': {
+        command: 'Audios',
+        subCommand: 'Audio'
+    },
+    'insertVideo': {
+        command: 'Videos',
+        subCommand: 'Video'
+    },
     'editImage': {
         command: 'Images',
         subCommand: 'Image'
@@ -1406,7 +1493,7 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'subscript' | 'uppercase' | 'lowercase' | 'fontColor' | 'fontName' | 'fontSize' | 'backColor' |
 'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
 'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
-'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
+'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' | 'insertAudio' | 'insertVideo' |
 'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink';
 
 /**

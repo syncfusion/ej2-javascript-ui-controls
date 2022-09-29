@@ -753,6 +753,7 @@ export class Renderer {
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
         this.renderSelectionHighlight(page, lineWidget, top);
         let paraFormat: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
+        let x: number = left;
         if (lineWidget.isFirstLine() && !paraFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
@@ -798,6 +799,7 @@ export class Renderer {
         let isCommentMark: boolean = false;
         
         let children: ElementBox[] = lineWidget.renderedElements;
+        let underlineY: number = this.getUnderlineYPosition(lineWidget);
         for (let i: number = 0; i < children.length; i++) {
             let elementBox: ElementBox = children[i] as ElementBox;
             if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
@@ -864,7 +866,6 @@ export class Renderer {
                 this.toSkipFieldCode(elementBox);
                 continue;
             }
-            let underlineY: number = this.getUnderlineYPosition(lineWidget);
             if (!this.isPrinting) {
                 if (this.getScaledValue(top + elementBox.margin.top, 2) + elementBox.height * this.documentHelper.zoomFactor < 0 ||
                     this.getScaledValue(top + elementBox.margin.top, 2) > this.documentHelper.visibleBounds.height) {
@@ -895,7 +896,154 @@ export class Renderer {
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
             }
             left += elementBox.width + elementBox.margin.left;
+            if(lineWidget.paragraph.bidi) {
+                x += (elementBox.margin.left);
+            } else {
+                x = left;
+            }
         }
+        if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
+            let text: string = '';
+            let currentCharFormat: WCharacterFormat = lineWidget.paragraph.characterFormat;
+            let y: number = 0;
+            let characterFont: string = this.retriveCharacterformat(currentCharFormat);
+            let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+            l10n.setLocale(this.documentHelper.owner.locale);
+            this.pageContext.fillStyle = HelperMethods.getColor(currentCharFormat.fontColor);
+            if (children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) {
+                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset;
+                //Paragraph with empty linewidgets with mutiple line breaks
+                if (!lineWidget.isEndsWithLineBreak && lineWidget.indexInOwner > 0 && children.length == 0) {
+                    y = top + lineWidget.previousLine.maxBaseLine;
+                }
+            } else {
+                if (lineWidget.paragraph.childWidgets.length === 1) {
+                    y = top + lineWidget.maxBaseLine + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph);
+                } else {
+                    y = top + lineWidget.maxBaseLine;
+                }
+            }
+            if (currentCharFormat.revisions.length > 0) {
+                //CharacterFormat Track changes is not supported., Hence only the Para mark changes are parsed and preserved in the charcterForamt. 
+                let color: string = this.documentHelper.authors.get(currentCharFormat.revisions[0].author);
+                this.pageContext.fillStyle = HelperMethods.getColor(color);
+            }
+            if (lineWidget.isEndsWithPageBreak) {
+                characterFont = this.retriveCharacterformat(currentCharFormat, 0.7);
+                if (lineWidget.paragraph.bidi) {
+                    text = String.fromCharCode(182) + '.....' + l10n.getConstant('Page Break') + '.....';
+                } else {
+                    text = '.....' + l10n.getConstant('Page Break') + '.....' + String.fromCharCode(182);
+                }
+                let textinfo: number = this.documentHelper.textHelper.getWidth(text, currentCharFormat);
+                if (this.viewer instanceof PageLayoutViewer) {
+                    if (lineWidget.paragraph.bidi) {
+                        if (x < (textinfo + this.viewer.clientActiveArea.x)) {
+                            text = '.....';
+                        }
+                    }
+                    else {
+                        if (x > this.viewer.clientActiveArea.width) {
+                            text = '.....';
+                        }
+                    }
+                } else {
+                    if (lineWidget.paragraph.bidi) {
+                        if ((x - textinfo) < this.viewer.clientActiveArea.x) {
+                            text = '.....';
+                        }
+                    }
+                    else {
+                        if ((x + textinfo) > (this.viewer.clientActiveArea.width + this.viewer.clientActiveArea.x)) {
+                            text = '.....';
+                        }
+                    }
+                }
+            } else if (lineWidget.isEndsWithLineBreak) {
+                text = lineWidget.paragraph.bidi ? String.fromCharCode(8627): String.fromCharCode(8629);
+            } else if (lineWidget.paragraph.isInsideTable && isNullOrUndefined(lineWidget.nextLine) && isNullOrUndefined(lineWidget.paragraph.nextWidget)) {
+                if (lineWidget.height != 0) { //The nested table parent cell mark is render the out bound ,So skip cell mark is linewidget height equal to zero 
+                    text = String.fromCharCode(164);
+                }
+            } else if(isNullOrUndefined(lineWidget.nextLine)) {
+                text = String.fromCharCode(182);
+            }
+            if (lineWidget.paragraph.containerWidget instanceof BodyWidget && !isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {
+                if (lineWidget.paragraph.containerWidget.sectionIndex !== (lineWidget.paragraph.nextRenderedWidget.containerWidget as BodyWidget).sectionIndex && lineWidget.isLastLine()) {
+                    text = ':::::' + l10n.getConstant('Section Break Next Page') + ':::::';
+                    characterFont = this.retriveCharacterformat(currentCharFormat, 0.7);
+                    if(lineWidget.isEndsWithPageBreak){
+                        if (lineWidget.paragraph.bidi) {
+                            text = text+String.fromCharCode(182)+'.....' + l10n.getConstant('Page Break') + '.....';
+                        } else {
+                            text = '.....' + l10n.getConstant('Page Break') + '.....' + String.fromCharCode(182)+text;
+                        }
+                    }
+                    let textinfo: number = this.documentHelper.textHelper.getWidth(text, currentCharFormat);
+                    if (this.viewer instanceof PageLayoutViewer) {
+                        if (lineWidget.paragraph.bidi) {
+                            if (x < (textinfo + this.viewer.clientActiveArea.x)) {
+                                text = ':::::';
+                                if (lineWidget.isEndsWithPageBreak) {
+                                    text = ':::::.....'
+                                }
+                            }
+                        }
+                        else {
+                            if ((x + textinfo - this.viewer.clientActiveArea.x) > (this.viewer.clientActiveArea.width)) {
+                                text = ':::::';
+                                if (lineWidget.isEndsWithPageBreak) {
+                                    text = '.....:::::'
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        if (lineWidget.paragraph.bidi) {
+                            if ((x - textinfo) < this.viewer.clientActiveArea.x) {
+                                text = ':::::';
+                                if (lineWidget.isEndsWithPageBreak) {
+                                    text = ':::::.....'
+                                }
+                            }
+                        }
+                        else {
+                            if ((x + textinfo - this.documentHelper.pages[0].boundingRectangle.x) > (this.viewer.clientActiveArea.width)) {
+                                text = ':::::';
+                                if (lineWidget.isEndsWithPageBreak) {
+                                    text = '.....:::::'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(text.length>0) {
+                if (lineWidget.paragraph.bidi) {
+                    x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat);
+                }
+                this.pageContext.font = characterFont;
+                this.pageContext.fillText(text, this.getScaledValue(x, 1), this.getScaledValue(y, 2));
+            }
+        }    
+    }
+    private retriveCharacterformat(character: WCharacterFormat, fontSizeFactor?: number): string {
+        if(isNullOrUndefined(fontSizeFactor)){
+            fontSizeFactor = 1;
+        }
+        let font: string = '';
+        this.pageContext.textBaseline = 'alphabetic';
+        let bold: string = '';
+        let italic: string = '';
+        let fontSize: number = 11;
+        let fontFamily: string = '';
+        bold = character.bold ? 'bold' : '';
+        italic = character.italic ? 'italic' : '';
+        fontSize = character.fontSize === 0 ? 0.5 : character.fontSize / (character.baselineAlignment === 'Normal' ? 1 : 1.5);
+        fontSize = fontSize * this.documentHelper.zoomFactor * fontSizeFactor;
+        fontFamily = character.fontFamily;
+        font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';
+        return font;
     }
 
     private toSkipFieldCode(element: ElementBox): void {
@@ -978,8 +1126,14 @@ export class Renderer {
         } else {
             this.pageContext.fillStyle = HelperMethods.getColor(color);
         }
-
-        this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+        if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
+            if (elementBox instanceof ListTextElementBox && elementBox.text === "\t") {
+                this.tabMark(elementBox, format, left, top, leftMargin, topMargin);
+            }
+            this.pageContext.fillText(this.replaceSpace(text), this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+        } else {
+            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+        }
         if (isParaBidi) {
             this.pageContext.direction = 'ltr';
             left -= elementBox.width;
@@ -1071,9 +1225,14 @@ export class Renderer {
                 ((characterRange & CharacterRangeType.RightToLeft) == CharacterRangeType.RightToLeft))) && format.bidi) {
             text = this.inverseCharacter(text);
         }
-
-        this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
-
+        if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
+            if ((elementBox instanceof TabElementBox || elementBox instanceof TextElementBox) && elementBox.text === "\t") {
+                this.tabMark(elementBox, format, left, top, leftMargin, topMargin);
+            }
+            this.pageContext.fillText(this.replaceSpace(text), this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);            
+        } else {
+            this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
+        }
         if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
             && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading || this.documentHelper.owner.editor.triggerPageSpellCheck))) {
             elementBox.canTrigger = true;
@@ -1111,7 +1270,25 @@ export class Renderer {
         }
     }
 
+    private tabMark(elementBox: TextElementBox, format: WCharacterFormat, left: number, top: number, leftMargin: number, topMargin: number) {
+        let tabMarkString: string = elementBox.paragraph.bidi? String.fromCharCode(8592): String.fromCharCode(8594);
+        let tabMarkWidth: number = this.documentHelper.textHelper.getWidth(tabMarkString, format);
+        let availableSpaceWidth = elementBox.width / 2;
+        let tabWidth = tabMarkWidth / 2;
+        this.pageContext.font = this.retriveCharacterformat(elementBox.characterFormat);
+        if (availableSpaceWidth > tabMarkWidth) {
+            this.pageContext.fillText(tabMarkString, this.getScaledValue(((left + leftMargin + availableSpaceWidth) - (tabWidth)), 1), this.getScaledValue(top + topMargin, 2));
+        } else {
+            this.pageContext.fillText(tabMarkString, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
+        }
+    }
+    private replaceSpace(text: string) {
+        text = text.replace(new RegExp(String.fromCharCode(32), 'g'), String.fromCharCode(183));
+        text = text.replace(new RegExp(String.fromCharCode(160), 'g'), String.fromCharCode(176));
+        return text;
+    }
 
+    
     private inverseCharacter(ch: string): string {
         switch (ch) {
             //Specify the '('

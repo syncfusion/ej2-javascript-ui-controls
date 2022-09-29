@@ -2,7 +2,7 @@ import { Column } from './../models/column';
 import { Row } from './../models/row';
 import { IGrid, ICell, ExportHelperArgs, ForeignKeyFormat } from '../base/interface';
 import { CellType } from '../base/enum';
-import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement, NumberFormatOptions} from '@syncfusion/ej2-base';
+import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { Cell } from '../models/cell';
 import { ValueFormatter } from './../services/value-formatter';
 import { Query, DataManager, DataResult } from '@syncfusion/ej2-data';

@@ -1,4 +1,3 @@
-
 @use 'sass:math';
 
 $pager-font-size: 13px !default;
@@ -36,7 +35,8 @@ $pager-device-messabar-padding: 0 !default;
 $pager-bigger-rtl-parentmsgbar-margin-left: 6px !default;
 $pager-bigger-letter-spacing: 10px 13px !default;
 $pager-numericitem-min-width: 26px !default;
-//default 
+
+//default
 $pager-bg-color: $grey-dark !default;
 $pager-active-bg-color: $accent !default;
 $pager-hover-bg-color: rgba($grey-white, .1) !default;

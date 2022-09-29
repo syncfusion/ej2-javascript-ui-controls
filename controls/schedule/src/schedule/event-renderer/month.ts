@@ -28,6 +28,7 @@ export class MonthEvent extends EventBase {
     public withIndicator: boolean;
     public maxOrIndicator: boolean;
     public inlineValue: boolean;
+    private isResourceEventTemplate: boolean;
 
     constructor(parent: Schedule) {
         super(parent);
@@ -58,6 +59,7 @@ export class MonthEvent extends EventBase {
         if (this.parent.dragAndDropModule) {
             this.parent.dragAndDropModule.setDragArea();
         }
+        this.isResourceEventTemplate = this.parent.isSpecificResourceEvents();
         const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         if (this.parent.rowAutoHeight) {
             this.parent.uiStateValues.top = conWrap.scrollTop;
@@ -94,7 +96,8 @@ export class MonthEvent extends EventBase {
         }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
         const scrollTop: number = conWrap.scrollTop;
-        if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
+        if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll
+            && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
         }
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -113,7 +116,7 @@ export class MonthEvent extends EventBase {
                 isPreventScrollUpdate: true,
                 scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
             };
-            if (this.parent.virtualScrollModule) {
+            if (this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll) {
                 if (this.parent.currentAction) {
                     conWrap.scrollTop = scrollTop;
                     this.parent.currentAction = null;
@@ -262,7 +265,7 @@ export class MonthEvent extends EventBase {
             const appRight: number = (this.parent.enableRtl) ? position : 0;
             const appHeight: number = this.cellHeight - this.monthHeaderHeight;
             const appTop: number = this.getRowTop(resIndex);
-            const blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex);
+            const blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex, this.isResourceEventTemplate);
             setStyleAttribute(blockElement, {
                 'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px',
                 'right': appRight + 'px', 'top': appTop + 'px'
@@ -341,7 +344,7 @@ export class MonthEvent extends EventBase {
     public renderResourceEvents(): void {
         const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.resourceBase.lastResourceLevel;
+            this.parent.resourceBase.renderedResources;
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
                 const sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
@@ -376,7 +379,7 @@ export class MonthEvent extends EventBase {
         const attrs: { [key: string]: string } = {
             'data-id': 'Appointment_' + record[this.fields.id],
             'role': 'button', 'tabindex': '0',
-            'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record), 'aria-pressed': 'false', 'aria-grabbed': 'true',
+            'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record), 'aria-pressed': 'false',
             'aria-label': this.parent.getAnnouncementString(newRecord, eventSubject)
         };
         if (!isCloneElement) {
@@ -402,7 +405,7 @@ export class MonthEvent extends EventBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
-            const eventTemplate: string = 'eventTemplate' + (this.parent.activeViewOptions.group.resources.length > 0 ? '_' + resIndex : '');
+            const eventTemplate: string = 'eventTemplate' + (this.isResourceEventTemplate ? '_' + resIndex : '');
             templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, eventTemplate, templateId, false);
         } else {
             const eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;

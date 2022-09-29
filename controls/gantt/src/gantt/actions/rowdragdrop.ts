@@ -8,7 +8,6 @@ import { RowDropEventArgs, IParent } from '../base/interface';
 import { ITreeData } from '@syncfusion/ej2-treegrid';
 import { TaskFieldsModel } from '../models/models';
 
-
 /**
  * Gantt Excel Export module
  */
@@ -138,7 +137,7 @@ export class RowDD {
     }
     private rowDragStartHelper(args: RowDragEventArgs): void {
         this.parent.trigger('rowDragStartHelper', args);
-        if (this.parent.readOnly || this.parent.filterSettings.columns.length > 0) {
+        if (this.parent.readOnly ) {
             args.cancel = true;
         }
         if (this.parent.viewType === 'ResourceView' && getValue('level', args.data[0]) === 0) {
@@ -355,6 +354,62 @@ export class RowDD {
                         this.updateSharedResourceTask();
                     }
                 }
+                if (this.parent.taskFields.dependency) {
+                    let isValidPredecessor: boolean = true;
+                    let draggedParent: IGanttData;
+                    let toParent: IGanttData;
+                    if (draggedRecord.parentItem) {
+                        draggedParent = this.parent.currentViewData[this.parent.ids.indexOf(draggedRecord.parentItem.taskId)];
+                    }
+                    else {
+                        draggedParent = draggedRecord;
+                    }
+                    if (droppedRecord.parentItem) {
+                        toParent = this.parent.currentViewData[this.parent.ids.indexOf(droppedRecord.parentItem.taskId)];
+                    }
+                    else {
+                        toParent = droppedRecord;
+                    }
+                    let validateRecords: IGanttData[];
+                    if (toParent.uniqueID === draggedParent.uniqueID || (draggedParent.parentItem &&
+                        toParent.uniqueID == this.parent.currentViewData[this.parent.ids.indexOf(draggedParent.parentItem.taskId)].uniqueID)) {
+                        validateRecords = this.parent.currentViewData.filter((data: IGanttData) => {
+                            if ((data.ganttProperties.predecessor && data.ganttProperties.predecessor.length > 0)) {
+                                for (let i: number = 0; i < data.ganttProperties.predecessor.length; i++) {
+                                    return (parseInt(data.ganttProperties.predecessor[i].to) === parseInt(toParent.ganttProperties.taskId) ||
+                                        parseInt(data.ganttProperties.predecessor[i].from) === parseInt(toParent.ganttProperties.taskId));
+                                }
+                            }
+                            return null
+                        });
+                        let predName: string[] = [];
+                        for (let i: number = 0; i < validateRecords.length; i++) {
+                            predName = [];
+                            if (validateRecords[i].ganttProperties.predecessor) {
+                                for (let k: number = 0; k < validateRecords[i].ganttProperties.predecessor.length; k++) {
+                                    if (parseInt(validateRecords[i].ganttProperties.taskId) !==
+                                        parseInt(validateRecords[i].ganttProperties.predecessor[k].from)) {
+                                        predName.push(validateRecords[i].ganttProperties.predecessor[k].from);
+                                    }
+                                    else {
+                                        predName.push(validateRecords[i].ganttProperties.predecessor[k].to);
+                                    }
+                                }
+                            }
+                            for (let j: number = 0; j < predName.length; j++) {
+                                let name: string = predName[j].replace(/\D/g, '');
+                                let toRec: IGanttData[] = this.parent.currentViewData.filter((data) => {
+                                    return parseInt(data.ganttProperties.taskId) == parseInt(name);
+                                });
+                                isValidPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(validateRecords[i], toRec[0]);
+                                if (!isValidPredecessor) {
+                                    this.parent.dataOperation['resetDependency'](validateRecords[i]);
+                                    this.parent.dataOperation['resetDependency'](toRec[0]);
+                                }
+                            }
+                        }
+                    }
+                }
                 // method to update the edited parent records
                 for (let j: number = 0; j < this.updateParentRecords.length; j++) {
                     this.parent.dataOperation.updateParentItems(this.updateParentRecords[j]);
@@ -463,7 +518,7 @@ export class RowDD {
         }
         if ((tempDataSource as IGanttData[]).length > 0 && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem)) {
             for (let i: number = 0; i < Object.keys(tempDataSource).length; i++) {
-               if (!isNullOrUndefined(droppedRecord.taskData[ganttFields.child]) && 
+                if (!isNullOrUndefined(droppedRecord.taskData[ganttFields.child]) && 
                     tempDataSource[i][ganttFields.child] === droppedRecord.taskData[ganttFields.child]) {
                     idx = i;
                 }
@@ -729,7 +784,7 @@ export class RowDD {
                 }
                 let idx: number;
                 const ganttData: IGanttData[] = (dataSource as IGanttData[]).length > 0 && this.parent.viewType !== 'ResourceView' ?
-                    dataSource as IGanttData[] : this.parent.updatedRecords;
+                    dataSource as IGanttData[] : this.parent.flatData;
                 for (let i: number = 0; i < ganttData.length; i++) {
                     if (this.parent.viewType === 'ResourceView') {
                         if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {

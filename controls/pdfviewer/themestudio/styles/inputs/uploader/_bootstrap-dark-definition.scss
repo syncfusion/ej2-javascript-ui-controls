@@ -75,7 +75,7 @@ $file-container-left: 60px !default;
 $ie-icons-position-value: 10px !default;
 $ie-abort-icon-position-value: 12px !default;
 
-//default  
+//default
 $upload-font-family: inherit !default;
 $drop-area-font-size-smaller: 14px !default;
 $drop-area-font-size: 15px !default;
@@ -166,6 +166,7 @@ $remove-icon-color: $grey-cc !default;
 $upload-hover-icon-color: $grey-dark-font !default;
 $disabled-state: rgba($grey-dark-font, .38) !default;
 $uploader-icons-hover-radius: 50% !default;
+
 // mouse small
 $header-padding-small: 12px 0 12px 12px !default;
 $drop-area-small-font-size: 13px !default;
@@ -181,6 +182,7 @@ $progress-bar-bottom-paddding-small: 2px !default;
 $drop-small-area-padding-left: 10px !default;
 $li-min-height-small: 79px !default;
 $header-padding-rtl-small: 12px 12px 12px 0 !default;
+
 //enddefault
 
 // form upload

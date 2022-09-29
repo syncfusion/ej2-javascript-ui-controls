@@ -955,239 +955,111 @@ describe('Conditional formatting ->', () => {
                 spreadsheet.dataBind();
             });
         });
-        describe('I327232 ->' , () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'Text' }] }], selectedRange: 'A1' }] },done);
+        describe('I327232, EJ2-55014, fb25069, EJ2-48232, EJ2-48541, EJ2-48148, EJ2-51527, EJ2-55991 ->' , () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{  dataSource: defaultData}] }] },done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Paste action for conditional formatting applied cell ->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
-                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                helper.triggerMouseAction(
-                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
-                    target);
-                helper.getElement('#cf_textcontains_dlg').click();
-                setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
-                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
-                    expect(btn.disabled).toBeTruthy();
-                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                    let evt: Event;
-                    ['Text', ''].forEach((text: string): void => {
-                        input.value = text;
-                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                    });
-                    btn.click();
-                    helper.invoke('selectRange', ['A1']);
-                    helper.getElement('#' + helper.id + '_copy').click();
-                    setTimeout(() => {
-                        helper.invoke('selectRange', ['D4']);
-                        setTimeout(() => {
-                            helper.getElement('#' + helper.id + '_paste').click();
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('fb25069 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'Sample' }] }], selectedRange: 'A1' }] },done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Unable to add More than 4 characters in the conditional formatting input feild ->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
-                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                helper.triggerMouseAction(
-                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
-                    target);
-                helper.getElement('#cf_textcontains_dlg').click();
-                setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
-                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
-                    expect(btn.disabled).toBeTruthy();
-                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                    let evt: Event;
-                    ['Sample', ''].forEach((text: string): void => {
-                        input.value = text;
-                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                    });
-                    btn.click();
+            it('I327232, EJ2-55014 - Paste action for conditional formatting applied cell ->', (done: Function) => {
+                helper.invoke('conditionalFormat', [{ type: 'ContainsText', cFColor: 'RedFT', value: 'It', Range: 'A1' }]);
+                expect(helper.invoke('getCell', [0, 0]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                helper.invoke('copy', ['A1']).then(function () {
+                    helper.invoke('paste', ['B1']);
+                    expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                     done();
                 });
             });
-        });
-        describe('EJ2-48232->', () => {
-            beforeEach((done: Function) => { 
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ }] }]}, done);
+
+            it('fb25069 - Unable to add More than 4 characters in the conditional formatting input feild ->', (done: Function) => {
+                helper.invoke('selectRange', ['A3'])
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                helper.getElement('#cf_textcontains_dlg').click();
+                setTimeout((): void => {
+                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
+                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
+                    expect(btn.disabled).toBeTruthy();
+                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                    let evt: Event;
+                    ['Sports Shoes'].forEach((text: string): void => {
+                        input.value = text;
+                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                    });
+                    btn.click();
+                    expect(helper.invoke('getCell', [2, 0]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    done();
+                });
             });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Font Color is changed to default when data validation and conditional formatting is applied', (done: Function) => {
-                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "a,b,c" }, 'B1']);
-                helper.invoke('selectRange', ['B1']);
-                const td: HTMLElement = helper.invoke('getCell', [0, 1]);
+
+            it('EJ2-48232 - Font Color is changed to default when data validation and conditional formatting is applied', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "a,b,c" }, 'C1']);
+                helper.invoke('selectRange', ['C1']);
+                const td: HTMLElement = helper.invoke('getCell', [0, 2]);
                 (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
                 setTimeout(() => {
                     helper.click('.e-ddl.e-popup li:nth-child(1)');
-                    setTimeout(() => { 
-                        helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                        const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
-                        (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                        helper.triggerMouseAction(
-                            'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
-                            target);
-                        helper.getElement('#cf_textcontains_dlg').click();
-                        setTimeout((): void => {
-                            helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
-                            const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
-                            expect(btn.disabled).toBeTruthy();
-                            let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                            let evt: Event;
-                            ['a', ''].forEach((text: string): void => {
-                                input.value = text;
-                                evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                            });
-                            btn.click();
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-48541->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells:[{ value: '200'}, {index: 1, value: '300'}, {index: 3, formula: '=SUM(A1:B1)'} ] }], selectedRange: 'D1' }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Conditional formatting is not getting refreshed in a cell with formula after editing argument values', (done: Function) => {
-                helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
-                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                helper.triggerMouseAction(
-                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
-                    target);
-                helper.getElement('#cf_textcontains_dlg').click();
-                setTimeout((): void => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
-                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
-                    expect(btn.disabled).toBeTruthy();
-                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                    let evt: Event;
-                    ['500', ''].forEach((text: string): void => {
-                        input.value = text;
-                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                        if (text === '500') {
-                            expect(btn.disabled).toBeFalsy();
-                        } else {
-                            expect(btn.disabled).toBeTruthy();
-                        }
-                    });
-                    btn.click()
-                    helper.edit('A1', '100');
-                    setTimeout((): void => {
-                        expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe(100);
-                        expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBe(400);
-                        done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-48148->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A8:A2' }] },done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Conditional Formatting doesnot work when range selected from down to up/left to right', (done: Function) => {
-                helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
-                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                helper.triggerMouseAction(
-                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
-                    target);
-                helper.getElement('#cf_textcontains_dlg').click();
-                setTimeout(() => {
-                    helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
-                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
-                    expect(btn.disabled).toBeTruthy();
-                    const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                    input.value = 'Sneakers';
-                    const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                    expect(btn.disabled).toBeFalsy();
-                    btn.click();
-                    expect(helper.invoke('getCell', [6, 0]).style.color).toBe('rgb(156, 0, 85)');
-                    done();
-                });
-            });
-        });
-        describe('EJ2-51527', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Cells are getting highlighted even if no range for formatting is applied', (done: Function) => {
-                helper.invoke('selectRange', ['H1:H11']);
-                helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
-                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                helper.triggerMouseAction(
-                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
-                    target);
-                helper.getElement('#cf_greaterthan_dlg').click();
-                setTimeout((): void => {
-                    const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-primary.e-btn');
-                    expect(btn.disabled).toBeTruthy();
-                    let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
-                    let evt: Event;
-                    ['  ', ''].forEach((text: string): void => {
-                        input.value = text;
-                        evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
-                        if (text === '  ') {
-                            expect(btn.disabled).toBeTruthy();
-                        }
-                    });
-                    helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(2)');
-                    done();
-                });
-            });
-        });
-        describe('EJ2-55014, EJ2-62888 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Copy and paste didnt work properly with conditional formatting->', (done: Function) => {
-                helper.invoke('selectRange', ['D2:E6']);
-                helper.invoke('conditionalFormat', [{ type: "Duplicate", cFColor: "RedFT", range: "D2:E6" }]);
-                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toContain('rgb(255, 199, 206)');
-                helper.click('_copy');
-                setTimeout(() => {
-                    helper.invoke('selectRange', ['K2']);
-                    helper.click('_paste');
                     setTimeout(() => {
-                        expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+                        helper.invoke('conditionalFormat', [{ type: 'ContainsText', cFColor: 'RedFT', value: 'a', Range: 'C1' }]);
+                        expect(helper.invoke('getCell', [0, 2]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                         done();
                     });
                 });
+            });
+
+            it('EJ2-48541 - Conditional formatting is not getting refreshed in a cell with formula after editing argument values', (done: Function) => {
+                helper.invoke('selectRange', ['I2']);
+                helper.invoke('updateCell', [{ formula: '=SUM(H2:H3)' }, 'I2']);
+                helper.invoke('conditionalFormat', [{ type: 'ContainsText', cFColor: 'RedFT', value: '60', Range: 'I2' }]);
+                expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                helper.edit('H2', '5');
+                expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('');
+                done();
+            });
+
+            it('EJ2-48148 - Conditional Formatting doesnot work when range selected from down to up/left to right', (done: Function) => {
+                helper.invoke('selectRange', ['A10:A8'])
+                helper.invoke('conditionalFormat', [{ type: 'ContainsText', cFColor: 'RedFT', value: 'Shoes', Range: 'A10:A8' }]);
+                expect(helper.invoke('getCell', [7, 0]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [9, 0]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                done();
+            });
+
+            it('EJ2-51527 - Cells are getting highlighted even if no range for formatting is applied', (done: Function) => {
+                helper.invoke('selectRange', ['H2:H11']);
+                helper.invoke('conditionalFormat', [{ type: 'ContainsText', cFColor: 'RedFT', value: ' ', Range: 'H2:H11' }]);
+                expect(helper.invoke('getCell', [7, 7]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [10, 7]).style.backgroundColor).toBe('');
+                done();
+            });
+
+            it('EJ2-55991 - Need to fix the conditional formatting issue with the negative values for lesser than condition->', (done: Function) => {
+                helper.invoke('updateCell', [{ value: '-103' }, 'J2']);
+                helper.invoke('updateCell', [{ value: '-112' }, 'J3']);
+                helper.invoke('updateCell', [{ value: '107' }, 'J4']);
+                helper.invoke('updateCell', [{ value: '-108' }, 'J5']);
+                helper.invoke('updateCell', [{ value: '120' }, 'J6']);
+                helper.invoke('selectRange', ['J2:J6']);
+                helper.invoke('conditionalFormat', [{ type: "LessThan", cFColor: "RedFT", value: "-100", range: "J2:J6" }]);
+                expect(helper.invoke('getCell', [1, 9]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [2, 9]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [3, 9]).style.backgroundColor).toBe('');
+                done();
+            });
+        }); 
+        describe('EJ2-62888 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
             });
             it('Issue in applying conditional formatting for the same selected range->', (done: Function) => {
                 helper.invoke('selectRange', ['D2:E4']);
@@ -1207,26 +1079,6 @@ describe('Conditional formatting ->', () => {
                         done();
                     });
                 });
-            });
-        });
-        describe('EJ2-55991->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ value: '-103' }] }, { cells: [{ value: '-112' }] }, { cells: [{ value: '015' }] },
-                    { cells: [{ value: '107' }] }, { cells: [{ value: '-108' }] }, { cells: [{ value: '-110' }] },
-                    { cells: [{ value: '120' }] }, { cells: [{ value: '0' }] }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the conditional formatting issue with the negative values for lesser than condition->', (done: Function) => {
-                helper.invoke('selectRange', ['A1:A10']);
-                helper.invoke('conditionalFormat', [{ type: "LessThan", cFColor: "RedFT", value: "-100", range: "A1:A10" }]);
-                expect(helper.invoke('getCell', [0, 0]).style.backgroundColor).toContain('rgb(255, 199, 206)');
-                expect(helper.invoke('getCell', [7, 0]).style.backgroundColor).toBe('');
-                expect(helper.invoke('getCell', [8, 0]).style.backgroundColor).toBe('');
-                done();
             });
         });
     });

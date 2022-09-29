@@ -913,7 +913,7 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             ganttObj.reorderRows([3], 4, 'child');
             setTimeout(() => {
-                expect(ganttObj.flatData[4]['TaskID']).toBe(53);
+                expect(ganttObj.flatData[4]['TaskID']).toBe(42);
             }, 100);
         });
     });

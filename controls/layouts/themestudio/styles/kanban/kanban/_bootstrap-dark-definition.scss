@@ -1,6 +1,6 @@
 /*! Kanban component's bootstrap theme definitions and variables */
 $kanban-skin: 'bootstrap' !default;
-$kanban-column-bg-color: $grey-f5 !default;
+$kanban-column-bg-color:$gray-dark !default;
 $kanban-border-color: $grey-e6 !default;
 $kanban-default-font-color: $grey-light-font !default;
 $kanban-content-font: $grey-light-font !default;
@@ -9,7 +9,7 @@ $kanban-dropped-clone-bg-color: rgba($brand-primary, .1) !default;
 $kanban-dropped-clone-border-color: $brand-primary !default;
 $kanban-dragged-clone-border-color: $grey-dd !default;
 $kanban-icons-color: $gray-light !default;
-$kanban-bg-color: $grey-white !default;
+$kanban-bg-color: $gray-dark !default;
 $kanban-text-area-bg-color: initial !default;
 $kanban-text-area-color: $grey-dark-font !default;
 $kanban-popup-overlay-bg-color: #383838 !default;
@@ -220,4 +220,5 @@ $kanban-col-expand-collapse-bg-color: $grey-light;
 $kanban-col-expand-collapse-color: $kanban-icons-color;
 $kanban-col-expand-collapse-border: 1px solid transparent;
 $kanban-col-expand-collapse-box-shadow: none;
+
 //Color End

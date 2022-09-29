@@ -31,7 +31,7 @@
 @mixin different-states {
   // Outline focus
   .e-btn:focus,
-  input:focus+label.e-btn {
+  input:focus + label.e-btn {
     &.e-outline {
       border-color: $btn-grp-outline-focus-border-color;
       outline-color: $btn-grp-outline-focus-color;
@@ -59,8 +59,8 @@
       &.e-danger {
         border-color: $btn-grp-outline-danger-focus-border-color;
         outline-color: $btn-grp-outline-focus-danger-color;
-     }
-   }
+      }
+    }
   }
 }
 

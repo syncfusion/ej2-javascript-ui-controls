@@ -1113,7 +1113,7 @@ describe('Map marker properties tesing', () => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_cluster_0');
                 let triger: MouseEvents = new MouseEvents();
                 triger.clickEvent(element);
-                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_3');
+                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_3_Group');
                 expect(element['style'].visibility === 'hidden').toBe(true);
             };
             map.layers[0].markerSettings = [
@@ -1136,7 +1136,7 @@ describe('Map marker properties tesing', () => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_cluster_0');
                 let triger: MouseEvents = new MouseEvents();
                 triger.clickEvent(element);
-                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_3');
+                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_3_Group');
                 expect(element['style'].visibility === 'visible').toBe(true);
             };
             map.layers[0].markerClusterSettings.allowClusterExpand = true;
@@ -1155,7 +1155,7 @@ describe('Map marker properties tesing', () => {
                 triger.clickEvent(element);
                 element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_4_cluster_1');
                 expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
-                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6');
+                element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6_Group');
                 expect(element['style'].visibility === 'visible' || element['style'].visibility === 'hidden').toBe(true);
                 map.loaded = null;
             };
@@ -1196,9 +1196,9 @@ describe('Map marker properties tesing', () => {
             triger.clickEvent(element);
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
             expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
-            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_Group');
             expect(element['style'].visibility === 'visible' || element['style'].visibility === 'hidden').toBe(true);
-            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6');
+            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6_Group');
             expect(element['style'].visibility === 'hidden').toBe(true);
 
             //When we click on the maps, then expanded markers should be merged
@@ -1213,7 +1213,7 @@ describe('Map marker properties tesing', () => {
             map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
             expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
-            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_Group');
             expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
 
             //After the zoom then expand the markers and pan the map, there should markers is expanded state
@@ -1225,7 +1225,7 @@ describe('Map marker properties tesing', () => {
             triger.dragAndDropEvent(element, 250, 250, 250, 280, 'touch', map);
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
             expect(element['style'].visibility === 'hidden' || element['style'].visibility === '').toBe(true);
-            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_Group');
             expect(element['style'].visibility === 'visible').toBe(true);
             // when click on maps, expanded marker will be merged.
             element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_undefined');
@@ -1233,7 +1233,7 @@ describe('Map marker properties tesing', () => {
             triger.clickEvent(element);
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
             expect(element['style'].visibility === 'visible' || element['style'].visibility === '').toBe(true);
-            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+            element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2_Group');
             expect(element['style'].visibility === 'hidden').toBe(true);
         });
         it('Show Tooltip for marker on click and checking in zoom panning', () => {

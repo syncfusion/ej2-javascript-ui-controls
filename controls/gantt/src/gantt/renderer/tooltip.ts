@@ -250,7 +250,7 @@ export class Tooltip {
         if (ganttData) {
             data = ganttData.ganttProperties;
             taskName = !isNullOrUndefined(data.taskName) ? '<tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
-            ( this.parent.disableHtmlEncode ?  data.taskName.replace(/</g,"&lt;").replace(/>/g,"&gt;"):data.taskName) + '</td></tr>' : '';
+            ( this.parent.disableHtmlEncode ?  data.taskName.replace(/</g,"&lt;").replace(/>/g,"&gt;"):data.taskName)+ '</td></tr>' : '';
         }
         switch (elementType) {
         case 'milestone':
@@ -401,7 +401,8 @@ export class Tooltip {
      */
     public getPredecessorTooltipData(args: TooltipEventArgs): PredecessorTooltip {
         const predeceesorParent: string = args.target.parentElement.id;
-        const taskIds: string[] = predeceesorParent.match(/\d+/g);
+        const taskIds: string[] = predeceesorParent.match(/ConnectorLineparent(.*)child(.*)/);
+        taskIds.shift();        
         let fromTask: IGanttData;
         let toTask: IGanttData;
         if (this.parent.viewType === 'ResourceView') {

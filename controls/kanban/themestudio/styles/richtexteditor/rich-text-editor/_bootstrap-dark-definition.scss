@@ -187,6 +187,7 @@ $rte-big-link-dlg-max-height: 427px !default;
 $rte-big-file-browser-dlg-max-height: 557px !default;
 $rte-big-table-dlg-max-height: 330px !default;
 $rte-big-edit-table-dlg-max-height: 414px !default;
+
 //enddefault
 
 @include export-module('richtexteditor-bootstrap') {

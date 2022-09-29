@@ -418,7 +418,7 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
-
+  
   describe('EJ2-26550 - Edit cell through method', () => {
     let gridObj: TreeGrid;
     let cellEdit: () => void;

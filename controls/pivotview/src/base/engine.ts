@@ -73,6 +73,8 @@ export class PivotEngine {
     public filterMembers: number[];
     /** @hidden */
     public formatFields: { [key: string]: IFormatSettings } = {};
+    /** @hidden */
+    public groupingFieldsInfo: { [key: string]: string } = {};
     /* eslint-disable  */
     /** @hidden */
     public dateFormatFunction: { [key: string]: { exactFormat: Function, fullFormat: Function } } = {};
@@ -99,6 +101,10 @@ export class PivotEngine {
     public columnCount: number = 0;
     /** @hidden */
     public rowCount: number = 0;
+    /** @hidden */
+    public columnPageCount: number = 0;
+    /** @hidden */
+    public rowPageCount: number = 0;
     /** @hidden */
     public colFirstLvl: number = 0;
     /** @hidden */
@@ -131,6 +137,8 @@ export class PivotEngine {
     public isLastHeaderHasMeasures: boolean = true;
     /** @hidden */
     public measureIndex: number = -1;
+    /** @hidden */
+    public isPagingOrVirtualizationEnabled: boolean = false;
     /* eslint-disable  */
     private reportDataType: { [key: string]: string };
     private allowValueFilter: boolean;
@@ -184,6 +192,9 @@ export class PivotEngine {
     private clonedReport: IDataOptions;
     private measureNames: { [key: string]: string } = {};
     private currencyCode: string;
+    private enablePaging: boolean = false;
+    private enableVirtualization: boolean = false;
+    private isParentLevelAdded: boolean = true;
     public renderEngine(
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function, onHeadersSort?: Function): void {
         this.getValueCellInfo = fn;
@@ -196,6 +207,8 @@ export class PivotEngine {
         this.saveDataHeaders = {};
         this.columnCount = 0;
         this.rowCount = 0;
+        this.columnPageCount = 0;
+        this.rowPageCount = 0;
         this.colFirstLvl = 0;
         this.rowFirstLvl = 0;
         this.rowStartPos = 0;
@@ -236,6 +249,9 @@ export class PivotEngine {
             (<{ [key: string]: Object }>customProperties.clonedReport).properties ?
             (<{ [key: string]: Object }>customProperties.clonedReport).properties :
             customProperties.clonedReport) : {};
+        this.enablePaging = customProperties.enablePaging;
+        this.enableVirtualization = customProperties.enableVirtualization;
+        this.isPagingOrVirtualizationEnabled = this.enablePaging || this.enableVirtualization;
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
@@ -266,7 +282,7 @@ export class PivotEngine {
                     this.fieldKeys[this.fields[i]] = dataSource.type === 'CSV' ? i : this.fields[i];
                 }
             }
-            if (customProperties && customProperties.pageSettings && customProperties.pageSettings.allowDataCompression) {
+            if (customProperties && customProperties.pageSettings && customProperties.allowDataCompression) {
                 this.actualData = this.data;
                 this.data = this.getGroupedRawData(dataSource);
             }
@@ -298,7 +314,7 @@ export class PivotEngine {
             this.valueSortData = [];
             this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
                 : undefined;
-            this.allowDataCompression = this.pageSettings && this.pageSettings.allowDataCompression;
+            this.allowDataCompression = customProperties && customProperties.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
             this.removeIrrelevantFields(dataSource, Object.keys(this.fieldList));
@@ -582,6 +598,8 @@ export class PivotEngine {
                         let newFieldName: string = fieldName + '_custom_group';
                         let customGroups: ICustomGroups[] = group.customGroups;
                         let groupValue: string;
+                        this.groupingFieldsInfo[fieldName] = fieldName;
+                        this.groupingFieldsInfo[newFieldName] = fieldName;
                         for (let i: number = 0, len: number = customGroups.length; i < len; i++) {
                             {
                                 let cGroup: ICustomGroups = customGroups[i];
@@ -652,12 +670,19 @@ export class PivotEngine {
                                                 showRemoveIcon: actualField.showRemoveIcon,
                                                 showSubTotals: actualField.showValueTypeIcon,
                                                 allowDragAndDrop: actualField.allowDragAndDrop,
-                                                expandAll: actualField.expandAll
+                                                expandAll: actualField.expandAll,
+                                                groupName: actualField.groupName
                                             };
                                             axis.splice(i, 0, newField);
+                                            this.groupingFieldsInfo[newField.name] = fieldName;
                                         }
                                     }
                                     break;
+                                } else if (axis[i].name.indexOf(fieldName) > -1) {
+                                    let axisField: string = groupFields[axis[i].name];
+                                    let currentField: IFieldOptions = axis.filter((axisField: IFieldOptions) => {return axisField.name === fieldName})[0];
+                                    let currentFieldCaption: string = (currentField.caption.indexOf(' (') !== -1 && currentField.caption.indexOf(')') !== -1) ? currentField.caption.slice(currentField.caption.indexOf('(') + 1, currentField.caption.length - 1) : currentField.caption;
+                                    axis[i].caption = (this.localeObj ? this.localeObj.getConstant(axisField) : currentField) + ' (' + currentFieldCaption + ')';
                                 }
                                 i++;
                             }
@@ -695,6 +720,7 @@ export class PivotEngine {
                                     caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')'
                                 };
                                 this.fieldMapping.push(newField);
+                                this.groupingFieldsInfo[newField.name] = fieldName;
                             } else if (groupKeys[gCnt] !== fieldName) {
                                 mappingField.caption = (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')'
                             }
@@ -709,6 +735,7 @@ export class PivotEngine {
                                 caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')'
                             };
                             this.fieldMapping.push(newField);
+                            this.groupingFieldsInfo[newField.name] = fieldName;
                         } else {
                             mappingField.caption = (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')'
                         }
@@ -813,9 +840,12 @@ export class PivotEngine {
                                         showSortIcon: actualField.showSortIcon,
                                         showRemoveIcon: actualField.showRemoveIcon,
                                         showEditIcon: actualField.showEditIcon,
-                                        expandAll: actualField.expandAll
+                                        expandAll: actualField.expandAll,
+                                        groupName: actualField.groupName
                                     };
                                     axis.splice(i, 0, newField);
+                                    this.groupingFieldsInfo[newField.name] = fieldName;
+                                    this.groupingFieldsInfo[fieldName] = fieldName;
                                     break;
                                 } else if (axis[i].name === customFieldName && customGroupField) {
                                     let newField: IFieldOptions = {
@@ -831,9 +861,12 @@ export class PivotEngine {
                                         showFilterIcon: customGroupField.showFilterIcon,
                                         showSortIcon: customGroupField.showSortIcon,
                                         showEditIcon: customGroupField.showEditIcon,
-                                        expandAll: customGroupField.expandAll
+                                        expandAll: customGroupField.expandAll,
+                                        groupName: customGroupField.groupName
                                     };
                                     axis.splice(i, 1, newField);
+                                    this.groupingFieldsInfo[newField.name] = fieldName;
+                                    this.groupingFieldsInfo[fieldName] = fieldName;
                                     break;
                                 }
                                 i++;
@@ -974,6 +1007,8 @@ export class PivotEngine {
                         field.showSubTotals : true;
                     this.fieldList[key].expandAll = (field && 'expandAll' in field) ?
                         field.expandAll : false;
+                    this.fieldList[key].pid = (field && 'groupName' in field && field.groupName) ? field.groupName :
+                        this.groupingFieldsInfo[key] ? this.groupingFieldsInfo[key] : undefined;
                     if (this.isValueFiltersAvail && isValueFilteringEnabled) {
                         this.fieldList[key].dateMember = [];
                         this.fieldList[key].formattedMembers = {};
@@ -1014,6 +1049,8 @@ export class PivotEngine {
                             field.showSubTotals : true,
                         expandAll: (field && 'expandAll' in field) ?
                             field.expandAll : false,
+                        pid: (field && 'groupName' in field && field.groupName) ? field.groupName :
+                            this.groupingFieldsInfo[key] ? this.groupingFieldsInfo[key] : undefined,
                         aggregateType: (field && 'type' in field) ? field.type :
                             (((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ? 'string' :
                                 (type === undefined || type === 'undefined') ? 'number' : type) === 'number' ? 'Sum' : 'Count',
@@ -1034,6 +1071,8 @@ export class PivotEngine {
                     field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key] as any] as Date);
                 this.fieldList[key] = {
                     id: key,
+                    pid: (field && 'groupName' in field && field.groupName) ? field.groupName :
+                        this.groupingFieldsInfo[key] ? this.groupingFieldsInfo[key] : undefined,
                     caption: (field && 'caption' in field && field.caption) ? field.caption : key,
                     type: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ?
                         'string' : (type === undefined || type === 'undefined') ? 'number' : type,
@@ -1909,7 +1948,7 @@ export class PivotEngine {
     public updateGridData(dataSource: IDataOptions): void {
         this.updateDataSourceSettings(dataSource, true);
         this.data = dataSource.dataSource as IDataSet[];
-        if (this.pageSettings && this.pageSettings.allowDataCompression) {
+        if (this.allowDataCompression) {
             this.actualData = this.data;
             this.data = this.getGroupedRawData(dataSource);
         }
@@ -2052,7 +2091,7 @@ export class PivotEngine {
         if (!headerCollection) {
             this.applyValueSorting();
         }
-        if (this.pageSettings) {
+        if (this.isPagingOrVirtualizationEnabled) {
             if (!headerCollection) {
                 this.headerCollection.rowHeaders = this.rMembers;
                 this.headerCollection.columnHeaders = this.cMembers;
@@ -2689,7 +2728,7 @@ export class PivotEngine {
             if (isNullArgument) {
                 this.rMembers = rMembers;
                 this.cMembers = cMembers;
-                if (this.pageSettings) {
+                if (this.isPagingOrVirtualizationEnabled) {
                     this.headerCollection.rowHeaders = this.rMembers;
                     this.headerCollection.columnHeaders = this.cMembers;
                 }
@@ -2829,7 +2868,7 @@ export class PivotEngine {
                                 type: cellType, formattedText:
                                     ((cell.type === 'sum' || cell.type === 'grand sum') ? cell.formattedText :
                                         (cell.formattedText + ' Total')),
-                                axis: 'column', level: -1, colIndex: colCnt, rowIndex: rowPos, valueSort: cell.valueSort
+                                axis: 'column', hierarchyName: cell.hierarchyName, level: -1, colIndex: colCnt, rowIndex: rowPos, valueSort: cell.valueSort
                             };
                             if (cell.valueSort && cell.valueSort[this.valueSortSettings.headerText]) {
                                 this.valueSortSettings.columnIndex = colCnt;
@@ -3125,7 +3164,7 @@ export class PivotEngine {
                 if (isDateType) {
                     return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, 'date');
                 } else {
-                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string')) {
+                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string') && hierarchy[0].actualText.match(/[a-z]+/g)) {
                         let stringValue: IAxisSet[] = [];
                         let outOfRange: IAxisSet;
                         let alphaNumbervalue: IAxisSet[] = [];
@@ -3284,40 +3323,44 @@ export class PivotEngine {
         return headers;
     }
     private calculatePagingValues(): void {
-        if (this.pageSettings) {
+        if (this.isPagingOrVirtualizationEnabled) {
             if (this.valueAxis === 1) {
                 this.rowValuesLength = this.values.length;
             } else {
                 this.colValuesLength = this.values.length;
             }
-            this.memberCnt = -this.rowValuesLength;
-            this.rowStartPos = ((this.pageSettings.rowCurrentPage * this.pageSettings.rowSize) -
-                (this.pageSettings.rowSize)) * this.rowValuesLength;
-            let exactStartPos: number = (this.rowStartPos + (this.pageSettings.rowSize * 3 * this.rowValuesLength)) > this.rowCount ?
-                (this.rowCount - (this.pageSettings.rowSize * 3 * this.rowValuesLength)) : this.rowStartPos;
+            this.columnPageCount = Math.ceil(this.columnCount / this.pageSettings.columnPageSize);
+            this.rowPageCount = Math.ceil(this.rowCount / this.pageSettings.rowPageSize);
+            this.pageSettings.currentColumnPage = this.pageSettings.currentColumnPage >= this.columnPageCount ? this.columnPageCount : this.pageSettings.currentColumnPage;
+            this.pageSettings.currentRowPage = this.pageSettings.currentRowPage >= this.rowPageCount ? this.rowPageCount : this.pageSettings.currentRowPage;
+            let requirePageCount: number = this.enablePaging ? 1 : 3;
+            this.memberCnt = this.enablePaging ? 0 : -this.rowValuesLength;
+            this.rowStartPos = ((this.pageSettings.currentRowPage * this.pageSettings.rowPageSize) -
+                (this.pageSettings.rowPageSize)) * (this.enablePaging ? 1 : this.rowValuesLength) + (this.enablePaging ? 1 : 0);
+            let exactStartPos: number = this.enablePaging ? this.rowStartPos : (this.rowStartPos + (this.pageSettings.rowPageSize * requirePageCount * this.rowValuesLength)) > this.rowCount ?
+                (this.rowCount - (this.pageSettings.rowPageSize * requirePageCount * this.rowValuesLength)) : this.rowStartPos;
             if (exactStartPos < 0) {
                 exactStartPos = this.rowStartPos = 0;
-                this.pageSettings.rowCurrentPage = 1;
+                this.pageSettings.currentRowPage = 1;
             }
-            this.rowFirstLvl = (this.rowStartPos - exactStartPos) % this.pageSettings.rowSize;
+            this.rowFirstLvl = (this.rowStartPos - exactStartPos) % this.pageSettings.rowPageSize;
             this.rowStartPos = exactStartPos;
-            this.endPos = this.rowStartPos + (this.pageSettings.rowSize * 3 * this.rowValuesLength);
-            this.endPos = this.endPos > this.rowCount ? this.rowCount : this.endPos;
+            this.endPos = this.rowStartPos + (this.pageSettings.rowPageSize * requirePageCount * (this.enablePaging ? 1 : this.rowValuesLength)) - (this.enablePaging ? 1 : 0);
+            this.endPos = this.endPos > (this.rowCount + 1) ? (this.rowCount + 1) : this.endPos;
             this.rMembers = this.performSlicing(this.rMembers, [], this.rowStartPos, 'row');
-            this.memberCnt = -this.colValuesLength; this.pageInLimit = false; this.colHdrBufferCalculated = false;
-            this.colStartPos = ((this.pageSettings.columnCurrentPage * this.pageSettings.columnSize) -
-                (this.pageSettings.columnSize)) * this.colValuesLength;
-            exactStartPos = (this.colStartPos + (this.pageSettings.columnSize * 3 * this.colValuesLength)) >
-                this.columnCount ?
-                (this.columnCount - (this.pageSettings.columnSize * 3 * this.colValuesLength)) : this.colStartPos;
+            this.memberCnt = this.enablePaging ? 0 : -this.colValuesLength; this.pageInLimit = false; this.colHdrBufferCalculated = false;
+            this.colStartPos = ((this.pageSettings.currentColumnPage * this.pageSettings.columnPageSize) -
+                (this.pageSettings.columnPageSize)) * (this.enablePaging ? 1 : this.colValuesLength) + (this.enablePaging ? 1 : 0);
+            exactStartPos = this.enablePaging ? this.colStartPos : (this.colStartPos + (this.pageSettings.columnPageSize * requirePageCount * this.colValuesLength)) >
+                this.columnCount ? (this.columnCount - (this.pageSettings.columnPageSize * requirePageCount * this.colValuesLength)) : this.colStartPos;
             if (exactStartPos < 0) {
                 exactStartPos = this.colStartPos = 0;
-                this.pageSettings.columnCurrentPage = 1;
+                this.pageSettings.currentColumnPage = 1;
             }
-            this.colFirstLvl = (this.colStartPos - exactStartPos) % this.pageSettings.columnSize;
+            this.colFirstLvl = (this.colStartPos - exactStartPos) % this.pageSettings.columnPageSize;
             this.colStartPos = exactStartPos;
-            this.endPos = this.colStartPos + (this.pageSettings.columnSize * 3 * this.colValuesLength);
-            this.endPos = this.endPos > this.columnCount ? this.columnCount : this.endPos;
+            this.endPos = this.colStartPos + (this.pageSettings.columnPageSize * requirePageCount * (this.enablePaging ? 1 : this.colValuesLength)) - (this.enablePaging ? 1 : 0);
+            this.endPos = this.endPos > (this.columnCount + 1) ? (this.columnCount + 1) : this.endPos;
             this.cMembers = this.performSlicing(this.cMembers, [], this.colStartPos, 'column');
             this.memberCnt = -1; this.pageInLimit = false;
             if (this.isValueHasAdvancedAggregate) {
@@ -3342,16 +3385,20 @@ export class PivotEngine {
     private performSlicing(headers: IAxisSet[], slicedHeaders: IAxisSet[], startPos: number, axis: string): IAxisSet[] {
         let pos: number = 0;
         while (headers[pos]) {
-            this.memberCnt += axis === 'column' ? this.colValuesLength : this.rowValuesLength;
+            if (this.enablePaging && this.endPos <= this.memberCnt) {
+                break;
+            }
+            this.memberCnt += headers[pos].level <= this.measureIndex ? (axis === 'column' ? this.colValuesLength : this.rowValuesLength) : 1;
             if (startPos <= this.memberCnt && this.endPos >= this.memberCnt && !this.pageInLimit) {
                 if (axis === 'column') {
                     this.colFirstLvl = this.colFirstLvl + headers[pos].level;
                 } else {
                     this.rowFirstLvl = this.rowFirstLvl + headers[pos].level;
                 }
+                this.isParentLevelAdded = axis === 'column' ? (this.colFirstLvl > 0 ? false : true) : (this.rowFirstLvl > 0 ? false : true);
                 this.pageInLimit = true;
             }
-            if (this.pageInLimit) {
+            if (this.pageInLimit && !this.enablePaging) {
                 if (this.endPos <= this.memberCnt) {
                     if (axis === 'column') {
                         if (headers[pos].members.length === 0) {
@@ -3378,6 +3425,10 @@ export class PivotEngine {
                 }
                 slicedHeaders[slicedHeaders.length - 1].members =
                     this.performSlicing(headers[pos].members, [], startPos, axis);
+            }
+            if (!this.isParentLevelAdded && this.enablePaging) {
+                this.memberCnt += (slicedHeaders[slicedHeaders.length - 1].level <= this.measureIndex ? (axis === 'column' ? this.colValuesLength : this.rowValuesLength) : 1) * slicedHeaders[slicedHeaders.length - 1].level;
+                this.isParentLevelAdded = true;
             }
             if (!this.pageInLimit) {
                 slicedHeaders.pop();
@@ -4125,7 +4176,7 @@ export class PivotEngine {
                                                 activeColumn[cln].valueSort[item.valueSort.levelName as string] &&
                                                 currentSet.axis === 'value' && currentSet.actualText === name) {
                                                 if (activeColumn[cln].type !== 'grand sum') {
-                                                    if(!isNullOrUndefined(currentSet.value)) {
+                                                    if (!isNullOrUndefined(currentSet.value)) {
                                                         cVal += currentSet.value;
                                                     }
                                                     currentSet.formattedText = subTotal ? '' : this.getFormattedValue(cVal, name).formattedText;
@@ -4179,7 +4230,7 @@ export class PivotEngine {
         if (!isLeastNode) {
             this.getTableData(reformAxis[tnum].members, reformAxis, columns, tnum, data, vlt, level + 1, rTotal, cTotal);
         }
-        if (!this.pageSettings) {
+        if (!this.isPagingOrVirtualizationEnabled) {
             reformAxis[tnum].members = [];
         }
     }
@@ -4281,6 +4332,7 @@ export class PivotEngine {
             rowHeaders: rows[rln].type === 'grand sum' ? '' : rows[rln].valueSort.levelName,
             columnHeaders: columns[cln].type === 'grand sum' ? '' : columns[cln].valueSort.levelName,
             formattedText: formattedText, value: value,
+            hierarchyName: columns[cln].hierarchyName,
             actualValue: actualValue,
             rowIndex: tnum, colIndex: dln, isSum: isSum, isGrandSum: isGrand, showSubTotals: !subTotal
         };
@@ -4342,6 +4394,7 @@ export class PivotEngine {
                 hData[(uniqueName ? (uniqueName + this.valueSortSettings.headerDelimiter) : '') + header.actualText] = 1;
                 hData.levelName = (levelName ? (levelName + this.valueSortSettings.headerDelimiter) : '') + header.formattedText;
                 hData.uniqueName = (uniqueName ? (uniqueName + this.valueSortSettings.headerDelimiter) : '') + header.actualText;
+                header.hierarchyName = header.valueSort.uniqueName as string;
                 header.valueSort = hData;
                 let drillInfo: string = hData.axis + this.valueSortSettings.headerDelimiter + hData.levelName;
                 let isFieldValueHeader: IField = this.fieldList[hData.axis as string];
@@ -4396,7 +4449,7 @@ export class PivotEngine {
             } else {
                 data[level][tnum] = this.headerContent[level][tnum] = this.frameHeaderWithKeys(axis[rln]);
             }
-            if (!this.pageSettings) {
+            if (!this.isPagingOrVirtualizationEnabled) {
                 reformAxis[tnum - 1].members = [];
             }
         }
@@ -4563,7 +4616,7 @@ export class PivotEngine {
             } else if (axis[rln].valueSort && axis[rln].valueSort[sortText]) {
                 this.valueSortSettings.columnIndex = (tnum * vcnt) + 1;
             }
-            if (!this.pageSettings) {
+            if (!this.isPagingOrVirtualizationEnabled) {
                 reformAxis[tnum].members = [];
             }
         }
@@ -5349,29 +5402,19 @@ export interface IPageSettings {
     /**
      * It allows to set the total column count of the pivot table.
      */
-    columnSize?: number;
+    columnPageSize?: number;
     /**
      * It allows to set the total row count of the pivot table.
      */
-    rowSize?: number;
+    rowPageSize?: number;
     /**
-     * It allows to set the current coulmn page count displayed in the pivot table.
+     * It allows to set the current column page count displayed in the pivot table.
      */
-    columnCurrentPage?: number;
+    currentColumnPage?: number;
     /**
      * It allows to set the current row page count displayed in the pivot table.
      */
-    rowCurrentPage?: number;
-    /**
-     * Allows large amounts of data to be loaded without any degradation of performance by compressing raw data on the basis of its uniqueness. 
-     * These unique records will be provided as input to render the pivot table. 
-     * 
-     * For example, if the pivot table is connected to a million raw data with a combination of 1,000 unique data, it will be compressed to 1,000 unique data. 
-     * By doing so, the time taken to render the pivot table will be drastically reduced, i.e. the pivot table will takes a maximum of 3 seconds instead of 10 seconds to complete its rendering.
-     * These compressed data will also be used for further operations at all times to reduce the looping complexity and improves pivot table's performance while updating during runtime.
-     * > This property is applicable only for relational data source.
-     */
-    allowDataCompression?: boolean;
+    currentRowPage?: number;
 }
 /**
  * @hidden
@@ -5572,6 +5615,12 @@ export interface IFieldOptions {
      * Allows you to expand or collapse all of the pivot table's headers for a specific field.
      */
     expandAll?: boolean;
+    /**
+     * Allows you to create group folder for fields in pivot field list.
+     * Allows user to set the group (i.e., folder) name for selected fields that used to be displayed in the field list tree.
+     * > It is applicable only for relational data source.
+     */
+    groupName?: string;
 }
 
 /**
@@ -5758,6 +5807,10 @@ export interface IField {
      * It allows to set the field name.
      */
     id?: string;
+    /**
+    * It allows to set the parent name.
+    */
+    pid?: string;
     /**
      * It allows to set the field caption.
      */
@@ -6029,6 +6082,11 @@ export interface IAxisSet {
      * It allows to set depth of the cell.
      */
     depth?: number;
+    /**
+    * Specifies the value cell's unique header name.
+    * @hidden
+    */
+    hierarchyName?: string;
 }
 /** 
  * Allows you to configure the drill information of a specific field item that used to display the pivot table.
@@ -6079,6 +6137,18 @@ export interface ICustomProperties {
      * Specifies the whether the value sorting is enabled or not.
      */
     enableValueSorting?: boolean;
+    /**
+     * Specifies the whether the paging option is enabled or not.
+     */
+    enablePaging?: boolean;
+    /**
+     * Specifies the whether the virtualization option is enabled or not.
+     */
+    enableVirtualization?: boolean;
+    /**
+     * Specifies the whether the data compression option is enabled or not.
+     */
+    allowDataCompression?: boolean;
     /**
      * Specifies the whther drill through is enabled or not.
      */

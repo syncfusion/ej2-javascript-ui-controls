@@ -1,4 +1,5 @@
 @include export-module('tab-layout') {
+
   /*! tab layout */
 
   .e-bigger .e-tab,
@@ -105,7 +106,6 @@
           @else if $tab-skin == 'highcontrast' {
             height: $tab-big-height - 4;
           }
-
         }
 
         .e-tab-text {
@@ -293,10 +293,10 @@
             height: $tab-big-pop-item-height;
 
             @if $tab-skin == 'fabric' {
-              height:  $tab-big-pop-item-height - 2;
+              height: $tab-big-pop-item-height - 2;
             }
             @else if $tab-skin == 'highcontrast' {
-              height:  $tab-big-pop-item-height - 4;
+              height: $tab-big-pop-item-height - 4;
             }
           }
 
@@ -644,7 +644,7 @@
       &.e-vertical {
         max-width: 150px;
 
-        &[style*= 'overflow: hidden']::before {
+        &[style *= 'overflow: hidden']::before {
           bottom: $tab-big-vertical-scroll-nav-top-bottom;
           top: $tab-big-vertical-scroll-nav-top-bottom;
 
@@ -840,10 +840,10 @@
                 height: $tab-big-pop-item-height;
 
                 @if $tab-skin == 'fabric' {
-                  height:  $tab-big-pop-item-height - 2;
+                  height: $tab-big-pop-item-height - 2;
                 }
                 @else if $tab-skin == 'highcontrast' {
-                  height:  $tab-big-pop-item-height - 4;
+                  height: $tab-big-pop-item-height - 4;
                 }
               }
             }
@@ -1539,7 +1539,7 @@
               color: transparent;
               content: attr(data-content);
               display: block;
-              font-weight: 700;
+              font-weight: bold;
               height: 1px;
               overflow: hidden;
               visibility: hidden;
@@ -1560,7 +1560,7 @@
 
         @if $tab-skin == 'bootstrap'or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
 
-          &[style*= 'overflow: hidden'] .e-toolbar-item:not(.e-separator).e-active {
+          &[style *= 'overflow: hidden'] .e-toolbar-item:not(.e-separator).e-active {
             margin-bottom: 0;
           }
         }
@@ -1621,7 +1621,7 @@
 
         @if $tab-skin == 'tailwind' {
           border-radius: $tab-border-width;
-          transition: all .4s cubic-bezier(.25,.46,.45,.94); // sass-lint:disable-line no-transition-all space-after-comma
+          transition: all .4s cubic-bezier(.25, .46, .45, .94);
         }
       }
 
@@ -1653,7 +1653,6 @@
             height: $tab-big-height;
             padding: $tab-mob-wrap-padding;
           }
-
         }
 
         .e-text-wrap {
@@ -1672,7 +1671,6 @@
           @else if $tab-skin == 'highcontrast' {
             height: $tab-nrml-height - 4;
           }
-
         }
 
         .e-tab-text {
@@ -1983,10 +1981,10 @@
             width: 100%;
 
             @if $tab-skin == 'fabric' {
-              height:  $tab-nrml-pop-item-height - 2;
+              height: $tab-nrml-pop-item-height - 2;
             }
             @else if $tab-skin == 'highcontrast' {
-              height:  $tab-nrml-pop-item-height - 4;
+              height: $tab-nrml-pop-item-height - 4;
             }
           }
 
@@ -2003,7 +2001,7 @@
             top: $tab-nrml-pop-close-top;
           }
 
-          .e-tab-text + .e-close-icon[style= 'display:block'] {
+          .e-tab-text + .e-close-icon[style = 'display:block'] {
             padding-right: $tab-nrml-pop-text-padding-right;
 
             @media screen and (max-width: 480px) {
@@ -2326,7 +2324,7 @@
               color: transparent;
               content: attr(data-content);
               display: block;
-              font-weight: 700;
+              font-weight: bold;
               height: 1px;
               overflow: hidden;
               visibility: hidden;
@@ -2456,7 +2454,7 @@
           top: 0;
         }
 
-        &[style*= 'overflow: hidden']::before {
+        &[style *= 'overflow: hidden']::before {
           bottom: $tab-nrml-vertical-scroll-nav-top-bottom;
           height: auto;
           top: $tab-nrml-vertical-scroll-nav-top-bottom;
@@ -2545,7 +2543,7 @@
         }
 
         .e-toolbar-pop {
-          top: initial !important; // sass-lint:disable-line no-important
+          top: initial !important; /* stylelint-disable-line declaration-no-important */
         }
 
         &.e-vertical-left {
@@ -2585,7 +2583,7 @@
                 color: transparent;
                 content: attr(data-content);
                 display: block;
-                font-weight: 700;
+                font-weight: bold;
                 height: 1px;
                 overflow: hidden;
                 visibility: hidden;
@@ -2642,7 +2640,7 @@
                 color: transparent;
                 content: attr(data-content);
                 display: block;
-                font-weight: 700;
+                font-weight: bold;
                 height: 1px;
                 overflow: hidden;
                 visibility: hidden;
@@ -2855,11 +2853,11 @@
         }
 
         .e-scroll-nav {
-          height:  $tab-nrml-icon-top-bottom-item-height;
+          height: $tab-nrml-icon-top-bottom-item-height;
         }
 
         .e-hor-nav {
-          height:  $tab-nrml-icon-top-bottom-item-height;
+          height: $tab-nrml-icon-top-bottom-item-height;
 
           .e-popup-up-icon::before,
           .e-popup-down-icon::before {
@@ -2970,10 +2968,10 @@
               height: $tab-nrml-pop-item-height;
 
               @if $tab-skin == 'fabric' {
-                height:  $tab-nrml-pop-item-height - 2;
+                height: $tab-nrml-pop-item-height - 2;
               }
               @else if $tab-skin == 'highcontrast' {
-                height:  $tab-nrml-pop-item-height - 4;
+                height: $tab-nrml-pop-item-height - 4;
               }
             }
           }
@@ -3436,7 +3434,7 @@
 
           &.e-itop .e-tab-wrap:focus,
           &.e-ibottom .e-tab-wrap:focus {
-            height:  $tab-nrml-focus-fill-icon-top-bottom-item-height;
+            height: $tab-nrml-focus-fill-icon-top-bottom-item-height;
 
             .e-text-wrap {
               height: auto;
@@ -3575,10 +3573,10 @@
                 height: $tab-nrml-pop-item-height;
 
                 @if $tab-skin == 'fabric' {
-                  height:  $tab-nrml-pop-item-height - 2;
+                  height: $tab-nrml-pop-item-height - 2;
                 }
                 @else if $tab-skin == 'highcontrast' {
-                  height:  $tab-nrml-pop-item-height - 4;
+                  height: $tab-nrml-pop-item-height - 4;
                 }
               }
             }

@@ -30,6 +30,7 @@ export class Toolkit {
     private zoomElements: Element;
     private panElements: Element;
     private iconRect: Rect;
+    private enableZoomButton: boolean;
     private hoveredID: string;
     private selectedID: string;
     private iconRectOverFill: string = 'transparent';
@@ -63,6 +64,9 @@ export class Toolkit {
         const fillColor: string = this.chart.zoomModule.isPanning ? this.selectionColor : this.fillColor;
         let direction: string = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
         direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
+        //This is for setting low oppacity to PAN Button
+        this.elementOpacity = !this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar ? '0.2' : '1';
+        childElement.setAttribute('opacity', this.elementOpacity);
         childElement.id = this.elementId + '_Zooming_Pan';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
@@ -84,7 +88,8 @@ export class Toolkit {
      */
     public createZoomButton(childElement: Element, parentElement: Element): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
-        const fillColor: string = this.chart.zoomModule.isPanning ? this.fillColor : this.selectionColor;
+        //This is for selecting initial fill color to ZOOM button
+        const fillColor: string = this.chart.zoomModule.isPanning || (!this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar) ? this.fillColor : this.selectionColor;
         const rectColor: string = this.chart.zoomModule.isPanning ? 'transparent' : this.iconRectSelectionFill;
         let direction: string = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
         direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
@@ -131,7 +136,8 @@ export class Toolkit {
                 polygonDirection + ' 9.749,6.466 9.749,8.466 10.749,8.466 10.749,6.466 12.749,6.466', fillColor)
         ) as HTMLElement);
         this.zoomInElements = childElement;
-        this.elementOpacity = chart.zoomModule.isPanning ? '0.2' : '1';
+        //This is for low oppacity to ZOOM IN button
+        this.elementOpacity = chart.zoomModule.isPanning || (!chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar && !this.enableZoomButton) ? '0.2' : '1';
         childElement.setAttribute('opacity', this.elementOpacity);
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.zoomIn);
@@ -158,7 +164,8 @@ export class Toolkit {
                 this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null,
                 direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z')) as HTMLElement);
         this.zoomOutElements = childElement;
-        this.elementOpacity = chart.zoomModule.isPanning ? '0.2' : '1';
+        //This is for low oppacity of ZOOM OUT button
+        this.elementOpacity = chart.zoomModule.isPanning || (!chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar && !this.enableZoomButton) ? '0.2' : '1';
         childElement.setAttribute('opacity', this.elementOpacity);
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.zoomOut);
@@ -178,6 +185,9 @@ export class Toolkit {
         direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
         childElement.id = this.elementId + '_Zooming_Reset';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
+        //This is for low oppacity to RESET button 
+        this.elementOpacity = !chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar ? '0.2' : '1';
+        childElement.setAttribute('opacity', this.elementOpacity);
         if (!isDevice) {
             childElement.appendChild(render.drawRectangle(
                 new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.iconRect)
@@ -256,7 +266,8 @@ export class Toolkit {
             icon2.setAttribute('fill', iconColor);
         }
         if(icon3) {
-            let iconColor: string = this.chart.zoomModule.isPanning ? this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
+            //This is used for change color while hover on ZOOM button
+            let iconColor: string = this.chart.zoomModule.isPanning || (!this.chart.isZoomed && this.chart.zoomSettings.showToolbar) ? this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
             icon3.setAttribute('fill', iconColor);
         }
         removeElement('EJ2_Chart_ZoomTip');
@@ -265,7 +276,11 @@ export class Toolkit {
     // Toolkit events function calculation here.
     /** @private */
     public reset(event: PointerEvent | TouchEvent | KeyboardEvent): boolean {
+        if (!this.chart.zoomModule.isZoomed) {
+            return false;
+        }
         let chart: Chart = this.chart;
+        this.enableZoomButton = false;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
         } else if (event.type == 'touchstart') {
@@ -298,18 +313,15 @@ export class Toolkit {
                 axisRange: axis.visibleRange
             });
         }
-
         zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
         if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
             this.chart.trigger(onZooming, zoomingEventArgs, () => {
                 this.setDefferedZoom(chart)
-             });
-             return false;
+            });
+            return false;
         } else {
-            return(this.setDefferedZoom(chart))
+            return (this.setDefferedZoom(chart))
         }
-       
-        
     }
 
     private setDefferedZoom(chart: Chart): boolean  {
@@ -333,6 +345,7 @@ export class Toolkit {
     }
 
     private zoomOut(e: PointerEvent): boolean {
+        this.enableZoomButton = true;
         this.zoomInOutCalculation(-1, this.chart, this.chart.axisCollections, this.chart.zoomSettings.mode);
         return false;
     }
@@ -355,6 +368,9 @@ export class Toolkit {
     }
     /** @private */
     public pan(): boolean {
+        if (!this.chart.zoomModule.isZoomed) {
+            return false;
+        }
         let element: void;
         this.chart.zoomModule.isPanning = true;
         this.chart.svgObject.setAttribute('cursor', 'pointer');
@@ -363,16 +379,23 @@ export class Toolkit {
         element = this.zoomOutElements ? this.zoomOutElements.setAttribute('opacity', this.elementOpacity) : null;
         element = this.panElements ? this.applySelection(this.panElements.childNodes, this.selectionColor) : null;
         element = this.zoomElements ? this.applySelection(this.zoomElements.childNodes, '#737373') : null;
-        if(getElement(this.selectedID)) {
+        if (getElement(this.selectedID)) {
             getElement(this.selectedID).setAttribute('fill', 'transparent');
         }
+
         this.selectedID = this.chart.element.id + '_Zooming_Pan_1';
         getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     }
 
     public zoomInOutCalculation(scale: number, chart: Chart, axes: AxisModel[], mode: ZoomMode): void {
+        if (chart.zoomSettings.showToolbar) {
+            this.elementOpacity = this.zoomInElements.getAttribute('opacity');
+        }
         if (!chart.zoomModule.isPanning && this.elementOpacity !== '0.2') {
+            if ((chart.zoomSettings.showToolbar && !chart.isZoomed)) {
+                chart.zoomModule.isZoomed = true;
+            }  
             let zoomFactor: number;
             let zoomPosition: number;
             let cumulative: number;

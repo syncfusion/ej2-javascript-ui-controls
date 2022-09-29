@@ -1,5 +1,6 @@
 @include export-module('grid-fabric-icons') {
-  /*!componenticons*/
+
+  /* !componenticons */
 
   .e-icon-check::before {
     content: '\e7ff';
@@ -42,7 +43,7 @@
 
     .e-icon-gdownarrow::before {
       content: '\e85e';
-   }
+    }
 
     .e-icon-grightarrow::before {
       content: '\e84f';
@@ -183,7 +184,7 @@
     &.e-rtl {
       .e-icon-rowdragicon::before {
         content: '\e330';
-       }
+      }
     }
 
     .e-ccsearch-icon.e-cc-cancel::before,

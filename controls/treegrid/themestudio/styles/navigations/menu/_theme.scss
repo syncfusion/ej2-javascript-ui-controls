@@ -1,5 +1,6 @@
 @import '../context-menu/theme-mixin.scss';
 @include export-module('menu-theme') {
+
   /*! menu theme */
   .e-menu-wrapper,
   .e-menu-container {
@@ -110,7 +111,7 @@
             & .e-menu-icon {
               color: $submenu-color;
             }
-        }
+          }
           @else if $skin-name == 'FluentUI' {
             & .e-caret {
               color: $menu-icon-color;
@@ -233,6 +234,33 @@
 
       &:active {
         background: $cmenu-li-selection-bgcolor;
+      }
+    }
+
+    &.e-inherit {
+      background: inherit;
+      color: inherit;
+      border: 0;
+      box-shadow: none;
+
+      & .e-menu,
+      & .e-menu .e-menu-item .e-menu-icon,
+      & .e-menu .e-menu-item .e-caret,
+      & .e-ul .e-menu-item.e-focused .e-caret,
+      & .e-ul .e-menu-item.e-selected .e-caret {
+        color: inherit;
+      }
+
+      & .e-menu {
+        background: inherit;
+      }
+
+      & .e-menu .e-menu-item.e-selected,
+      & .e-menu .e-menu-item.e-focused,
+      & .e-ul .e-menu-item.e-focused,
+      & .e-ul .e-menu-item.e-selected {
+        background: rgba(transparent, .056);
+        color: inherit;
       }
     }
   }

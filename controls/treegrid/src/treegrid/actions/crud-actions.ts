@@ -283,6 +283,10 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         const currentRecords: ITreeData[] = control.grid.getCurrentViewRecords();
         let index: number;
         currentRecords.map((e: ITreeData, i: number) => { if (e[key] === record[key]) { index = i; return; } });
+        if (control.enableVirtualization && isNullOrUndefined(index)) {
+            const updatedParent: ITreeData = getValue('uniqueIDCollection.' + child.parentUniqueID, control);
+            record = updatedParent;
+        }
         if (!isNullOrUndefined(index)) {
             record = currentRecords[index];
         }

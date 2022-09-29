@@ -8,6 +8,8 @@ $ddl-list-border-color: rgba($grey-light, .25) !default;
 $ddl-line-height: 48px !default;
 $ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: $grey-white !default;
+$mention-gradient-color: $brand-primary-font !default;
+$mention-list-box-shadow-color: 0 6px 12px rgba(0, 0, 0, .175) !default;
 $ddl-list-bg-color: $grey-white !default;
 $ddl-list-header-bg-color: $grey-white !default;
 $ddl-list-tap-color: transparent !default;
@@ -15,6 +17,7 @@ $ddl-list-header-border-color: 1px $grey-base !default;
 $ddl-list-default-font-color: $grey-light-font !default;
 $ddl-list-active-border-color: $grey-white !default;
 $ddl-list-active-font-color: $brand-primary-font !default;
+$mention-active-font-color: $brand-primary !default;
 $ddl-list-active-bg-color: $brand-primary !default;
 $ddl-list-hover-bg-color: $grey-f5 !default;
 $ddl-list-hover-border-color: $grey-white !default;
@@ -74,4 +77,3 @@ $ddl-group-list-item-text-intent: 0 !default;
     padding: 0 8px 0 0;
   }
 }
- 

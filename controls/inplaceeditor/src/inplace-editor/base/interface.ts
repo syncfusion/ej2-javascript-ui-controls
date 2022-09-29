@@ -7,7 +7,6 @@ import { RenderMode } from './inplace-editor';
 
 /**
  * Defines component types that can be used in the In-place Editor.
- * 
  * @hidden
  */
 

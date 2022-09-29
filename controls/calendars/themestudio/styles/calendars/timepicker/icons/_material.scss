@@ -1,4 +1,5 @@
 @include export-module('timepicker-material-icons') {
+
   /*! component icons */
 
   .e-time-wrapper,
@@ -7,7 +8,6 @@
     #{if(&, '&', '*')} .e-time-icon.e-icons::before {
       content: '\e20c';
     }
-
   }
 
   // Outline textbox icon configuration

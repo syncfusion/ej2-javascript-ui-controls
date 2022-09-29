@@ -1,4 +1,4 @@
-//default 
+//default
 $calendar-title-hover-color: $grey-dark-font !default;
 $calendar-icon-hover-color: $grey-dark-font !default;
 $calendar-default-border-color: $grey-700 !default;
@@ -69,6 +69,7 @@ $calendar-border-radius: 50% !default;
 $calendar-pointer-events: none !default;
 $calendar-float-right-style: right !default;
 $calendar-icon-padding-top: 0 !default;
+
 // newly added
 $calendar-active-today-hover-font-color: $accent-font !default;
 $calendar-today-focused-font-color: $accent !default;
@@ -167,6 +168,7 @@ $calendar-today-disabled-background-style: transparent !default;
 $calendar-today-disabled-border-style: transparent !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: rgba($grey-white, .3) !default;
+
 //endtoday
 
 //table related styles

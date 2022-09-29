@@ -144,7 +144,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Sets and gets the options for customizing the title for circular gauge.
      */
-    @Complex<FontModel>({ size: '15px', color: null, fontWeight: null }, Font)
+    @Complex<FontModel>({ size: null, color: null, fontWeight: null, fontFamily: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -459,6 +459,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public centerYpoint: string;
     /** @private */
     public allowComponentRender: boolean;
+    /** @private */
+    public isPropertyChange: boolean;
     /**
      * Render axis panel for gauge.
      *
@@ -466,10 +468,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     public gaugeAxisLayoutPanel: AxisLayoutPanel;
-    /**
-     * @private
-     */
-    public gaugeRangeLayoutPanel:  AxisLayoutPanel;
     /**
      * @private
      */
@@ -524,6 +522,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         this.setTheme();
 
         this.calculateBounds();
+
+        this.isPropertyChange = false;
 
         this.renderElements();
 
@@ -745,8 +745,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 const add : number = (this.activeRange.end - this.activeRange.start);
                 const div : number = add / 2;
                 const avg: number = parseFloat(this.activeRange.start.toString()) + div;
-                this.startValue = (value < avg) ? value : ((previousValue1 < avg) ? previousValue1 : ((this.activeRange.start < this.activeRange.end) ? this.activeRange.start : this.activeRange.end));
-                this.endValue  = (value < avg) ? ((previousValue1 > avg) ? previousValue1 : ((this.activeRange.start < this.activeRange.end) ? this.activeRange.end : this.activeRange.start)) : value;
+                const start: number = typeof this.activeRange.start === 'string' ? parseFloat(<string>this.activeRange.start) : this.activeRange.start;
+                const end: number = typeof this.activeRange.end === 'string' ? parseFloat(<string>this.activeRange.end) : this.activeRange.end;
+                this.startValue = (value < avg) ? value : ((previousValue1 < avg) ? previousValue1 : ((start < end) ? this.activeRange.start : this.activeRange.end));
+                this.endValue  = (value < avg) ? ((previousValue1 > avg) ? previousValue1 : ((start < end) ? this.activeRange.end : this.activeRange.start)) : value;
                 this.axes[axisIndex].ranges[rangeIndex].start = this.startValue;
                 this.axes[axisIndex].ranges[rangeIndex].end = this.endValue;
             }
@@ -967,6 +969,12 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     private createSvg(): void {
         this.removeSvg();
+        if (isNullOrUndefined(this.renderer)) {
+            this.renderer = new SvgRenderer(this.element.id);
+        }
+        if (isNullOrUndefined(this.gaugeAxisLayoutPanel)) {
+            this.gaugeAxisLayoutPanel = new AxisLayoutPanel(this);
+        }
         this.availableSize = this.calculateSvgSize();
         this.svgObject = this.renderer.createSvg({
             id: this.element.id + '_svg',
@@ -985,7 +993,12 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         removeElement(this.element.id + '_Secondary_Element');
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
-                this.svgObject.removeChild(this.svgObject.firstChild);
+                while (this.svgObject.childNodes.length > 0) {
+                    this.svgObject.removeChild(this.svgObject.firstChild);
+                }
+                if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
+                    remove(this.svgObject);
+                }
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
                 remove(this.svgObject);
@@ -1228,14 +1241,19 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     private renderTitle(): void {
         if (this.title) {
-            this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
-            this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
-            this.titleStyle.fontWeight = this.titleStyle.fontWeight || this.themeStyle.titleFontWeight;
-            const titleSize: string = this.titleStyle.size;
+            let style: FontModel = {
+                color: this.titleStyle.color,
+                size: this.titleStyle.size || this.themeStyle.fontSize,
+                fontFamily: this.titleStyle.fontFamily || this.themeStyle.fontFamily,
+                fontStyle: this.titleStyle.fontStyle,
+                fontWeight: this.titleStyle.fontWeight || this.themeStyle.titleFontWeight,
+                opacity: this.titleStyle.opacity
+            };
+            const titleSize: string = style.size;
             if (!isNaN(Number(titleSize))) {
-                this.titleStyle.size = titleSize + 'px';
+                style.size = titleSize + 'px';
             }
-            const size: Size = measureText(this.title, this.titleStyle);
+            const size: Size = measureText(this.title, style);
             const options: TextOption = new TextOption(
                 this.element.id + '_CircularGaugeTitle',
                 this.availableSize.width / 2,
@@ -1243,9 +1261,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 'middle', this.title
             );
             const element: Element = textElement(
-                options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject, ''
+                options, style, style.color || this.themeStyle.titleFontColor, this.svgObject, ''
             );
             element.setAttribute('aria-label', this.description || this.title);
+            element.setAttribute('role', '');
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
     }
@@ -1280,40 +1299,48 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         const axis: Axis = <Axis>this.axes[axisIndex];
         const pointer: Pointer = <Pointer>axis.pointers[pointerIndex];
         const pointerRadius: number = pointer.currentRadius;
-        const enableAnimation: boolean = pointer.animation.enable;
-        value = value < axis.visibleRange.min ? axis.visibleRange.min : value;
-        value = value > axis.visibleRange.max ? axis.visibleRange.max : value;
-        pointer.pathElement.map((element: Element) => {
-            if (pointer.type === 'RangeBar') {
-                setStyles(element as HTMLElement, pointer.color, pointer.border);
-                if (enableAnimation) {
-                    this.gaugeAxisLayoutPanel.pointerRenderer.performRangeBarAnimation(
-                        element as HTMLElement, pointer.currentValue, value, axis, pointer,
-                        pointerRadius, (pointerRadius - pointer.pointerWidth)
-                    );
-                } else {
-                    this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
-                }
-            } else {
-                if (element.id.indexOf('_Pointer_NeedleCap_') >= 0) {
-                    setStyles(element as HTMLElement, pointer.cap.color, pointer.cap.border);
-                } else if (element.id.indexOf('_Pointer_NeedleTail_') >= 0) {
-                    setStyles(element as HTMLElement, pointer.needleTail.color, pointer.needleTail.border);
-                } else if (element.id.indexOf('_Pointer_NeedleRect_') >= 0) {
-                    setStyles(element as HTMLElement, 'transparent', { color: 'transparent', width: 0 });
-                } else {
+        if (pointer.currentValue != value) {
+            const enableAnimation: boolean = pointer.animation.enable;
+            value = value < axis.visibleRange.min ? axis.visibleRange.min : value;
+            value = value > axis.visibleRange.max ? axis.visibleRange.max : value;
+            pointer['isPointerAnimation'] = true;
+            pointer.pathElement.map((element: Element) => {
+                if (pointer.type === 'RangeBar') {
                     setStyles(element as HTMLElement, pointer.color, pointer.border);
-                }
-                if (enableAnimation) {
-                    this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(
-                        element as HTMLElement, pointer.currentValue, value, axis, pointer,
-                        pointerRadius, (pointerRadius - pointer.pointerWidth)
-                    );
+                    if (enableAnimation) {
+                        this.gaugeAxisLayoutPanel.pointerRenderer.performRangeBarAnimation(
+                            element as HTMLElement, pointer.currentValue, value, axis, pointer,
+                            pointerRadius, (pointerRadius - pointer.pointerWidth)
+                        );
+                    } else {
+                        this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
+                    }
                 } else {
-                    this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
+                    if (element.id.indexOf('_Pointer_NeedleCap_') >= 0) {
+                        setStyles(element as HTMLElement, pointer.cap.color, pointer.cap.border);
+                    } else if (element.id.indexOf('_Pointer_NeedleTail_') >= 0) {
+                        setStyles(element as HTMLElement, pointer.needleTail.color, pointer.needleTail.border);
+                    } else if (element.id.indexOf('_Pointer_NeedleRect_') >= 0) {
+                        setStyles(element as HTMLElement, 'transparent', { color: 'transparent', width: 0 });
+                    } else if(pointer.type === 'Marker' && pointer.markerShape !== 'Text') {
+                        setStyles(element as HTMLElement, pointer.color, pointer.border);
+                    }
+                    if (enableAnimation) {
+                        if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
+                            this.gaugeAxisLayoutPanel.pointerRenderer.performTextAnimation(element as HTMLElement, pointer.currentValue, value, axis, pointer);
+                        }
+                        else {
+                            this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(
+                                element as HTMLElement, pointer.currentValue, value, axis, pointer,
+                                pointerRadius, (pointerRadius - pointer.pointerWidth)
+                            );
+                        }
+                    } else {
+                        this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
+                    }
                 }
-            }
-        });
+            });
+        }
         this.isProtectedOnChange = true;
         pointer.previousValue = pointer.currentValue;
         pointer.currentValue = value;
@@ -1339,7 +1366,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         if (content !== null) {
             removeElement(this.element.id + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex);
             annotation.content = content;
-            this.annotationsModule.createTemplate(element, annotationIndex, axisIndex);
+            this.annotationsModule.createTemplate(element, annotationIndex, axisIndex, this);
             const secondaryElement: Element = getElement(this.element.id + '_Secondary_Element');
             if (!isElementExist && !isNullOrUndefined(secondaryElement)) {
                 secondaryElement.appendChild(element);
@@ -1354,7 +1381,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public print (id?: string[] | string | Element): void {
         if (this.allowPrint && this.printModule){
-            this.printModule.print(id);
+            this.printModule.print(this, id);
         }
     }
 
@@ -1373,14 +1400,14 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         if (type === 'PDF' && this.allowPdfExport && this.pdfExportModule) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return new Promise((resolve: any, reject: any) => {
-                resolve(this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+                resolve(this.pdfExportModule.export(this, type, fileName, orientation, allowDownload));
             });
         }
         else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule)
         {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return new Promise((resolve: any, reject: any) => {
-                resolve(this.imageExportModule.export(type, fileName, allowDownload));
+                resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
             });
         }
         return null;
@@ -1493,8 +1520,21 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public destroy(): void {
         this.unWireEvents();
-        this.removeSvg();
         super.destroy();
+        if (!isNullOrUndefined(this.gaugeAxisLayoutPanel)) {
+            this.gaugeAxisLayoutPanel.destroy();
+        }
+        this.availableSize = null;
+        this.midPoint = null;
+        this.activePointer = null;
+        this.activeAxis = null;
+        this.activeRange = null;
+        this.gaugeRect = null;
+        this.gaugeAxisLayoutPanel = null;
+        this.themeStyle = null;
+        this.removeSvg();
+        this.svgObject = null;
+        this.renderer = null;
     }
 
     /**
@@ -1577,6 +1617,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public onPropertyChanged(newProp: CircularGaugeModel, oldProp: CircularGaugeModel): void {
         // property method calculated
+        this.isPropertyChange = true;
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let refreshWithoutAnimation: boolean = false;
@@ -1613,6 +1654,24 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 refreshWithoutAnimation = true;
                 break;
             case 'axes':
+                const axesPropertyLength: number = Object.keys(newProp.axes).length;
+                for (let x: number = 0; x < axesPropertyLength; x++) {
+                    if (!isNullOrUndefined(newProp.axes[x])) {
+                        const collection: string[] = Object.keys(newProp.axes[x]);
+                        for (const collectionProp of collection) {
+                            if (collectionProp === 'pointers') {
+                                const pointerPropertyLength: number = Object.keys(newProp.axes[x].pointers).length;
+                                for (let y: number = 0; y < pointerPropertyLength; y++) {
+                                    let index: number = parseInt(Object.keys(newProp.axes[x].pointers)[y]);
+                                    if (!isNullOrUndefined(Object.keys(newProp.axes[x].pointers[index]))) {
+                                        this.axes[x].pointers[index]['previousValue'] = this.axes[x].pointers[index]['currentValue'];
+                                        this.axes[x].pointers[index]['isPointerAnimation'] = Object.keys(newProp.axes[x].pointers[index]).indexOf('value') > -1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 refreshWithoutAnimation = true;
                 break;
             }

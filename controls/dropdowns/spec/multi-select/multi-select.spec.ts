@@ -49,7 +49,7 @@ let multiSelectData: multiSelectStyles = {
     ListItemHighlighted: "e-item-focus",
     containerChildlength: 5,
     defaultChildlength: 5,
-    inputARIA: ['aria-expanded', 'role', 'aria-activedescendant', 'aria-haspopup', 'aria-owns', 'aria-disabled'],
+    inputARIA: ['aria-expanded', 'role', 'aria-disabled'],
     listARIA: ['aria-hidden', 'role'],
     mobileChip: 'e-mob-chip'
 }
@@ -9710,4 +9710,3 @@ describe('MultiSelect', () => {
         });
     });
 });
-

@@ -130,3 +130,31 @@ export const rowDropped: string = 'row-dropped';
 export const autoCol: string = 'auto-col';
 /** @hidden */
 export const rowDeselecting: string = 'rowDeselecting';
+/** @hidden */
+export const headerContent: string = 'e-headercontent';
+/** @hidden */
+export const movableContent: string = 'e-movablecontent';
+/** @hidden */
+export const movableHeader: string = 'e-movableheader';
+/** @hidden */
+export const frozenContent: string = 'e-frozencontent';
+/** @hidden */
+export const frozenHeader: string = 'e-frozenheader';
+/** @hidden */
+export const content: string = 'e-content';
+/** @hidden */
+export const table: string = 'e-table';
+/** @hidden */
+export const leftRight: string = 'Left-Right';
+/** @hidden */
+export const frozenRight: string = 'frozen-right';
+/** @hidden */
+export const frozenLeft: string = 'frozen-left';
+/** @hidden */
+export const dataColIndex: string = 'data-colindex';
+/** @hidden */
+export const ariaColIndex: string = 'aria-colindex';
+/** @hidden */
+export const dataRowIndex: string = 'data-rowindex';
+/** @hidden */
+export const ariaRowIndex: string = 'aria-rowindex';

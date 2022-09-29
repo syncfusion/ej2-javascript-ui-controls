@@ -2,15 +2,35 @@
 
 ## [Unreleased]
 
-## 20.2.46 (2022-08-30)
+## 20.3.47 (2022-09-29)
 
-### Checkbox
+### Floating Action Button `Preview`
 
-#### Bug Fixes
+The Floating Action Button (FAB) component performs the primary action that appears in front of all screen contents. It can be positioned in relation to a page or a target container.
 
-- `#I399484` - The issue with aria-checked accessibility issue in angular checkbox has been fixed.
+- **Rendering** - The FAB component can be rendered as Icon only, Icon with Label, Label only, or in a disabled state.
 
-## 20.2.43 (2022-08-08)
+- **Positioning** - Supports to place various built-in positions on the target element.
+
+- **Styles** - The appearance of the FAB can be customized using predefined styles.
+
+- **Accessibility** - The FAB provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
+
+### Speed Dial `Preview`
+
+The Speed Dial component is an extension of the floating action button that displays a list of action buttons when clicked. It is useful when there is more than one primary action for the page.
+
+- **Rendering** - The Speed Dial component can be rendered in two display modes: Linear and Radial.
+
+- **Positioning** - Supports to place various built-in positions on the target element.
+
+- **Styles** - The appearance of the Speed Dial can be customized using predefined styles.
+
+- **Template Support** - The Speed Dial component action items and popup container can also be rendered with custom templates.
+
+- **Modal Support** - Supports showing a modal overlay behind the Speed Dial.
+
+- **Accessibility** - The Speed Dial provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
 
 ### Switch
 
@@ -18,13 +38,11 @@
 
 - `#384387` - The issue with "Switch component click event trigger two times when we handling enable/disable dynamically" has been resolved.
 
-## 20.2.36 (2022-06-30)
-
 ### Checkbox
 
 #### Bug Fixes
 
-- `F379986` - The issue with "Screen reader reads checkbox field twice for tab keypress" has been resolved.
+- `#I399484` - The issue with aria-checked accessibility issue in angular checkbox has been fixed.
 
 ## 19.2.47 (2021-07-13)
 

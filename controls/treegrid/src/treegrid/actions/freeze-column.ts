@@ -1,9 +1,10 @@
 import { TreeGrid } from '../base/treegrid';
-import { parentsUntil } from '@syncfusion/ej2-grids';
+import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer, FreezeContentRender, FreezeRender, parentsUntil, RenderType } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../models/column';
 import { Grid, Freeze as FreezeColumn  } from '@syncfusion/ej2-grids';
 import { ITreeData } from '../base';
-import { addClass } from '@syncfusion/ej2-base';
+import { addClass, getValue } from '@syncfusion/ej2-base';
+import { ColumnVirtualTreeFreezeRenderer, VirtualTreeFreezeRenderer, VirtualTreeFreezeHdrRenderer} from '../renderer/virtual-tree-freeze-render';
 
 /**
  * TreeGrid Freeze module
@@ -28,6 +29,7 @@ export class Freeze {
         this.parent.on('rowExpandCollapse', this.rowExpandCollapse, this);
         this.parent.on('dataBoundArg', this.dataBoundArg, this);
         this.parent.grid.on('dblclick', this.dblClickHandler, this);
+        this.parent.grid.on('initial-load', this.instantiateRenderer, this);
     }
 
     public removeEventListener(): void {
@@ -35,6 +37,38 @@ export class Freeze {
         this.parent.off('rowExpandCollapse', this.rowExpandCollapse);
         this.parent.off('dataBoundArg', this.dataBoundArg);
         this.parent.grid.off('dblclick', this.dblClickHandler);
+        this.parent.grid.off('initial-load', this.instantiateRenderer);
+    }
+
+    protected instantiateRenderer(): void {
+        const renderer: Object = getValue('serviceLocator', this.parent.grid).getService('rendererFactory');
+        if (this.parent.getFrozenColumns()) {
+            if ( this.parent.enableColumnVirtualization) {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Header, new VirtualTreeFreezeHdrRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            } else {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Header, new FreezeRender(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            }
+            if (this.parent.enableVirtualization) {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Content, new VirtualTreeFreezeRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            } else {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Content, new FreezeContentRender(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            }
+        }
+        if (this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenRightColumnsCount()) {
+            getValue('addRenderer', renderer)
+                .apply(renderer, [RenderType.Header, new ColumnFreezeHeaderRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            if (this.parent.enableVirtualization) {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Content, new ColumnVirtualTreeFreezeRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            } else {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Content, new ColumnFreezeContentRenderer(getValue('grid', this.parent), getValue('serviceLocator', this.parent.grid))]);
+            }
+        }
     }
 
     private rowExpandCollapse(args: { detailrows: HTMLTableRowElement[], action: string,
@@ -84,7 +118,7 @@ export class Freeze {
     }
     private dblClickHandler(e: MouseEvent): void {
         if (parentsUntil(e.target as Element, 'e-rowcell') &&
-      this.parent.grid.editSettings.allowEditOnDblClick && this.parent.editSettings.mode !== 'Cell') {
+      this.parent.grid.editSettings.allowEditOnDblClick && this.parent.editSettings.mode !== 'Cell' && (!e.target['classList'].contains('e-treegridcollapse') && !e.target['classList'].contains('e-treegridexpand'))) {
             this.parent.grid.editModule.startEdit(parentsUntil(e.target as Element, 'e-row') as HTMLTableRowElement);
         }
     }

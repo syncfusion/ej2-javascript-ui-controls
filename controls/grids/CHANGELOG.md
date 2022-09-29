@@ -2,110 +2,27 @@
 
 ## [Unreleased]
 
-## 20.2.49 (2022-09-13)
+## 20.3.47 (2022-09-29)
 
 ### Grid
 
-#### Bug Fixes
+#### New Features
 
-- `#F176791` - Excel filter template in Complex field column throws script error has been resolved.
-- `#I401116` - Grid Toolbar is not scrollable when updating the items dynamically has been fixed.
-- `#I400345` - Script error while batch adding if the primary key column is hidden and other columns are templates has been fixed.
-- `#I400351` - No validation when confirming new grid row has been fixed.
-
-## 20.2.48 (2022-09-06)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I398466` - Tab key navigation breaks the functionality of Grid while using toolbar template has been fixed.
-- `#I396595`, `#I396424` - Group Caption template becomes empty in previous page while doing `infiniteScrolling` has been fixed.
-- `#F176349` - Key press in grid with toolbar template throws script errors has been fixed.
-- `#I397834` - `queryString` as complex field is not working in Hierarchy Grid has been fixed.
-- `#I397934` - Date filter issue with Russian Language has been fixed.
-
-## 20.2.46 (2022-08-30)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I394999` - Autofit columns are now working fine with hierarchy grid.
-- `#I372528` - Clear filtering is now working fine with column menu.
-- `#I392728` - Persist Selection issue with primary key column as complex field has been fixed.
-- `#I396789` - Provided place holder for pagination page size dropdown component.
-- `#I394229` - `setRowData` method issue with Frozen Grid has been fixed.
-- `#I394623` - `rowReorders` method issue with checkbox selection issue has been fixed.
-
-## 20.2.45 (2022-08-23)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I388962` - Screen reader reads the expanded row as collapsed issue has been resolved.
-- `#I392206` - Provided support to export pdf header with text alignment.
-
-## 20.2.44 (2022-08-16)
-
-### Grid
-
-#### Bug Fixes
-
-- `#F175923` - Script error thrown when we perform Dialog Editing with `columnTemplate` feature has been fixed.
-- `#I387602`, `#I391114` - `ColumnTemplate` is not working with `childGrid` in React has been fixed.
-- `#I392695` - Header checkbox is selected automatically while doing searching and filtering with custom binding has been fixed.
-- `#I377797` - Fixed the column misalignment issue while using the lazy load grouping feature to hide columns.
-- `#I388048`, `#I388054` - Icons appearing as unwanted characters in the NVDA Screen Reader speech viewer has been fixed.
-- `#I394025` - Memory leak issue on Command column when grid refreshed is fixed.
-- `#I396878` - `HeaderTemplate` feature is not working in React child Grid has been fixed.
-- `#FB36381` - Gantt with `virtualization` and Persistence working properly and the issue has been Fixed.
-- `#F175543`, `#I389522`, `#F176346`, `#I394881`, `#I395706`, `#I395963`, `#I397022` - Typing white space in grid input field on Mac OS has been Fixed.
-- `#FB34389` - `DataStateChangeEventArgs.search` Data Type has been updated.
-
-## 20.2.43 (2022-08-08)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I392233` - Filtering issue with Boolean values has been fixed and now working properly.
-- `#I388879` - Destroying Grid with expanded child grid throws script error has been resolved.
-- `#I388052` - Screen reader reads the column as draggable even though it is not a draggable column has been fixed.
-
-## 20.2.40 (2022-07-26)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I387901` - Command column disappear on pressing shift+tab key issue has been fixed.
-- `#I375590` - Now the Screen Reader announcing the state of the expand and collapse icon properly.
-- `#I390959` - `setRowData` method is now working properly with Column Template has been fixed.
-- `#I390767` - Text wrapping is not applied in the Stack header feature issue has been fixed.
+- `F26767` - Provided the Shimmer effect for grid while loading, refreshing and data processing.
+- Provided the lazy load group support for infinite scrolling enabled grid.
+- `I388050`, `I388052`, `I375590`, `I370773`, `I375590` - Grid features and icons have been enhanced to meet web accessibility standards and enabled localization support for aria-labels.
 
 #### Breaking Changes
 
-- The Expand and Collapse icon element change from div to anchor tag due to improvement in web accessibility.
-- `WAI-ARIA` `aria-rowindex` validation error has been resolved. Now the `aria-rowindex` and `aria-colindex` starting from 1.
-
-## 20.2.39 (2022-07-19)
-
-### Grid
+- `#I374913` - Prevented the group collapse action in infinite scrolling with cache mode by hiding the icons.
 
 #### Bug Fixes
 
-- `#I377182` - DOM leak with Group Caption Template issue has been fixed.
-- `#I388087` - Grid navigation with TAB stops working when the `isFrozen` is enabled issue has been fixed.
-- `#F173914` - Inside template function state value is not updated issue has been fixed.
-- `#I387341` - Increase in Row Height when editing enabled has been fixed.
-- `#F175548` - The `dataStateChange` event triggering at initial grid rendering has been fixed.
-- `#I389565` - `cssClass` property is not updated dynamically is fixed.
-- `#I385208` - Wrong row drop index when dropped in external grid has been fixed.
-- `#I386683` - `disableHtmlEncode` property is not working in Excel Filter is fixed.
-- `#I376845` - Memory leak issue on command column has been fixed.
-- `#F175044` - Image is not rendered in Multiple Grid Excel Export issue has been fixed.
+- `#I397430` - Script error while hiding the Sticky Header Grid using `ngIf` property has been fixed.
+- `#I407127` - Custom command buttons not working with infinite scrolling is fixed.
+- `#I401295` - Group by fails for 1 record on collapse issue has been fixed.
+- `#I401412` - Script error after destroying the Grid with sticky header has been fixed.
+- `#F176953` - Filtering issue with Frozen column and Row drag and drop feature has been resolved.
 
 ## 20.2.38 (2022-07-12)
 

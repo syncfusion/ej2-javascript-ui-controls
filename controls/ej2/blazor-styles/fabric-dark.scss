@@ -3,6 +3,7 @@
  */
 @import "base/fabric-dark.scss";
 @import "accordion/fabric-dark.scss";
+@import "appbar/fabric-dark.scss";
 @import "drop-down-list/fabric-dark.scss";
 @import "input/fabric-dark.scss";
 @import "popup/fabric-dark.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/fabric-dark.scss";
 @import "radio-button/fabric-dark.scss";
 @import "switch/fabric-dark.scss";
+@import "floating-action-button/fabric-dark.scss";
+@import "speed-dial/fabric-dark.scss";
 @import "list-view/fabric-dark.scss";
 @import "sortable/fabric-dark.scss";
 @import "daterangepicker/fabric-dark.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/fabric-dark.scss";
 @import "splitter/fabric-dark.scss";
 @import "excel-filter/fabric-dark.scss";
+@import "skeleton/fabric-dark.scss";
 @import "grid/fabric-dark.scss";
 @import "file-manager/fabric-dark.scss";
 @import "treegrid/fabric-dark.scss";
@@ -63,8 +67,10 @@
 @import "progress-button/fabric-dark.scss";
 @import "rich-text-editor/fabric-dark.scss";
 @import "gantt/fabric-dark.scss";
+@import "image-editor/fabric-dark.scss";
 @import "inplace-editor/fabric-dark.scss";
 @import "kanban/fabric-dark.scss";
+@import "message/fabric-dark.scss";
 @import "toast/fabric-dark.scss";
 @import "pdfviewer/fabric-dark.scss";
 @import "timepicker/fabric-dark.scss";

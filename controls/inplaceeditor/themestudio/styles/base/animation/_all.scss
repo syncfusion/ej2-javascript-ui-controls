@@ -1,4 +1,5 @@
 @include export-module('base-animation') {
+
   /*! animation keyframes */
   @keyframes SlideLeftOut {
     from {
@@ -132,20 +133,20 @@
   }
   @keyframes ZoomIn {
     from {
-      transform: translate(0, 0)scale(0);
+      transform: translate(0, 0) scale(0);
     }
 
     to {
-      transform: translate(0, 0)scale(1);
+      transform: translate(0, 0) scale(1);
     }
   }
   @keyframes ZoomOut {
     from {
-      transform: translate(0, 0)scale(1);
+      transform: translate(0, 0) scale(1);
     }
 
     to {
-      transform: translate(0, 0)scale(0);
+      transform: translate(0, 0) scale(0);
     }
   }
   @keyframes FadeZoomIn {
@@ -176,7 +177,7 @@
   }
   @keyframes FlipRightDownIn {
     from {
-      transform: perspective(400px)rotateY(-180deg);
+      transform: perspective(400px) rotateY(-180deg);
       transform-origin: right center;
       transform-style: preserve-3d;
     }
@@ -189,7 +190,7 @@
   }
   @keyframes FlipRightDownOut {
     from {
-      transform: perspective(400px)rotateY(0deg);
+      transform: perspective(400px) rotateY(0deg);
       transform-origin: right center;
       transform-style: preserve-3d;
     }
@@ -202,7 +203,7 @@
   }
   @keyframes FlipRightUpIn {
     from {
-      transform: perspective(400px)rotateY(135deg);
+      transform: perspective(400px) rotateY(135deg);
       transform-origin: right center;
       transform-style: preserve-3d;
     }
@@ -215,7 +216,7 @@
   }
   @keyframes FlipRightUpOut {
     from {
-      transform: perspective(400px)rotateY(0deg);
+      transform: perspective(400px) rotateY(0deg);
       transform-origin: right center;
       transform-style: preserve-3d;
     }
@@ -228,7 +229,7 @@
   }
   @keyframes FlipLeftDownIn {
     from {
-      transform: perspective(400px)rotateY(-180deg);
+      transform: perspective(400px) rotateY(-180deg);
       transform-origin: left center;
       transform-style: preserve-3d;
     }
@@ -241,7 +242,7 @@
   }
   @keyframes FlipLeftDownOut {
     from {
-      transform: perspective(400px)rotateY(0deg);
+      transform: perspective(400px) rotateY(0deg);
       transform-origin: left center;
       transform-style: preserve-3d;
     }
@@ -254,7 +255,7 @@
   }
   @keyframes FlipLeftUpIn {
     from {
-      transform: perspective(400px)rotateY(-135deg);
+      transform: perspective(400px) rotateY(-135deg);
       transform-origin: left center;
       transform-style: preserve-3d;
     }
@@ -282,13 +283,13 @@
     from {
       filter: alpha(opacity=0);
       opacity: 0;
-      transform: perspective(400px)rotateY(180deg);
+      transform: perspective(400px) rotateY(180deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateY(90deg);
+      transform: perspective(700px) rotateY(90deg);
     }
 
     to {
@@ -303,17 +304,17 @@
     from {
       filter: alpha(opacity=100);
       opacity: 1;
-      transform: perspective(400px)rotateY(0deg);
+      transform: perspective(400px) rotateY(0deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateY(90deg);
+      transform: perspective(700px) rotateY(90deg);
     }
 
     75% {
-      transform: perspective(850px)rotateY(125deg);
+      transform: perspective(850px) rotateY(125deg);
     }
 
     to {
@@ -328,13 +329,13 @@
     from {
       filter: alpha(opacity=0);
       opacity: 0;
-      transform: perspective(400px)rotateY(-180deg);
+      transform: perspective(400px) rotateY(-180deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateY(-90deg);
+      transform: perspective(700px) rotateY(-90deg);
     }
 
     to {
@@ -349,13 +350,13 @@
     from {
       filter: alpha(opacity=100);
       opacity: 1;
-      transform: perspective(400px)rotateY(0deg);
+      transform: perspective(400px) rotateY(0deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateY(-90deg);
+      transform: perspective(700px) rotateY(-90deg);
     }
 
     to {
@@ -370,13 +371,13 @@
     from {
       filter: alpha(opacity=0);
       opacity: 0;
-      transform: perspective(400px)rotateX(180deg);
+      transform: perspective(400px) rotateX(180deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateX(90deg);
+      transform: perspective(700px) rotateX(90deg);
     }
 
     to {
@@ -391,17 +392,17 @@
     from {
       filter: alpha(opacity=100);
       opacity: 1;
-      transform: perspective(400px)rotateX(0deg);
+      transform: perspective(400px) rotateX(0deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateX(90deg);
+      transform: perspective(700px) rotateX(90deg);
     }
 
     75% {
-      transform: perspective(850px)rotateX(125deg);
+      transform: perspective(850px) rotateX(125deg);
     }
 
     to {
@@ -416,13 +417,13 @@
     from {
       filter: alpha(opacity=0);
       opacity: 0;
-      transform: perspective(400px)rotateX(-180deg);
+      transform: perspective(400px) rotateX(-180deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateX(-90deg);
+      transform: perspective(700px) rotateX(-90deg);
     }
 
     to {
@@ -437,13 +438,13 @@
     from {
       filter: alpha(opacity=100);
       opacity: 1;
-      transform: perspective(400px)rotateX(0deg);
+      transform: perspective(400px) rotateX(0deg);
       transform-origin: center center;
       transform-style: preserve-3d;
     }
 
     50% {
-      transform: perspective(700px)rotateX(-90deg);
+      transform: perspective(700px) rotateX(-90deg);
     }
 
     to {

@@ -75,12 +75,20 @@ export interface StockChartLegendSettingsModel {
     mode?: LegendMode;
 
     /**
-     * Option to customize the padding between legend items.
+     * Option to customize the padding around the legend items.
      *
      * @default 8
      */
 
     padding?: number;
+
+    /**
+     * Option to customize the padding between legend items.
+     *
+     * @default 20
+     */
+
+    itemPadding?: number;
 
     /**
      * Legend in stock chart can be aligned as follows:
@@ -134,7 +142,7 @@ export interface StockChartLegendSettingsModel {
     /**
      * Padding between the legend shape and text in stock chart.
      *
-     * @default 5
+     * @default 8
      */
 
     shapePadding?: number;

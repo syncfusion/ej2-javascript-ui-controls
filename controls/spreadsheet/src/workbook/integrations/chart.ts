@@ -1,5 +1,5 @@
-import { getRangeIndexes, ChartModel, inRange } from '../common/index';
-import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetNameFromAddress } from '../base/index';
+import { getRangeIndexes, ChartModel, inRange, checkRange } from '../common/index';
+import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell } from '../base/index';
 import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '@syncfusion/ej2-charts';
@@ -101,26 +101,27 @@ export class WorkbookChart {
         }
     }
 
-    private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, sheetIdx: number, showHide?: string }): void {
-        let i: number;
-        let j: number = 1;
-        const cnt: number = this.parent.sheets.length + 1;
-        while (j < cnt) {
-            const charts: ChartModel[] = this.parent.chartColl;
-            i = charts ? charts.length : 0;
-            if (i) {
-                while (i--) {
-                    const chart: ChartModel = this.parent.chartColl[i];
-                    const isRange: boolean = isNullOrUndefined(args.showHide) ? inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx)
-                        : this.inRowColumnRange(getRangeIndexes(chart.range), args.rIdx, args.showHide);
-                    const rangeSheetIdx: number = chart.range.indexOf('!') > -1 ?
-                        getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
-                    if (isRange && rangeSheetIdx === this.parent.activeSheetIndex) {
-                        this.parent.notify(updateChart, { chart: chart });
-                    }
+    private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, range?: number[], showHide?: string }): void {
+        if (!this.parent.chartColl || !this.parent.chartColl.length) {
+            return;
+        }
+        let chart: ChartModel; let rangeArr: string[]; let range: string; let insideRange: boolean;
+        for (let i: number = 0, len: number = this.parent.chartColl.length; i < len; i++) {
+            chart = this.parent.chartColl[i];
+            if (chart.range.includes('!')) {
+                rangeArr = chart.range.split('!');
+                if (this.parent.activeSheetIndex !== getSheetIndex(this.parent, rangeArr[0])) {
+                    continue;
                 }
+                range = rangeArr[1];
+            } else {
+                range = chart.range;
             }
-            j++;
+            insideRange = args.range ? checkRange([args.range], range) : (args.showHide ? this.inRowColumnRange(
+                getRangeIndexes(range), args.rIdx, args.showHide) : inRange(getRangeIndexes(range), args.rIdx, args.cIdx));
+            if (insideRange) {
+                this.parent.notify(updateChart, { chart: chart });
+            }
         }
     }
 

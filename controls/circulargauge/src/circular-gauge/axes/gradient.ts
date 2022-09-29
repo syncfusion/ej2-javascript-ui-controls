@@ -320,12 +320,11 @@ export class Gradient {
 
     /**
      * To destroy the Gradient.
-     *
-     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(gauge: CircularGauge): void {
-        // Destroy method performed here
+    public destroy(): void {
+        this.gauge = null;
     }
 }

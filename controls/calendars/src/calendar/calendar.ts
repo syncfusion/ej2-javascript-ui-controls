@@ -461,7 +461,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 this.calendarElement.classList.add(DEVICE);
             }
             attributes(this.calendarElement, <{ [key: string]: string }>{
-                'role': 'calendar'
+                'data-role': 'calendar'
             });
         }
         this.createHeader();
@@ -594,7 +594,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected createContent(): void {
         this.contentElement = this.createElement('div', { className: CONTENT });
-        this.table = this.createElement('table', { attrs: { tabIndex: '0', 'role': 'grid', 'aria-activedescendant': '' } });
+        this.table = this.createElement('table', { attrs: { tabIndex: '0', 'role': 'grid', 'aria-activedescendant': '', 'aria-labelledby': this.element.id } });
         if (this.getModuleName() === 'calendar') {
             this.element.appendChild(this.contentElement);
         } else {
@@ -978,7 +978,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.islamicModule.islamicRenderTemplate(tdEles, numCells, MONTH, e, value);
         }
     }
-    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean, e?:Event): HTMLElement[] {
+    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean, e?: Event): HTMLElement[] {
         const tdEles: HTMLElement[] = [];
         const cellsCount: number = 42;
         const todayDate: Date = isTodayDate ? new Date(+currentDate) : this.getDate(new Date(), this.timezone);
@@ -1096,8 +1096,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                             }
                         }
                         this.setProperties({ values: copyValues }, true);
-                    }
-                    else {
+                    } else {
                         this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
                     }
                 }
@@ -1201,7 +1200,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             const year: number = startYear + rowIterator;
             localDate.setFullYear(year);
             const tdEle: HTMLElement = this.dayCell(localDate);
-            attributes(tdEle, { 'role': 'gridcell' });
             const dayLink: HTMLElement = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, {
                 format: null, type: 'dateTime', skeleton: 'y'
@@ -1239,7 +1237,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         const value: number = date.valueOf();
         const attrs: Object = {
-            className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false', 'role': 'gridcell' }
+            className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false'}
         };
         return this.createElement('td', attrs);
     }
@@ -1316,7 +1314,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let row: number = count;
         let rowIterator: number = 0;
         for (let dayCell: number = 0; dayCell < elements.length / count; ++dayCell) {
-            trEle = this.createElement('tr', { attrs: { 'role': 'row' } });
+            trEle = this.createElement('tr');
             for (rowIterator = 0 + rowIterator; rowIterator < row; rowIterator++) {
                 if (!elements[rowIterator].classList.contains('e-week-number') && !isNullOrUndefined(elements[rowIterator].children[0])) {
                     addClass([elements[rowIterator].children[0]], [LINK]);
@@ -2514,7 +2512,7 @@ export class Calendar extends CalendarBase {
                 this.setProperties({ value: this.values[this.values.length - 1] }, true);
                 }
                 else {
-                  this.previousDates = true;
+                    this.previousDates = true;
                 }
             } else {
                 this.setProperties({ value: this.getIdValue(e, null) }, true);

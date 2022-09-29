@@ -27,6 +27,7 @@ export class DataManipulation {
     private hierarchyData: Object[];
     private isSelfReference: boolean;
     private isSortAction: boolean;
+    private infiniteScrollData: Object[];
     constructor(grid: TreeGrid) {
         this.parent = grid;
         this.parentItems = [];
@@ -395,8 +396,8 @@ export class DataManipulation {
             if (!Object.prototype.hasOwnProperty.call(currentData, 'index')) {
                 currentData.index = this.storedIndex;
             }
-            if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) ||
-            ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent) && (this.parent.initialRender || isNullOrUndefined(this.parent['dataResults'].result)))) {
+            if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) || ((currentData[this.parent.hasChildMapping]) &&
+            isCountRequired(this.parent) && (this.parent.initialRender || isNullOrUndefined(this.parent['dataResults'].result) || this.parent.enableInfiniteScrolling))) {
                 currentData.hasChildRecords = true;
                 if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
             && isNullOrUndefined(currentData[this.parent.childMapping])) {
@@ -431,6 +432,7 @@ export class DataManipulation {
             currentData.checkboxState = 'uncheck';
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
+                this.parent['infiniteScrollData'].push(currentData);
             }
             if (!this.isSelfReference && currentData.level === 0) {
                 this.parent.parentData.push(currentData);

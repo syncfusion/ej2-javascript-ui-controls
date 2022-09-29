@@ -1173,6 +1173,7 @@ export enum DiagramConstraints {
  * @aspNumberEnum
  * @IgnoreSingular
  */
+
 export enum DiagramTools {
     /** Disable all constraints */
     None = 0,
@@ -1188,6 +1189,7 @@ export enum DiagramTools {
     ContinuousDraw = 1 << 4,
     /** Enables/Disable all constraints */
     Default = 1 << 0 | 1 << 1,
+
 }
 
 /**
@@ -1819,7 +1821,9 @@ export type Segments =
     /** Polyline - Sets the segment type as Polyline */
     'Polyline' |
     /** Bezier - Sets the segment type as Bezier */
-    'Bezier';
+    'Bezier' |
+     /** FreeHand - Sets the segment type as FreeHand */
+    'Freehand' ;
 
 /**
  * Defines the decorator shape of the connector
@@ -2552,7 +2556,7 @@ export enum DiagramEvent {
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
-    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick'
+    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick','elementDraw'
 }
 /**
  * @private

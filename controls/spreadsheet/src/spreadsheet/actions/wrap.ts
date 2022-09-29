@@ -234,8 +234,14 @@ export class WrapText {
         return 'wrapText';
     }
 
+    /**
+     * Removes the added event handlers and clears the internal properties of WrapText module. 
+     *
+     * @returns {void}
+     */
     public destroy(): void {
         this.removeEventListener();
+        this.wrapCell = null;
         this.parent = null;
     }
 }

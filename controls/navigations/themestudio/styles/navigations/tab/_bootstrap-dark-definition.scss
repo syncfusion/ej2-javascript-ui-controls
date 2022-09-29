@@ -1,4 +1,4 @@
-//default 
+//default
 $tab-skin: 'bootstrap' !default;
 $tab-big-vertical-scroll-nav-top-bottom: 23px !default;
 $tab-vscroll-big-padding: 24px 0 !default;
@@ -386,6 +386,7 @@ $tab-alt-wrap-hover-color: $brand-primary-font !default;
 $tab-nav-active-box-shadow: none !default;
 $tab-nav-focus-border-color: $grey-e6 !default;
 $tab-alt-nav-hover-bg-color: $grey-e6 !default;
+
 //enddefault
 //dimensions
 @mixin tbar-alt-btn-animation-after {

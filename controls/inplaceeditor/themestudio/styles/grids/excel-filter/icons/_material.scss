@@ -1,5 +1,6 @@
 @include export-module('excel-filter-material-icons') {
-  /*!component icons*/
+
+  /* !component icons */
 
   .e-icon-check::before {
     content: '\e7ff';
@@ -11,7 +12,7 @@
     }
 
     .e-excl-filter-icon::before {
-      content:  '\e251';
+      content: '\e251';
     }
 
     .e-excl-filter-icon.e-filtered::before {
@@ -33,6 +34,5 @@
     .e-sortdescending::before {
       content: '\e733';
     }
-   }
+  }
 }
-  

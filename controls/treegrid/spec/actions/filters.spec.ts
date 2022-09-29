@@ -1128,17 +1128,17 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       });
   
       it('Expand test for the parent record ', (done: Function) => {
-          gridObj.collapseAll();
-		  gridObj.filterByColumn("taskName", "startsWith", "Plan timeline");
-		  expect(gridObj.getVisibleRecords()[0]['isInExpandState']).toBe(true);
-		  done();
+		gridObj.collapseAll();
+		gridObj.filterByColumn("taskName", "startsWith", "Plan timeline");
+		expect(gridObj.getVisibleRecords()[0]['isInExpandState']).toBe(true);
+		done();
        });
       afterAll(() => {
         destroy(gridObj);
       });
     });
 
-   describe('EJ2-63073: The checkbox selection is not working properly while removing the filter', () => {
+  describe('EJ2-63073: The checkbox selection is not working properly while removing the filter', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
     beforeAll((done: Function) => {

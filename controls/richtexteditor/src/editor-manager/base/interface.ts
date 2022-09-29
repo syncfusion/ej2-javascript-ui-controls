@@ -96,12 +96,14 @@ export interface IHtmlItemArgs {
     selectParent?: Node[]
     src?: string
     url?: string
+    isEmbedUrl?: string
     text?: string
     title?: string
     target?: string
     width?: { minWidth?: string | number, maxWidth?: string | number; width?: string | number }
     height?: { minHeight?: string | number, maxHeight?: string | number; height?: string | number }
     altText?: string
+    fileName?: string
     rows?: number
     columns?: number
     subCommand?: string

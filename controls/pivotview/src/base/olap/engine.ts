@@ -214,7 +214,7 @@ export class OlapEngine {
             this.emptyCellTextContent = dataSourceSettings.emptyCellsTextContent ? dataSourceSettings.emptyCellsTextContent : '';
             this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
                 : undefined;
-            this.isPaging = this.pageSettings ? true : false;
+            this.isPaging = this.pageSettings && (customProperties.enablePaging || customProperties.enableVirtualization) ? true : false;
             this.frameSortObject();
             this.getFormattedFields(this.formats);
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;

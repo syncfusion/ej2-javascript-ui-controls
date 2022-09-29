@@ -3,6 +3,7 @@
  */
 @import "base/fabric.scss";
 @import "accordion/fabric.scss";
+@import "appbar/fabric.scss";
 @import "drop-down-list/fabric.scss";
 @import "input/fabric.scss";
 @import "popup/fabric.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/fabric.scss";
 @import "radio-button/fabric.scss";
 @import "switch/fabric.scss";
+@import "floating-action-button/fabric.scss";
+@import "speed-dial/fabric.scss";
 @import "list-view/fabric.scss";
 @import "sortable/fabric.scss";
 @import "daterangepicker/fabric.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/fabric.scss";
 @import "splitter/fabric.scss";
 @import "excel-filter/fabric.scss";
+@import "skeleton/fabric.scss";
 @import "grid/fabric.scss";
 @import "file-manager/fabric.scss";
 @import "treegrid/fabric.scss";
@@ -64,8 +68,10 @@
 @import "rich-text-editor/fabric.scss";
 @import "gantt/fabric.scss";
 @import "icons/fabric.scss";
+@import "image-editor/fabric.scss";
 @import "inplace-editor/fabric.scss";
 @import "kanban/fabric.scss";
+@import "message/fabric.scss";
 @import "toast/fabric.scss";
 @import "pdfviewer/fabric.scss";
 @import "timepicker/fabric.scss";

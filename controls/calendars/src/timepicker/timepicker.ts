@@ -781,9 +781,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         );
         this.inputWrapper.container.style.width = this.setWidth(this.width);
         attributes(this.inputElement, {
-            'aria-haspopup': 'true', 'aria-autocomplete': 'list', 'tabindex': '0', 'aria-activedescendant': 'null',
-            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-disabled': 'false', 'aria-invalid': 'false'
+            'aria-autocomplete': 'list', 'tabindex': '0',
+            'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
+            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 
+            'aria-disabled': 'false', 'aria-invalid': 'false'
         });
         if (!this.isNullOrEmpty(this.inputStyle)) {
             Input.addAttributes({ 'style': this.inputStyle }, this.inputElement);
@@ -880,9 +881,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.hide();
         this.unBindEvents();
         const ariaAttribute: object = {
-            'aria-haspopup': 'true', 'aria-autocomplete': 'list', 'tabindex': '0', 'aria-activedescendant': 'null',
-            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-disabled': 'true', 'aria-invalid': 'false'
+            'aria-autocomplete': 'list', 'tabindex': '0',
+            'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
+            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 
+            'aria-disabled': 'true', 'aria-invalid': 'false'
         };
         if (this.inputElement) {
             Input.removeAttributes(<{ [key: string]: string }>ariaAttribute, this.inputElement);
@@ -980,7 +982,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }, close: () => {
                 removeClass([this.inputWrapper.buttons[0]], SELECTED);
                 this.unWireListEvents();
-                this.inputElement.setAttribute('aria-activedescendant', 'null');
+                this.inputElement.removeAttribute('aria-activedescendant');
                 remove(this.popupObj.element);
                 this.popupObj.destroy();
                 this.popupWrapper.innerHTML = '';
@@ -1461,6 +1463,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.popupObj.hide(new Animation(animModel));
                     removeClass([this.inputWrapper.container], [ICONANIMATION]);
                     attributes(this.inputElement, { 'aria-expanded': 'false' });
+                    this.inputElement.removeAttribute('aria-owns');
+                    this.inputElement.removeAttribute('aria-activedescendant');
                     EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
                 }
                 if (Browser.isDevice && this.modal) {
@@ -2206,10 +2210,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
 
     }
     protected setActiveDescendant(): void {
-        if (!isNullOrUndefined(this.selectedElement)) {
+        if (!isNullOrUndefined(this.selectedElement) && this.value) {
             attributes(this.inputElement, { 'aria-activedescendant': this.selectedElement.getAttribute('id') });
         } else {
-            attributes(this.inputElement, { 'aria-activedescendant': 'null' });
+            this.inputElement.removeAttribute('aria-activedescendant');
         }
     }
     protected removeSelection(): void {
@@ -2296,7 +2300,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return value;
     }
     protected createListItems(): void {
-        this.listWrapper = this.createElement('div', { className: CONTENT, attrs: { 'tabindex': '0' } });
+        this.listWrapper = this.createElement('div', { className: CONTENT, attrs: { 'tabindex': '-1' } });
         let start: number;
         const interval: number = this.step * 60000;
         const listItems: string[] = [];
@@ -2326,7 +2330,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         };
         this.listTag = ListBase.createList(this.createElement, listItems, listBaseOptions, true);
-        attributes(this.listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
+        attributes(this.listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options', 'tabindex':'0' });
         append([this.listTag], this.listWrapper);
     }
     private documentClickHandler(event: MouseEvent): void {
@@ -2539,6 +2543,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     this.setActiveDescendant();
                     attributes(this.inputElement, { 'aria-expanded': 'true' });
+                    attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options'});
                     addClass([this.inputWrapper.container], FOCUS);
                     EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
                     this.setOverlayIndex(this.mobileTimePopupWrap, this.popupObj.element, this.modal, Browser.isDevice as any);
@@ -2649,7 +2654,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             switch (prop) {
             case 'placeholder':
                 Input.setPlaceholder(newProp.placeholder, this.inputElement);
-                this.inputElement.setAttribute('aria-placeholder', newProp.placeholder);
                 break;
             case 'readonly':
                 Input.setReadonly(this.readonly, this.inputElement, this.floatLabelType);

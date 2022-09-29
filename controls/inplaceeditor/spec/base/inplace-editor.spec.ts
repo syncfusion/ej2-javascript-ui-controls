@@ -3095,4 +3095,22 @@ describe('InPlace-Editor Control', () => {
             expect(parseFloat(editorObj.model.value as any) === parseFloat('2.2342432423423425e+58')).toEqual(true);
         });
     });
+    describe(' EJ2-62999 - inplace Editor unique Id is not generated automatically when we do not set the Id property ', () => {
+        let editorObj: InPlaceEditor;
+        const divElement: HTMLElement = createElement('div', {
+        className: 'defaultEditor' });
+        beforeEach((): void => {
+            document.body.appendChild(divElement);
+            editorObj = new InPlaceEditor({});
+            const target: HTMLElement = document.querySelector('.defaultEditor');
+            editorObj.appendTo(target);
+         });
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('check the id genarated or not ', () => {  
+            expect(editorObj.element.hasAttribute('id')).toBe(true);
+        });
+    });
 });
+

@@ -355,7 +355,7 @@ export class TrackChangesPane {
     public isUpdateTrackChanges(revisionCount: number): boolean {
         let isUpdate: boolean = false;
         let isNoChangeDiv: boolean = false;
-        if (this.changesInfoDiv.childNodes.length === 1 && (this.changesInfoDiv.childNodes[0] as HTMLDivElement).className === 'e-de-tc-no-chng') {
+        if (this.changesInfoDiv.childNodes.length === 1 && (this.changesInfoDiv.childNodes[0] as HTMLDivElement).className == 'e-de-tc-no-chng') {
             isNoChangeDiv = true;
         }
         else {
@@ -501,7 +501,14 @@ export class TrackChangesPane {
             this.changesInfoDiv.removeChild(this.changesInfoDiv.lastChild);
         }
         this.revisions = [];
-        this.changes.clear();
+        if (this.changes && this.changes.length > 0) {
+            for (let i: number = 0; i < this.changes.length; i++) {
+                let revision: Revision = this.changes.keys[i];
+                let changesSingleView: ChangesSingleView = this.changes.get(revision);
+                changesSingleView.destroy();
+            }
+            this.changes.clear();
+        }
     }
     /**
      * @private
@@ -522,6 +529,7 @@ export class TrackChangesPane {
         this.removeAllChanges();
         if (this.toolbar) {
             this.toolbar.destroy();
+            this.toolbar = undefined;
         }
         if (this.closeButton && this.closeButton.parentElement) {
             this.closeButton.parentElement.removeChild(this.closeButton);
@@ -529,6 +537,7 @@ export class TrackChangesPane {
         this.closeButton = undefined;
         if (this.userDropDownButton) {
             this.userDropDownButton.destroy();
+            this.userDropDownButton = undefined;
         }
         if (this.menuDropDownButton) {
             this.menuDropDownButton.destroy();
@@ -537,25 +546,44 @@ export class TrackChangesPane {
 
         if (this.viewTypeDropDownButton) {
             this.viewTypeDropDownButton.destroy();
-        }
-        if (this.menuDropDownButton) {
-            this.menuDropDownButton.destroy();
-            this.menuDropDownButton = undefined;
+            this.viewTypeDropDownButton = undefined;
         }
         if (this.userDropDown) {
             this.userDropDown = undefined;
         }
         if (this.users.length > 0) {
             this.users = [];
+            this.users = undefined;
         }
         if (this.trackChangeDiv) {
             this.trackChangeDiv = undefined;
+        }
+        if (this.changesInfoDiv) {
+            this.changesInfoDiv = undefined;
+        }
+        if (this.commentReviewPane) {
+            this.commentReviewPane = undefined;
         }
         if (this.tableRevisions) {
             this.tableRevisions.destroy();
             this.tableRevisions = undefined;
         }
-
+        if (this.renderedChanges) {
+            this.renderedChanges.destroy();
+            this.renderedChanges = undefined;
+        }
+        this.currentSelectedRevisionInternal = undefined;
+        this.selectedUser = undefined;
+        this.selectedType = undefined;
+        this.sortedRevisions = [];
+        this.sortedRevisions = undefined;
+        this.viewTypeitems = [];
+        this.viewTypeitems = undefined;
+        this.userDropDownitems = [];
+        this.userDropDownitems = undefined;
+        this.revisions = undefined;
+        this.changes = undefined;
+        this.owner = undefined;
     }
     private addChanges(revision: Revision): void {
         let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this);
@@ -615,7 +643,7 @@ export class TrackChangesPane {
                 this.owner.selection.selectRevision(revision);
             }
         }
-        this.currentSelectedRevision = this.currentSelectedRevision;
+        this.currentSelectedRevision = this.owner.documentHelper.currentSelectedRevision;
     }
 }
 
@@ -630,6 +658,8 @@ export class ChangesSingleView {
     public singleInnerDiv: HTMLElement;
     public acceptButtonElement: HTMLButtonElement;
     public rejectButtonElement: HTMLButtonElement;
+    private acceptButton: Button;
+    private rejectButton: Button;
     public changesCount: HTMLElement;
     /***
      * @private
@@ -705,10 +735,10 @@ export class ChangesSingleView {
             styles: 'float:left;'
         });
         this.acceptButtonElement = createElement('button', { className: 'e-de-track-accept-button' }) as HTMLButtonElement;
-        let acceptButton: Button = new Button({ cssClass: 'e-outline e-success', content: this.locale.getConstant('Accept') });
+        this.acceptButton = new Button({ cssClass: 'e-outline e-success', content: this.locale.getConstant('Accept') });
         buttonDiv.appendChild(this.acceptButtonElement);
         buttonTotalDiv.appendChild(buttonDiv);
-        acceptButton.appendTo(this.acceptButtonElement);
+        this.acceptButton.appendTo(this.acceptButtonElement);
         if (this.owner.documentHelper.isTrackedOnlyMode) {
             this.acceptButtonElement.classList.add('e-de-overlay'); 
         }
@@ -718,10 +748,10 @@ export class ChangesSingleView {
             styles: 'float:left;'
         });
         this.rejectButtonElement = createElement('button', { className: 'e-de-track-reject-button' }) as HTMLButtonElement;
-        let rejectButton: Button = new Button({ cssClass: 'e-outline e-danger', content: this.locale.getConstant('Reject') });
+        this.rejectButton = new Button({ cssClass: 'e-outline e-danger', content: this.locale.getConstant('Reject') });
         buttonDiv.appendChild(this.rejectButtonElement);
         buttonTotalDiv.appendChild(buttonDiv);
-        rejectButton.appendTo(this.rejectButtonElement);
+        this.rejectButton.appendTo(this.rejectButtonElement);
         if (this.owner.documentHelper.isTrackedOnlyMode) {
             this.rejectButtonElement.classList.add('e-de-overlay');    
         }
@@ -868,5 +898,32 @@ export class ChangesSingleView {
             this.trackChangesPane.setNoChangesVisibility = true;
         }
         this.trackChangesPane.updateUsers();
+    }
+
+    public destroy(): void {
+        if (this.revision) {
+            this.revision = undefined;
+        }
+        if (this.acceptButton) {
+            this.acceptButton.destroy();
+            this.acceptButton = undefined;
+        }
+        if (this.rejectButton) {
+            this.rejectButton.destroy();
+            this.rejectButton = undefined;
+        }
+        if (this.acceptButtonElement) {
+            this.acceptButtonElement = undefined;
+        }
+        if (this.rejectButtonElement) {
+            this.rejectButtonElement = undefined;
+        }
+        if (this.tableElement) {
+            this.tableElement = undefined;
+        }
+        this.user = undefined;
+        this.revisionType = undefined;
+        this.trackChangesPane = undefined;
+        this.owner = undefined;
     }
 }

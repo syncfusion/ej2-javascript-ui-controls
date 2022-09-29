@@ -51,6 +51,7 @@ export class Table {
     private dialogRenderObj: DialogRenderer;
     private currentColumnResize: string = '';
     private currentMarginLeft: number = 0;
+    private previousTableElement: HTMLElement;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -77,6 +78,7 @@ export class Table {
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
         this.parent.on(events.mouseUp, this.selectionTable, this);
+        this.parent.on(events.tableModulekeyUp, this.tableModulekeyUp, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
@@ -100,6 +102,7 @@ export class Table {
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.off(events.keyDown, this.keyDown);
         this.parent.off(events.mouseUp, this.selectionTable);
+        this.parent.off(events.tableModulekeyUp, this.tableModulekeyUp);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
@@ -250,6 +253,22 @@ export class Table {
             }
         }
     }
+    private tableModulekeyUp(e: NotifyArgs): void {
+        const event: KeyboardEventArgs = e.args as KeyboardEventArgs;
+        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
+            let ele: HTMLElement = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0] as HTMLElement;
+            ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? ele.parentElement : ele;
+            if (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') {
+                const closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
+                ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
+            }
+            if (this.previousTableElement != ele && !isNullOrUndefined(this.previousTableElement)) {
+                this.previousTableElement.classList.remove(classes.CLS_TABLE_SEL);
+            }
+        }
+    }
     private openDialog(isInternal?: boolean, e?: NotifyArgs): void {
         if (!isInternal) { (this.parent.contentModule.getEditPanel() as HTMLElement).focus(); }
         if (this.parent.editorMode === 'HTML') {
@@ -345,6 +364,7 @@ export class Table {
     }
 
     private tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
+        this.previousTableElement = ele;
         const insideList: boolean = this.insideList(selection.range);
         if ((event.keyCode === 37 || event.keyCode === 39) && selection.range.startContainer.nodeType === 3 ||
             insideList) {
@@ -374,7 +394,8 @@ export class Table {
                 ele.classList.add(classes.CLS_TABLE_SEL);
                 this.addRow(selection, event, true);
                 ele.classList.remove(classes.CLS_TABLE_SEL);
-                nextElement = nextElement.parentElement.nextSibling ? nextElement.parentElement.nextSibling.firstChild as HTMLElement : nextElement.parentElement.firstChild;
+                nextElement = nextElement.parentElement.nextSibling ? nextElement.parentElement.nextSibling.firstChild as HTMLElement :
+                    nextElement.parentElement.firstChild;
                 // eslint-disable-next-line
                 (nextElement.textContent.trim() !== '' && closest(nextElement, 'td')) ?
                     selection.setSelectionNode(this.contentModule.getDocument(), nextElement) :
@@ -477,7 +498,8 @@ export class Table {
             const closestTable: Element = closest(target, 'table');
             const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
-            if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && startNode === endNode && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
+            if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && target.nodeName !== 'VIDEO' && !target.classList.contains(classes.CLS_CLICKELEM) &&
+                target.nodeName !== 'AUDIO' && startNode === endNode && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
                 && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
                 const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
@@ -598,7 +620,7 @@ export class Table {
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
         const closestTable: Element = closest(target, 'table.e-rte-table');
         if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable &&
-        	this.parent.contentModule.getEditPanel().contains(closestTable)) {
+            this.parent.contentModule.getEditPanel().contains(closestTable)) {
             this.removeResizeElement();
             this.removeHelper(e as MouseEvent);
             this.cancelResizeAction();
@@ -699,10 +721,10 @@ export class Table {
         }
         if (isNestedTable) {
             isNestedTable = false;
-            let topValue: number = this.parent.inputElement && this.parent.inputElement.scrollTop > 0 ?
-            (this.parent.inputElement.scrollTop + offset.top) - parentOffset.top : offset.top - parentOffset.top;
-            let leftValue: number = this.parent.inputElement && this.parent.inputElement.scrollLeft > 0 ?
-            (this.parent.inputElement.scrollLeft + offset.left) - parentOffset.left : offset.left - parentOffset.left;
+            const topValue: number = this.parent.inputElement && this.parent.inputElement.scrollTop > 0 ?
+                (this.parent.inputElement.scrollTop + offset.top) - parentOffset.top : offset.top - parentOffset.top;
+            const leftValue: number = this.parent.inputElement && this.parent.inputElement.scrollLeft > 0 ?
+                (this.parent.inputElement.scrollLeft + offset.left) - parentOffset.left : offset.left - parentOffset.left;
             return {
                 top: topValue,
                 left: leftValue
@@ -820,7 +842,7 @@ export class Table {
         if (this.resizeBtnStat.column) {
             this.helper.classList.add('e-column-helper');
             (this.helper as HTMLElement).style.cssText = 'height: ' + getComputedStyle(this.curTable).height + '; top: ' +
-                pos.top + 'px; left:' +((pos.left + this.calcPos(this.columnEle).left) +
+                pos.top + 'px; left:' + ((pos.left + this.calcPos(this.columnEle).left) +
                 (this.currentColumnResize === 'last' ? this.columnEle.offsetWidth + 2 : 0) - 1) + 'px;';
         } else {
             this.helper.classList.add('e-row-helper');
@@ -870,8 +892,9 @@ export class Table {
                 const tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
                 const tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
                 const paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
-                const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
-                      (this.contentModule.getEditPanel() as HTMLElement).clientWidth) - paddingSize * 2;
+                const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
+                    ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
+                    (this.contentModule.getEditPanel() as HTMLElement).clientWidth) - paddingSize * 2;
                 let widthCompare: number;
                 if (!isNOU(this.curTable.parentElement.closest('table')) && !isNOU(this.curTable.closest('td')) &&
                 (this.contentModule.getEditPanel() as HTMLElement).contains(this.curTable.closest('td'))) {
@@ -884,17 +907,20 @@ export class Table {
                 }
                 if (this.resizeBtnStat.column) {
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
-                    let cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
-                    let currentTableWidth: number =  parseFloat(this.curTable.style.width.split('%')[0]);
-                    let currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow].cells[this.colIndex] as HTMLElement).style.width.split('%')[0]);
+                    const cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
+                    const currentTableWidth: number =  parseFloat(this.curTable.style.width.split('%')[0]);
+                    const currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow].cells[this.colIndex] as HTMLElement).style.width.split('%')[0]);
                     if (this.currentColumnResize === 'first') {
                         mouseX = mouseX - 0.75; //This was done for to make the gripper and the table first/last column will be close.
                         this.removeResizeElement();
                         // Below the value '100' is the 100% width of the parent element.
-                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX < 0) && currentTableWidth <= 100 && this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) <= 100) {
+                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX < 0) && currentTableWidth <= 100 &&
+                            this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) <= 100) {
                             const firstColumnsCell: HTMLElement[] =  this.findFirstLastColCells(this.curTable, true);
-                            this.curTable.style.width = this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) > 100 ? (100 + '%') : (this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) + '%');
-                            let differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(tableWidth - mouseX, widthCompare);
+                            this.curTable.style.width = this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) > 100 ? (100 + '%') :
+                                (this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) + '%');
+                            const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
+                                tableWidth - mouseX, widthCompare);
                             this.currentMarginLeft = this.currentMarginLeft + differenceWidth;
                             this.curTable.style.marginLeft = 'calc(' + (this.curTable.style.width === '100%' ? 0 : this.currentMarginLeft) + '%)';
                             for (let i: number = 0; i < firstColumnsCell.length; i++) {
@@ -905,10 +931,12 @@ export class Table {
                         mouseX = mouseX + 0.75; //This was done for to make the gripper and the table first/last column will be close.
                         this.removeResizeElement();
                         // Below the value '100' is the 100% width of the parent element.
-                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX > 0) && currentTableWidth <= 100 && this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) <= 100) {
+                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX > 0) &&
+                            currentTableWidth <= 100 && this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) <= 100) {
                             const lastColumnsCell: HTMLElement[] = this.findFirstLastColCells(this.curTable, false);
                             this.curTable.style.width = this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) > 100 ? (100 + '%') : (this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%');
-                            let differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(tableWidth + mouseX, widthCompare);
+                            const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
+                                tableWidth + mouseX, widthCompare);
                             for (let i: number = 0; i < lastColumnsCell.length; i++) {
                                 (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
                             }
@@ -963,7 +991,7 @@ export class Table {
     }
 
     private findFirstLastColCells(table: HTMLElement, isFirst: boolean): HTMLElement[] {
-        let resultColumns: HTMLElement[] = [];
+        const resultColumns: HTMLElement[] = [];
         const rows: NodeListOf<HTMLElement> = table.querySelectorAll('tr');
         for (let i = 0; i < rows.length; i++) {
             if (rows[i].closest('table') === table) {
@@ -1282,7 +1310,7 @@ export class Table {
         const header: string = this.l10n.getConstant('tabledialogHeader');
         const dialogModel: DialogModel = {
             header: header,
-            cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass, 
+            cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'initial',

@@ -1733,7 +1733,6 @@ describe('Group caption 1st column template =>', () => {
     });
 });
 
-
 describe('EJ2-62665 Collapse icon is read as expanded by NVDA Reader => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -1753,6 +1752,33 @@ describe('EJ2-62665 Collapse icon is read as expanded by NVDA Reader => ', () =>
     it('Expand collapse icon check', () => {
        gridObj.groupModule.collapseAll();
        expect((gridObj.getContent().querySelectorAll('tr')[0].querySelector('td').firstElementChild).getAttribute('title')).toBe('collapsed');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-62134 Disabling expand and collapse support for infinite scrolling cache with grouping enabled grid. => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                groupSettings: { columns: ['ShipCountry'] },
+                infiniteScrollSettings: { enableCache: true },
+                enableInfiniteScrolling: true,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID.ID.ordID', isPrimaryKey: true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'Freight', field: 'Freight',  },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ],
+            }, done);
+    });
+    it('Expand collapse icon check', () => {
+       expect(gridObj.getContent().querySelectorAll('tr')[0].querySelector('td').firstElementChild).toBe(null);
     });
     afterAll(() => {
         destroy(gridObj);

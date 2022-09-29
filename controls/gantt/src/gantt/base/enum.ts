@@ -135,7 +135,9 @@ export type DialogFieldType =
  */
 export type FilterType =
     /** Defines filter type as menu */
-    'Menu';
+    'Menu' |
+    /** Specifies the filtersetting type as excel */
+    'Excel';
 
 /**
  * To define hierarchy mode on filter action

@@ -15,7 +15,6 @@ import { dataLabelRendering } from '../model/constants';
  */
 export class DataLabel {
     private maps: Maps;
-    private dataLabelObject: Element;
     /**
      * Datalabel collections
      *
@@ -207,7 +206,7 @@ export class DataLabel {
             const eventargs: ILabelRenderingEventArgs = {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: { color: dataLabel.border.color,
                     width: dataLabel.border.width, opacity: dataLabel.border.opacity }, datalabel: dataLabel,
-                fill: dataLabel.fill, template: dataLabel.template, text: text
+                fill: dataLabel.fill, template: dataLabel.template, text: text, offsetX: 0, offsetY: 0
             };
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs: ILabelRenderingEventArgs) => {
                 if (eventargs.cancel) {
@@ -259,8 +258,8 @@ export class DataLabel {
                     templateElement.innerHTML =  !templateFn ? eventargs.template : '';
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
-                    labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
-                    labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
+                    labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + labelArgs.offsetX + 'px';
+                    labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + labelArgs.offsetY + 'px';
                     labelTemplateElement.appendChild(labelElement);
                 } else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
@@ -345,7 +344,7 @@ export class DataLabel {
                             border.opacity = isNullOrUndefined(border.opacity) ? opacity : border.opacity;
                             const rectOptions: RectOption = new RectOption(
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
-                                fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry
+                                fill, border, opacity, new Rect((x + labelArgs.offsetX), (y + labelArgs.offsetY), textSize['width'], textSize['height']), rx, ry
                             );
                             const rect: Element = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
                             group.appendChild(rect);
@@ -353,18 +352,18 @@ export class DataLabel {
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
                     if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied){
-                        element.setAttribute('transform', 'translate( ' + ((location['x'] ) ) + ' '
-                      + (((location['y'] ) )  ) + ' )');
+                        element.setAttribute('transform', 'translate( ' + ((location['x'] + labelArgs.offsetX) ) + ' '
+                      + (((location['y'] + labelArgs.offsetY) )  ) + ' )');
                         location['x'] = locationX;
                         location['y'] = locationY;
                     } else {
-                        element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
-                        + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                        element.setAttribute('transform', 'translate( ' + (((location['x'] + transPoint.x) * scale) + labelArgs.offsetX) + ' '
+                        + ((((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + labelArgs.offsetY) + ' )');
                     }
                     group.appendChild(element);
                 }
                 this.dataLabelCollections.push({
-                    location: { x: location['x'], y: location['y'] },
+                    location: { x: location['x'] + labelArgs.offsetX, y: location['y'] + labelArgs.offsetY },
                     element: isNullOrUndefined(labelElement) ? element : labelElement,
                     layerIndex: layerIndex,
                     shapeIndex: sublayerIndexLabel ? oldIndex : index,
@@ -407,15 +406,13 @@ export class DataLabel {
     }
 
     /**
-     * To destroy the layers.
-     *
-     * @param {Maps} maps - Specifies the instance of the maps.
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.dataLabelCollections = [];
+        this.value = null;
+        this.maps = null;
     }
 }

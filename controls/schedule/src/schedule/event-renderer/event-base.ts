@@ -852,7 +852,8 @@ export class EventBase {
         const startDate: Date = event[this.parent.eventFields.startTime] as Date;
         const endDate: Date = event[this.parent.eventFields.endTime] as Date;
         const eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
-        const duration: number = endDate.getTime() - startDate.getTime();
+        const timeZoneDiff: number = endDate.getTimezoneOffset() - startDate.getTimezoneOffset();
+        const duration: number = (endDate.getTime() - startDate.getTime()) - (timeZoneDiff * 60000);
         viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
         const exception: string = event[this.parent.eventFields.recurrenceException] as string;
         let maxCount: number;
@@ -1059,7 +1060,7 @@ export class EventBase {
         }
     }
 
-    public createBlockAppointmentElement(record: Record<string, any>, resIndex: number): HTMLElement {
+    public createBlockAppointmentElement(record: Record<string, any>, resIndex: number, isResourceEventTemplate: boolean): HTMLElement {
         const eventSubject: string = (record[this.parent.eventFields.subject] || this.parent.eventSettings.fields.subject.default) as string;
         const appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.BLOCK_APPOINTMENT_CLASS,
@@ -1073,7 +1074,7 @@ export class EventBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
-            const templateName: string = 'eventTemplate' + (this.parent.activeViewOptions.group.resources.length > 0 &&
+            const templateName: string = 'eventTemplate' + (isResourceEventTemplate &&
                 this.parent.currentView.indexOf('Year') === -1 ? '_' + resIndex : '');
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
@@ -1229,6 +1230,31 @@ export class EventBase {
             }
         }
         return { startDate: startTime, endDate: endTime };
+    }
+
+    public createEventWrapper(type: string = '',  index: number = 0): HTMLElement {
+        const tr: HTMLElement = createElement('tr');
+        const levels: TdData[] = this.parent.activeView.colLevels.slice(-1)[0];
+        for (let i: number = 0, len: number = levels.length; i < len; i++) {
+            const col: TdData = levels[i];
+            const appointmentWrap: HTMLElement = createElement('td', {
+                className: (type === 'allDay') ? cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS : (type === 'timeIndicator') ?
+                    cls.TIMELINE_WRAPPER_CLASS : cls.DAY_WRAPPER_CLASS, attrs: { 'data-date': col.date.getTime().toString() }
+            });
+            if (!isNullOrUndefined(col.groupIndex)) {
+                appointmentWrap.setAttribute('data-group-index', col.groupIndex.toString());
+            }
+            if (type === '') {
+                const innerWrapper: HTMLElement = createElement('div', {
+                    id: cls.APPOINTMENT_WRAPPER_CLASS + '-' + index.toString(),
+                    className: cls.APPOINTMENT_WRAPPER_CLASS
+                });
+                appointmentWrap.appendChild(innerWrapper);
+            }
+            tr.appendChild(appointmentWrap);
+            index = index + 1;
+        }
+        return tr;
     }
 
     private unWireEvents(): void {

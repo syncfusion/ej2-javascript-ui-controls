@@ -53,6 +53,7 @@ export class Filter {
         this.removeEventListener();
         this.filterRange = null;
         this.filterCollection = null;
+        this.filterBtn = null;
         this.parent = null;
     }
 

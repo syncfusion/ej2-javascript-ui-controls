@@ -33,7 +33,7 @@ describe('Diagram Control', () => {
                 targetPoint: { x: 200, y: 200 },
             }];
             diagram = new Diagram({
-                width: 600, height: 500, nodes: [node1], connectors: connectors, selectedItems: { constraints: SelectorConstraints.None }
+                width: 600, height: 500, nodes: [node1], connectors: connectors, selectedItems: { constraints: SelectorConstraints.None, handleSize : 50 }
             });
             diagram.appendTo('#diagram');
             selArray.push(diagram.nodes[0]);
@@ -58,7 +58,7 @@ describe('Diagram Control', () => {
                 switch (constrain) {
                     case SelectorConstraints.All:
                         for (let j = 0; j < element.length; j++) {
-                            if (element[j].nodeName === 'circle' || element[j].nodeName === 'path') {
+                            if (element[j].nodeName === 'rect' || element[j].nodeName === 'path') {
                                 let visibility = (element[j] as SVGElement).getAttribute('visibility');
                                 expect(visibility === 'visible').toBe(true);
                                 done();
@@ -66,7 +66,7 @@ describe('Diagram Control', () => {
                         } break;
                     case SelectorConstraints.ResizeAll:
                         for (let j = 0; j < element.length; j++) {
-                            if (element[j].nodeName === 'circle') {
+                            if (element[j].nodeName === 'rect') {
                                 let visibility = (element[j] as SVGElement).getAttribute('visibility');
                                 expect(visibility === 'visible').toBe(true);
                                 done();
@@ -86,6 +86,19 @@ describe('Diagram Control', () => {
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
-    });
+        });
+        it('Checking size of the resize handler', () => {
+            let elements = getAdornerLayer('diagram');
+            let element = elements.childNodes[0].childNodes;
+            for (let j = 0; j < element.length; j++) 
+            { 
+		        let width =  (element[j] as SVGElement).getAttribute('width');
+                let height =  (element[j] as SVGElement).getAttribute('height');
+                if(element[j].nodeName === 'rect'){
+                expect(width == '50').toBe(true);
+                expect(height == '50').toBe(true);
+                }
+            }
+        });
+    });  
 });    

@@ -123,7 +123,7 @@ export class ICalendarImport {
         const appoint: Record<string, any>[] = [];
         const uId: string = 'UID';
         const fields: EventFieldsMapping = this.parent.eventFields;
-        let appointmentIds: number[] = [];
+        const appointmentIds: number[] = [];
         this.parent.eventsData.forEach((eventObj: Record<string, any>) => {
             appointmentIds.push(eventObj[fields.id]);
         });

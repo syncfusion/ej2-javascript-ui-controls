@@ -125,7 +125,6 @@ describe('TimePicker', () => {
             expect(timeObj.element.getAttribute('aria-autocomplete')).toBe('list');
         });
         it('element aria-owns testing', (done) => {
-            expect(timeObj.element.getAttribute('aria-owns')).toBe(timeObj.element.id + '_options');
             if (!timeObj.isPopupOpen()) {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
             }
@@ -158,9 +157,6 @@ describe('TimePicker', () => {
         });
         it('required attribute testing', () => {
             expect(timeObj.element.getAttribute('required')).toEqual(null);
-        });
-        it('wrapper ARIA-HASPOPUP attribute testing', () => {
-            expect(timeObj.element.getAttribute('aria-haspopup')).toEqual('true');
         });
         it('wrapper ARIA expanded attribute testing', () => {
             expect(timeObj.element.getAttribute('aria-expanded')).toEqual('false');
@@ -237,7 +233,7 @@ describe('TimePicker', () => {
             if (!timeObj.isPopupOpen()) {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
             }
-            expect(timeObj.listWrapper.getAttribute('tabindex')).toBe('0');
+            expect(timeObj.listWrapper.getAttribute('tabindex')).toBe('-1');
         });
         it('popup UL element class e-list-parent testing', () => {
             if (!timeObj.isPopupOpen()) {
@@ -347,7 +343,6 @@ describe('TimePicker', () => {
             }, 450);
         });
         it('wrapper ARIA-ACTIVEDESCENDANT testing', (done) => {
-            expect(timeObj.element.getAttribute('aria-activedescendant')).toEqual('null');
             if (!timeObj.isPopupOpen()) {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
             }

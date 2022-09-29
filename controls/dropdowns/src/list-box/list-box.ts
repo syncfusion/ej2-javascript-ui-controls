@@ -422,7 +422,7 @@ export class ListBox extends DropDownBase {
         removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
         this.validationAttribute(this.element as HTMLInputElement, hiddenSelect as HTMLSelectElement);
         this.list.setAttribute('role', 'listbox');
-        attributes(this.list, { 'role': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
+        attributes(this.list, { 'role': 'listbox', 'aria-label': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
         this.updateSelectionSettings();
     }
 
@@ -853,6 +853,12 @@ export class ListBox extends DropDownBase {
             dragArgs = extend(dragArgs, { destination: dragArgs1 });
         }
         this.trigger('drop', dragArgs);
+        let liCollElem: NodeListOf<Element> = (dragArgs as any).elements;
+        if(liCollElem.length) {
+            for (let i: number= 0; i < liCollElem.length; i++) {
+                liCollElem[i].classList.remove('e-grabbed');
+            }
+        }
     }
 
     private updateListItems(sourceElem: HTMLElement, destElem: HTMLElement): void {
@@ -1828,15 +1834,14 @@ export class ListBox extends DropDownBase {
 
     private getGrabbedItems(): Element[] {
         for (let i: number = 0; i < this.value.length; i++) {
-            if (this.value[i] === this.dragValue) {
-                const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
-                for (let i: number = 0; i < liColl.length; i++) {
-                    liColl[i].classList.add('e-grabbed');
+            const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+            for (let j: number = 0; j < liColl.length; j++) {
+                if(this.value[i] === liColl[j].textContent) {
+                    liColl[j].classList.add('e-grabbed');
                 }
-                break;
-            }
-       }
-        const elems: Element[] = Array.prototype.slice.call(this.element.querySelectorAll('.e-grabbed'));
+            }   
+        }
+        const elems: Element[] = Array.prototype.slice.call(this.element.nextElementSibling.querySelectorAll('.e-grabbed'));
         return elems;
     }
 

@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement } from '../common/index';
+import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -724,6 +724,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     @Event()
     public sortComplete: EmitType<SortEventArgs>;
 
+    /**
+     * Defines the currencyCode format of the Spreadsheet cells
+     *
+     * @private
+     */
+    @Property('USD')
+    private currencyCode: string;
+
     /** @hidden */
     public renderModule: Render;
 
@@ -917,7 +925,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.element.setAttribute('tabindex', '0');
         setAriaOptions(this.element, { role: 'grid' });
         this.renderModule = new Render(this);
-        this.notify(initialLoad, null);
         this.renderSpreadsheet();
         this.wireEvents();
         if (this.created) {
@@ -2376,6 +2383,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.element.style.removeProperty('width');
         this.element.style.removeProperty('min-height');
         this.element.style.removeProperty('min-width');
+        this.sheetModule.destroy();
     }
 
     /**
@@ -2769,8 +2777,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 });
                 break;
             case 'locale':
-            case 'currencyCode':
                 this.refresh();
+                break;
+            case 'currencyCode':
+                this.notify('updateView', {});
                 break;
             case 'password':
                 if (this.password.length > 0) {

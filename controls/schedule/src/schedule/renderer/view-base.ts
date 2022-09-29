@@ -99,10 +99,15 @@ export class ViewBase {
 
     public createTableLayout(className?: string): Element {
         const clsName: string = className || '';
-        const table: Element = createElement('table', { className: cls.SCHEDULE_TABLE_CLASS + ' ' + clsName, attrs: { role: 'table' } });
+        const table: Element = createElement('table', { className: cls.SCHEDULE_TABLE_CLASS + ' ' + clsName });
         const tbody: Element = createElement('tbody');
         table.appendChild(tbody);
         return table;
+    }
+
+    public setAriaAttributes(table: Element): void {
+        table.setAttribute('role', 'grid');
+        table.setAttribute('aria-label', this.getLabelText(this.parent.currentView));
     }
 
     public createColGroup(table: Element, lastRow: TdData[]): void {
@@ -586,6 +591,32 @@ export class ViewBase {
             return new Date(startTime.setDate(1));
         }
         return null;
+    }
+
+    public resetColLevels(): void {
+        this.parent.resourceBase.expandedResources = [];
+        const renderedCount: number = this.parent.virtualScrollModule.getRenderedCount();
+        const lastLevel: TdData[] = this.parent.activeViewOptions.group.byDate ? this.colLevels[0] :
+            this.parent.resourceBase.renderedResources;
+        let index: number = 0;
+        for (let i: number = 0; i < lastLevel.length; i++) {
+            if (index >= renderedCount) {
+                break;
+            }
+            index += lastLevel[i].colSpan;
+            this.parent.resourceBase.expandedResources.push(lastLevel[i]);
+        }
+        if (this.parent.activeViewOptions.group.byDate) {
+            this.colLevels[0] = this.parent.resourceBase.expandedResources;
+            this.parent.virtualScrollModule.setRenderedDates(this.parent.resourceBase.expandedResources);
+        } else {
+            this.colLevels[this.colLevels.length - 2] = this.parent.resourceBase.expandedResources;
+            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources;
+        }
+        if (this.parent.currentView !== 'Month') {
+            this.colLevels[this.colLevels.length - 1] = this.colLevels[this.colLevels.length - 1].slice(0, index);
+            this.parent.resourceBase.expandedResources = this.colLevels[this.colLevels.length - 1];
+        }
     }
 
     public destroy(): void {

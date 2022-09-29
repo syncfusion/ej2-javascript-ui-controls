@@ -316,7 +316,8 @@ export class ToolbarRenderer implements IRenderer {
      * @hidden
      * @deprecated
      */
-    public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker, defaultColor: string): DropDownButton {
+    public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker,
+                                     defaultColor: string): DropDownButton {
         // eslint-disable-next-line
         const proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
@@ -325,9 +326,9 @@ export class ToolbarRenderer implements IRenderer {
         const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
         const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
         let range: Range;
-        let initialBackgroundColor = (isNullOrUndefined(defaultColor)) ? proxy.parent.backgroundColor.default : defaultColor;
+        const initialBackgroundColor = (isNullOrUndefined(defaultColor)) ? proxy.parent.backgroundColor.default : defaultColor;
         inlineEle.style.borderBottomColor = (item === 'backgroundcolor') ?
-        initialBackgroundColor  : proxy.parent.fontColor.default;
+            initialBackgroundColor  : proxy.parent.fontColor.default;
         content.appendChild(inlineEle);
         const dropDown: DropDownButton = new DropDownButton({
             target: colorPicker.element.parentElement, cssClass: css,
@@ -351,7 +352,7 @@ export class ToolbarRenderer implements IRenderer {
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                             (closest(range.startContainer.parentNode, 'td,th')) ||
                             (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
-                            && range.collapsed && args.subCommand === 'BackgroundColor'  && closest(closestElement,'.'+ classes.CLS_RTE)) {
+                            && range.collapsed && args.subCommand === 'BackgroundColor' && closest(closestElement, '.' + classes.CLS_RTE)) {
                         proxy.parent.notify(events.tableColorPickerChanged,
                                             {
                                                 item: { command: args.command, subCommand: args.subCommand,
@@ -520,7 +521,7 @@ export class ToolbarRenderer implements IRenderer {
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                 const closestElement: Element = closest(range.startContainer.parentNode, 'table');
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
-                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor' && closest(closestElement,'.'+ classes.CLS_RTE)) {
+                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor' && closest(closestElement, '.' + classes.CLS_RTE)) {
                     proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
                 } else {
                     proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);

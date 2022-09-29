@@ -86,6 +86,7 @@ export class RangeSlider {
         option.id = this.elementId + '_SelectedArea';
         option.fill = disabledColor || style.selectedRegionColor || range.themeStyle.selectedRegionColor;
         this.selectedElement = renderer.drawRectangle(option) as Element;
+        this.selectedElement.setAttribute('aria-label', 'Range Slider with '+ range.rangeSlider.points.length + ' data points');
         (this.selectedElement as HTMLElement).style.cursor = '-webkit-grab';
         this.leftSlider = renderer.createGroup({
             'id': this.elementId + '_LeftSlider', 'style': 'cursor: ew-resize'

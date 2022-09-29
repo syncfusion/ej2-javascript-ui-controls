@@ -1,4 +1,5 @@
 @include export-module('tooltip-theme') {
+
   /*! Tooltip theme */
   .e-tooltip-wrap {
     border-radius: $tooltip-border-radius;
@@ -111,7 +112,7 @@
         background-color: $tooltip-icon-bg-hover;
         color: $tooltip-hover-icon-color;
       }
-      @if($skin-name == 'bootstrap5') {
+      @if ($skin-name == 'bootstrap5') {
         border-color: $tooltip-close-icon-border-hover;
       }
     }

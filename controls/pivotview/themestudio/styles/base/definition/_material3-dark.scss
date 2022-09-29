@@ -20,28 +20,37 @@ $transparent: transparent;
 //Neutrals
 //not used
 $gray220: #11100f !default;
+
 //not used
 $gray210: #161514 !default;
+
 //not used
 $gray200: #1b1a19 !default;
 $gray190: #201f1e !default;
+
 //not used
 $gray180: #252423 !default;
+
 //not used
 $gray170: #292827 !default;
 $gray160: #323130 !default;
 $gray150: #3b3a39 !default;
+
 //not used
 $gray140: #484644 !default;
 $gray130: #605e5c !default;
+
 //not used
 $gray120: #797775 !default;
 $gray110: #8a8886 !default;
+
 //not used
 $gray100: #979593 !default;
 $gray90: #a19f9d !default;
+
 //not used
 $gray80: #b3b0ad !default;
+
 //not used
 $gray70: #bebbb8 !default;
 $gray60: #c8c6c4 !default;
@@ -68,7 +77,6 @@ $theme-dark-alt: #106ebe !default;
 $theme-dark: #005a9e !default;
 $theme-darker: #004578 !default;
 
-
 $primary:      $theme-primary !default;
 $primary-text-color: $white !default;
 $primary-light: $theme-dark !default;
@@ -91,8 +99,6 @@ $success-light-alt: #0b6a0b !default;
 $info-light-alt: #005b70 !default;
 $warning-light-alt: #8e562e !default;
 $danger-light-alt: #750b1c !default;
-
-
 
 // backgroundcolor
 $content-bg-color: $gray200 !default;
@@ -133,7 +139,6 @@ $spreadsheet-selection-4: #4caf51;
 $spreadsheet-selection-5: #fe9800;
 $spreadsheet-selection-6: #3f52b5;
 
-
 // text-color
 $content-text-color: $gray20 !default;
 $content-text-color-alt1: $gray50 !default;
@@ -145,7 +150,7 @@ $content-text-color-focus: $gray20 !default;
 $content-text-color-selected: $gray20 !default;
 $content-text-color-dragged: $gray20 !default;
 $content-text-color-disabled: $gray140 !default;
-$placeholder-text-color: $gray90  !default;
+$placeholder-text-color: $gray90 !default;
 $flyout-text-color: $gray20 !default;
 $flyout-text-color-hover: $gray20 !default;
 $flyout-text-color-pressed: $gray20 !default;
@@ -173,9 +178,9 @@ $border-focus: $gray160 !default;
 $border-selected: $gray150 !default;
 $border-dragged: $gray170 !default;
 $border-disabled: $gray170 !default;
-$border-warning: #db7b48 !default;//
-$border-error: #e2777e !default;//
-$border-success: #86e277 !default;//
+$border-warning: #db7b48 !default;
+$border-error: #e2777e !default;
+$border-success: #86e277 !default;
 $spreadsheet-gridline: $gray30 !default;
 $flyout-border: $gray160 !default;
 
@@ -183,8 +188,6 @@ $flyout-border: $gray160 !default;
 $tooltip-bg-color: $gray180 !default;
 $tooltip-border: $gray160;
 $toooltip-text-color: $gray20 !default;
-
-
 
 // shadow
 $shadow: 0 .8px 16px rgba($black, .15) !default;
@@ -205,10 +208,8 @@ $danger-shadow-focus: 0 0 0 4px rgba(tint-color($danger, 15%), .5) !default;
 $info-shadow-focus: 0 0 0 4px rgba(tint-color($info, 15%), .5) !default;
 $warning-shadow-focus: 0 0 0 4px rgba(tint-color($warning, 15%), .5) !default;
 
-
 // fontfamily
 $font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif !default;
-
 
 // default font Size
 $text-xxs: 10px !default;
@@ -245,7 +246,6 @@ $h4-font-size: $text-2xl !default;
 $h5-font-size: $text-xl !default;
 $h6-font-size: $text-base !default;
 
-
 // Line height
 $leading-none: 1 !default;
 $leading-tight: 1.25 !default;
@@ -254,7 +254,6 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-
 // font Weight
 $font-weight-lighter:         lighter !default;
 $font-weight-light:           300 !default;
@@ -262,7 +261,6 @@ $font-weight-normal:          400 !default;
 $font-weight-medium:          600 !default;
 $font-weight-bold:            700 !default;
 $font-weight-bolder:          bolder !default;
-
 
 // Secondary-button
 
@@ -281,8 +279,6 @@ $secondary-text-color-focus: $secondary-text-color-hover !default;
 $secondary-bg-color-disabled: $gray180 !default;
 $secondary-border-color-disabled: $gray160 !default;
 $secondary-text-color-disabled: $gray150 !default;
-
-
 
 // Primary-button
 
@@ -406,3 +402,20 @@ $diagram-palette-hover-background: $gray40 !default;
 
 //B5 variables
 $gray-900: #212529 !default;
+
+//App bar
+//Light
+$appbar-bg-color-alt1: $primary !default;
+$appbar-color-alt1: $primary-text-color !default;
+$appbar-border-color-alt1: $primary !default;
+$appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
+
+//Dark
+$appbar-bg-color-alt2: $primary !default;
+$appbar-color-alt2: $primary-text-color !default;
+$appbar-border-color-alt2: $primary !default;
+$appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
+
+//shadow
+$appbar-bottom-shadow: none !default;
+$appbar-top-shadow: none !default;

@@ -116,7 +116,7 @@ export class ColorPickerInput {
                 }
             }
         });
-        if(this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable) {
             this.setCssClass({cssClass: this.parent.cssClass});
         }
     }

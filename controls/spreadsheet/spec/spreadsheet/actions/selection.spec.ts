@@ -159,7 +159,7 @@ describe('Selection ->', () => {
                 checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['39px', '127px', '21px', '65px'], true);
                 checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['39px', '127px', '141px', '321px'], true);
                 done();
-            });
+            }, 10);
         });
         
         // Commented since facing issue
@@ -191,6 +191,7 @@ describe('Selection ->', () => {
                 helper.invoke('destroy');
             });
             it('Selected cells misaligned from grid lines', (done: Function) => {
+                helper.invoke('selectRange', ['D4']);
                 const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
                 const activeCell: HTMLElement = helper.getElement().querySelector('.e-active-cell');
                 expect(activeCell.style.height).toEqual('21px');
@@ -220,8 +221,8 @@ describe('Selection ->', () => {
                             expect(activeCell.style.height).toEqual('21px');
                             expect(activeCell.style.top).toEqual('114px');
                             done();
-                        }, 10);
-                    }, 10);
+                        }, 20);
+                    }, 20);
                 });
             });
             it('Selected range not updated properly when the frozen column not in the view port', (done: Function) => {
@@ -254,7 +255,7 @@ describe('Selection ->', () => {
         describe('I300950 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
-                    { sheets: [{ rows: [{ index: 1, cells: [{ value: 'foo bar foo bar \r\n foo bar foo bar' }] }] }] }, done);
+                    { sheets: [{ rows: [{ index: 1, cells: [{ value: 'foo bar foo bar \r\n foo bar foo bar' }] }], selectedRange: 'A2' }] }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
@@ -266,7 +267,7 @@ describe('Selection ->', () => {
                     expect(spreadsheet.sheets[0].rows[1].height).toBe(74);
                     expect(helper.getElement().querySelector('.e-active-cell').style.height).toBe('75px');
                     done();
-                });
+                }, 10);
             });
         });
         describe('I300737 ->', () => {
@@ -505,7 +506,7 @@ describe('Selection ->', () => {
                     expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
                     expect(helper.getElement().querySelector('.e-active-cell').style.height).toBe('20px');
                     done();
-                });
+                }, 10);
             });
         });
         describe('EJ2-51718->', () => {

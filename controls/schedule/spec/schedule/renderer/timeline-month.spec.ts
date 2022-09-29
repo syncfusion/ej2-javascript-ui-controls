@@ -63,8 +63,6 @@ describe('Schedule Timeline Month view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 10, 1).getTime().toString());
         });
@@ -1018,8 +1016,6 @@ describe('Schedule Timeline Month view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 10, 1).getTime().toString());
         });
@@ -2685,8 +2681,6 @@ describe('Schedule Timeline Month view', () => {
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(31);
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
@@ -3318,8 +3312,6 @@ describe('Schedule Timeline Month view', () => {
             expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(31);
             expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(31 * resLength);
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
@@ -3392,8 +3384,6 @@ describe('Schedule Timeline Month view', () => {
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(30);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(30 * resLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-                expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 5, 1).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
@@ -3439,8 +3429,6 @@ describe('Schedule Timeline Month view', () => {
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(31);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(31 * resLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-                expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');

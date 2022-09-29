@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventHandler, formatUnit, createElement, addClass, closest, prepend } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, createElement, addClass, closest, prepend, append, extend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
-import { IRenderer, EventClickArgs, TdData, NotifyEventArgs } from '../base/interface';
+import { IRenderer, EventClickArgs, TdData, NotifyEventArgs, CellTemplateArgs, CallbackFunction, CellClickEventArgs } from '../base/interface';
 import { YearEvent } from '../event-renderer/year';
 import * as util from '../base/util';
 import * as event from '../base/constant';
@@ -50,7 +50,7 @@ export class Year extends ViewBase implements IRenderer {
             this.generateColumnLevels();
             this.renderResourceMobileLayout();
         }
-        this.wireEvents(this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS), 'scroll');
+        EventHandler.add(this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS), 'scroll', this.onContentScroll, this);
         this.parent.notify(event.contentReady, {});
     }
 
@@ -85,10 +85,17 @@ export class Year extends ViewBase implements IRenderer {
             calendarWrapper.appendChild(calendarElement);
         }
     }
-
     public renderCalendarHeader(currentDate: Date): HTMLElement {
         const headerWrapper: HTMLElement = createElement('div', { className: 'e-header e-month' });
-        const headerContent: HTMLElement = createElement('div', { className: 'e-day e-title', innerHTML: this.getMonthName(currentDate) });
+        const headerContent: HTMLElement = createElement('div', { className: 'e-day e-title' });
+        if (this.parent.monthHeaderTemplate) {
+            const args: CellTemplateArgs = { date: currentDate, type: 'monthHeader' };
+            this.renderTemplates(this.parent.getMonthHeaderTemplate(), args, 'monthHeaderTemplate',
+                                 this.parent.activeViewOptions.monthHeaderTemplateName, headerContent);
+        }
+        else {
+            headerContent.innerHTML = this.getMonthName(currentDate);
+        }
         headerWrapper.appendChild(headerContent);
         this.parent.trigger(event.renderCell, { elementType: 'headerCells', element: headerContent, date: currentDate });
         return headerWrapper;
@@ -99,6 +106,7 @@ export class Year extends ViewBase implements IRenderer {
         const contentWrapper: HTMLElement = createElement('div', { className: 'e-content e-month' });
         const contentTable: HTMLElement = this.createTableLayout('e-calendar-table ' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
         contentWrapper.appendChild(contentTable);
+        this.setAriaAttributes(contentTable);
         const thead: HTMLElement = createElement('thead', { className: 'e-week-header' });
         const tr: HTMLElement = createElement('tr');
         let currentWeek: Date = util.getWeekFirstDate(util.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
@@ -106,7 +114,16 @@ export class Year extends ViewBase implements IRenderer {
             tr.appendChild(createElement('th'));
         }
         for (let i: number = 0; i < util.WEEK_LENGTH; i++) {
-            tr.appendChild(createElement('th', { innerHTML: this.parent.getDayNames('narrow')[currentWeek.getDay()] }));
+            if (this.parent.dayHeaderTemplate) {
+                const th: HTMLElement = createElement('th');
+                const args: CellTemplateArgs = { date: currentWeek, type: 'dayHeader' };
+                this.renderTemplates(this.parent.getDayHeaderTemplate(), args, 'dayHeaderTemplate',
+                                     this.parent.activeViewOptions.dayHeaderTemplateName, th);
+                tr.appendChild(th);
+            }
+            else {
+                tr.appendChild(createElement('th', { innerHTML: this.parent.getDayNames('narrow')[currentWeek.getDay()] }));
+            }
             currentWeek = new Date(currentWeek.getTime() + util.MS_PER_DAY);
         }
         thead.appendChild(tr);
@@ -114,12 +131,12 @@ export class Year extends ViewBase implements IRenderer {
         const tbody: HTMLTableSectionElement = contentTable.querySelector('tbody');
         while (dateCollection.length > 0) {
             const weekDates: Date[] = dateCollection.splice(0, util.WEEK_LENGTH);
-            const tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
+            const tr: HTMLElement = createElement('tr');
             if (this.parent.activeViewOptions.showWeekNumber) {
                 const weekNumber: string = this.parent.getWeekNumberContent(weekDates);
                 const td: HTMLElement = createElement('td', {
                     className: 'e-week-number',
-                    attrs: { 'role': 'gridcell', 'title': this.parent.localeObj.getConstant('week') + ' ' + weekNumber },
+                    attrs: { 'title': this.parent.localeObj.getConstant('week') + ' ' + weekNumber },
                     innerHTML: weekNumber
                 });
                 tr.appendChild(td);
@@ -128,13 +145,26 @@ export class Year extends ViewBase implements IRenderer {
             for (const date of weekDates) {
                 const td: HTMLElement = createElement('td', {
                     className: 'e-cell ' + cls.WORK_CELLS_CLASS,
-                    attrs: { 'role': 'gridcell', 'aria-selected': 'false', 'data-date': date.getTime().toString() }
+                    attrs: { 'aria-selected': 'false', 'data-date': date.getTime().toString() }
                 });
-                const span: HTMLElement = createElement('span', {
-                    className: 'e-day', innerHTML: this.parent.globalize.formatDate(date, { skeleton: 'd', calendar: this.parent.getCalendarMode() }),
-                    attrs: { title: this.parent.globalize.formatDate(date, { type: 'date', skeleton: 'full' }) }
-                });
-                td.appendChild(span);
+                if (this.parent.activeViewOptions.cellHeaderTemplate) {
+                    const args: CellTemplateArgs = { date: date, type: 'monthCells' };
+                    this.renderTemplates(this.parent.getCellHeaderTemplate(), args, 'cellHeaderTemplate',
+                                         this.parent.activeViewOptions.cellHeaderTemplateName, td);
+                }
+                else {
+                    const span: HTMLElement = createElement('span', {
+                        className: 'e-day', innerHTML: this.parent.globalize.formatDate(date, { skeleton: 'd', calendar: this.parent.getCalendarMode() }),
+                        attrs: { title: this.parent.globalize.formatDate(date, { type: 'date', skeleton: 'full' }) }
+                    });
+                    td.appendChild(span);
+                }
+                if (this.parent.activeViewOptions.cellTemplate) {
+                    const args: CellTemplateArgs = { date: date, type: 'monthCells' };
+                    this.renderTemplates(this.parent.getCellTemplate(), args, 'cellTemplate',
+                                         this.parent.activeViewOptions.cellTemplateName, td);
+                }
+
                 let classList: string[] = [];
                 if (currentDate.getMonth() !== date.getMonth()) {
                     classList.push(cls.OTHERMONTH_CLASS);
@@ -146,7 +176,10 @@ export class Year extends ViewBase implements IRenderer {
                     addClass([td], classList);
                 }
                 tr.appendChild(td);
-                this.wireEvents(td, 'cell');
+                EventHandler.add(td, 'click', this.onCellClick, this);
+                if (!this.parent.isAdaptive) {
+                    EventHandler.add(td, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
+                }
                 this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
             }
             tbody.appendChild(tr);
@@ -234,6 +267,13 @@ export class Year extends ViewBase implements IRenderer {
             this.parent.firstMonthOfYear + index);
     }
 
+    private renderTemplates(fn: CallbackFunction, args: CellTemplateArgs, tName: string, vName: string, ele: HTMLElement): void {
+        const templateId: string = this.parent.element.id + '_' + vName + tName;
+        const template: HTMLElement[] =
+            [].slice.call(fn(args, this.parent, tName, templateId, false));
+        append(template, ele);
+    }
+
     private onCellClick(e: Event): void {
         let target: Element = closest((e.target as Element), '.' + cls.WORK_CELLS_CLASS);
         const startDate: Date = this.parent.getDateFromElement(target);
@@ -244,7 +284,7 @@ export class Year extends ViewBase implements IRenderer {
             const activeDate: number = this.parent.activeCellsData.startTime.getTime();
             const inRange: boolean = activeDate >= this.getStartDate().getTime() && activeDate <= this.getEndDate().getTime();
             const dateAttr: number = inRange ? activeDate : (isPrevious ? this.getEndDate() : this.getStartDate()).getTime();
-            const selectedCell: HTMLTableCellElement = this.parent.element.querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + dateAttr  + '"]');
+            const selectedCell: HTMLTableCellElement = this.parent.element.querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + dateAttr + '"]');
             this.parent.selectCell(selectedCell);
             this.parent.activeCellsData = this.parent.getCellDetails(selectedCell);
         } else {
@@ -255,6 +295,9 @@ export class Year extends ViewBase implements IRenderer {
                 target = this.parent.element.querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + target.getAttribute('data-date') + '"]') as HTMLTableCellElement;
             }
             this.parent.activeCellsData = this.parent.getCellDetails(target);
+            const args: CellClickEventArgs =
+                <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
+            this.parent.trigger(event.cellClick, args);
             this.parent.quickPopup.moreEventClick(moreEventArgs, endDate);
         }
     }
@@ -374,22 +417,6 @@ export class Year extends ViewBase implements IRenderer {
         this.yearEventModule = new YearEvent(this.parent);
         this.yearEventModule.renderAppointments();
         this.parent.notify(event.eventsLoaded, args);
-    }
-
-    public wireEvents(element: HTMLElement, type: string): void {
-        if (type === 'cell') {
-            if (this.parent.currentView !== 'TimelineYear') {
-                EventHandler.add(element, 'click', this.onCellClick, this);
-            } else {
-                EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
-                EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
-                if (!this.parent.isAdaptive) {
-                    EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
-                }
-            }
-        } else {
-            EventHandler.add(element, 'scroll', this.onContentScroll, this);
-        }
     }
 
     public scrollToDate(scrollDate: Date): void {

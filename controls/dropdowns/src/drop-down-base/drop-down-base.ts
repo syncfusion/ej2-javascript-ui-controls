@@ -65,6 +65,8 @@ export const dropDownBaseClasses: DropDownBaseClassList = {
 };
 
 const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
+const DISPLAYTEMPLATE_PROPERTY: string = 'DisplayTemplate';
+const SPINNERTEMPLATE_PROPERTY: string = 'SpinnerTemplate';
 const VALUETEMPLATE_PROPERTY: string = 'ValueTemplate';
 const GROUPTEMPLATE_PROPERTY: string = 'GroupTemplate';
 const HEADERTEMPLATE_PROPERTY: string = 'HeaderTemplate';
@@ -232,6 +234,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected sortedData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     protected isGroupChecking: boolean;
     protected itemTemplateId: string;
+    protected displayTemplateId: string;
+    protected spinnerTemplateId: string;
     protected valueTemplateId: string;
     protected groupTemplateId: string;
     protected headerTemplateId: string;
@@ -645,6 +649,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 liElem.textContent = content;
                 ele.appendChild(liElem);
                 liElem.classList.add('e-list-nrt');
+                liElem.setAttribute('role','option')
             } else {
                 ele.innerHTML = content;
             }
@@ -735,7 +740,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     protected updateDataAttribute(value: { [key: string]: string }) : void {
-        const invalidAttr: string[] = ['class', 'style', 'id', 'type'];
+        const invalidAttr: string[] = ['class', 'style', 'id', 'type','aria-expanded','aria-autocomplete','aria-readonly'];
         const attr: { [key: string]: string } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
             if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
@@ -808,6 +813,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.isRequested = false;
         this.isDataFetched = false;
         this.itemTemplateId = `${this.element.id}${ITEMTEMPLATE_PROPERTY}`;
+        this.displayTemplateId = `${this.element.id}${DISPLAYTEMPLATE_PROPERTY}`;
+        this.spinnerTemplateId = `${this.element.id}${SPINNERTEMPLATE_PROPERTY}`;
         this.valueTemplateId = `${this.element.id}${VALUETEMPLATE_PROPERTY}`;
         this.groupTemplateId = `${this.element.id}${GROUPTEMPLATE_PROPERTY}`;
         this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE_PROPERTY}`;
@@ -1409,7 +1416,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      * @returns {void}
      */
-    public render( e?: MouseEvent | KeyboardEventArgs | TouchEvent, isEmptyData?: boolean): void {
+    public render(e?: MouseEvent | KeyboardEventArgs | TouchEvent, isEmptyData?: boolean): void {
         this.list = this.createElement('div', { className: dropDownBaseClasses.content, attrs: { 'tabindex': '0' } });
         this.list.classList.add(dropDownBaseClasses.root);
         this.setFields();

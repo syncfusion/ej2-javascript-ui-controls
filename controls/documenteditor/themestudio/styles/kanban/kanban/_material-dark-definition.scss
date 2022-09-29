@@ -1,7 +1,7 @@
 /*! Kanban component's material theme definitions and variables */
 $kanban-skin: 'material' !default;
-$kanban-column-bg-color: $grey-100 !default;
-$kanban-default-font-color: rgba($grey-light-font, .87) !default;
+$kanban-column-bg-color:  rgba($grey-black, 16%) !default;
+$kanban-default-font-color: $grey-dark-font !default;
 $kanban-content-font: rgba($grey-white, .7) !default;
 $kanban-border-color: $grey-500 !default;
 $kanban-card-selection-bg-color: $grey-600 !default;
@@ -9,7 +9,7 @@ $kanban-dropped-clone-bg-color: rgba($primary, .1) !default;
 $kanban-dropped-clone-border-color: $primary !default;
 $kanban-dragged-clone-border-color: $grey-500 !default;
 $kanban-icons-color: rgba($grey-light-font, .54) !default;
-$kanban-bg-color: $grey-white !default;
+$kanban-bg-color: $grey-dark !default;
 $kanban-text-area-bg-color: initial !default;
 $kanban-text-area-color: $grey-white !default;
 $kanban-popup-overlay-bg-color: #383838 !default;
@@ -212,11 +212,12 @@ $kanban-mb-popup-content-color: inherit !default;
 $kanban-dialog-text-area-focus-shadow: none !default;
 
 //Color Start
-$kanban-header-text-color: rgba($grey-light-font, .87) !default;
-$kanban-header-item-count-color: rgba($grey-light-font, .87) !default;
+$kanban-header-text-color: $grey-dark-font !default;
+$kanban-header-item-count-color: $grey-300 !default;
 $kanban-header-limits-color: inherit !default;
 $kanban-col-expand-collapse-bg-color: rgba($grey-white, .1);
 $kanban-col-expand-collapse-color: $kanban-icons-color;
 $kanban-col-expand-collapse-border: 1px solid transparent;
 $kanban-col-expand-collapse-box-shadow: none;
+
 //Color End

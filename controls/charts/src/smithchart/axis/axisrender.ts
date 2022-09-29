@@ -503,6 +503,7 @@ export class AxisRender {
     private updateHMajorGridLines(smithchart: Smithchart): void {
         const majorGridLine: SmithchartMajorGridLinesModel = smithchart.horizontalAxis.majorGridLines;
         const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMajorGridLines' });
+        groupElement.setAttribute('aria-hidden', 'true');
         const path: string = this.calculateGridLinesPath(this.majorHGridArcPoints);
         const haxismgoptions: PathOption = new PathOption(
             smithchart.element.id + '_horizontalAxisMajorGridLines',
@@ -521,6 +522,7 @@ export class AxisRender {
     private updateRMajorGridLines(smithchart: Smithchart): void {
         const majorGridLine: SmithchartMajorGridLinesModel = smithchart.radialAxis.majorGridLines;
         const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMajorGridLines' });
+        groupElement.setAttribute('aria-hidden', 'true');
         const path: string = this.calculateGridLinesPath(this.majorRGridArcPoints);
         const raxismgoptions: PathOption = new PathOption(
             smithchart.element.id + '_radialAxisMajorGridLines',
@@ -540,6 +542,7 @@ export class AxisRender {
         const radius: number = this.areaRadius;
         const axisLine: SmithchartAxisLineModel = smithchart.horizontalAxis.axisLine;
         const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_hAxisLine' });
+        groupElement.setAttribute('aria-hidden', 'true');
         const point1: Point = { x: this.circleCenterX + radius, y: this.circleCenterY };
         const point2: Point = { x: this.circleCenterX + radius, y: (this.circleCenterY - 0.05) };
         const size: SmithchartSize = { width: radius, height: radius };
@@ -584,6 +587,7 @@ export class AxisRender {
             direction
         );
         const groupElement: Element = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_rAxisLine' });
+        groupElement.setAttribute('aria-hidden', 'true');
         const element: Element = smithchart.renderer.drawPath(options);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
@@ -607,6 +611,7 @@ export class AxisRender {
         let preWidth: number;
         let preX: number;
         const groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_HAxisLabels' });
+        groupEle.setAttribute('aria-hidden', 'true');
         for (let i: number = 0; i < this.horizontalLabelCollections.length; i++) {
             circleAxis = this.horizontalLabelCollections[i];
             label = this.horizontalLabelCollections[i].value.toString();
@@ -692,6 +697,7 @@ export class AxisRender {
         let preLabelBounds: SmithchartRect;
         const rAxis: SmithchartAxisModel = smithchart.radialAxis;
         const groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_RAxisLabels' });
+        groupEle.setAttribute('aria-hidden', 'true');
         for (let i: number = 0; i < this.labelCollections.length; i++) {
             interSectPoint = this.labelCollections[i];
             label = interSectPoint.value.toString();

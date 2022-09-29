@@ -50,7 +50,7 @@ export class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, false) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
+                        && this.isRteElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node);
@@ -69,7 +69,7 @@ export class NodeCutter {
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
-                        && this.isImgElm(fragment) && fragment.textContent === '') ? true : false;
+                        && this.isRteElm(fragment) && fragment.textContent === '') ? true : false;
                     if (!isEmpty) {
                         if (node) {
                             InsertMethods.AppendBefore(fragment, node, true);
@@ -88,12 +88,14 @@ export class NodeCutter {
             return null;
         }
     }
-    private isImgElm(fragment: DocumentFragment): boolean {
+    private isRteElm(fragment: DocumentFragment): boolean {
         let result: boolean = true;
         if (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG') {
             const firstChild: Node = fragment.childNodes[0];
             for (let i: number = 0; !isNOU(firstChild.childNodes) && i < firstChild.childNodes.length; i++) {
-                if (firstChild.childNodes[i].nodeName === 'IMG') {
+                if (firstChild.childNodes[i].nodeName === 'IMG' || (firstChild.childNodes[i].nodeName === 'SPAN' &&
+                ((firstChild.childNodes[i] as HTMLElement).classList.contains('e-video-wrap') ||
+                (firstChild.childNodes[i] as HTMLElement).classList.contains('e-audio-wrap')))) {
                     result = false;
                 }
             }
@@ -114,7 +116,7 @@ export class NodeCutter {
             this.spliceEmptyNode(fragment.childNodes[len], isStart);
         } else if (len > -1) {
             this.spliceEmptyNode(fragment.childNodes[0], isStart);
-        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG') {
+        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG' && !((fragment as Element).classList.contains('e-video-wrap')) && !((fragment as Element).classList.contains('e-audio-wrap'))) {
             fragment.parentNode.removeChild(fragment);
         }
         return fragment;

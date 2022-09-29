@@ -152,7 +152,7 @@ export class Selection extends BaseSelection {
             if (this.styleId.indexOf('selection') > 1 && this.chart.selectionMode !== 'None') {
                 this.unselected = series.unSelectedStyle || this.unselected;
             }
-            if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightMode !== 'None') {
+            if (this.styleId.indexOf('highlight') > 0 && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
                 this.unselected = series.nonHighlightStyle || this.unselected;
             }
             return (series.selectionStyle || this.styleId + '_series_' + (<Series>series).index);
@@ -270,7 +270,7 @@ export class Selection extends BaseSelection {
                 return false;
             }
         }
-        if ((this.chart.highlightMode !== 'None' && this.previousSelectedEle && this.previousSelectedEle[0])) {
+        if (((this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight) && this.previousSelectedEle && this.previousSelectedEle[0])) {
             const parentNodeId: string = (<Element>targetElem.parentNode).id;
             let isElement: boolean;
             if (targetElem.parentNode) {
@@ -514,13 +514,14 @@ export class Selection extends BaseSelection {
             } else if (selectedElements[0].parentNode && pClassName.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
                 this.removeStyles([<Element>selectedElements[0].parentNode]);
             } else {
-                this.previousSelectedEle = chart.highlightMode !== 'None' ? selectedElements : [];
+                this.previousSelectedEle = (chart.highlightMode !== 'None' || chart.legendSettings.enableHighlight) ? selectedElements : [];
                 this.applyStyles(selectedElements);
                 isAdd = true;
             }
-            if (this.styleId.indexOf('highlight') > 0 && chart.highlightMode !== 'None') {
+            if (this.styleId.indexOf('highlight') > 0 && (chart.highlightMode !== 'None' || chart.legendSettings.enableHighlight)) {
                 this.addOrRemoveIndex(this.highlightDataIndexes, index, isAdd);
-            } else {
+            } 
+            else {
                 this.addOrRemoveIndex(this.selectedDataIndexes, index, isAdd);
             }
         }
@@ -597,16 +598,16 @@ export class Selection extends BaseSelection {
      *
      * @private
      */
-    public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = ''): void {
+    public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
         let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes || element);
-        if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
+        if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
             children = (element.childNodes as any || element);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
             elementClassName = children[i].getAttribute('class') || '';
             parentClassName = (<Element>children[i].parentNode).getAttribute('class') || '';
-            if (this.chart.selectionMode !== 'None' && this.chart.highlightMode !== 'None') {
+            if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
                 className = elementClassName.indexOf('selection') > 0 ||
                     elementClassName.indexOf('highlight') > 0 ? elementClassName : className;
                 className = (parentClassName.indexOf('selection') > 0 ||
@@ -641,7 +642,7 @@ export class Selection extends BaseSelection {
             if (legendShape) {
                 if (legendShape.hasAttribute('class')) {
                     this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
-                        if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '')) {
+                        if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '') && !this.chart.legendSettings.enableHighlight) {
                             legendShape.setAttribute('stroke', legendStrokeColor);
                             if (this.chart.highlightPattern === 'None') {
                                 legendShape.setAttribute('fill', legendStrokeColor);
@@ -651,7 +652,7 @@ export class Selection extends BaseSelection {
                 elementClassName = selectElement.getAttribute('class') || '';
                 parentClassName = (<Element>selectElement.parentNode).getAttribute('class') || '';
                 if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
-                    this.addSvgClass(legendShape, this.unselected);
+                    this.addSvgClass(legendShape, (this.chart.highlightMode === 'None' && this.chart.legendSettings.enableHighlight) ? className : this.unselected);
                     this.removeSvgClass(legendShape, className);
                     if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
                         legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
@@ -824,6 +825,12 @@ export class Selection extends BaseSelection {
             if (targetElement.id.indexOf('text') > 1) {
                 targetElement = getElement(targetElement.id.replace('text', 'shape'));
             }
+            if (targetElement.id.indexOf('marker') > 1) {
+                targetElement = getElement(targetElement.id.replace('_marker', ''));
+            }
+            if (targetElement.id.indexOf('g') > 1) {
+                targetElement = getElement(targetElement.id.replace('_g_', '_shape_'));
+            }
             if (targetElement.hasAttribute('class') && (targetElement.getAttribute('class').indexOf('highlight') > -1 ||
                 targetElement.getAttribute('class').indexOf('selection') > -1)) {
                 return;
@@ -867,7 +874,7 @@ export class Selection extends BaseSelection {
                         if (isNullOrUndefined(seriesElement)) {
                             return;
                         }
-                        this.checkSelectionElements(seriesElement, seriesStyle, false);
+                        this.checkSelectionElements(seriesElement,  seriesStyle, false, true, series);
                     }
                 }
                 this.isSeriesMode = true;
@@ -879,7 +886,7 @@ export class Selection extends BaseSelection {
     }
     /** @private */
     public rangeColorMappingEnabled(): boolean {
-        if ((this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
+        if ((this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 && this.chart.rangeColorSettings[0].colors.length > 0  &&
             (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
                 this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble'))) {
             return true
@@ -1517,7 +1524,7 @@ export class Selection extends BaseSelection {
      * @private
      */
     public highlightChart(target: Element, eventType: string) {
-        if (this.chart.highlightMode !== 'None') {
+        if (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight) {
             if (!isNullOrUndefined(target)) {
                 if (target.id.indexOf('text') > 1) {
                     target = getElement(target.id.replace('text', 'shape'));
@@ -1527,13 +1534,13 @@ export class Selection extends BaseSelection {
                     return;
                 }
                 this.calculateSelectedElements(target as HTMLElement, eventType);
-                if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
-                    target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
-                    this.removeLegendHighlightStyles();
-                } 
+                    if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
+                        target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
+                        this.removeLegendHighlightStyles();
+                    }
+                }
                 return;
             }
-        }
     }
 
     /**

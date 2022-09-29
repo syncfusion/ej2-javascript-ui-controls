@@ -197,13 +197,16 @@ export class RowDD {
                     for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
                         if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === record.parentItem.taskData) {
                             dropIndex = i;
+                            if (tObj.enableVirtualization) {
+                                dropIndex = parseInt(tObj.getRows()[i].getAttribute('data-rowindex'), 10);
+                            }
                         }
                     }
                 }
                 else {
                     dropIndex = this.selectedRow.rowIndex - 1;
                 }
-                if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
+                if (this.parent.enableVirtualization && this.selectedRecord && !(record.level > this.selectedRecord.level)) {
                     dropIndex = parseInt(this.selectedRow.getAttribute('data-rowindex'), 10) - 1;
                 }
                 tObj[action] = 'indenting'; tObj[droppedIndex] = dropIndex;
@@ -215,11 +218,11 @@ export class RowDD {
                 }
                 let dropIndex: number; const parentItem: ITreeData = this.selectedRecord.parentItem;
                 for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
-                    if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === parentItem.taskData) {
+                    if ((tObj.getCurrentViewRecords()[i] as ITreeData).uniqueID === parentItem.uniqueID) {
                         dropIndex = i;
                     }
                 }
-                if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop && this.selectedRecord) {
+                if (this.parent.enableVirtualization && this.selectedRecord) {
                     dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('data-rowindex'), 10);
                 }
                 tObj[action] = 'outdenting'; tObj[droppedIndex] = dropIndex;
@@ -238,14 +241,14 @@ export class RowDD {
         this.parent.trigger(events.actionBegin, actionArgs, (actionArgs: TreeActionEventArgs) => {
             if (!actionArgs.cancel) {
                 if (actionArgs.action === 'indenting'){
-                    if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop) {
+                    if (this.parent.enableVirtualization) {
                         this.reorderRows([parseInt(this.selectedRow.getAttribute('data-rowindex'), 10)], dropIndex, 'child');
                     }
                     else {
                         this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'child');
                     }
                 } else if (actionArgs.action === 'outdenting') {
-                    if (this.parent.enableVirtualization && this.parent.allowRowDragAndDrop) {
+                    if (this.parent.enableVirtualization) {
                         this.reorderRows([parseInt(this.selectedRow.getAttribute('data-rowindex'), 10)], dropIndex, 'below');
                     }
                     else {

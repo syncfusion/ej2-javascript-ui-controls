@@ -411,23 +411,20 @@ describe('Auto fill ->', () => {
         });
     });
 
-
-
-
     describe('CR Issues ->', () => {
         describe('EJ2-56558, EJ2-60197 ->', () => {
             beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'E1' }] }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Auto fill does not hide when selection is in hidden range after undo & redo on filtered rows', (done: Function) => {
                 helper.invoke('applyFilter').then(() => {
-                    const btn: HTMLElement = helper.invoke('getCell', [0, 4]).querySelector('.e-filter-icon');
-                    const coords = btn.getBoundingClientRect();
-                    helper.triggerMouseAction('mousedown', { x: coords.left + 1, y: coords.top + 1 }, null, btn);
-                    helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, btn);
+                    const td: HTMLTableCellElement = helper.invoke('getCell', [0, 4]);
+                    helper.invoke('selectRange', ['E1']);
+                    helper.invoke('getCell', [0, 4]).focus();
+                    helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
                     setTimeout(() => {
                         setTimeout(() => {
                             helper.click('.e-filter-popup .e-ftrchk:nth-child(2) .e-chk-hidden');

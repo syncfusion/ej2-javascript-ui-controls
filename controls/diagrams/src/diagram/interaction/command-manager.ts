@@ -1765,7 +1765,7 @@ export class CommandHandler {
         for (const prop of Object.keys(obj)) {
             cloneObject[prop] = obj[prop];
         }
-        if (getObjectType(this.diagram.drawingObject) === Node) {
+        if (getObjectType(this.diagram.drawingObject) === Node || (getObjectType(this.diagram.drawingObject) === Connector && (this.diagram.drawingObject as Connector).type === 'Freehand' && (obj as Connector).type !=='Bezier')) {
             newObj = new Node(this.diagram, 'nodes', cloneObject, true);
             newObj.id = (this.diagram.drawingObject.id || 'node') + randomId();
         } else {
@@ -1803,9 +1803,9 @@ export class CommandHandler {
         this.diagram.removeFromAQuad(obj);
         this.diagram.removeObjectsFromLayer(this.diagram.nameTable[obj.id]);
         delete this.diagram.nameTable[obj.id];
-        // EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
+		// EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
         if(obj instanceof Connector && obj.type === 'Bezier' && obj.segments.length > 0) {
-            obj.segments = [];
+           obj.segments = [];
         }
         const newObj: Node | Connector = this.diagram.add(obj);
         if (this.diagram.mode !== 'SVG') {
@@ -2844,7 +2844,7 @@ export class CommandHandler {
         }
     }
 
-    private triggerOrderCommand(oldObj: NodeModel | ConnectorModel, newObj: NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel) {
+    private triggerOrderCommand(oldObj : NodeModel | ConnectorModel, newObj : NodeModel | ConnectorModel, obj: NodeModel | ConnectorModel){
         let clonedObject = cloneObject(oldObj);
         // EJ2-61653 - Added below code to get only changed values (zIndex) and passed as an argument to property change event
         const oldValue: NodeModel | ConnectorModel = {
@@ -2854,7 +2854,7 @@ export class CommandHandler {
             zIndex: newObj.zIndex
         };
         let arg: IPropertyChangeEventArgs = {
-            element: obj, cause: this.diagram.diagramActions,
+            element: obj, cause: this.diagram.diagramActions,diagramAction : this.diagram.getDiagramAction(this.diagram.diagramActions),
             oldValue: oldValue, newValue: newValue
         };
         this.diagram.triggerEvent(DiagramEvent.propertyChange, arg)
@@ -5013,32 +5013,32 @@ Remove terinal segment in initial
                     currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY +ty};
                 }
                 else if(label.horizontalAlignment == 'Right'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX+(textWrapper.outerBounds.width)/2  +tx, y: offsetY +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX+(textWrapper.actualSize.width)/2  +tx, y: offsetY +ty};
                 }
                 else if(label.horizontalAlignment == 'Left'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX-(textWrapper.outerBounds.width)/2  +tx, y: offsetY +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX-(textWrapper.actualSize.width)/2  +tx, y: offsetY +ty};
                 }
                 break;
             case "Top":
                 if(label.horizontalAlignment == 'Center'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY-(textWrapper.outerBounds.height)/2  +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
                 }
                 else if(label.horizontalAlignment == 'Right'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.outerBounds.width)/2 +tx, y: offsetY-(textWrapper.outerBounds.height)/2  +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.actualSize.width)/2 +tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
                 }
                 else if(label.horizontalAlignment == 'Left'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.outerBounds.width)/2 +tx, y: offsetY-(textWrapper.outerBounds.height)/2  +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 +tx, y: offsetY-(textWrapper.actualSize.height)/2  +ty};
                 }
                 break;
             case "Bottom":
                 if(label.horizontalAlignment == 'Center'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.outerBounds.height)/2 +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
                 }
                 else if(label.horizontalAlignment == 'Right'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.outerBounds.width)/2 +tx, y: offsetY+ (textWrapper.outerBounds.height)/2 +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX+ (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
                 }
                 else if(label.horizontalAlignment == 'Left'){
-                    currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.outerBounds.width)/2 +tx, y: offsetY+ (textWrapper.outerBounds.height)/2 +ty};
+                    currentPosition = (newPosition) ? newPosition : { x: offsetX- (textWrapper.actualSize.width)/2 +tx, y: offsetY+ (textWrapper.actualSize.height)/2 +ty};
                 }
                 break;
         }
@@ -5188,8 +5188,7 @@ Remove terinal segment in initial
         }
         return intersect;
     }
-
-    /**
+   /**
     * @private
     */
     public getPointAtLength(length: number, points: PointModel[], angle: number): PointModel {
@@ -5288,10 +5287,7 @@ Remove terinal segment in initial
         label.rotateAngle += angle - (label.rotateAngle + labelWrapper.parentTransform);
         if (label instanceof PathAnnotation) {
             label.alignment = 'Center';
-            label.horizontalAlignment = label.verticalAlignment = 'Center';
-        } else {
-            label.horizontalAlignment = label.verticalAlignment = 'Center';
-        }
+        } 
         selector.wrapper.rotateAngle = selector.rotateAngle = label.rotateAngle;
         changedvalues = this.getAnnotationChanges(object, label);
         if (object instanceof Node) {
@@ -5316,46 +5312,15 @@ Remove terinal segment in initial
             rotateMatrix(matrix, -rotateAngle, pivot.x, pivot.y);
             scaleMatrix(matrix, deltaWidth, deltaHeight, pivot.x, pivot.y);
             rotateMatrix(matrix, rotateAngle, pivot.x, pivot.y);
+            let newPosition: PointModel= transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
             const height: number = textElement.actualSize.height * deltaHeight;
             const width: number = textElement.actualSize.width * deltaWidth;
             const shape: ShapeAnnotationModel | PathAnnotationModel = this.findTarget(textElement, node as IElement) as ShapeAnnotation;
-            let newPosition: PointModel = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
             if(shape instanceof PathAnnotation){
-                switch (label.verticalAlignment) {
-                    case "Center":
-                        if (label.horizontalAlignment == 'Center') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
-                        }
-                        else if (label.horizontalAlignment == 'Right') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY });
-                        }
-                        else if (label.horizontalAlignment == 'Left') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY });
-                        }
-                        break;
-                    case "Top":
-                        if (label.horizontalAlignment == 'Center') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
-                        }
-                        else if (label.horizontalAlignment == 'Right') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
-                        }
-                        else if (label.horizontalAlignment == 'Left') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY-(textElement.outerBounds.height)/2 });
-                        }
-                        break;
-                    case "Bottom":
-                        if (label.horizontalAlignment == 'Center') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY+(textElement.outerBounds.height)/2 });
-                        }
-                        else if (label.horizontalAlignment == 'Right') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX+(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
-                        }
-                        else if (label.horizontalAlignment == 'Left') {
-                            newPosition = transformPointByMatrix(matrix, { x: textElement.offsetX-(textElement.outerBounds.width)/2, y: textElement.offsetY+(textElement.outerBounds.height)/2 })
-                        }
-                        break;
-                }
+                newPosition.y += (shape.verticalAlignment === 'Top') ? (-height / 2) : (
+                    (shape.verticalAlignment === 'Bottom') ? (height / 2) : 0);
+                newPosition.x += (shape.horizontalAlignment === 'Left') ? (-width / 2) : (
+                    (shape.horizontalAlignment === 'Right') ? (width / 2) : 0);
             }
             if (shape instanceof PathAnnotation) {
                 this.updatePathAnnotationOffset(node as Connector, label as PathAnnotation, 0, 0, newPosition, new Size(width, height));
@@ -5627,10 +5592,14 @@ Remove terinal segment in initial
      * @private
      */
     public updateConnectorPoints(obj: Node | Connector, rect?: Rect): void {
-        if (obj instanceof Connector) {
+        if (obj instanceof Connector && obj.type !=='Bezier') {
             this.diagram.connectorPropertyChange(obj as Connector, {} as Connector, {
                 targetPoint: obj.targetPoint
             } as Connector);
+            this.diagram.updateDiagramObject(obj);
+        }
+        else {
+            this.diagram.connectorPropertyChange(obj as Connector,{} as Connector,{segments:(obj as Connector).segments} as Connector)
             this.diagram.updateDiagramObject(obj);
         }
     }
@@ -6129,7 +6098,7 @@ Remove terinal segment in initial
         } else {
             this.diagram.pan(
                 (scrollX = panx ? scrollX : 0) * this.diagram.scroller.currentZoom,
-                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint,canPan);
+                (scrollY = pany ? scrollY : 0) * this.diagram.scroller.currentZoom, focusPoint, canPan);
         }
     }
 

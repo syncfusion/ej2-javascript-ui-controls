@@ -1821,3 +1821,44 @@ describe('EJ2-0000 - Need to maintain scroll position with the updateRow method 
         gridObj = null;
     });
 });
+
+describe('EJ2-63081 - Group by fails for 1 record on collapse => ', () => {
+    let gridObj: Grid;
+    let expandElem: NodeListOf<Element>;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData.slice(0, 200),
+                allowGrouping: true,
+                groupSettings: { columns: ['FIELD2'] },
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, done);
+    });
+    it('Scroll bottom', (done: Function) => {
+        gridObj.getContent().firstElementChild.scrollTop = gridObj.getContent().firstElementChild.scrollHeight;
+        setTimeout(done, 200);
+    });
+    it('Again scroll bottom', (done: Function) => {
+        gridObj.getContent().firstElementChild.scrollTop = gridObj.getContent().firstElementChild.scrollHeight;
+        setTimeout(done, 200);
+    });
+    it('Collapse Last Caption Row and check', (done: Function) => {
+        expandElem = gridObj.getContent().querySelectorAll('.e-recordplusexpand');
+        gridObj.groupModule.expandCollapseRows(expandElem[expandElem.length - 1]);
+        expect(gridObj.pageSettings.currentPage).toBe((gridObj.infiniteScrollModule as any).maxPage);
+        setTimeout(done, 200);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

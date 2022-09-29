@@ -1,4 +1,4 @@
-//default 
+//default
 $tab-skin: 'fabric' !default;
 $tab-big-vertical-scroll-nav-top-bottom: 23px !default;
 $tab-vscroll-big-padding: 24px 0 !default;
@@ -190,7 +190,6 @@ $tab-bg-big-active-item-wrap-margin-bottom: 0 !default;
 $tab-bg-nrml-active-item-wrap-margin-bottom: 0 !default;
 $tab-alt-big-active-item-padding: 0 !default;
 $tab-alt-nrml-active-item-padding: 0 !default;
-
 
 $tab-active-text-container-margin: 0 !default;
 $tab-big-text-container-margin-right: 22px !default;
@@ -395,6 +394,7 @@ $tab-nav-focus-hover-border-color: $neutral-secondary-alt !default;
 $tab-nav-focus-active-border-color: $neutral-secondary-alt !default;
 $tab-alt-nav-border-color: $neutral-lighter-alt !default;
 $tab-pop-bg-color: $neutral-white !default;
+
 //enddefault
 //dimensions
 @mixin tbar-alt-btn-animation-after {

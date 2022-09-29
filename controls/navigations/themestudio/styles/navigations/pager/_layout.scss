@@ -1,4 +1,5 @@
 @include export-module('pager-layout') {
+  
   /*! Pager layout */
   .e-bigger  #{&}.e-pager,
   #{&}.e-pager.e-bigger {
@@ -51,14 +52,14 @@
     &.e-rtl .e-pagercontainer .e-firstpage.e-focused {
       @if $pager-skin == 'tailwind' {
         padding: 10px 10px 9px;
-       }
-     }
+      }
+    }
 
     &.e-rtl .e-pagercontainer .e-lastpage.e-focused {
       @if $pager-skin == 'tailwind' {
         padding: 10px 10px 9px;
-       }
-     }
+      }
+    }
 
     .e-pagerconstant {
       margin-bottom: $pager-bigger-dropdown-constant-margin;
@@ -74,7 +75,7 @@
 
     &.e-rtl .e-pagercontainer {
       margin: $pager-bigger-new-container-rtl-margin;
-	}
+    }
 
     @media (max-width: 769px) {
       padding: $pager-device-padding;
@@ -86,7 +87,7 @@
       div.e-parentmsgbar {
         padding: $pager-device-messabar-padding;
       }
-}
+    }
 
     .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
     .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
@@ -97,12 +98,12 @@
     &.e-rtl e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
       margin-left: 0;
       margin-right: $pager-bigger-rtl-nexticon-marign-right;
-  }
+    }
 
     &.e-rtl div.e-parentmsgbar {
       margin-left: $pager-bigger-rtl-parentmsgbar-margin-left;
       margin-top: $pager-bigger-rtl-parentmsgbar-margin-top;
-   }
+    }
 
     .e-numericitem {
       margin: $pager-bigger-numeric-item-margin;
@@ -196,7 +197,7 @@
       padding: $pager-bigger-current-item-hover-padding;
     }
 
-    &.e-rtl ,
+    &.e-rtl,
     &.e-rtl .e-numericitem:hover,
     &.e-rtl .e-currentitem {
       margin: $pager-bigger-rtl-numeric-margin;
@@ -224,12 +225,12 @@
 
       & .e-pagerdropdown {
         margin: $pager-rtl-pagerdropdown-bigger-margin;
-        }
+      }
 
       & .e-pagerconstant {
         margin: $pager-rtl-pagerconstant-bigger-margin-top;
-            }
       }
+    }
 
     .e-pagercontainer .e-firstpage,
     .e-pagercontainer .e-prevpage,
@@ -261,14 +262,14 @@
     .e-pagercontainer .e-firstpage.e-focused {
       @if $pager-skin == 'tailwind' {
         padding: 10px 11px 9px 10px;
-       }
-     }
+      }
+    }
 
     .e-pagercontainer .e-lastpage.e-focused {
       @if $pager-skin == 'tailwind' {
         padding: 10px 10px 9px;
-       }
-     }
+      }
+    }
 
     .e-pp,
     .e-np,
@@ -276,7 +277,7 @@
     .e-np:hover {
       font-size: $pager-bigger-tripledot-font-size;
     }
-   }
+  }
 
   #{&}.e-pager {
     border-style: $pager-border-type;
@@ -287,7 +288,7 @@
     white-space: normal;
     width: 100%;
 
-    [class^='e-'] {
+    [class ^= 'e-'] {
       box-sizing: border-box;
     }
 
@@ -320,7 +321,6 @@
       @if $pager-skin == 'fluent' {
         font-weight: 600;
       }
-
       display: inline-block;
       @if $pager-skin == 'tailwind' {
         line-height: 18px;
@@ -348,19 +348,19 @@
     .e-numericitem.e-currentitem {
       @if $pager-skin == 'tailwind' {
         border: 1px solid $primary;
-        padding: 3.5px 11px 4px 10px;
+        padding: 3.5px 11px 6px 10px;
       }
       @else if $pager-skin == 'bootstrap5' {
-        padding: 7px 10.5px 8px 9.5px;
+        padding: 7.4px 10.5px 8.4px 9.5px;
       }
     }
 
     .e-numericitem.e-currentitem:hover {
       @if $pager-skin == 'tailwind' {
-        padding: 3.5px 11px 4px 10px;
+        padding: 3.5px 11px 6px 10px;
       }
       @else if $pager-skin == 'bootstrap5' {
-        padding: 7px 10.5px 8px 9.5px;
+        padding: 7.4px 10.5px 8.4px 9.5px;
       }
     }
 
@@ -458,9 +458,8 @@
         &.e-focused {
           border: 0;
           border-right-style: none;
-          padding: 6.5px 7px;
+          padding: 8.9px 7px 8px;
         }
-
       }
     }
 
@@ -480,8 +479,8 @@
     .e-pagercontainer .e-firstpage.e-focused {
       @if $pager-skin == 'tailwind' {
         padding-right: 8px;
-       }
-     }
+      }
+    }
 
     .e-pagercontainer .e-lastpage,
     .e-pagercontainer .e-lastpagedisabled {
@@ -519,11 +518,11 @@
       overflow: hidden;
     }
 
-    .e-lastpage:Hover {
+    .e-lastpage:hover {
       border-radius: $pager-last-page-hover-border-radius;
     }
 
-    .e-firstpage:Hover {
+    .e-firstpage:hover {
       border-radius: $pager-first-page-hover-border-radius;
     }
 
@@ -550,7 +549,7 @@
       text-indent: -2px;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-mfirst,
     .e-mprev,
     .e-mnext,
@@ -558,7 +557,7 @@
       -webkit-tap-highlight-color: $pager-bg-color;
     }
 
-    // sass-lint:enable-all  
+    /* stylelint-enable */
 
     .e-pp,
     .e-np,
@@ -577,7 +576,6 @@
     }
 
     @media (max-width: 769px) {
-
       padding: 13px 0;
 
       div.e-parentmsgbar {
@@ -641,7 +639,6 @@
         text-align: left;
         width: calc(10% + 11px);
       }
-
     }
 
     &.e-rtl {
@@ -686,7 +683,7 @@
         float: none;
         margin: $pager-container-rtl-margin;
         padding: 0;
-	    }
+      }
 
       & .e-firstpage,
       & .e-prevpage,
@@ -820,7 +817,7 @@
       &.e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
         margin-left: 0;
         margin-right: $pager-next-icon-margin-left;
-    }
+      }
 
       & .e-spacing,
       & .e-numericitem:hover,
@@ -860,13 +857,13 @@
           float: initial;
           margin-left: 0;
           margin-top: $pager-rtl-pagermsgbar-device-margin-top;
-           }
+        }
 
         .e-parentmsgbar {
           float: right;
         }
-       }
-   }
+      }
+    }
 
     &.sf-pager {
       .e-pagercontainer .e-first,
@@ -895,5 +892,5 @@
         margin-left: 0;
       }
     }
-}
+  }
 }

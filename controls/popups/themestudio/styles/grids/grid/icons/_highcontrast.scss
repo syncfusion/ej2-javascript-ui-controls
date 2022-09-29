@@ -1,5 +1,6 @@
 @include export-module('grid-highcontrast-icons') {
-  /*!componenticons*/
+
+  /* !componenticons */
 
   .e-icon-check::before {
     content: '\e7ff';
@@ -62,13 +63,12 @@
     }
 
     .e-excl-filter-icon::before {
-      content:  '\e250';
+      content: '\e250';
     }
 
     .e-excl-filter-icon.e-filtered::before {
-      content:  '\e247';
+      content: '\e247';
     }
-
 
     &.e-rtl {
       .e-icon-grightarrow::before {
@@ -184,14 +184,14 @@
     &.e-rtl {
       .e-icon-rowdragicon::before {
         content: '\e330';
-       }
+      }
     }
 
     .e-ccsearch-icon.e-cc-cancel::before,
     .e-chkcancel-icon::before {
       content: '\e7a7';
     }
-   }
+  }
 }
 
 .e-responsive-dialog {

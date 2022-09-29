@@ -1,4 +1,4 @@
-// sass-lint:disable-all
+/* stylelint-disable */
 $ddt-skin-name: $skin-name !default;
 $ddt-box-shadow: $shadow-md !default;
 $ddt-close-icon-bottom: 10px !default;
@@ -58,7 +58,7 @@ $ddt-popup-background-color: $flyout-bg-color !default;
 $ddt-popup-border-color: $border-light !default;
 $ddt-chip-close: $icon-color !default;
 $ddt-chip-font-color: $content-text-color !default;
-$ddt-chip-hover-bg-color: $content-bg-color-alt3 !default;;
+$ddt-chip-hover-bg-color: $content-bg-color-alt3 !default;
 $ddt-chip-hover-font-color: $content-text-color-hover !default;
 $ddt-nodata-font-color: $content-text-color-alt2 !default;
 $ddt-select-all-font-color: $content-text-color !default;

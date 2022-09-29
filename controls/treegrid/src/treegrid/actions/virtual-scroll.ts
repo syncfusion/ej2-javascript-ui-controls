@@ -145,6 +145,7 @@ export class VirtualScroll {
                 }
             }
             this.expandCollapseRec = null;
+            startIndex = startIndex < 0 ? 0 : startIndex;
             pageingDetails.result = visualData.slice(startIndex, endIndex);
             this.prevstartIndex = startIndex;
             this.prevendIndex = endIndex;
@@ -175,12 +176,14 @@ export class TreeVirtual extends GridVirtualScroll {
         const parentGrid: IGrid = getValue('parent', this);
         getValue('parent', this).log(['limitation', 'virtual_height'], 'virtualization');
         const renderer: Object = getValue('locator', this).getService('rendererFactory');
-        if (parentGrid.enableColumnVirtualization) {
+        if (!parentGrid.isFrozenGrid()) {
+            if (parentGrid.enableColumnVirtualization) {
+                getValue('addRenderer', renderer)
+                    .apply(renderer, [RenderType.Header, new VirtualHeaderRenderer(getValue('parent', this), getValue('locator', this))]);
+            }
             getValue('addRenderer', renderer)
-                .apply(renderer, [RenderType.Header, new VirtualHeaderRenderer(getValue('parent', this), getValue('locator', this))]);
+                .apply(renderer, [RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this))]);
         }
-        getValue('addRenderer', renderer)
-            .apply(renderer, [RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this))]);
         //renderer.addRenderer(RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this)));
         this.ensurePageSize();
     }

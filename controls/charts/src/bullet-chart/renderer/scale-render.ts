@@ -215,6 +215,7 @@ export class ScaleGroup {
         const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
+        svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i].value + ', target: ' + this.bulletChart.dataSource[i].target));
         return svgRect;
     }
 
@@ -229,6 +230,7 @@ export class ScaleGroup {
         const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
+        svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i].value + ', target: ' + this.bulletChart.dataSource[i].target));
         return svgRect;
     }
 

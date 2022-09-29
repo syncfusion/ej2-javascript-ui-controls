@@ -38,6 +38,15 @@ export interface DataLabelSettingsModel {
     fill?: string;
 
     /**
+     * Used to format the point data label that accepts any global string format like 'C', 'n1', 'P' etc.
+     * It also accepts placeholder like '{value}°C' in which value represent the point data label, e.g, 20°C.
+     *
+     * @default null
+     */
+
+    format?: string;
+
+    /**
      * The opacity for the background.
      *
      * @default 1
@@ -180,6 +189,14 @@ export interface MarkerSettingsModel {
      */
 
     height?: number;
+
+    /**
+     *If set true , marker get filled with series color.
+     *
+     * @default false
+     */
+
+    isFilled?: boolean;
 
     /**
      * The width of the marker in pixels.

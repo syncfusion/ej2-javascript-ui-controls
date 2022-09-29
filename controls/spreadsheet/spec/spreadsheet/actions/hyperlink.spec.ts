@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, HyperlinkModel, Spreadsheet } from '../../../src';
+import { CellModel, HyperlinkModel, RowModel, Spreadsheet } from '../../../src';
 import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
 
 describe('Hyperlink ->', () => {
@@ -48,7 +48,7 @@ describe('Hyperlink ->', () => {
             setTimeout(() => {
                 expect(spreadsheet.sheets[0].selectedRange).toBe('C5:C5');
                 done();
-            });
+            }, 50);
         });
         it('Hyperlink applied through data range', (done: Function) => {
             helper.invoke('updateRange', [{ dataSource: [{ Link: 'https://www.syncfusion.com' }], startCell: 'A13' }]);
@@ -175,6 +175,13 @@ describe('Hyperlink ->', () => {
             expect(helper.invoke('getCell', [0, 10]).children[0]).toBeUndefined();
             done();
         });
+        it('Remove hyperlink using clear', (done: Function) => {
+            helper.invoke('addHyperlink', ['www.syncfusion.com', 'A100']);
+            expect(sheet.rows[99].cells[0].hyperlink).toBe('http://www.syncfusion.com');
+            helper.invoke('clear', [{ range: 'A100', type: 'Clear All' }]);
+            expect(sheet.rows[99].cells[0].hyperlink).toBeUndefined();
+            done();
+        });
     });
 
     describe('UI-Interaction ->' , () => {
@@ -233,153 +240,149 @@ describe('Hyperlink ->', () => {
                 done();
             });
         });
+        it('Add hyperlink to range with empty cells ->', (done: Function) => {
+            const rows: RowModel[] = helper.getInstance().sheets[0].rows;
+            expect(rows[9].cells[0].value).toBe('Cricket Shoes');
+            expect(rows[10].cells[0].value).toBe('T-Shirts');
+            expect(rows[11]).toBeUndefined();
+            helper.invoke('insertHyperlink', [{ address: 'http://www.syncfusion.com' }, 'A10:A12', 'Hockey Shoes', false]);
+            expect(rows[9].cells[0].value).toBe('Hockey Shoes');
+            expect(rows[10].cells[0].value).toBe('T-Shirts');
+            expect((rows[11].cells[0].hyperlink as HyperlinkModel).address).toBe('http://www.syncfusion.com');
+            expect(rows[11].cells[0].value).toBeUndefined();
+            done();
+        });
+        it('Currency formatted cell ribbon alighment changed after adding hyperlink ->', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0.00', 'E2']);
+            helper.switchRibbonTab(1);
+            helper.invoke('selectRange', ['E2']);
+            const textAlignIcon: HTMLElement = helper.getElement(`#${helper.id}_text_align .e-btn-icon`);
+            expect(textAlignIcon.className).toContain('e-right-icon');
+            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
+            helper.openAndClickCMenuItem(1, 4, [9]);
+            setTimeout((): void => {
+                const address: HTMLInputElement = helper.getElements('.e-hyperlink-dlg .e-webpage input')[1];
+                address.value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, address);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                expect(textAlignIcon.className).toContain('e-right-icon');
+                done();
+            });
+        });
     });
 
     describe('CR-Issues ->', () => {
-        describe('I328882 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        describe('I328882, I328151, EJ2-47899, EJ2-50473 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], 
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.numberFormat(getFormatFromType('Currency'), 'Sheet1!E1:F11');
+                    } 
+                }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Hyperlink style is not getting removed from cell', (done: Function) => {
+
+            it('I328882 - Hyperlink style is not getting removed from cell', (done: Function) => {
                 helper.switchRibbonTab(2);
                 helper.getElement('#' + helper.id + '_hyperlink').click();
-                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
-                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                setTimeout(() => {
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                     setTimeout(() => {
-                        const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
-                        const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
-                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-                        setTimeout(() => {
-                            helper.click('#' + helper.id + '_contextmenu li:nth-child(11)');
-                            expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
-                            expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
-                              done();
-                        });
+                        helper.setAnimationToNone('#spreadsheet_contextmenu');
+                        helper.openAndClickCMenuItem(0, 0, [11]);
+                        expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
+                        expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
+                        done();
                     });
                 });
             });
-        describe('I328151 ->', () =>{
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-            });
-            afterEach(() =>{ 
-                helper.invoke('destroy');
-            });
-            it('Need to fix the issue with clear content in hyperlinks applied cells', (done: Function) => {
-                helper.switchRibbonTab(2);
+
+            it('I328151 - Need to fix the issue with clear content in hyperlinks applied cells', (done: Function) => {
                 helper.getElement('#' + helper.id + '_hyperlink').click();
-                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
-                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 setTimeout(() => {
-                    helper.switchRibbonTab(1);
-                    helper.getElement('#' + helper.id + '_clear').click();
-                    helper.getElement('#' + helper.id + '_clear-popup').querySelector('.e-item').click();
-                    done();
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                    setTimeout(() => {
+                        helper.switchRibbonTab(1);
+                        helper.click('#spreadsheet_clear');
+                        helper.click('#spreadsheet_clear-popup ul li:nth-child(3)');
+                        expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
+                        done();
+                    });
                 });
             });
-        });
-        describe('EJ2-47899->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ 
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    created: (): void => { 
-                        const spreadsheet: Spreadsheet = helper.getInstance();
-                        spreadsheet.protectSheet(
-                            'Sheet1', { selectCells: true, formatCells: true, formatRows: true, formatColumns: true, insertLink: true });
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Cancel button not wroking for hyperlink popup', (done: Function) => {
-                helper.invoke('selectRange', ['C5']);
-                let td: HTMLTableCellElement = helper.invoke('getCell', [2, 4]);
+
+            it('EJ2-47899 - Cancel button not wroking for hyperlink popup', (done: Function) => {
+                helper.invoke('selectRange', ['A2']);
+                let td: HTMLTableCellElement = helper.invoke('getCell', [1, 0]);
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(() => {
                     helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
                     setTimeout(() => {
-                        helper.triggerKeyEvent('keydown', 65, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                        setTimeout(() => {
-                            expect(helper.getElement('.e-editAlert-dl.e-dialogg')).toBeNull();
-                            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
-                            helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
-                            expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
-                            done();
-                        });
+                        helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                        helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
+                        expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
+                        done();
                     });
                 });
             });
-        });
-        describe('EJ2-50410->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData}] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Hidden Sheet name Shown in Hyperlink dialog box', (done: Function) => {
-                helper.click('.e-add-sheet-tab');
-                expect(helper.getInstance().activeSheetIndex).toBe(1);
-                expect(helper.getInstance().sheets.length).toBe(2);
-                setTimeout(() => {
-                    const td: HTMLTableCellElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
-                    const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
-                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-                    setTimeout(() => {
-                        helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
-                        setTimeout(() => {
-                            helper.invoke('selectRange', ['Sheet1!A1']);
-                            helper.switchRibbonTab(2);
-                            helper.getElement('#' + helper.id + '_hyperlink').click();
-                            setTimeout(() => {
-                                helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
-                                let popUpElem: HTMLElement = helper.getElement('.e-cont .e-list-item .e-ul  ');
-                                expect(popUpElem.childElementCount).toBe(1);
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-50473', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
-                    created: (): void => {
-                        const spreadsheet: Spreadsheet = helper.getInstance();
-                        spreadsheet.numberFormat(getFormatFromType('Currency'), 'E1:F11');
-                    }
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Cell value changes Alignment after adding Hyperlink', (done: Function) => {
+
+            it('EJ2-50473 - Cell value changes Alignment after adding Hyperlink', (done: Function) => {
                 helper.invoke('selectRange', ['E2']);
                 helper.switchRibbonTab(2);
                 helper.getElement('#' + helper.id + '_hyperlink').click();
-                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
-                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
-                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 setTimeout(() => {
-                    let td: HTMLElement = helper.invoke('getCell', [1, 4]);
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                     setTimeout(() => {
+                        let td: HTMLElement = helper.invoke('getCell', [1, 4]);
                         expect(td.style.textAlign).toBe('');
                         done();
                     });
+                });
+            });
+        });
+
+        describe('EJ2-50410 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] },  {  }], activeSheetIndex: 1
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('EJ2-50410 - Hidden Sheet name Shown in Hyperlink dialog box', (done: Function) => {
+                const td: HTMLTableCellElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
+                    helper.setAnimationToNone('#spreadsheet_contextmenu');
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
+                    setTimeout(() => {
+                        helper.invoke('selectRange', ['Sheet1!A1']);
+                        helper.switchRibbonTab(2);
+                        helper.getElement('#' + helper.id + '_hyperlink').click();
+                        setTimeout(() => {
+                            helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
+                            let popUpElem: HTMLElement = helper.getElement('.e-cont .e-list-item .e-ul  ');
+                            expect(popUpElem.childElementCount).toBe(1);
+                            helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                            helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
+                            done();
+                        });
+                    }, 10);
                 });
             });
         });

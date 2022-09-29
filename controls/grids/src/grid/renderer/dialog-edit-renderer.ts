@@ -82,9 +82,9 @@ export class DialogEditRender {
         if (gObj.enableAdaptiveUI) {
             this.dialog.classList.add('e-responsive-dialog');
         }
-        this.dialog.setAttribute('aria-label', 'Dialog edit');
         gObj.element.appendChild(this.dialog);
         this.setLocaleObj();
+        this.dialog.setAttribute('aria-label', this.l10n.getConstant('DialogEdit'));
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = new Dialog(extend(

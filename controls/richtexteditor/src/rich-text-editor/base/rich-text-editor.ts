@@ -11,8 +11,8 @@ import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';
-import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, PasteCleanupArgs } from './interface';
-import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
+import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
+import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType, ToolbarType, DialogType } from './enum';
@@ -21,9 +21,9 @@ import { Toolbar } from '../actions/toolbar';
 import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
 import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';
-import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
+import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
-import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';
+import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';
 import { FileManagerSettings } from '../models/toolbar-settings';
 import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';
 import { FontColor, BackgroundColor } from '../models/toolbar-settings';
@@ -31,6 +31,8 @@ import { IFrameSettings } from '../models/iframe-settings';
 import { InlineMode } from '../models/inline-mode';
 import { Link } from '../renderer/link-module';
 import { Image } from '../renderer/image-module';
+import { Audio } from '../renderer/audio-module';
+import { Video } from '../renderer/video-module';
 import { Table } from '../renderer/table-module';
 import { Count } from '../actions/count';
 import { HtmlEditor } from '../actions/html-editor';
@@ -79,7 +81,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
-     public currentTarget: HTMLElement;
+    public currentTarget: HTMLElement;
     /**
      * @hidden
      * @deprecated
@@ -127,6 +129,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public imageModule: Image;
+    /**
+     * @hidden
+     * @deprecated
+     */
+    public audioModule: Audio;
+    /**
+     * @hidden
+     * @deprecated
+     */
+    public videoModule: Video;
     /**
      * @hidden
      * @deprecated
@@ -243,6 +255,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * actionOnScroll: 'hide',
      * link: ['Open', 'Edit', 'UnLink'],
      * image: ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'Display', 'AltText', 'Dimension'],
+     * audio: ['AudioReplace', 'AudioRemove', 'AudioLayoutOption'],
+     * video: ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension'],
      * }
      */
     @Complex<QuickToolbarSettingsModel>({}, QuickToolbarSettings)
@@ -325,6 +339,56 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<ImageSettingsModel>({}, ImageSettings)
     public insertImageSettings: ImageSettingsModel;
+    /**
+     * Specifies the audio insert options in Rich Text Editor component and control with the following properties.
+     * * allowedTypes - Specifies the extensions of the audio types allowed to insert on bowering and
+     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
+     * * layoutOption - Sets the default display for an audio when it is inserted in to the RichTextEditor.
+     * Possible options are: 'Inline' and 'Break'.
+     * * saveFormat - Specifies the format to store the audio in the Rich Text Editor (Base64 or Blob).
+     * > If you want to insert a lot of tiny audios in the editor and don't want a specific physical location for
+     * saving audios, you can opt to save format as Base64.
+     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
+     * * path - Specifies the path of the location to store the audios and refer it to display the audios.
+     *
+     * @default
+     * {
+     * allowedTypes: ['.wav', '.mp3', '.m4a','.wma'],
+     * layoutOption: 'Inline',
+     * saveFormat: 'Blob'
+     * saveUrl: null,
+     * path: null,
+     * }
+     */
+    @Complex<AudioSettingsModel>({}, AudioSettings)
+    public insertAudioSettings: AudioSettingsModel;
+    /**
+     * Specifies the video insert options in Rich Text Editor component and control with the following properties.
+     * * allowedTypes - Specifies the extensions of the video types allowed to insert on bowering and
+     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
+     * * layoutOption - Sets the default display for an video when it is inserted in to the RichTextEditor.
+     * Possible options are: 'Inline' and 'Break'.
+     * * width - Sets the default width of the video when it is inserted in the RichTextEditor.
+     * * saveFormat - Specifies the format to store the video in the Rich Text Editor (Base64 or Blob).
+     * > If you want to insert a lot of tiny videos in the editor and don't want a specific physical location for
+     * saving videos, you can opt to save format as Base64.
+     * * height - Sets the default height of the video when it is inserted in the RichTextEditor.
+     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
+     * * path - Specifies the path of the location to store the videos and refer it to display the videos.
+     *
+     * @default
+     * {
+     * allowedTypes: ['.mp4', '.mov', '.wmv','.avi'],
+     * layoutOption: 'Inline',
+     * width: 'auto',
+     * height: 'auto',
+     * saveFormat: 'Blob'
+     * saveUrl: null,
+     * path: null,
+     * }
+     */
+    @Complex<VideoSettingsModel>({}, VideoSettings)
+    public insertVideoSettings: VideoSettingsModel;
     /**
      * Specifies the table insert options in Rich Text Editor component and control with the following properties.
      * * styles - Class name should be appended by default in table element.
@@ -809,7 +873,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * If you cancel this event, the dialog remains closed.
      * Set the cancel argument to true to cancel the open of a dialog.
      *
-     * @event 'object'
+     * @event 'beforeDialogOpen'
      * @blazorProperty 'OnDialogOpen'
      * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
@@ -819,7 +883,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when a dialog is opened.
      *
-     * @event 'object'
+     * @event 'dialogOpen'
      * @blazorProperty 'DialogOpened'
      * @blazorType DialogOpenEventArgs
      */
@@ -830,7 +894,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * If you cancel this event, the dialog remains opened.
      * Set the cancel argument to true to prevent closing a dialog.
      *
-     * @event 'object'
+     * @event 'beforeDialogClose'
      * @blazorProperty 'OnDialogClose'
      * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
@@ -839,7 +903,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers after the dialog has been closed.
      *
-     * @event 'object'
+     * @event 'dialogClose'
      * @blazorProperty 'DialogClosed'
      * @blazorType DialogCloseEventArgs
      */
@@ -848,7 +912,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the quick toolbar is being opened.
      *
-     * @event 'object'
+     * @event 'beforeQuickToolbarOpen'
      * @blazorProperty 'OnQuickToolbarOpen'
      */
     @Event()
@@ -856,7 +920,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when a quick toolbar is opened.
      *
-     * @event 'object'
+     * @event 'quickToolbarOpen'
      * @blazorProperty 'QuickToolbarOpened'
      * @blazorType QuickToolbarEventArgs
      */
@@ -865,7 +929,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers after the quick toolbar has been closed.
      *
-     * @event 'object'
+     * @event 'quickToolbarClose'
      * @blazorProperty 'QuickToolbarClosed'
      * @blazorType QuickToolbarEventArgs
      */
@@ -875,14 +939,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * This event is deprecated and no longer works. Use `updatedToolbarStatus` event to get the undo and redo status.
      *
      * @deprecated
-     * @event 'object'
+     * @event 'toolbarStatusUpdate'
      */
     @Event()
     public toolbarStatusUpdate: EmitType<Object>;
     /**
      * Triggers when the toolbar items status is updated.
      *
-     * @event 'object'
+     * @event 'updatedToolbarStatus'
      * @blazorType ToolbarUpdateEventArgs
      */
     @Event()
@@ -890,7 +954,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the image is selected or dragged into the insert image dialog.
      *
-     * @event 'object'
+     * @event 'imageSelected'
      * @blazorProperty 'OnImageSelected'
      */
     @Event()
@@ -905,7 +969,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the selected image begins to upload in the insert image dialog.
      *
-     * @event 'object'
+     * @event 'imageUploading'
      * @blazorProperty 'OnImageUploading'
      */
     @Event()
@@ -913,7 +977,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the image is successfully uploaded to the server side.
      *
-     * @event 'object'
+     * @event 'imageUploadSuccess'
      * @blazorProperty 'OnImageUploadSuccess'
      * @blazorType ImageSuccessEventArgs
      */
@@ -922,7 +986,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when there is an error in the image upload.
      *
-     * @event 'object'
+     * @event 'imageUploadFailed'
      * @blazorProperty 'OnImageUploadFailed'
      * @blazorType ImageFailedEventArgs
      */
@@ -931,7 +995,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the selected image is cleared from the insert image dialog.
      *
-     * @event 'object'
+     * @event 'imageRemoving'
      * @blazorProperty 'OnImageRemoving'
      */
     @Event()
@@ -939,15 +1003,64 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
      *
-     * @event 'object'
+     * @event 'afterImageDelete'
      * @blazorProperty 'OnImageDelete'
      */
     @Event()
     public afterImageDelete: EmitType<AfterImageDeleteEventArgs>;
     /**
+     * Event triggers when the media is selected or dragged into the insert media audio/video dialog.
+     *
+     * @event 'fileSelected'
+     */
+    @Event()
+    public fileSelected: EmitType<SelectedEventArgs>;
+    /**
+     * Event triggers before the media audio/video upload process.
+     *
+     * @event 'beforeFileUpload'
+     */
+    @Event()
+    public beforeFileUpload: EmitType<BeforeUploadEventArgs>;
+    /**
+     * Event triggers when the selected media begins to upload in the insert media audio/video dialog.
+     *
+     * @event 'fileUploading'
+     */
+    @Event()
+    public fileUploading: EmitType<UploadingEventArgs>;
+    /**
+     * Event triggers when the media is successfully uploaded to the server side.
+     *
+     * @event 'fileUploadSuccess'
+     */
+    @Event()
+    public fileUploadSuccess: EmitType<Object>;
+    /**
+     * Event triggers when there is an error in the media upload.
+     *
+     * @event 'fileUploadFailed'
+     */
+    @Event()
+    public fileUploadFailed: EmitType<Object>;
+    /**
+     * Event triggers when the selected media is cleared from the insert audio/video dialog.
+     *
+     * @event 'fileRemoving'
+     */
+    @Event()
+    public fileRemoving: EmitType<RemovingEventArgs>;
+    /**
+     * Event triggers when the selected media is cleared from the Rich Text Editor Content.
+     *
+     * @event 'afterMediaDelete'
+     */
+    @Event()
+    public afterMediaDelete: EmitType<AfterMediaDeleteEventArgs>;
+    /**
      * Triggers when the Rich Text Editor is rendered.
      *
-     * @event 'object'
+     * @event 'created'
      * @blazorProperty 'Created'
      */
     @Event()
@@ -955,7 +1068,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when the Rich Text Editor is destroyed.
      *
-     * @event 'object'
+     * @event 'destroyed'
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
      */
@@ -964,7 +1077,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
      *
-     * @event 'object'
+     * @event 'beforeSanitizeHtml'
      * @blazorProperty 'OnSanitizeHtml'
      */
     @Event()
@@ -972,7 +1085,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when Rich Text Editor is focused out.
      *
-     * @event 'object'
+     * @event 'blur'
      * @blazorType BlurEventArgs
      */
     @Event()
@@ -980,7 +1093,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when Rich Text Editor Toolbar items is clicked.
      *
-     * @event 'object'
+     * @event 'toolbarClick'
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
      */
@@ -989,7 +1102,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when Rich Text Editor is focused in
      *
-     * @event 'object'
+     * @event 'focus'
      * @blazorType FocusEventArgs
      */
     @Event()
@@ -997,7 +1110,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      *
-     * @event 'object'
+     * @event 'change'
      * @blazorProperty 'ValueChange'
      */
     @Event()
@@ -1005,7 +1118,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers only when resizing the image.
      *
-     * @event 'object'
+     * @event 'resizing'
      * @blazorProperty 'Resizing'
      */
     @Event()
@@ -1013,7 +1126,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers only when start resize the image.
      *
-     * @event 'object'
+     * @event 'resizeStart'
      * @blazorProperty 'OnResizeStart'
      */
     @Event()
@@ -1021,7 +1134,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers only when stop resize the image.
      *
-     * @event 'object'
+     * @event 'resizeStop'
      * @blazorProperty 'OnResizeStop'
      */
     @Event()
@@ -1030,7 +1143,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers before cleanup the copied content.
      *
-     * @event 'object'
+     * @event 'beforePasteCleanup'
      */
     @Event()
     public beforePasteCleanup: EmitType<PasteCleanupArgs>;
@@ -1038,7 +1151,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers after cleanup the copied content.
      *
-     * @event 'object'
+     * @event 'afterPasteCleanup'
      */
     @Event()
     public afterPasteCleanup: EmitType<object>;
@@ -1046,7 +1159,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers before drop the image.
      *
-     * @event 'object'
+     * @event 'beforeImageDrop'
      * @blazorProperty 'OnImageDrop'
      */
     @Event()
@@ -1120,6 +1233,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             modules.push(
                 { member: 'pasteCleanup', args: [this, this.serviceLocator] }
             );
+            modules.push({
+                member: 'audio',
+                args: [this, this.serviceLocator]
+            });
+            modules.push({
+                member: 'video',
+                args: [this, this.serviceLocator]
+            });
         }
         if (this.fileManagerSettings.enable) {
             modules.push(
@@ -1247,7 +1368,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.valueContainer.name = this.getID();
         addClass([this.valueContainer], classes.CLS_RTE_HIDDEN);
         if (!isNOU(this.cssClass)) {
-            let currentClassList: string[] = this.cssClass.split(' ');
+            const currentClassList: string[] = this.cssClass.split(' ');
             for (let i: number = 0; i < currentClassList.length; i++) {
                 addClass([this.valueContainer], currentClassList[i]);
             }
@@ -1360,14 +1481,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let currentInsertContentLength: number = 0;
             if (tool.command === 'Links') {
                 currentInsertContentLength = (value as ILinkCommandsArgs).text.length === 0 ?
-                (value as ILinkCommandsArgs).url.length :(value as ILinkCommandsArgs).text.length;
+                    (value as ILinkCommandsArgs).url.length : (value as ILinkCommandsArgs).text.length;
             }
             if (tool.command === 'Images' || tool.command === 'Table' || tool.command === 'Files') {
-                currentInsertContentLength = 1
+                currentInsertContentLength = 1;
             }
             if (tool.command === 'InsertHTML') {
                 if (!isNOU(value)) {
-                    let tempElem: HTMLElement = this.createElement('div');
+                    const tempElem: HTMLElement = this.createElement('div');
                     tempElem.innerHTML = value;
                     currentInsertContentLength = tempElem.textContent.length;
                 } else if (!isNOU(tool.value) && (tool.value === '<hr/>' || tool.value === '<br/>')) {
@@ -1443,6 +1564,62 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         maxHeight: this.insertImageSettings.maxHeight, height: this.insertImageSettings.height };
                 }
                 break; }
+            case 'insertAudio': {
+                const wrapTemp: HTMLElement = this.createElement('audio', {
+                    attrs: {
+                        controls: ''
+                    }
+                });
+                const temp: HTMLElement = this.createElement('source', {
+                    attrs: {
+                        src: (value as IAudioCommandsArgs).url as string,
+                        type: (value as IAudioCommandsArgs).url && (value as IAudioCommandsArgs).url.split('.').length > 0
+                            ? 'audio/' + (value as IAudioCommandsArgs).url.split('.')[(value as IAudioCommandsArgs).url.split('.').length - 1] : ''
+                    }
+                });
+                wrapTemp.appendChild(temp);
+                let audioValue: string = wrapTemp.outerHTML;
+                if (this.enableHtmlSanitizer) {
+                    audioValue = this.htmlEditorModule.sanitizeHelper(wrapTemp.outerHTML);
+                }
+                let url: string = (audioValue !== '' && (this.createElement('div', {
+                    innerHTML: audioValue
+                }).firstElementChild.firstElementChild).getAttribute('src')) || null;
+                url = !isNOU(url) ? url : '';
+                (value as IAudioCommandsArgs).url = url;
+                break; }
+            case 'insertVideo': {
+                const wrapTemp: HTMLElement = this.createElement('video', {
+                    attrs: {
+                        controls: ''
+                    }
+                });
+                const temp: HTMLElement = this.createElement('source', {
+                    attrs: {
+                        src: (value as IVideoCommandsArgs).url as string,
+                        type: (value as IVideoCommandsArgs).url && (value as IVideoCommandsArgs).url.split('.').length > 0
+                            ? 'video/' + (value as IVideoCommandsArgs).url.split('.')[(value as IVideoCommandsArgs).url.split('.').length - 1] : ''
+                    }
+                });
+                wrapTemp.appendChild(temp);
+                let audioValue: string = wrapTemp.outerHTML;
+                if (this.enableHtmlSanitizer) {
+                    audioValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                }
+                let url: string = (audioValue !== '' && (this.createElement('div', {
+                    innerHTML: audioValue
+                }).firstElementChild).getAttribute('src')) || null;
+                url = !isNOU(url) ? url : '';
+                (value as IVideoCommandsArgs).url = url;
+                if (isNOU((value as { [key: string]: object }).width)) {
+                    (value as { [key: string]: object }).width = { minWidth: this.insertVideoSettings.minWidth,
+                        maxWidth: this.insertVideoSettings.maxWidth, width: this.insertVideoSettings.width };
+                }
+                if (isNOU((value as { [key: string]: object }).height)) {
+                    (value as { [key: string]: object }).height = { minHeight: this.insertVideoSettings.minHeight,
+                        maxHeight: this.insertVideoSettings.maxHeight, height: this.insertVideoSettings.height };
+                }
+                break; }
             case 'createLink': {
                 const tempNode: HTMLElement = this.createElement('a', {
                     attrs: {
@@ -1504,8 +1681,66 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
         this.notify(events.bindCssClass, {cssClass: this.cssClass});
+        this.addAudioVideoWrapper();
         this.notify(events.tableclass, {});
         this.renderComplete();
+    }
+
+    /**
+     * addAudioVideoWrapper method
+     *
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public addAudioVideoWrapper(): void {
+        let insertElem: HTMLElement;
+        let audioElm: NodeListOf<HTMLElement> = this.element.querySelectorAll('audio');
+        for (let i: number = 0; i < audioElm.length; i++) {
+            if (!audioElm[i].classList.contains('e-rte-audio')) {
+                audioElm[i].classList.add('e-rte-audio');
+                audioElm[i].classList.add(classes.CLS_AUDIOINLINE);
+            }
+            if (!audioElm[i].parentElement.classList.contains(classes.CLS_CLICKELEM) && !audioElm[i].parentElement.classList.contains(classes.CLS_AUDIOWRAP)) {
+                let audioWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_AUDIOWRAP });
+                audioWrapElem.contentEditable = 'false';
+                let audioInnerWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_CLICKELEM })
+                audioWrapElem.appendChild(audioInnerWrapElem);
+                audioElm[i].parentNode.insertBefore(audioWrapElem, audioElm[i].nextSibling);
+                audioInnerWrapElem.appendChild(audioElm[i]);
+                if (audioWrapElem.nextElementSibling === null) {
+                    insertElem = this.createElement('br');
+                    audioWrapElem.parentNode.insertBefore(insertElem, audioWrapElem.nextSibling);
+                }
+            }
+        }
+        let videoElm: NodeListOf<HTMLElement> = this.element.querySelectorAll('video');
+        for (let i: number = 0; i < videoElm.length; i++) {
+            if (!videoElm[i].classList.contains('e-rte-video')) {
+                videoElm[i].classList.add('e-rte-video');
+                videoElm[i].classList.add(classes.CLS_VIDEOINLINE);
+            }
+            if (!videoElm[i].parentElement.classList.contains(classes.CLS_CLICKELEM) && !videoElm[i].parentElement.classList.contains(classes.CLS_VIDEOWRAP)) {
+                let videoWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_VIDEOWRAP });
+                videoWrapElem.contentEditable = 'false';
+                videoElm[i].parentNode.insertBefore(videoWrapElem, videoElm[i].nextSibling);
+                videoWrapElem.appendChild(videoElm[i]);
+                if (videoWrapElem.nextElementSibling === null) {
+                    insertElem = this.createElement('br');
+                    videoWrapElem.parentNode.insertBefore(insertElem, videoWrapElem.nextSibling);
+                }
+            }
+            if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                videoElm[i].addEventListener('play', (args) => { 
+                    this.notify(events.mouseDown, { args: args });
+                    this.notify('editAreaClick', { args: args });
+                });
+                videoElm[i].addEventListener('pause', (args) => { 
+                    this.notify(events.mouseDown, { args: args });
+                    this.notify('editAreaClick', { args: args });
+                });
+            }
+        }
     }
 
     /**
@@ -1533,7 +1768,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
         !range.collapsed && isNOU(endNode.nextElementSibling)) {
             for (let i: number = 0; i < closestLI.childNodes.length; i++) {
-                if (closestLI.childNodes[i].nodeName === "#text" && closestLI.childNodes[i].textContent.trim().length === 0) {
+                if (closestLI.childNodes[i].nodeName === '#text' && closestLI.childNodes[i].textContent.trim().length === 0) {
                     detach(closestLI.childNodes[i]);
                     i--;
                 }
@@ -1543,7 +1778,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 currentLastElem = currentLastElem.lastChild as Element;
             }
             this.formatter.editorManager.nodeSelection.setSelectionText(
-                this.contentModule.getDocument(), 
+                this.contentModule.getDocument(),
                 isSameContainer ? currentStartContainer : ( currentLastElem.nodeName === 'BR' && !isNOU( currentLastElem.previousSibling ) ? currentLastElem.previousSibling : currentStartContainer ),
                 currentEndContainer,
                 currentStartOffset,
@@ -1638,20 +1873,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private keyUp(e: KeyboardEvent): void {
-        if (this.editorMode === "HTML") {
+        if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
-            if (Browser.userAgent.indexOf('Firefox') != -1 && range.startContainer.nodeName === '#text' &&
+            if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer.nodeName === '#text' &&
                 range.startContainer.parentElement === this.inputElement && this.enterKey !== 'BR') {
-            const range: Range = this.getRange();
-            const tempElem: HTMLElement = this.createElement(this.enterKey);
-            range.startContainer.parentElement.insertBefore(tempElem, range.startContainer);
-            tempElem.appendChild(range.startContainer);
-            this.formatter.editorManager.nodeSelection.setSelectionText(
-                this.contentModule.getDocument(), tempElem.childNodes[0], tempElem.childNodes[0], 
-                tempElem.childNodes[0].textContent.length, tempElem.childNodes[0].textContent.length);
+                const range: Range = this.getRange();
+                const tempElem: HTMLElement = this.createElement(this.enterKey);
+                range.startContainer.parentElement.insertBefore(tempElem, range.startContainer);
+                tempElem.appendChild(range.startContainer);
+                this.formatter.editorManager.nodeSelection.setSelectionText(
+                    this.contentModule.getDocument(), tempElem.childNodes[0], tempElem.childNodes[0],
+                    tempElem.childNodes[0].textContent.length, tempElem.childNodes[0].textContent.length);
             }
         }
         this.notify(events.keyUp, { member: 'keyup', args: e });
+        if (e.keyCode == 39  || e.keyCode == 37) {
+            this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
+        }
         if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
         this.inputElement.innerHTML === '<br>')) {
             this.inputElement.innerHTML = getEditValue(getDefaultValue(this), this);
@@ -1735,7 +1973,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 clientX: touch.clientX, clientY: touch.clientY }
         });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
-            (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0))) {
+            (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0)) || (e.target && ((e.target as HTMLElement).nodeName === 'VIDEO'
+            || (e.target as HTMLElement).querySelectorAll('.' + classes.CLS_VIDEOWRAP).length > 0) || (e.target && (e.target as HTMLElement).nodeName !== 'BR' &&
+            ((e.target as HTMLElement).classList.contains(classes.CLS_AUDIOWRAP) ||
+            (e.target as HTMLElement).classList.contains(classes.CLS_CLICKELEM) ||
+            (e.target as HTMLElement).classList.contains(classes.CLS_VID_CLICK_ELEM))))) {
             this.notify(events.toolbarRefresh, { args: e });
         }
         this.triggerEditArea(e);
@@ -1894,7 +2136,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             return;
         }
         if (this.element.offsetParent === null) {
-            if(!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
+            if (!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
             this.notify(events.moduleDestroy, {});
             return;
         }
@@ -1921,7 +2163,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 addClass([this.element], this.originalElement.classList[i]);
             }
             if (!isNOU(this.cssClass)) {
-                let currentClassList: string[] = this.cssClass.split(' ');
+                const currentClassList: string[] = this.cssClass.split(' ');
                 for (let i: number = 0; i < currentClassList.length; i++) {
                     addClass([this.element], currentClassList[i]);
                 }
@@ -2104,6 +2346,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 if (this.showCharCount) {
                     this.countModule.refresh();
                 }
+                this.addAudioVideoWrapper();
                 break;
             }
             case 'valueTemplate':
@@ -2299,7 +2542,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     });
                 }
                 this.placeHolderWrapper.innerHTML = this.placeholder;
-                if (this.inputElement.textContent.length === 0 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
+                if ( this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
                 ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
                 this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
                     this.placeHolderWrapper.style.display = 'block';
@@ -2585,6 +2828,26 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * Video max width calculation method
+     *
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public getInsertVidMaxWidth(): string | number {
+        const maxWidth: string | number = this.insertVideoSettings.maxWidth;
+        // eslint-disable-next-line
+        const vidPadding: number = 12
+        const vidResizeBorder: number = 2;
+        const editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
+        const eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
+        const editEleMaxWidth: number = editEle.offsetWidth - (vidPadding + vidResizeBorder +
+                parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
+                parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
+        return isNOU(maxWidth) ? editEleMaxWidth : maxWidth;
+    }
+
+    /**
      * setContentHeight method
      *
      * @param {string} target - specifies the target value.
@@ -2710,6 +2973,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.notify(events.showLinkDialog, {});
         } else if (type === DialogType.InsertImage) {
             this.notify(events.showImageDialog, {});
+        } else if (type === DialogType.InsertAudio) {
+            this.notify(events.showAudioDialog, {});
+        } else if (type === DialogType.InsertVideo) {
+            this.notify(events.showVideoDialog, {});
         } else if (type === DialogType.InsertTable) {
             this.notify(events.showTableDialog, {});
         }
@@ -2727,6 +2994,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.notify(events.closeLinkDialog, {});
         } else if (type === DialogType.InsertImage) {
             this.notify(events.closeImageDialog, {});
+        } else if (type === DialogType.InsertAudio) {
+            this.notify(events.closeAudioDialog, {});
+        } else if (type === DialogType.InsertVideo) {
+            this.notify(events.closeVideoDialog, {});
         } else if (type === DialogType.InsertTable) {
             this.notify(events.closeTableDialog, {});
         }
@@ -2913,7 +3184,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.tableModule) && !isNOU(this.inputElement.querySelector('.e-table-box.e-rbox-select'))) { return; }
         this.setProperties({ value: this.getUpdatedValue() }, true);
         this.valueContainer.value = this.value;
-        this.isValueChangeBlurhandler= false; 
+        this.isValueChangeBlurhandler= false;
         this.invokeChangeEvent();
     }
     private updateIntervalValue(): void {

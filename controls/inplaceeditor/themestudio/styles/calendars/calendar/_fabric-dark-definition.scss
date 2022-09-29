@@ -1,4 +1,4 @@
-//default 
+//default
 $calendar-title-hover-color: $neutral-light-fontalt !default;
 $calendar-icon-hover-color: $neutral-light-fontalt !default;
 $calendar-default-border-color: $neutral-light !default;
@@ -58,6 +58,7 @@ $calendar-normal-max-width: 232px !default;
 $calendar-normal-min-width: 232px !default;
 $calendar-small-max-width: $calendar-normal-max-width !default;
 $calendar-small-min-width: $calendar-normal-min-width !default;
+
 // newly added
 $calendar-active-today-hover-font-color: $neutral-light-fontalt !default;
 $calendar-today-focused-font-color: $theme-primary-font !default;
@@ -86,6 +87,7 @@ $calendar-prev-icon: '\e85e' !default;
 $calendar-next-icon: '\e84f' !default;
 $calendar-date-font-size: 12px !default;
 $calendar-title-font-weight-style: 300 !default;
+
 //$calendar-yeardecade-bg-color: $neutral-light !default;
 $calendar-yeardecade-hover-color: $neutral-light-fontalt !default;
 $calendar-spanicon-font-weight-style: 300 !default;
@@ -184,4 +186,5 @@ $calendar-small-title-font-color: $neutral-light-font !default;
 $calendar-bigger-small-table-padding: 0 10px 10px 10px !default;
 $calendar-bigger-small-yeardecade-font-size: 12px !default;
 $calendar-small-font-size: 12px !default;
+
 //enddefault

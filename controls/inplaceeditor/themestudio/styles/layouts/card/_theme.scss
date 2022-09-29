@@ -1,6 +1,7 @@
 @include export-module('card-theme') {
+
   /*! card theme */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
 
   .e-card {
     -webkit-tap-highlight-color: $card-highlight-color;
@@ -49,7 +50,6 @@
         background-color: $card-image-title-bg;
         color: $card-image-title-color;
       }
-
     }
 
     .e-card-actions {

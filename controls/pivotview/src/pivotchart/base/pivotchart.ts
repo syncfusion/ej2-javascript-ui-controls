@@ -2,7 +2,7 @@ import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSetti
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries } from '@syncfusion/ej2-charts';
+import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
 import { AccumulationChart, PieSeries, FunnelSeries, PyramidSeries } from '@syncfusion/ej2-charts';
 import { SplineAreaSeries, MultiColoredLineSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries } from '@syncfusion/ej2-charts';
 import { MultiColoredAreaSeries, SplineSeries, StepLineSeries, AccumulationLegend, AccumulationTooltip } from '@syncfusion/ej2-charts';
@@ -11,7 +11,7 @@ import { RadarSeries, AxisModel, RowModel, Series, ITooltipRenderEventArgs, ILoa
 import { IAxisLabelRenderEventArgs, ScrollBar, Zoom, IResizeEventArgs, TooltipSettingsModel, PolarSeries } from '@syncfusion/ej2-charts';
 import { ZoomSettingsModel, ParetoSeries, Export, Crosshair, MultiLevelLabelsModel, MultiLevelLabel } from '@syncfusion/ej2-charts';
 import { ColumnModel, IPointEventArgs, IMultiLevelLabelClickEventArgs, LegendSettingsModel, BubbleSeries } from '@syncfusion/ej2-charts';
-import { AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
+import { AccumulationDataLabel, AccumulationSeriesModel, getSeriesColor } from '@syncfusion/ej2-charts';
 import { createElement, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -41,6 +41,8 @@ export class PivotChart {
     private maxLevel: number = 0;
     private columnGroupObject: { [key: string]: { x: string; y: number; rIndex: number; cIndex: number }[] } = {};
     private persistSettings: ChartSettingsModel;
+    private selectedLegend: number = 0;
+    private chartSeriesInfo: { [key: string]: { uniqueName?: string; caption?: string; colorIndex?: number[] } } = {};
     private fieldPosition: string[] = [];
     private measurePos: number = -1;
     private measuresNames: { [key: string]: string } = {};
@@ -174,9 +176,12 @@ export class PivotChart {
         let lastDimension: string = '';
         let memberCell: IAxisSet;
         let drillDimension: string = '';
+        this.chartSeriesInfo = {};
+        this.selectedLegend = 0;
         let isDrill: boolean = false;
         let measureNames: { [key: string]: string } = {};
         let isValidHeader: boolean = false;
+        let delimiter: string = this.parent.dataSourceSettings.valueSortSettings.headerDelimiter;
         for (let field of this.dataSourceSettings.values) {
             let fieldName: string = field.name;
             measureNames[fieldName] = field.caption ? field.caption : fieldName;
@@ -194,7 +199,7 @@ export class PivotChart {
             if (!isNullOrUndefined(pivotValues[rowIndex])) {
                 let header: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
                 let valueSort: string[] = header && header.valueSort && !isNullOrUndefined(header.valueSort.levelName) ?
-                    header.valueSort.levelName.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) : undefined;
+                    header.valueSort.levelName.toString().split(delimiter) : undefined;
                 isValidHeader = false;
                 if (valueSort && valueSort[0] !== 'Grand Total') {
                     if ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ||
@@ -286,11 +291,11 @@ export class PivotChart {
                             memberCell = firstRowCell;
                         } else {
                             let valueSort: string[] = firstRowCell && firstRowCell.valueSort && firstRowCell.valueSort.levelName &&
-                                firstRowCell.valueSort.levelName.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter);
+                                firstRowCell.valueSort.levelName.toString().split(delimiter);
                             let levelName: string;
                             if (valueSort && valueSort.length > 0) {
                                 valueSort.splice(valueSort.length - 1, 1);
-                                levelName = valueSort.join(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter);
+                                levelName = valueSort.join(delimiter);
                             }
                             if ((this.parent.dataSourceSettings.valueIndex <= 0 || (this.engineModule as PivotEngine).valueAxis &&
                                 this.dataSourceSettings.rows.length === (this.engineModule as PivotEngine).measureIndex) ||
@@ -328,10 +333,12 @@ export class PivotChart {
                                 break;
                             }
                             let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
+                                : cell.columnHeaders.toString().split(delimiter).join(' - ');
                             let rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
+                                : cell.rowHeaders.toString().split(delimiter).join(' - ');
                             let columnSeries: string = colHeaders + ' | ' + actualText;
+                            this.chartSeriesInfo[colHeaders] = { uniqueName: colHeaders, caption: cell.hierarchyName && cell.hierarchyName.toString().split(delimiter).join(' - '), colorIndex: [] };
+                            this.chartSeriesInfo[this.chartSeriesInfo[colHeaders].caption] = this.chartSeriesInfo[colHeaders];
                             let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
                                 !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
                                 Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value));
@@ -369,8 +376,11 @@ export class PivotChart {
      */
     public refreshChart(): void {
         this.chartSeries = [];
+        let prevColorIndex: number = 0;
+        let chartSeriesInfo: { [key: string]: { name?: string, color?: string } } = {};
         let columnKeys: string[] = Object.keys(this.columnGroupObject);
         this.persistSettings = JSON.parse(this.parent.getPersistData()).chartSettings;
+        let seriesColors: string[] = this.persistSettings.palettes && this.persistSettings.palettes.length > 0 ? this.persistSettings.palettes : getSeriesColor(this.chartSettings.theme);
         let delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
         let columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
             (this.parent as PivotView).chartSettings.columnHeader.split(delimiter).join(' - ') : '';
@@ -424,6 +434,7 @@ export class PivotChart {
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';
+                currentSeries.visible = true;
                 let multiAxisKey: string;
                 if (this.chartSettings.enableMultipleAxis) {
                     let fieldCaptionName: string = key.split(' | ')[1];
@@ -431,6 +442,22 @@ export class PivotChart {
                     multiAxisKey = key.split(' | ')[0] + ' | ' + fieldCaptionName;
                 }
                 currentSeries.name = this.chartSettings.enableMultipleAxis ? multiAxisKey : key.split(' | ')[0];
+                if (this.chartSettings.showMemberSeries && this.chartSettings.enableMultipleAxis) {
+                    currentSeries.name = currentSeries.name.split(' |')[0];
+                    let seriesName: string = this.chartSeriesInfo[currentSeries.name].caption;
+                    currentSeries.name = seriesName !== undefined && seriesName !== null ? seriesName : currentSeries.name;
+                    if (!chartSeriesInfo[currentSeries.name]) {
+                        prevColorIndex = seriesColors[prevColorIndex] ? prevColorIndex : 0;
+                        chartSeriesInfo[currentSeries.name] = { name: currentSeries.name, color: seriesColors[prevColorIndex] };
+                        currentSeries.fill = seriesColors[prevColorIndex++];
+                        this.chartSeriesInfo[currentSeries.name].colorIndex.push(this.selectedLegend++);
+                    }
+                    else {
+                        currentSeries.fill = chartSeriesInfo[currentSeries.name].color;
+                        this.chartSeriesInfo[currentSeries.name].colorIndex.push(this.selectedLegend++);
+                        currentSeries.name = undefined;
+                    }
+                }
                 if (['Radar', 'Polar'].indexOf(chartType) < 0) {
                     let measure: string = key.split(' | ')[1];
                     (currentSeries as SeriesModel).yAxisName = this.measuresNames[measure] ? this.measuresNames[measure] : measure;
@@ -629,7 +656,7 @@ export class PivotChart {
                         zoomSettings: currentZoomSettings,
                         axes: (type === 'Polar' || type === 'Radar') ? [] : axesWithRows.axes,
                         rows: (type === 'Polar' || type === 'Radar') ? [{}] :
-                            (type === 'Bar' || type === 'StackingBar' || type === 'StackingBar100' || type==='Pareto' &&
+                            (type === 'Bar' || type === 'StackingBar' || type === 'StackingBar100' || type === 'Pareto' &&
                                 this.chartSettings.enableMultipleAxis) ? [{ height: '100%' }] : axesWithRows.rows,
                         columns: (type === 'Polar' || type === 'Radar') ? [{}] :
                             (type === 'Bar' || type === 'StackingBar' || type === 'StackingBar100' &&
@@ -689,6 +716,7 @@ export class PivotChart {
                         scrollEnd: this.chartSettings.scrollEnd ? this.chartSettings.scrollEnd.bind(this) : undefined,
                         scrollChanged: this.chartSettings.scrollChanged ? this.chartSettings.scrollChanged.bind(this) : undefined,
                         tooltipRender: this.tooltipRender.bind(this),
+                        legendClick: this.legendClick.bind(this),
                         loaded: this.loaded.bind(this),
                         load: this.load.bind(this),
                         resized: this.resized.bind(this),
@@ -757,6 +785,16 @@ export class PivotChart {
         } else {
             this.parent.chart.appendTo('#' + this.parent.element.id + '_chart');
         }
+    }
+
+    private legendClick(args: ILegendClickEventArgs): void {
+        if (this.chartSettings.showMemberSeries && this.chartSettings.enableMultipleAxis) {
+            let colorIndex: number[] = this.chartSeriesInfo[args.legendText].colorIndex;
+            for (let i = 1; i < colorIndex.length; i++) {
+                args.chart.series[colorIndex[i]].visible = !args.chart.series[colorIndex[i]].visible;
+            }
+        }
+        this.parent.trigger(events.chartLegendClick, args);
     }
 
     private pointClick(args: IPointEventArgs): void {
@@ -1143,13 +1181,15 @@ export class PivotChart {
             this.parent.localeObj.getConstant('of') + ' ') + measureField.caption;
         let formattedText: string = (this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet).formattedText;
         let formatField: IField = this.engineModule.formatFields[measureField.id];
-        let valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.point.y as number, measureField.id , formattedText);
+        let valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.point.y as number, measureField.id, formattedText);
         let formattedValue: string = (formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
             valueFormat.toString() :
             (valueFormat as IAxisSet).formattedText :
             formattedText;
-        let columnText: string = (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]);
+        let text: string | number | Date = (this.parent.pivotValues[rowIndex][colIndex] as IAxisSet).columnHeaders;
+        let columnText = !isNullOrUndefined(text) ? this.parent.dataType === 'olap' ? this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName :
+            this.chartSeriesInfo[text.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ')].uniqueName : undefined;
         let rowText: any = args.point.x;
         if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {
             let rowFields: string = dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'row') : '';
@@ -1477,7 +1517,7 @@ export class PivotChart {
             let formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
                 this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
                 valueFormat.toString() :
-                (valueFormat as IAxisSet).formattedText  :
+                (valueFormat as IAxisSet).formattedText :
                 args.value.toString());
             args.text = formattedValue;
         }
@@ -1657,6 +1697,10 @@ export class PivotChart {
         }
         if (this.columnGroupObject) {
             this.columnGroupObject = null;
+        }
+        if (this.chartSeriesInfo) {
+            this.chartSeriesInfo = {};
+            this.selectedLegend = null;
         }
         if (this.chartSettings) {
             this.chartSettings = null;

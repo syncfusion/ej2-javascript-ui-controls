@@ -60,13 +60,11 @@ describe('ComboBox', () => {
             expect(comboBoxObj.inputElement.hasAttribute('readonly')).toBe(false);
             expect(comboBoxObj.inputElement.getAttribute('role')).toEqual('combobox');
             expect(comboBoxObj.inputElement.getAttribute('aria-autocomplete')).toEqual('both');
-            expect(comboBoxObj.inputElement.getAttribute('aria-hasPopup')).toEqual('true');
             expect(comboBoxObj.inputElement.getAttribute('aria-expanded')).toEqual('false');
             expect(comboBoxObj.inputElement.getAttribute('aria-readonly')).toEqual('false');
         });
         it('keyboard attributes', () => {
             expect(comboBoxObj.inputElement.getAttribute('autocomplete')).toEqual('off');
-            expect(comboBoxObj.inputElement.getAttribute('autocorrect')).toEqual('off');
             expect(comboBoxObj.inputElement.getAttribute('autocapitalize')).toEqual('off');
             expect(comboBoxObj.inputElement.getAttribute('spellcheck')).toEqual('false');
         });
@@ -3015,7 +3013,6 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 done();
             }, 450);
         })
-
         it("Testing eventdetails when popup open by click on popup button", (done) => {
             let mouseEventArgs: any = { preventDefault: function () { }, target: null };
             setTimeout(() => {

@@ -583,6 +583,12 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 remove(this.svgObject);
             }
         }
+        if (isNullOrUndefined(this.renderer)) {
+            this.renderer = new SvgRenderer(this.element.id);
+        }
+        if (isNullOrUndefined(this.layout)) {
+            this.layout = new LayoutPanel(this);
+        }
         this.clearTemplate();
         const containerWidth: number = this.element.clientWidth;
         const containerHeight: number = this.element.clientHeight;
@@ -682,6 +688,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 groupEle
             );
             element.setAttribute('aria-label', title.description || title.text);
+            element.setAttribute('role','');
             element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = (this.availableSize.height - titleBounds.y - titlePadding - this.margin.bottom);
@@ -853,7 +860,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public print(id?: string[] | string | Element): void {
         if (this.allowPrint && this.printModule) {
-            this.printModule.print(id);
+            this.printModule.print(this, id);
         }
     }
     /**
@@ -870,13 +877,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (type === 'PDF' && this.allowPdfExport && this.pdfExportModule) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return new Promise((resolve: any, reject: any) => {
-                resolve(this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+                resolve(this.pdfExportModule.export(this, type, fileName, orientation, allowDownload));
             });
 
         } else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return new Promise((resolve: any, reject: any) => {
-                resolve(this.imageExportModule.export(type, fileName, allowDownload));
+                resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
             });
         }
         return null;
@@ -1050,6 +1057,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'TreeMap Element');
+        this.element.setAttribute('role', '');
         this.element.setAttribute('tabindex', this.tabIndex.toString());
     }
 
@@ -1535,6 +1543,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public destroy(): void {
         this.unWireEVents();
+        removeElement('treeMapMeasureText');
         this.drilledItems = [];
         this.levelSelection = [];
         this.legendId = [];

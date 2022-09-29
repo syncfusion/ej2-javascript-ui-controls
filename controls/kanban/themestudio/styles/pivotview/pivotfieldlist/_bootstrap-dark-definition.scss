@@ -1,4 +1,3 @@
-
 /*! component's default definitions and variables */
 $field-list-skin: 'bootstrap-dark' !default;
 $field-list-active-color: $brand-primary !default;
@@ -116,6 +115,12 @@ $field-list-search-popup-table-bigger-height: 402px !default;
 $field-list-search-popup-axis-table-bigger-height: 404px !default;
 $field-list-search-popup-axis-content-bigger-height: 165px !default;
 $field-list-filter-toolbar-items-margin: 20px !default;
+$field-list-treeview-ul-padding: 4px !default;
+$field-list-treeview-li-padding: 2px !default;
+$field-list-treeview-bigger-ul-padding: 5px !default;
+$field-list-treeview-bigger-li-padding: 0 !default;
+$field-list-treeview-mobile-ul-padding: 48px !default;
+$field-list-treeview-mobile-li-padding: 0 !default;
 
 /*! component's adaptive definitions and variables */
 $field-list-adaptive-content-padding-size: 20px !default;
@@ -215,7 +220,7 @@ $format-dialog-width: 625px !default;
 $format-dialog-bigger-width: 670px !default;
 $field-list-excel-member-filter-height: 140px !default;
 $field-list-excel-filter-height: 234px !default;
-$field-list-excel-member-filter-bigger-height: 99px !default;
+$field-list-excel-member-filter-bigger-height: 112px !default;
 $field-list-excel-filter-bigger-height: 213px !default;
 
 /*! component's common definitions and variables */

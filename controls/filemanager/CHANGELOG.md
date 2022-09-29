@@ -2,24 +2,16 @@
 
 ## [Unreleased]
 
-## 20.2.44 (2022-08-16)
+## 20.3.47 (2022-09-29)
 
 ### File Manager
 
-#### Bug Fixes
+#### New Features
 
-- `#I391992` - The issue with "Getting incorrect folder or file path details in the Node JS file service provider for the File Manager component" has been resolved.
-- `#I394199` - The issue with "Image preview is not loaded while naming folders with special characters in ASP.NET Core File Manager" has been resolved.
-
-## 20.2.39 (2022-07-19)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#F175723` - The issue with "The File Manager incorrectly shows Type of the selected items when an unidentified file type is selected" has been resolved.
-- `#I385707` - The issue with "Facing error while copying and pasting a folder within another folder in the MVC File Manager component" has been resolved.
-- `#I391271` - The issue with "Facing an error in the File Manager component while performing the drag and drop with the ID-based providers" has been resolved.
+- Provided the folder (directory) upload support for Physical File Provider.
+- Provided the folder (directory) upload support for Azure File Provider.
+- Provided the folder (directory) upload support for NodeJS File System Provider.
+- Provided the folder (directory) upload support for Amazon S3 File Provider.
 
 ## 19.2.56 (2021-08-17)
 

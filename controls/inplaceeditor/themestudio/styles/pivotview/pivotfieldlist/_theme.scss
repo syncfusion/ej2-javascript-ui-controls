@@ -40,7 +40,7 @@
     }
   }
 
-  // sass-lint:disable-all
+  /* stylelint-disable */
   #{if(&, "&", "*")}.e-rtl {
 
     .e-select-table {
@@ -117,7 +117,6 @@
 
     }
 
-    // sass-lint:disable-all
     .e-checkbox-layout {
       float: left;
       margin-top: 6px;
@@ -156,7 +155,7 @@
       }
     }
 
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-dlg-header-content,
     .e-footer-content {
@@ -173,7 +172,6 @@
       @if ($skin-name == 'bootstrap5') {
         border-top: 1px solid $field-list-border;
       }
-
     }
 
     .e-field-list-title {
@@ -262,9 +260,9 @@
             color: $field-list-default-header-icon-font-color;
             cursor: pointer;
             font-size: $field-list-header-icon-size;
-            // sass-lint:disable-all
+            /* stylelint-disable */
             height: 20px !important;
-            // sass-lint:enable-all
+            /* stylelint-enable */
             padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
             width: 20px;
 
@@ -281,14 +279,14 @@
             }
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: 0 0 $field-list-icon-to-icon-padding $field-list-tree-header-padding !important;
               transform: rotate(180deg);
             }
           }
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
 
         .e-field-list-tree-outer-div {
@@ -304,12 +302,32 @@
           padding-left: 2px;
           width: 100%;
 
+          &:not(.e-olap-field-list-tree) {
+            ul {
+              padding-left: $field-list-treeview-ul-padding;
+
+              li.e-pivot-parent{
+                @if ($skin-name == 'bootstrap5') {
+                  padding-left: 10px;
+                }
+
+                @if ($skin-name == 'FluentUI') {
+                  padding-left: 9px;
+                }
+              }
+
+              li:not(.e-pivot-parent):not(.e-pivot-child) {
+                .e-text-content {
+                  padding-left: $field-list-treeview-li-padding;
+                }
+              }
+            }
+          }
+
           ul {
             overflow: hidden;
 
             li {
-              margin-left: $field-list-treeview-padding-size;
-
               .e-fullrow {
                 cursor: default;
               }
@@ -329,7 +347,7 @@
 
                 @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
                   margin-right: 4px;
-                  padding-left: 12px;
+                  padding-left: 8px;
                 }
 
                 @if ($skin-name == 'tailwind') {
@@ -349,7 +367,7 @@
                 margin: 0;
               }
 
-              // sass-lint:disable-all
+              /* stylelint-disable */
               .e-calc-measure-icon,
               .e-calc-dimension-icon,
               .e-attributeCDB-icon,
@@ -364,7 +382,7 @@
                 margin-left: 10px;
               }
 
-              // sass-lint:enable-all
+              /* stylelint-enable */
 
               .e-list-selected {
                 opacity: .5;
@@ -379,20 +397,15 @@
               }
             }
 
-            // sass-lint:disable-all
+            /* stylelint-disable */
             li.e-disable {
               display: none !important;
             }
-            // sass-lint:enable-all
+            /* stylelint-enable */
           }
 
           &.e-olap-field-list-tree {
             ul {
-              li {
-                margin-left: 0;
-                margin-right: 0;
-              }
-
               .e-list-icon {
                 font-size: $field-list-icon-size;
                 height: auto;
@@ -590,7 +603,6 @@
                   }
                 }
 
-
                 .e-content {
                   background-color: transparent;
                   flex: auto;
@@ -602,7 +614,7 @@
                   text-align: left;
                   text-overflow: ellipsis;
                   width: 70%;
-                  @if($skin-name == 'tailwind') {
+                  @if ($skin-name == 'tailwind') {
                     line-height: 1.2em;
                   }
                 }
@@ -733,7 +745,7 @@
         .e-field-list-container {
           height: 369px;
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           .e-field-table {
             height: $field-list-search-popup-table-height !important;
           }
@@ -745,7 +757,7 @@
               height: $field-list-search-popup-axis-content-height !important;
             }
           }
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
       }
 
@@ -770,7 +782,7 @@
             font-size: $field-list-header-icon-size;
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           .e-input-group .e-input-group-icon,
           .e-input-group.e-control-wrapper .e-input-group-icon {
             border-width: 0 !important;
@@ -788,11 +800,9 @@
         .e-disable {
           display: none !important;
         }
-        // sass-lint:disable-all
       }
     }
 
-    // sass-lint:disable-all
     .e-calculated-field {
       color: $field-list-cal-button-text-color;
       font-size: $field-list-button-font-size;
@@ -805,7 +815,7 @@
       }
     }
 
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     &.e-rtl {
       .e-field-table {
@@ -813,11 +823,30 @@
           padding-left: 0;
           padding-right: 2px;
 
-          ul li {
-            margin-left: 0;
-            margin-right: $field-list-treeview-padding-size;
+          &:not(.e-olap-field-list-tree) {
+            ul {
+              padding-right: $field-list-treeview-ul-padding;
 
-            // sass-lint:disable-all
+              li.e-pivot-parent{
+                @if ($skin-name == 'bootstrap5') {
+                  padding-right: 5px;
+                }
+
+                @if ($skin-name == 'FluentUI') {
+                  padding-right: 9px;
+                }
+              }
+
+              li:not(.e-pivot-parent):not(.e-pivot-child) {
+                .e-text-content {
+                  padding-right: $field-list-treeview-li-padding;
+                }
+              }
+            }
+          }
+
+          ul li {
+            /* stylelint-disable */
             .e-list-text {
               font-family: $field-list-font-family;
             }
@@ -825,6 +854,9 @@
             .e-drag {
               margin-left: 6px !important;
               margin-right: 0 !important;
+              @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+                padding-right: 8px;
+              }
             }
 
             .e-calc-measure-icon,
@@ -842,7 +874,7 @@
               margin-right: 10px;
             }
 
-            // sass-lint:enable-all
+            /* stylelint-enable */
           }
         }
 
@@ -866,14 +898,14 @@
             padding: $field-list-tree-header-padding $field-list-icon-to-icon-padding 0 0;
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: $field-list-icon-to-icon-padding 0 0 $field-list-tree-header-padding !important;
               transform: rotate(180deg);
             }
           }
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
       }
 
@@ -983,10 +1015,10 @@
 
     &.e-device {
       height: 100%;
-      // sass-lint:disable-all
+      /* stylelint-disable */
       max-height: 100% !important;
       max-width: 100% !important;
-      // sass-lint:enable-all
+      /* stylelint-enable */
       min-height: 500px;
       width: 100%;
 
@@ -1119,7 +1151,7 @@
                   display: none;
                 }
 
-                // sass-lint:disable-all
+                /* stylelint-disable */
                 .e-sort,
                 .e-pv-filter,
                 .e-pv-filtered,
@@ -1153,7 +1185,7 @@
                   }
                 }
 
-                // sass-lint:enable-all
+                /* stylelint-enable */
 
                 .e-sort {
                   height: fit-content;
@@ -1217,7 +1249,6 @@
               @if ($skin-name == 'bootstrap5') {
                 color: $field-list-default-font-color;
               }
-
             }
           }
 
@@ -1236,18 +1267,17 @@
               width: 90%;
             }
 
-            // sass-lint:disable-all
+            /* stylelint-disable */
             .e-pivot-calc-input-div,
             .e-member-options,
-            .e-pivot-calc-custom-format-div,
-            .e-olap-calc-custom-format-div {
+            .e-pivot-calc-custom-format-div {
               margin-left: 20px;
               margin-right: 20px;
               margin-top: 20px;
               width: 90% !important;
             }
 
-            // sass-lint:enable-all
+            /* stylelint-enable */
 
             .e-accordion {
               margin-top: 20px;
@@ -1283,13 +1313,13 @@
                   right: auto;
                 }
 
-                // sass-lint:disable-all
+                /* stylelint-disable */
                 .e-icons.e-frame {
                   margin-left: 12px !important;
                   margin-right: 0 !important;
                 }
 
-                // sass-lint:enable-all
+                /* stylelint-enable */
               }
             }
 
@@ -1327,10 +1357,9 @@
                 .e-list-icon {
                   color: $field-list-tree-icon-color;
 
-                  @if($skin-name == 'bootstrap5') {
+                  @if ($skin-name == 'bootstrap5') {
                     color: $field-list-default-fill-color;
                   }
-
                 }
 
                 .e-calcfieldmember .e-list-text {
@@ -1491,7 +1520,7 @@
           }
         }
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
         .e-pivot-calc-outer-div {
 
           .e-pivot-ok-button,
@@ -1502,12 +1531,12 @@
           }
         }
 
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
     }
   }
 
-  // sass-lint:disable-all
+  /* stylelint-disable */
   .e-bigger .e-pivotfieldlist-container,
   .e-bigger.e-pivotfieldlist-container {
     .e-field-table {
@@ -1545,7 +1574,6 @@
           width: 24px;
         }
         
-        // sass-lint:disable-all
         @if ($skin-name == 'FluentUI') {
           .e-sort-none {
             padding: 0 0 $field-list-bigger-icon-to-icon-padding $field-list-tree-header-padding !important;
@@ -1555,6 +1583,28 @@
 
       .e-field-list {
         padding-left: 5px;
+
+        &:not(.e-olap-field-list-tree) {
+          ul {
+            padding-left: $field-list-treeview-bigger-ul-padding;
+
+            li.e-pivot-parent{
+              @if ($skin-name == 'bootstrap5') {
+                padding-left: 7px;
+              }
+
+              @if ($skin-name == 'FluentUI') {
+                padding-left: 8px;
+              }
+            }
+
+            li:not(.e-pivot-parent):not(.e-pivot-child) {
+              .e-text-content {
+                padding-left: $field-list-treeview-bigger-li-padding;
+              }
+            }
+          }
+        }
 
         ul {
           li {
@@ -1592,7 +1642,7 @@
           }
         }
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-left-axis-fields .e-field-list-rows,
       .e-right-axis-fields .e-field-list-values {
@@ -1639,14 +1689,14 @@
             height: 126px;
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           .e-pvt-btn-div {
             .e-pivot-button {
               font-size: $field-list-bigger-button-font-size;
               height: $field-list-bigger-button-height !important;
               padding: $field-list-bigger-button-padding !important;
 
-              // sass-lint:enable-all
+              /* stylelint-enable */
               .e-content {
                 font-size: $field-list-bigger-button-font-size;
                 line-height: $field-list-bigger-button-line-height;
@@ -1732,7 +1782,7 @@
             padding-left: $field-list-default-bigger-padding-size;
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           .e-right-axis-fields {
             padding: 0 !important;
           }
@@ -1745,6 +1795,28 @@
         .e-field-list {
           padding-left: 0;
           padding-right: 5px;
+
+          &:not(.e-olap-field-list-tree) {
+            ul {
+              padding-right: $field-list-treeview-bigger-ul-padding;
+
+              li.e-pivot-parent{
+                @if ($skin-name == 'bootstrap5') {
+                  padding-right: 7px;
+                }
+
+                @if ($skin-name == 'FluentUI') {
+                  padding-right: 8px;
+                }
+              }
+
+              li:not(.e-pivot-parent):not(.e-pivot-child) {
+                .e-text-content {
+                  padding-right: $field-list-treeview-bigger-li-padding;
+                }
+              }
+            }
+          }
 
           .e-drag {
             margin-left: 4px !important;
@@ -1766,7 +1838,7 @@
             margin-right: 10px;
           }
 
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
 
         .e-field-header {
@@ -1782,13 +1854,13 @@
             padding: $field-list-tree-header-padding $field-list-bigger-icon-to-icon-padding 0 0;
           }
 
-          // sass-lint:disable-all
+          /* stylelint-disable */
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding: $field-list-bigger-icon-to-icon-padding 0 0 $field-list-tree-header-padding !important;
             }
           }
-          // sass-lint:enable-all
+          /* stylelint-enable */
         }
       }
 
@@ -1833,7 +1905,7 @@
         }
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       &.e-popup {
         max-height: 600px !important;
         min-height: $field-list-search-popup-container-bigger-height !important;
@@ -1862,5 +1934,5 @@
       }
     }
   }
-  // sass-lint:enable-all
+  /* stylelint-enable */
 }

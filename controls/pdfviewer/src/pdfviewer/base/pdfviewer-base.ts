@@ -5208,7 +5208,7 @@ export class PdfViewerBase {
 
     private renderPageContainer(pageNumber: number, pageWidth: number, pageHeight: number, topValue: number): void {
         // eslint-disable-next-line max-len
-        const pageDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_pageDiv_' + pageNumber, className: 'e-pv-page-div', attrs: { 'tabindex': '0' } });
+        const pageDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_pageDiv_' + pageNumber, className: 'e-pv-page-div', attrs: { 'tabindex': '-1' } });
         pageDiv.style.width = pageWidth + 'px';
         pageDiv.style.height = pageHeight + 'px';
         if (this.pdfViewer.enableRtl) {
@@ -5294,6 +5294,7 @@ export class PdfViewerBase {
                     pageCanvas.style.marginLeft = 'auto';
                     pageCanvas.style.marginRight = 'auto';
                 }
+                pageCanvas.alt = this.pdfViewer.element.id + '_page_' + pageNumber;
                 pageDiv.appendChild(pageCanvas);
             }
             if (this.pdfViewer.annotationModule && this.pdfViewer.annotation) {
@@ -6148,15 +6149,17 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         jsonObject['elementId'] = this.pdfViewer.element.id;
 
-        let annotationsPageList: any = this.getAnnotationsPageList();
-        let formFieldsPageList: any = this.getFormFieldsPageList();
+        if (this.pdfViewer.annotationModule) {
+            let annotationsPageList: any = this.getAnnotationsPageList();
+            jsonObject['isAnnotationsExist'] = this.isAnnotationsExist(jsonObject["textMarkupAnnotations"]) || this.isAnnotationsExist(jsonObject["shapeAnnotations"]) || this.isAnnotationsExist(jsonObject["measureShapeAnnotations"]) || this.isAnnotationsExist(jsonObject["stampAnnotations"]) || this.isAnnotationsExist(jsonObject["stickyNotesAnnotation"])  || this.isAnnotationsExist(jsonObject["signatureData"]) || this.isAnnotationsExist(jsonObject["freeTextAnnotation"]) || this.isAnnotationsExist(jsonObject["inkSignatureData"]) || annotationsPageList.length > 0;
+            jsonObject['annotationsPageList'] = JSON.stringify(annotationsPageList);
+        }
 
-        jsonObject['isAnnotationsExist'] = this.isAnnotationsExist(jsonObject["textMarkupAnnotations"]) || this.isAnnotationsExist(jsonObject["shapeAnnotations"]) || this.isAnnotationsExist(jsonObject["measureShapeAnnotations"]) || this.isAnnotationsExist(jsonObject["stampAnnotations"]) || this.isAnnotationsExist(jsonObject["stickyNotesAnnotation"])  || this.isAnnotationsExist(jsonObject["signatureData"]) || this.isAnnotationsExist(jsonObject["freeTextAnnotation"]) || this.isAnnotationsExist(jsonObject["inkSignatureData"]) || annotationsPageList.length > 0;
-
-        jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
-
-        jsonObject['annotationsPageList'] = JSON.stringify(annotationsPageList);
-        jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
+        if (this.pdfViewer.formDesignerModule || this.pdfViewer.formFieldsModule) {
+            let formFieldsPageList: any = this.getFormFieldsPageList();
+            jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;        
+            jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
+        }        
 
         return jsonObject;
     }
@@ -6203,7 +6206,7 @@ export class PdfViewerBase {
 
             }
         });
-        let annotActionCollection = this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName == "formFields" || value.annotation.formFieldAnnotationType != undefined).map(a => a.pageIndex);
+        let annotActionCollection = !isNullOrUndefined(this.pdfViewer.annotationModule) ? this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName == "formFields" || value.annotation.formFieldAnnotationType != undefined).map(a => a.pageIndex) : [];
         let fullPageList = formFieldsCollection.concat(annotActionCollection);
         return fullPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
     }
@@ -8022,9 +8025,9 @@ export class PdfViewerBase {
                     // eslint-disable-next-line max-len
                     if ((this.isShapeAnnotationModule() && this.isCalibrateAnnotationModule())) {
                         this.pdfViewer.annotation.onShapesMouseup(obj as PdfAnnotationBaseModel, evt);
-                    }
-                    this.isAnnotationDrawn = false;
+                    }                    
                 }
+                this.isAnnotationDrawn = false;
             }
         }
         const target: HTMLElement = evt.target as HTMLElement;

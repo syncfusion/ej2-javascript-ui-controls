@@ -55,7 +55,9 @@ export class FocusStrategy {
     }
 
     protected onFocus(e?: FocusEvent): void {
-        if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) { return; }
+        if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization
+            || this.parent.element.querySelector('.e-masked-table') || (!this.parent.isInitialLoad && e
+            && e.target === this.parent.element && this.parent.element.querySelector('.e-spin-show'))) { return; }
         this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.isFrozenGrid());
         if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
             || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule && !this.parent.editModule.getBatchChanges()[literals.addedRecords].length))) {
@@ -124,6 +126,10 @@ export class FocusStrategy {
         if (this.getContent()) {
             const returnVal: boolean = this.getContent().onClick(e, force);
             if (returnVal === false) { return; }
+            if (this.parent.isFrozenGrid() && isHeader && e.target === this.parent.getHeaderContent().firstChild
+                && this.active.matrix.current[0] === -1 && this.active.matrix.current[1] === this.active.matrix.columns) {
+                this.active.matrix.current = [0, 0];
+            }
             this.focus();
         }
     }
@@ -219,8 +225,8 @@ export class FocusStrategy {
         let focusFirstHeaderCell: boolean = false;
         if (e.action === 'tab' && e.target && (e.target === this.parent.element || parentsUntil(e.target as Element, 'e-toolbar')
             || parentsUntil(e.target as Element, 'e-groupdroparea'))) {
-            if (this.parent.allowGrouping && (e.target === this.parent.element
-                || (e.target as HTMLElement).classList.contains('e-groupdroparea'))) {
+            if (this.parent.allowGrouping && this.parent.groupSettings.showDropArea
+                && (e.target === this.parent.element || (e.target as HTMLElement).classList.contains('e-groupdroparea'))) {
                 const groupModule: Group = (this.parent as Grid).groupModule;
                 const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();
                 if (focusableGroupedItems.length > 0) {
@@ -260,8 +266,7 @@ export class FocusStrategy {
             if (this.parent.isFrozenGrid() && (this.parent.getFrozenMode() === 'Left'
                 || this.parent.getFrozenMode() === literals.leftRight)) {
                 this.setActive(false, true);
-            }
-            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length === this.parent.columns.length){
+            } else if (this.parent.allowGrouping && this.parent.groupSettings.columns.length === this.parent.columns.length){
                 this.setActive(true);
             } else {
                 this.setActive(false);
@@ -424,7 +429,7 @@ export class FocusStrategy {
             }
             return;
         }
-        if (this.parent.allowGrouping) {
+        if (this.parent.allowGrouping && this.parent.groupSettings.showDropArea) {
             const groupModule: Group = (this.parent as Grid).groupModule;
             const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();
             if (focusableGroupedItems.length > 0) {
@@ -434,11 +439,7 @@ export class FocusStrategy {
             }
             return;
         }
-        if (this.parent.element.classList.contains('e-childgrid')) {
-            (parentsUntil(this.parent.element, 'e-detailcell') as HTMLElement).focus();
-        } else {
-            this.parent.element.focus();
-        }
+        this.parent.element.focus();
     }
 
     private allowToPaging(e: KeyboardEventArgs): boolean {
@@ -486,7 +487,7 @@ export class FocusStrategy {
         }
         return (e.action === 'delete'
             || (this.parent.editSettings.mode !== 'Batch' && (this.parent.isEdit || ['insert', 'f2'].indexOf(e.action) > -1))
-            || ((filterCell && this.parent.enableHeaderFocus) ||
+            || ((filterCell && this.parent.enableHeaderFocus) || (filterCell && e.action !== 'tab' && e.action !== 'shiftTab') ||
                 closest(document.activeElement, '#' + this.parent.element.id + '_searchbar') !== null
                 && ['enter', 'leftArrow', 'rightArrow',
                     'shiftLeft', 'shiftRight', 'ctrlPlusA'].indexOf(e.action) > -1)
@@ -1016,7 +1017,8 @@ export class ContentFocus implements IFocus {
             && this.parent.editSettings.allowAdding && e.keyCode === 40) || (e.keyCode === 40)))) {
             if (current.toString() === [this.matrix.rows, this.matrix.columns].toString() ||
                 current.toString() === [0, 0].toString() || (this.matrix.current[0] === this.matrix.rows &&
-                    this.matrix.current.toString() === current.toString())) {
+                     this.matrix.current.toString() === current.toString()) || (this.parent.allowGrouping &&
+                         this.parent.infiniteScrollSettings.enableCache && current.toString() === [0, 1].toString())) {
                 return false;
             } else {
                 current = this.editNextRow(current[0], current[1], e.action);
@@ -1050,6 +1052,17 @@ export class ContentFocus implements IFocus {
         if (!this.shouldFocusChange(e)) { return this.matrix.current; }
         // eslint-disable-next-line
         let [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && this.parent.aggregates.length && action === 'enter') {
+            for (let i: number = rowIndex; i < this.matrix.matrix.length; i++) {
+                const row: HTMLTableRowElement = this.getTable().rows[i + 1];
+                if (row && row.cells[cellIndex] &&  row.cells[cellIndex].classList.contains('e-rowcell')) {
+                    return [i + 1, cellIndex];
+                }
+                if (i === this.matrix.matrix.length - 1) {
+                    return [rowIndex, cellIndex];
+                }
+            }
+        }
         if (action === 'ctrlEnd') {
             let lastContentCellIndex: number[] = [this.matrix.matrix.length - 1,
                 this.matrix.matrix[this.matrix.matrix.length - 1].length - 1];
@@ -1077,7 +1090,12 @@ export class ContentFocus implements IFocus {
         const [oRowIndex, oCellIndex]: number[] = this.matrix.current;
         const val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
         if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
-            (!parentsUntil(e.target as Element, literals.rowCell) && !parentsUntil(e.target as Element, 'e-groupcaption'))) { return false; }
+            (!parentsUntil(e.target as Element, literals.rowCell) && !parentsUntil(e.target as Element, 'e-groupcaption')
+            && !parentsUntil(e.target as Element, 'e-recordpluscollapse') && !parentsUntil(e.target as Element, 'e-recordplusexpand')
+            && !parentsUntil(e.target as Element, 'e-detailrowcollapse') && !parentsUntil(e.target as Element, 'e-detailrowexpand')
+            && !parentsUntil(e.target as Element, 'e-templatecell'))) {
+            return false;
+        }
         this.matrix.select(rowIndex, cellIndex);
     }
 
@@ -1116,7 +1134,9 @@ export class ContentFocus implements IFocus {
         const types: CellType[] = [CellType.Expand, CellType.GroupCaption, CellType.CaptionSummary, CellType.GroupSummary];
         return ((row.isDataRow && cell.visible && (cell.isDataCell || cell.isTemplate))
             || (row.isDataRow && cell.cellType === CellType.DetailExpand && isNullOrUndefined(cell.visible))
-            || (!row.isDataRow && types.indexOf(cell.cellType) > -1)
+            || (!row.isDataRow && types.indexOf(cell.cellType) > -1
+            && !((cell.cellType === CellType.GroupSummary || cell.cellType === CellType.CaptionSummary)
+            && !(cell.isDataCell && cell.visible)))
             || (cell.column && cell.visible && cell.column.type === 'checkbox')
             || (cell.cellType === CellType.CommandColumn)
             || (row.isDataRow && isRowTemplate))

@@ -129,6 +129,7 @@ export class MultiColoredSeries extends LineBase {
         let value : number;
         let clipPath : string;
         let attributeOptions: PathAttributes;
+        let areaBorderCount: number = 0;
         for (let index: number = 0; index < length; index++) {
             segment = segments[index] as ChartSegment;
             value = this.getAxisValue(segment.value, axis, series.chart);
@@ -137,16 +138,20 @@ export class MultiColoredSeries extends LineBase {
                                            value, series, index, isXSegment);
             if (clipPath) {
                 options.map((option: PathOption) => {
+                    areaBorderCount+= 1;
                     attributeOptions = {
                         'clip-path': clipPath,
                         'stroke-dasharray': segment.dashArray,
                         'opacity': option.opacity,
-                        'stroke': series.type.indexOf('Line') > -1 ? segment.color || series.interior : series.border.color,
+                        'stroke': series.type.indexOf('Line') > -1 ? segment.color || series.interior : option['stroke'],
                         'stroke-width': option['stroke-width'],
                         'fill': series.type.indexOf('Line') > -1 ? 'none' : segment.color || series.interior,
                         'id': option.id + '_Segment_' + index,
                         'd': option.d
                     };
+                    if (areaBorderCount % 2 == 0 && this.chart.multiColoredAreaSeriesModule && series.border.color != "transparent" &&  attributeOptions['stroke-width'] !== 0) {
+                        attributeOptions.fill = "transparent";
+                    }
                     pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
                     series.seriesElement.appendChild(
                         chart.renderer.drawPath(attributeOptions)
@@ -236,4 +241,5 @@ export class MultiColoredSeries extends LineBase {
             return +segmentValue;
         }
     }
+    
 }

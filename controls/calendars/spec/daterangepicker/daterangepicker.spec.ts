@@ -195,12 +195,6 @@ describe('DateRangePicker', () => {
             it('Element Expanded ARIA attribute default values', () => {
                 expect(daterangepicker.element.getAttribute('aria-expanded') == 'false').toBe(true);
             });
-            it('Element haspopup ARIA attribute default values', () => {
-                expect(daterangepicker.element.getAttribute('aria-haspopup') == 'true').toBe(true);
-            });
-            it('Element readonly ARIA attribute default values', () => {
-                expect(daterangepicker.element.getAttribute('aria-readonly') == 'false').toBe(true);
-            });
             it('Element placeholder testing ', () => {
                 daterangepicker = createControl({ placeholder: 'Select the Date Range' });
                 expect(daterangepicker.element.getAttribute("placeholder")).toBe('Select the Date Range');
@@ -215,7 +209,7 @@ describe('DateRangePicker', () => {
             });
             it('Element readonly property testing', () => {
                 daterangepicker = createControl({ readonly: true });
-                expect(daterangepicker.element.hasAttribute('readonly') && daterangepicker.element.getAttribute('aria-readonly') == 'true').toBe(true);
+                expect(daterangepicker.element.hasAttribute('readonly') == true).toBe(true);
             });
             it('placeholder maintained after empty value testing ', () => {
                 daterangepicker = createControl({ placeholder: 'Select the Date Range', startDate: new Date('05/24/2017'), endDate: new Date('08/10/2017') });
@@ -429,7 +423,7 @@ describe('DateRangePicker', () => {
                     it('Readonly property with popup prevent test case', () => {
                         daterangepicker = new DateRangePicker({ readonly: true });
                         daterangepicker.appendTo('#date');
-                        expect(daterangepicker.element.hasAttribute('readonly') && daterangepicker.element.getAttribute('aria-readonly') == 'true').toBe(true);
+                        expect(daterangepicker.element.hasAttribute('readonly') == true).toBe(true);
                         daterangepicker.show();
                         expect(document.querySelector('.e-daterangepicker.e-popup')).toBe(null);
                         daterangepicker.readonly = false;
@@ -690,7 +684,7 @@ describe('DateRangePicker', () => {
             it('Element readonly property testing', () => {
                 daterangepicker.readonly = true;
                 daterangepicker.dataBind();
-                expect(daterangepicker.readonly === true && daterangepicker.element.hasAttribute('readonly') && daterangepicker.element.getAttribute('aria-readonly') == 'true').toBe(true);
+                expect(daterangepicker.readonly === true && daterangepicker.element.hasAttribute('readonly') == true).toBe(true);
             });
             it('Element Value testing ', () => {
                 daterangepicker.value = [new Date('02/11/2001'), new Date('03/11/2001')];
@@ -964,14 +958,14 @@ describe('DateRangePicker', () => {
                 daterangepicker = new DateRangePicker();
                 daterangepicker.appendTo('#date');
                 expect(daterangepicker.readonly === true).toBe(true);
-                expect(daterangepicker.element.hasAttribute('readonly') && daterangepicker.element.getAttribute('aria-readonly') === 'true').toBe(true);
+                expect(daterangepicker.element.hasAttribute('readonly') === true).toBe(true);
             });
             it('Element readonly property testing', () => {
                 ele.setAttribute('readonly', '');
                 daterangepicker = new DateRangePicker();
                 daterangepicker.appendTo('#date');
                 expect(daterangepicker.readonly === true).toBe(true);
-                expect(daterangepicker.element.hasAttribute('readonly') && daterangepicker.element.getAttribute('aria-readonly') === 'true').toBe(true);
+                expect(daterangepicker.element.hasAttribute('readonly') === true).toBe(true);
             });
             it('Element startDate testing ', () => {
                 ele.setAttribute('startDate', '02/11/2001');

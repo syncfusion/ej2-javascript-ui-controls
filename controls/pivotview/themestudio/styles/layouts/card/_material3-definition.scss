@@ -1,8 +1,10 @@
 $skin-name: 'bootstrap5' !default;
+
 //Layout Variables Start
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 4px !default;
 $card-action-btn-txt-transform: none !default;
+
 // Font
 $card-header-font: $text-base !default;
 $card-title-font: $text-lg !default;
@@ -12,6 +14,7 @@ $card-content-font-size: $text-sm !default;
 $card-content-bigger-font-size: $text-base !default;
 $card-header-title-font: $text-base !default;
 $card-header-sub-title-font: $text-sm !default;
+
 // Mouse
 $card-content-line-height: $leading-normal !default;
 $card-nrml-lheight: 36px !default;
@@ -45,6 +48,7 @@ $card-header-txt-nrml-subtitle-font: $text-sm !default;
 $card-image-title-font: $text-base !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
+
 // Touch
 $card-bigger-lheight: 48px !default;
 $card-bigger-mheight: 48px !default;
@@ -80,6 +84,7 @@ $card-action-btn-bigger-icon-width: 24px !default;
 $card-action-btn-bigger-icon-height: 24px !default;
 $card-image-title-nrml-padding: 12px 16px !default;
 $card-action-nrml-padding: 12px !default;
+
 //Layout Variables End
 
 //Theme Variables Start
@@ -91,10 +96,10 @@ $card-active-bg-color: $content-bg-color !default;
 $card-focus-brdr-color: $border-light !default;
 $card-hover-brdr-color: $border-dark !default;
 $card-active-brdr-color: $primary !default;
-$card-brdr-size: 1px  !default;
+$card-brdr-size: 1px !default;
 $card-brdr-type: solid !default;
 $card-brdr-color: $border-light !default;
-$card-sep-brdr-size: 1px  !default;
+$card-sep-brdr-size: 1px !default;
 $card-sep-brdr-type: solid !default;
 $card-sep-brdr-color: $border-light !default;
 $card-image-title-color: $white !default;
@@ -118,4 +123,5 @@ $card-content-font-color: $content-text-color-alt1 !default;
 $card-box-shadow: none !default;
 $card-action-btn-icon-color: $primary !default;
 $card-hover-box-shadow: none !default;
+
 //Theme Variables End

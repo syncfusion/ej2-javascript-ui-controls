@@ -26,7 +26,7 @@ export class Resize {
     }
 
     private renderResizable(): void {
-        let enableRtlClass =(this.parent.enableRtl)?classes.CLS_RTE_RES_WEST:classes.CLS_RTE_RES_EAST
+        const enableRtlClass = (this.parent.enableRtl) ? classes.CLS_RTE_RES_WEST : classes.CLS_RTE_RES_EAST;
         this.resizer = this.parent.createElement('div', {
             id: this.parent.getID() + '-resizable', className: 'e-icons'
                 + ' ' + classes.CLS_RTE_RES_HANDLE + ' ' + enableRtlClass
@@ -62,11 +62,21 @@ export class Resize {
         const boundRect: ClientRect = this.parent.element.getBoundingClientRect();
         if (this.isMouseEvent(e)) {
             this.parent.element.style.height = (<MouseEvent>e).clientY - boundRect.top + 'px';
-              this.parent.element.style.width = (!this.parent.enableRtl)?(<MouseEvent>e).clientX - boundRect.left + 'px' : boundRect.right- (<MouseEvent>e).clientX + 'px';
+            this.parent.element.style.width = (!this.parent.enableRtl) ? (<MouseEvent>e).clientX - boundRect.left + 'px' :
+                boundRect.right - (<MouseEvent>e).clientX + 'px';
+            const toolBarEle: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
+            if (toolBarEle !== null) {
+                if (toolBarEle.classList.contains(classes.CLS_TB_FLOAT) && this.parent.toolbarSettings.enableFloating &&
+                this.parent.getToolbar() && !this.parent.inlineMode.enable) {
+                    const contentPanel: HTMLElement = this.parent.contentModule.getPanel() as HTMLElement;
+                    const contentPanelWidth : number = contentPanel.getBoundingClientRect().width;
+                    toolBarEle.style.width = contentPanelWidth + 'px';
+                }
+            }
         } else {
             const eventType: MouseEvent | Touch = Browser.info.name !== 'msie' ? (<TouchEvent>e).touches[0] : (<MouseEvent>e);
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
-             this.parent.element.style.width =(!this.parent.enableRtl)? (<MouseEvent>e).clientX - boundRect.left + 'px' : boundRect.right- (<MouseEvent>e).clientX + 'px';
+            this.parent.element.style.width = (!this.parent.enableRtl) ? (<MouseEvent>e).clientX - boundRect.left + 'px' : boundRect.right - (<MouseEvent>e).clientX + 'px';
         }
         if (!this.parent.toolbarSettings.enable) {
             this.parent.setContentHeight('', false);

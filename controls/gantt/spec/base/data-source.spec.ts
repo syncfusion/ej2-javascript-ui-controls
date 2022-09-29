@@ -7,6 +7,7 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
+
 export let baselineDatas: Object[] = [
     {
       TaskId: 1,
@@ -33,30 +34,6 @@ export let baselineDatas: Object[] = [
       EndDate: new Date('03/05/2018 10:40:00 AM'),
     },
   ];
-
-
-export let projectNewData2: Object[] = [
-    {
-        TaskID: 1,
-        TaskName: 'Receive vehicle and create job card',
-        BaselineStartDate: new Date('03/05/2018 5:00:00 PM'),
-        BaselineEndDate: new Date('03/05/2018 5:00:00 PM'),
-        StartDate: new Date('03/05/2018 5:00:00 PM'),
-        EndDate: new Date('03/05/2018 5:00:00 PM'),
-        IsMilestone: true,
-        Duration: 0,
-      },
-      {
-        TaskID: 2,
-        TaskName: 'Allot mechanic and send vehicle to service bay',
-        BaselineStartDate: new Date('03/05/2018 10:00:00 AM'),
-        BaselineEndDate: new Date('03/06/2018 10:15:00 AM'),
-        StartDate: new Date('03/05/2018 10:15:00 AM'),
-        EndDate: new Date('03/06/2018 10:20:00 AM'),
-      }
-    ];
-
-
 export let scheduleModeData1: Object[] = [
     {
         "TaskID": 1,
@@ -995,6 +972,27 @@ export let projectData1: Object[] = [
     }
 ];
 
+export let projectNewData2: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Receive vehicle and create job card',
+        BaselineStartDate: new Date('03/05/2018 5:00:00 PM'),
+        BaselineEndDate: new Date('03/05/2018 5:00:00 PM'),
+        StartDate: new Date('03/05/2018 5:00:00 PM'),
+        EndDate: new Date('03/05/2018 5:00:00 PM'),
+        IsMilestone: true,
+        Duration: 0,
+      },
+      {
+        TaskID: 2,
+        TaskName: 'Allot mechanic and send vehicle to service bay',
+        BaselineStartDate: new Date('03/05/2018 10:00:00 AM'),
+        BaselineEndDate: new Date('03/06/2018 10:15:00 AM'),
+        StartDate: new Date('03/05/2018 10:15:00 AM'),
+        EndDate: new Date('03/06/2018 10:20:00 AM'),
+      }
+    ];
+    
 export let unscheduledData: Object[] = [
     {
         'TaskID': 1,
@@ -2538,4 +2536,251 @@ export let splitTasksData: object[] = [
             }
         ]
     }
+];
+export let stringTaskId: object[] = [
+    {
+        TaskID: "a1",
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: "b2", TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: "c3", TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            { TaskID: "d4", TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "b2" ,Progress: 30},
+        ]
+    },
+    { TaskID: "e5", TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "c3,d4" },
+    {
+        TaskID: "f6",
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: "g7",
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: "h8", TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "e5 SS",Progress: 30 },
+                    { TaskID: "i9", TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "e5 FF" }
+                ]
+            },
+            { TaskID: "j10", TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "g7,h8" ,Progress: 30},
+        ]
+    },
+];
+export let StringResourceData = [
+    {
+        TaskID: "1a",
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: "2b", TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: "a", resourceUnit: 50 }]
+            },
+            {
+                TaskID: "3c", TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: "b", resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: "4d", TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: "a", resourceUnit: 75 }], Predecessor: "2b", Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: "5d",
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: "6d", TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: "b", resourceUnit: 70 }], Predecessor: '3c FS+2', work: 30
+            },
+        ]
+    },
+];
+export let StringResourceCollection = [
+    { resourceId: "a", resourceName: 'Martin Tamer', resourceGroup: 'Planning Team'},
+    { resourceId: "b", resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
+];
+export let StringMultiTaskbarData: Object[] = [
+    {
+        TaskID: "a1",
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: "b2", TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: "a1", resourceUnit: 50 }]
+            },
+            {
+                TaskID: "c3", TaskName: 'Perform soil test', StartDate: new Date('04/03/2019'), Duration: 4,
+                resources: [{ resourceId: "a1", resourceUnit: 70 }], Predecessor: "b2", Progress: 30, work: 20
+            },
+            {
+                TaskID: "d4", TaskName: 'Soil test approval', StartDate: new Date('04/09/2019'), Duration: 4,
+                resources: [{ resourceId: "a1", resourceUnit: 25 }], Predecessor: "c3", Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: "e5",
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: "f6", TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/01/2019'),
+                Duration: 5, Progress: 30, resources: [{ resourceId: "b2", resourceUnit: 50 }], work: 30
+            },
+            {
+                TaskID: "g7", TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 4,
+                resources: [{ resourceId: "b2", resourceUnit: 40 }], Predecessor: 'f6 FS-2', Progress: 30, work: 40
+            },
+            {
+                TaskID: "h8", TaskName: 'Estimation approval', StartDate: new Date('04/09/2019'),
+                Duration: 4, resources: [{ resourceId: "b2", resourceUnit: 75 }], Predecessor: 'g7 FS-1', Progress: 30, work: 60,
+            }
+        ]
+    },
+];
+export let StringMultiResources = [
+    { resourceId: "a1", resourceName: 'Martin Tamer', resourceGroup: 'Planning Team', isExpand: false },
+    { resourceId: "b2", resourceName: 'Rose Fuller', resourceGroup: 'Testing Team', isExpand: true },
+];
+export let StringResourceSelefReferenceData = [
+    {
+        TaskID: "a1",
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        resources: [{ resourceId: "a1", resourceUnit: 50 }]
+    },
+    {
+        TaskID: "b2", parentId: "a1", TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+        Progress: 30, work: 10, resources: [{ resourceId: "b2", resourceUnit: 50 }]
+    },
+    {
+        TaskID: "c3", parentId: "a1", TaskName: 'Perform soil test', StartDate: new Date('04/03/2019'), Duration: 4,
+        resources: [{ resourceId: "b2", resourceUnit: 70 }], Predecessor: "b2", Progress: 30, work: 20
+    },
+    {
+        TaskID: "d4", parentId: "a1", TaskName: 'Soil test approval', StartDate: new Date('04/09/2019'), Duration: 4,
+        resources: [{ resourceId: "b2", resourceUnit: 25 }], Predecessor: "c3", Progress: 30, work: 10,
+    },
+    {
+        TaskID: "e5",
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        resources: [{ resourceId: "b2", resourceUnit: 40 }],
+    },
+    {
+        TaskID: "f6", parentId: "e5", TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/01/2019'),
+        Duration: 5, Progress: 30, resources: [{ resourceId: "b2", resourceUnit: 50 }], work: 30
+    },
+    {
+        TaskID: "g7", parentId: "e5", TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 4,
+        resources: [{ resourceId: "b2", resourceUnit: 40 }], Predecessor: 'f6 FS-2', Progress: 30, work: 40
+    },
+    {
+        TaskID: "h8", parentId: "e5", TaskName: 'Estimation approval', StartDate: new Date('04/09/2019'),
+        Duration: 4, resources: [{ resourceId: "b2", resourceUnit: 75 }], Predecessor: 'g7 FS-1', Progress: 30, work: 60,
+    }
+
+];
+export let StringCellEditData: object[] = [
+    {
+        TaskID: "a1",
+        TaskName: 'Parent Task',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: "b2", TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 1',
+              BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), EstimatedWork: 40.45 }, 
+            { TaskID: "c3", TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 2',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: ["c3", "a1"], EstimatedWork: 20 },
+            { TaskID: "d4", TaskName: 'Milestone Task', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "b2", Notes: 'Notes 3',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: ["d4"], EstimatedWork: 80  },
+        ]
+    },
+    { TaskID: "e5", TaskName: 'Unscheduled Start Task', StartDate: new Date('04/02/2019'), Notes: 'Notes 4',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: ["c3"]  },
+    { TaskID: "f6", TaskName: 'Unscheduled End Task', EndDate: new Date('04/02/2019'), Notes: 'Notes 5',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), EstimatedWork: 55  },
+    { TaskID: "g7", TaskName: 'Unscheduled Duration Task', Duration: 5, Notes: 'Notes 6',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: ["b2"]  },
+];
+export let StringResourcesData: Object[] = [
+    { resourceId: "a1", resourceName: 'Resource 1' },
+    { resourceId: "b2", resourceName: 'Resource 2' },
+    { resourceId: "c3", resourceName: 'Resource 3' },
+    { resourceId: "d4", resourceName: 'Resource 4' },
+];
+export let StringprojectData1: Object[] = [
+    {
+        TaskID: "a1",
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/06/2017'),
+        EndDate: new Date('03/13/2017'),
+        subtasks: [
+            {
+                TaskID: "b2",
+                TaskName: 'Planning',
+                StartDate: new Date('02/06/2017'),
+                EndDate: new Date('02/10/2017'),
+                subtasks: [
+                    {
+                        TaskID: "c3", TaskName: 'Plan timeline', StartDate: null, EndDate: new Date('02/10/2017'),
+                        Duration: 5, Progress: '100', ResourceId: [1]
+                    },
+                    {
+                        TaskID: "d4", TaskName: 'Plan budget', StartDate: new Date('02/04/2017 05:00:00 AM'), EndDate: new Date('02/10/2017'),
+                        Duration: 2, Progress: '100', ResourceId: [1]
+                    },
+                    {
+                        TaskID: "e5", TaskName: 'Allocate resources', StartDate: new Date('02/06/2017'), EndDate: new Date('02/13/2017'),
+                        Duration: 5, Progress: '100', ResourceId: [1], milestone: true
+                    },
+                    {
+                        TaskID: "f6", TaskName: 'Planning complete', StartDate: new Date('02/10/2017'), EndDate: new Date('02/10/2017'),
+                        Duration: 0, Predecessor: 'c3 FS,d4 FS,e5 FS'
+                    },
+                ]
+                
+            },
+            {
+                TaskID: "g7",
+                TaskName: 'Design',
+                StartDate: new Date('02/13/2017'),
+                EndDate: new Date('02/17/2017'),
+                subtasks: [
+                    {
+                        TaskID: "h8", TaskName: 'Software Specification', StartDate: new Date('02/13/2017'),
+                        EndDate: new Date('02/15/2017 18:00:00 PM'),
+                        Duration: 3, Progress: '60', Predecessor: 'f6 FS', ResourceId: [2]
+                    },
+                    {
+                        TaskID: "i9", TaskName: 'Develop prototype', StartDate: new Date('02/13/2017'), EndDate: new Date('02/15/2017'),
+                        Duration: '3 days', Progress: '100', Predecessor: 'f6 FS', ResourceId: [3]
+                    },
+                    {
+                        TaskID: "j10", TaskName: 'Get approval from customer', StartDate: new Date('02/16/2017'), milestone: true,
+                        EndDate: new Date('02/17/2017'), Duration: 2, Progress: '100', Predecessor: 'i9 FS', ResourceId: [1]
+                    },
+                    {
+                        TaskID: "k11", TaskName: 'Design complete', StartDate: new Date('02/17/2017'),
+                        EndDate: new Date('02/17/2017'), Duration: 0, Predecessor: 'j10 FS'
+                    }
+                ]
+            },
+        ]
+    }
+            
+];
+export let StringProjectResources: Object[] = [
+    { ResourceId: "a1", ResourceName: 'Project Manager' },
+    { ResourceId: "b2", ResourceName: 'Software Analyst' },
+    { ResourceId: "c3", ResourceName: 'Developer' },
+    { ResourceId: "d4", ResourceName: 'Testing Engineer' }
 ];

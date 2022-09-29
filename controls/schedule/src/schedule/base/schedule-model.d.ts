@@ -52,6 +52,13 @@ export interface ScheduleModel extends ComponentModel{
     showTimeIndicator?: boolean;
 
     /**
+     * Defines whether to enable date navigations via swipe in touch devices or not.
+     *
+     * @default true
+     */
+    allowSwiping?: boolean;
+
+    /**
      * To set the active view on scheduler, the `currentView` property can be used and it usually accepts either of the following available
      *  view options. The view option specified in this property will be initially loaded on the schedule.
      * * Day

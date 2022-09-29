@@ -464,7 +464,8 @@ export class MsWordPaste {
     private listConverter(listNodes: Element[]): void {
         let level: number;
         const data: { content: HTMLElement; node: Element }[] = [];
-        let collection: { listType: string; content: string[]; nestedLevel: number; class: string, listStyle: string, listStyleTypeName: string }[] = [];
+        let collection: { listType: string; content: string[]; nestedLevel: number;
+            class: string, listStyle: string, listStyleTypeName: string }[] = [];
         let content: string = '';
         let stNode: Element;
         let currentListStyle: string = '';
@@ -531,48 +532,48 @@ export class MsWordPaste {
             }
         }
     }
-
     private getlistStyleType(listContent: string, type: string): string {
         let currentListClass: string;
         if (type === 'ol') {
-            switch(listContent.split('.')[0]) {
-                case "A":
-                    currentListClass = "upper-alpha";
-                    break;
-                case "a":
-                    currentListClass = "lower-alpha";
-                    break;
-                case "I":
-                    currentListClass = "upper-roman";
-                    break;
-                case "i":
-                    currentListClass = "lower-roman";
-                    break;
-                case "α":
-                    currentListClass = "lower-greek";
-                    break;
-                default:
-                    currentListClass = "decimal";
-                    break;
+            switch (listContent.split('.')[0]) {
+            case 'A':
+                currentListClass = 'upper-alpha';
+                break;
+            case 'a':
+                currentListClass = 'lower-alpha';
+                break;
+            case 'I':
+                currentListClass = 'upper-roman';
+                break;
+            case 'i':
+                currentListClass = 'lower-roman';
+                break;
+            case 'α':
+                currentListClass = 'lower-greek';
+                break;
+            default:
+                currentListClass = 'decimal';
+                break;
             }
         } else {
-            switch(listContent.split('.')[0]) {
-                case "o":
-                    currentListClass = "circle";
-                    break;
-                case "§":
-                    currentListClass = "square";
-                    break;
-                default:
-                    currentListClass = "disc";
-                    break;
+            switch (listContent.split('.')[0]) {
+            case 'o':
+                currentListClass = 'circle';
+                break;
+            case '§':
+                currentListClass = 'square';
+                break;
+            default:
+                currentListClass = 'disc';
+                break;
             }
         }
         return currentListClass;
     }
 
     private makeConversion(
-        collection: { listType: string; content: string[]; nestedLevel: number; class: string, listStyle: string, listStyleTypeName: string }[]): HTMLElement {
+        collection: { listType: string; content: string[]; nestedLevel: number; class: string,
+            listStyle: string, listStyleTypeName: string }[]): HTMLElement {
         const root: HTMLElement = createElement('div');
         let temp: HTMLElement;
         let pLevel: number = 1;
@@ -607,8 +608,8 @@ export class MsWordPaste {
                     for (let j: number = 0; j < collection[index].nestedLevel - pLevel; j++) {
                         prevList.appendChild(temp = createElement(collection[index].listType));
                         prevList = createElement('li');
-                        if (j != collection[index].nestedLevel - pLevel - 1 && collection[index].nestedLevel - pLevel > 1) {
-                            prevList.style.listStyleType = "none";
+                        if (j !== collection[index].nestedLevel - pLevel - 1 && collection[index].nestedLevel - pLevel > 1) {
+                            prevList.style.listStyleType = 'none';
                         }
                         temp.appendChild(prevList);
                     }

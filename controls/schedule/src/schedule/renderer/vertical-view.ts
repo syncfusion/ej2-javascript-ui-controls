@@ -256,14 +256,24 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (!isNullOrUndefined(this.parent.resourceBase) && (this.parent.activeViewOptions.group.resources.length > 0) &&
             !this.parent.uiStateValues.isGroupAdaptive) {
             let count: number = 0;
-            for (const resource of this.parent.resourceBase.lastResourceLevel) {
-                const index: number = this.parent.getIndexOfDate(resource.renderDates, util.resetTime(this.parent.getCurrentTime()));
-                if (index >= 0) {
-                    const resIndex: number = this.parent.activeViewOptions.group.byDate ?
-                        (this.parent.resourceBase.lastResourceLevel.length * index) + count : count + index;
-                    currentDateIndex.push(resIndex);
+            if (this.parent.virtualScrollModule && this.parent.activeViewOptions.allowVirtualScrolling &&
+                this.parent.activeViewOptions.group.byDate) {
+                for (const resource of this.parent.resourceBase.expandedResources) {
+                    if (util.resetTime(resource.date).getTime() === util.resetTime(this.parent.getCurrentTime()).getTime()) {
+                        currentDateIndex.push(count);
+                    }
+                    count += 1;
                 }
-                count += this.parent.activeViewOptions.group.byDate ? 1 : resource.renderDates.length;
+            } else {
+                for (const resource of this.parent.resourceBase.renderedResources) {
+                    const index: number = this.parent.getIndexOfDate(resource.renderDates, util.resetTime(this.parent.getCurrentTime()));
+                    if (index >= 0) {
+                        const resIndex: number = this.parent.activeViewOptions.group.byDate ?
+                            (this.parent.resourceBase.lastResourceLevel.length * index) + count : count + index;
+                        currentDateIndex.push(resIndex);
+                    }
+                    count += this.parent.activeViewOptions.group.byDate ? 1 : resource.renderDates.length;
+                }
             }
         } else {
             const renderDates: Date[] = (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0)
@@ -409,7 +419,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (!this.parent.activeViewOptions.timeScale.enable) {
             addClass([this.element], [cls.TIMESCALE_DISABLE, this.viewClass]);
         }
-        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+        if (this.parent.activeViewOptions.allowVirtualScrolling && !this.parent.uiStateValues.isGroupAdaptive) {
             clsList.push(cls.VIRTUAL_SCROLL_CLASS);
         }
         if (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) {
@@ -442,6 +452,9 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public renderContent(): void {
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.parent.resourceBase.renderedResources = <TdData[]>extend([], this.parent.resourceBase.lastResourceLevel, null, true);
+        }
         const tr: Element = createElement('tr');
         const workTd: Element = createElement('td');
         if (this.parent.isAdaptive) {
@@ -456,13 +469,22 @@ export class VerticalView extends ViewBase implements IRenderer {
             EventHandler.add(scrollContainer, Browser.touchMoveEvent, this.onAdaptiveMove, this);
             tr.appendChild(workTd);
         } else {
-            workTd.appendChild(this.renderContentArea());
+            const levels: TdData[][] = this.colLevels.slice(0);
+            if (this.parent.virtualScrollModule) {
+                this.resetColLevels();
+            }
+            const wrap: Element = this.renderContentArea();
+            workTd.appendChild(wrap);
             if (this.parent.activeViewOptions.timeScale.enable) {
                 const timesTd: Element = createElement('td');
                 timesTd.appendChild(this.renderTimeCells());
                 tr.appendChild(timesTd);
             }
             tr.appendChild(workTd);
+            if (this.parent.virtualScrollModule) {
+                this.colLevels = levels;
+                this.parent.virtualScrollModule.renderVirtualTrack(wrap);
+            }
         }
         this.element.querySelector('tbody').appendChild(tr);
     }
@@ -537,7 +559,6 @@ export class VerticalView extends ViewBase implements IRenderer {
             td.className = [cls.ALLDAY_CELLS_CLASS];
             td.type = 'alldayCells';
             const ntd: Element = this.createTd(td);
-            ntd.setAttribute('role', 'gridcell');
             ntd.setAttribute('data-date', td.date.getTime().toString());
             if (!isNullOrUndefined(td.groupIndex)) {
                 ntd.setAttribute('data-group-index', '' + td.groupIndex);
@@ -549,7 +570,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         table.querySelector('tbody').appendChild(ntr);
         const thead: HTMLElement = createElement('thead');
-        thead.appendChild(this.createEventWrapper('allDay'));
+        thead.appendChild(this.parent.eventBase.createEventWrapper('allDay'));
         prepend([thead], table);
     }
 
@@ -570,7 +591,6 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         if (td.type === 'dateHeader' && td.className.indexOf(cls.HEADER_CELLS_CLASS) >= 0) {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
-            tdEle.setAttribute('role', 'gridcell');
             if (!isNullOrUndefined(td.groupIndex)) {
                 tdEle.setAttribute('data-group-index', '' + td.groupIndex);
             }
@@ -614,6 +634,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     public renderContentArea(): Element {
         const wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         const tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
+        this.setAriaAttributes(tbl);
         this.addAutoHeightClass(tbl);
         this.renderContentTable(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
@@ -625,20 +646,26 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public renderContentTable(table: Element): void {
-        const tr: Element = createElement('tr', { attrs: { role: 'row' } });
-        const td: Element = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
-        const tbody: Element = table.querySelector('tbody');
+        const tBody: Element = table.querySelector('tbody');
+        append(this.getContentRows(), tBody);
+        this.renderContentTableHeader(table);
+    }
+
+    public getContentRows(): Element[] {
+        const rows: Element[] = [];
+        const tr: Element = createElement('tr');
+        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
         const handler: CallbackFunction = (r: TimeSlotData): TimeSlotData => {
             const ntr: Element = tr.cloneNode() as Element;
             for (const tdData of this.colLevels[this.colLevels.length - 1]) {
                 const ntd: Element = this.createContentTd(tdData, r, td);
                 ntr.appendChild(ntd);
             }
-            tbody.appendChild(ntr);
+            rows.push(ntr);
             return r;
         };
         this.getTimeSlotRows(handler);
-        this.renderContentTableHeader(table);
+        return rows;
     }
 
     public createContentTd(tdData: TdData, r: TimeSlotData, td: Element): Element {
@@ -687,35 +714,11 @@ export class VerticalView extends ViewBase implements IRenderer {
 
     private renderContentTableHeader(table: Element): void {
         const thead: Element = createElement('thead');
-        thead.appendChild(this.createEventWrapper());
+        thead.appendChild(this.parent.eventBase.createEventWrapper());
         if (this.parent.activeViewOptions.timeScale.enable) {
-            thead.appendChild(this.createEventWrapper('timeIndicator'));
+            thead.appendChild(this.parent.eventBase.createEventWrapper('timeIndicator'));
         }
         prepend([thead], table);
-    }
-
-    private createEventWrapper(type: string = ''): HTMLElement {
-        const tr: HTMLElement = createElement('tr');
-        const levels: TdData[] = this.colLevels.slice(-1)[0];
-        for (let i: number = 0, len: number = levels.length; i < len; i++) {
-            const col: TdData = levels[i];
-            const appointmentWrap: HTMLElement = createElement('td', {
-                className: (type === 'allDay') ? cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS : (type === 'timeIndicator') ?
-                    cls.TIMELINE_WRAPPER_CLASS : cls.DAY_WRAPPER_CLASS, attrs: { 'data-date': col.date.getTime().toString() }
-            });
-            if (!isNullOrUndefined(col.groupIndex)) {
-                appointmentWrap.setAttribute('data-group-index', col.groupIndex.toString());
-            }
-            if (type === '') {
-                const innerWrapper: HTMLElement = createElement('div', {
-                    id: cls.APPOINTMENT_WRAPPER_CLASS + '-' + i.toString(),
-                    className: cls.APPOINTMENT_WRAPPER_CLASS
-                });
-                appointmentWrap.appendChild(innerWrapper);
-            }
-            tr.appendChild(appointmentWrap);
-        }
-        return tr;
     }
 
     public getScrollableElement(): Element {

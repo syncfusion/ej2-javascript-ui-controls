@@ -1,4 +1,5 @@
 @include export-module('progress-button-theme') {
+
   /*! Progress Button Theme */
   .e-progress-btn {
     .e-spinner-pane .e-spinner-inner svg {
@@ -63,8 +64,8 @@
               stroke: $btn-flat-primary-color;
             }
           }
-         }
-       }
+        }
+      }
     }
 
     #{if(&, '&', '*')}.e-success,
@@ -78,7 +79,7 @@
 
         .e-path-circle {
           stroke: fade-out($btn-success-color, $progress-btn-circle-opacity);
-          }
+        }
 
         .e-path-arc {
           stroke: $btn-success-color;
@@ -97,7 +98,7 @@
             @else {
               stroke: fade-out($btn-flat-success-color, $progress-btn-circle-opacity);
             }
-           }
+          }
 
           .e-path-arc {
             @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
@@ -171,7 +172,7 @@
         .e-path-arc {
           stroke: $btn-warning-color;
         }
-       }
+      }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
@@ -196,7 +197,7 @@
             }
           }
         }
-       }
+      }
     }
 
     &.e-danger,
@@ -215,7 +216,7 @@
         .e-path-arc {
           stroke: $btn-danger-color;
         }
-       }
+      }
 
       &.e-flat {
         .e-spinner-pane .e-spinner-inner svg {
@@ -240,7 +241,7 @@
             }
           }
         }
-       }
+      }
     }
 
     &.e-outline,
@@ -333,7 +334,7 @@
         .e-path-arc {
           stroke: $btn-link-color;
         }
-       }
+      }
     }
   }
 
@@ -347,13 +348,13 @@
   #{if(&, '&', '*')}.e-info {
     .e-progress {
       background-color: $progress-btn-bgcolor;
-      }
+    }
   }
 
   #{if(&, '&', '*')}.e-warning {
     .e-progress {
       background-color: $progress-btn-warning-progress-color;
-      }
+    }
   }
 
   #{if(&, '&', '*')}.e-flat {
@@ -372,20 +373,20 @@
     &.e-info {
       .e-progress {
         background-color: fade-out($progress-btn-flat-info-progress-color, .8);
-        }
       }
+    }
 
     &.e-warning {
       .e-progress {
         background-color: fade-out($progress-btn-flat-warning-progress-color, .8);
-        }
       }
+    }
 
     &.e-danger {
       .e-progress {
         background-color: fade-out($progress-btn-flat-danger-progress-color, .8);
-        }
       }
+    }
   }
 
   #{if(&, '&', '*')}.e-outline:not(:focus) {
@@ -398,26 +399,26 @@
     &.e-success {
       .e-progress {
         background-color: fade-out($btn-success-bgcolor, .8);
-        }
       }
+    }
 
     &.e-info {
       .e-progress {
         background-color: fade-out($btn-info-bgcolor, .8);
-        }
       }
+    }
 
     &.e-warning {
       .e-progress {
         background-color: fade-out($btn-warning-bgcolor, .8);
-        }
       }
+    }
 
     &.e-danger {
       .e-progress {
         background-color: fade-out($btn-danger-bgcolor, .8);
-        }
       }
+    }
   }
 
   #{if(&, '&', '*')}.e-flat:not(:focus) {
@@ -431,26 +432,26 @@
       &.e-success {
         .e-progress {
           background-color: fade-out($btn-success-bgcolor, .8);
-          }
         }
+      }
 
       &.e-info {
         .e-progress {
           background-color: fade-out($btn-info-bgcolor, .8);
-          }
         }
+      }
 
       &.e-warning {
         .e-progress {
           background-color: fade-out($btn-warning-bgcolor, .8);
-          }
         }
+      }
 
       &.e-danger {
         .e-progress {
           background-color: fade-out($btn-danger-bgcolor, .8);
-          }
         }
+      }
     }
   }
 }

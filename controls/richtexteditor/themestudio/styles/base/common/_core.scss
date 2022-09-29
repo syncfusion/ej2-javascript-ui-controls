@@ -1,4 +1,5 @@
 @include export-module('base-core') {
+
   /*! common core */
   .e-control,
   .e-css  {
@@ -11,8 +12,7 @@
   $background: #e82824;
 
   $warning: #ffd800;
-  $yellow:  rgb(255, 255, 0);
-
+  $yellow: #ffff00;
   .e-error {
     color: $error-font-color;
     font-family: $font-family;
@@ -21,8 +21,8 @@
   }
 
   .e-control,
-  .e-control [class^='e-'],
-  .e-control [class*=' e-'] {
+  .e-control [class ^= 'e-'],
+  .e-control [class *= ' e-'] {
     box-sizing: border-box;
   }
 
@@ -84,17 +84,14 @@
   .e-block-touch {
     touch-action: pinch-zoom;
   }
-
   .e-license {
     color: $yellow;
     text-decoration: none;
   }
-
   .e-license-banner {
-    cursor: pointer;
     position: absolute;
     right: 10px;
     top: 27%;
+    cursor: pointer;
   }
-
 }

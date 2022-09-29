@@ -4,7 +4,7 @@ import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings }
 import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';
 import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';
 import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';
-import { SaveFormat } from '../../common';
+import { SaveFormat, DisplayLayoutOptions } from '../../common';
 import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';
 import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel } from '../base/interface';
 import { backgroundColor, fontColor, fontFamily, fontSize,  formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList  } from './items';
@@ -157,6 +157,160 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     public maxHeight: string | number;
     /**
      * image resizing should be done by percentage calculation.
+     *
+     * @default false
+     */
+    @Property(false)
+    public resizeByPercent: boolean;
+}
+
+/**
+ * Configures the audio settings of the RichTextEditor.
+ */
+
+export class AudioSettings extends ChildProperty<AudioSettings> {
+    /**
+     * Specifies whether to allowType based file select.
+     *
+     * @default ['.wav', '.mp3', '.m4a','.wma']
+     */
+    @Property(['.wav', '.mp3', '.m4a', '.wma'])
+    public allowedTypes: string[];
+    /**
+     * Specifies whether insert audio inline or break.
+     *
+     * @default 'Inline'
+     */
+    @Property('Inline')
+    public layoutOption: DisplayLayoutOptions;
+    /**
+     * Specifies whether the inserted audio is saved as blob or base64.
+     *
+     * @default 'Blob'
+     */
+    @Property('Blob')
+    public saveFormat: SaveFormat;
+    /**
+     * Specifies the URL of save action that will receive the upload files and save in the server.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public saveUrl: string;
+    /**
+     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public removeUrl: string;
+    /**
+     * Specifies the path of the location to store the audio and refer it to display the audio.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public path: string;
+}
+
+/**
+ * Configures the video settings of the RichTextEditor.
+ */
+
+export class VideoSettings extends ChildProperty<VideoSettings> {
+    /**
+     * Specifies whether to allowType based file select.
+     *
+     * @default ['.mp4', '.mov', '.wmv','.avi']
+     */
+    @Property(['.mp4', '.mov', '.wmv', '.avi'])
+    public allowedTypes: string[];
+    /**
+     * Specifies whether insert video inline or break.
+     *
+     * @default 'Inline'
+     */
+    @Property('Inline')
+    public layoutOption: DisplayLayoutOptions;
+    /**
+     * Specifies whether the inserted video is saved as blob or base64.
+     *
+     * @default 'Blob'
+     */
+    @Property('Blob')
+    public saveFormat: SaveFormat;
+    /**
+     * Specifies whether video width.
+     *
+     * @default 'auto'
+     */
+    @Property('auto')
+    public width: string;
+    /**
+     * Specifies whether video height.
+     *
+     * @default 'auto'
+     */
+    @Property('auto')
+    public height: string;
+    /**
+     * Specifies the URL of save action that will receive the upload files and save in the server.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public saveUrl: string;
+    /**
+     * Specifies the path of the location to store the images and refer it to display the images.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public path: string;
+    /**
+     * To enable resizing for video element.
+     *
+     * @default 'true'
+     */
+    @Property(true)
+    public resize: boolean;
+    /**
+     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public removeUrl: string;
+    /**
+     * Defines the minimum Width of the video.
+     *
+     * @default '0'
+     */
+    @Property(0)
+    public minWidth: string | number;
+    /**
+     * Defines the maximum Width of the video.
+     *
+     * @default null
+     */
+    @Property(null)
+    public maxWidth: string | number;
+    /**
+     * Defines the minimum Height of the video.
+     *
+     * @default '0'
+     */
+    @Property(0)
+    public minHeight: string | number;
+    /**
+     * Defines the maximum Height of the video.
+     *
+     * @default null
+     */
+    @Property(null)
+    public maxHeight: string | number;
+    /**
+     * Video resizing should be done by percentage calculation.
      *
      * @default false
      */
@@ -399,6 +553,22 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
      */
     @Property(['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension'])
     public image: (string | IToolbarItems)[];
+
+    /**
+     * Specifies the items to render in quick toolbar, when audio selected.
+     *
+     * @default ['AudioReplace', 'Remove', 'AudioLayoutOption']
+     */
+    @Property(['AudioReplace', 'AudioRemove', 'AudioLayoutOption'])
+    public audio: (string | IToolbarItems)[];
+
+    /**
+     * Specifies the items to render in quick toolbar, when video selected.
+     *
+     * @default ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension']
+     */
+    @Property(['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension'])
+    public video: (string | IToolbarItems)[];
 
     /**
      * Specifies the items to render in quick toolbar, when text selected.

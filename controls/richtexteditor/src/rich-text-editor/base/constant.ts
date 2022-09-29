@@ -100,6 +100,11 @@ export const modelChanged: string = 'model-changed';
  * @hidden
  * @deprecated
  */
+export const tableModulekeyUp: string = 'tableModulekeyUp';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const keyUp: string = 'keyUp';
 /**
  * @hidden
@@ -151,6 +156,16 @@ export const execCommandCallBack: string = 'execCommandCallBack';
  * @deprecated
  */
 export const imageToolbarAction: string = 'image-toolbar-action';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const audioToolbarAction: string = 'audio-toolbar-action';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const videoToolbarAction: string = 'video-toolbar-action';
 /**
  * @hidden
  * @deprecated
@@ -240,6 +255,16 @@ export const insertImage: string = 'insertImage';
  * @hidden
  * @deprecated
  */
+export const insertAudio: string = 'insertAudio';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const insertVideo: string = 'insertVideo';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const insertCompleted: string = 'insertCompleted';
 /**
  * @hidden
@@ -285,12 +310,27 @@ export const imageDelete: string = 'delete';
  * @hidden
  * @deprecated
  */
+export const audioDelete: string = 'delete';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const videoDelete: string = 'delete';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const imageCaption: string = 'caption';
 /**
  * @hidden
  * @deprecated
  */
 export const imageSize: string = 'imageSize';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const videoSize: string = 'videoSize';
 /**
  * @hidden
  * @deprecated
@@ -445,7 +485,7 @@ export const readOnlyMode: string = 'readOnlyMode';
  * @hidden
  * @deprecated
  */
- export const moduleDestroy: string = 'moduleDestroy';
+export const moduleDestroy: string = 'moduleDestroy';
 /**
  * @hidden
  * @deprecated
@@ -530,27 +570,27 @@ export const imageRemoving: string = 'imageRemoving';
  * @hidden
  * @deprecated
  */
- export const mediaSelected: string = 'mediaSelected';
- /**
+export const fileSelected: string = 'fileSelected';
+/**
   * @hidden
   * @deprecated
   */
- export const mediaUploading: string = 'mediaUploading';
- /**
+export const fileUploading: string = 'fileUploading';
+/**
   * @hidden
   * @deprecated
   */
- export const mediaUploadSuccess: string = 'mediaUploadSuccess';
- /**
+export const fileUploadSuccess: string = 'fileUploadSuccess';
+/**
   * @hidden
   * @deprecated
   */
- export const mediaUploadFailed: string = 'mediaUploadFailed';
- /**
+export const fileUploadFailed: string = 'fileUploadFailed';
+/**
   * @hidden
   * @deprecated
   */
- export const mediaRemoving: string = 'mediaRemoving';
+export const fileRemoving: string = 'fileRemoving';
 /**
  * @hidden
  * @deprecated
@@ -560,7 +600,7 @@ export const afterImageDelete: string = 'afterImageDelete';
  * @hidden
  * @deprecated
  */
- export const afterMediaDelete: string = 'afterMediaaDelete';
+export const afterMediaDelete: string = 'afterMediaDelete';
 /**
  * @hidden
  * @deprecated
@@ -580,7 +620,7 @@ export const beforeImageUpload: string = 'beforeImageUpload';
  * @hidden
  * @deprecated
  */
- export const beforeMediaUpload: string = 'beforeMediaUpload';
+export const beforeFileUpload: string = 'beforeFileUpload';
 /**
  * @hidden
  * @deprecated
@@ -635,12 +675,27 @@ export const showImageDialog: string = 'showImageDialog';
  * @hidden
  * @deprecated
  */
+export const showAudioDialog: string = 'showAudioDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const showVideoDialog: string = 'showVideoDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const closeImageDialog: string = 'closeImageDialog';
 /**
  * @hidden
  * @deprecated
  */
- export const closeAudioDialog: string = 'closeAudioDialog';
+export const closeAudioDialog: string = 'closeAudioDialog';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const closeVideoDialog: string = 'closeVideoDialog';
 /**
  * @hidden
  * @deprecated
@@ -660,7 +715,7 @@ export const bindCssClass: string = 'closeTableDialog';
  * @hidden
  * @deprecated
  */
- export const blockEmptyNodes: string = `address:empty, article:empty, aside:empty, blockquote:empty,
+export const blockEmptyNodes: string = `address:empty, article:empty, aside:empty, blockquote:empty,
  details:empty, dd:empty, div:empty, dl:empty, dt:empty, fieldset:empty, footer:empty,form:empty, h1:empty,
  h2:empty, h3:empty, h4:empty, h5:empty, h6:empty, header:empty, hgroup:empty, li:empty, main:empty, nav:empty,
  noscript:empty, output:empty, p:empty, pre:empty, section:empty, td:empty, th:empty`;
@@ -669,7 +724,7 @@ export const bindCssClass: string = 'closeTableDialog';
  * @deprecated
  */
 export const inlineEmptyNodes: string = `a:empty, abbr:empty, acronym:empty, b:empty, bdi:empty, bdo:empty, big:empty, button:empty,
- canvas:empty, cite:empty, code:empty, data:empty, datalist:empty, del:empty, dfn:empty, em:empty, font:empty, i:empty, iframe:empty,
- ins:empty, kbd:empty, label:empty, map:empty, mark:empty, meter:empty, noscript:empty, object:empty, output:empty, picture:empty, progress:empty,
- q:empty, ruby:empty, s:empty, samp:empty, script:empty, select:empty, slot:empty, small:empty, span:empty, strong:empty, strike:empty, sub:empty, sup:empty, svg:empty,
- template:empty, textarea:empty, time:empty, u:empty, tt:empty, var:empty, wbr:empty`;
+canvas:empty, cite:empty, code:empty, data:empty, datalist:empty, del:empty, dfn:empty, em:empty, font:empty, i:empty, iframe:empty,
+ins:empty, kbd:empty, label:empty, map:empty, mark:empty, meter:empty, noscript:empty, object:empty, output:empty, picture:empty, progress:empty,
+q:empty, ruby:empty, s:empty, samp:empty, script:empty, select:empty, slot:empty, small:empty, span:empty, strong:empty, strike:empty, sub:empty, sup:empty, svg:empty,
+template:empty, textarea:empty, time:empty, u:empty, tt:empty, var:empty, wbr:empty`;

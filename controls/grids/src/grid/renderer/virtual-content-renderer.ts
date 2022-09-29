@@ -154,6 +154,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
         if (isGroupAdaptive(this.parent)) {
             if (viewInfo.blockIndexes && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString()) {
+                this.parent.removeMaskRow();
                 return;
             } else {
                 viewInfo.event = 'refresh-virtual-block';
@@ -161,6 +162,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     viewInfo.offsets.top = this.content.scrollTop;
                 }
                 this.parent.pageSettings.currentPage = viewInfo.page;
+                if (this.parent.enableVirtualMaskRow) {
+                    this.parent.showMaskRow(info.axis);
+                    this.parent.addShimmerEffect();
+                }
                 this.parent.notify(
                     viewInfo.event,
                     { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
@@ -169,6 +174,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
             || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
+            this.parent.removeMaskRow();
             if (Browser.isIE) {
                 this.parent.hideSpinner();
             }
@@ -182,6 +188,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
         this.parent.pageSettings.currentPage = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
         this.requestType = 'virtualscroll';
+        if (this.parent.enableVirtualMaskRow) {
+            this.parent.showMaskRow(info.axis);
+            this.parent.addShimmerEffect();
+        }
         this.parent.notify(viewInfo.event, {
             requestType: 'virtualscroll', virtualInfo: viewInfo,
             focusElement: scrollArgs.focusElement
@@ -638,8 +648,13 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private onEntered(): Function {
         return (element: HTMLElement, current: SentinelType, direction: string, e: Offsets, isWheel: boolean, check: boolean) => {
-            if (Browser.isIE && !isWheel && check && !this.preventEvent) {
+            if (Browser.isIE && !isWheel && check && !this.preventEvent && !this.parent.enableVirtualMaskRow) {
                 this.parent.showSpinner();
+            }
+            if (this.parent.enableVirtualMaskRow && !this.preventEvent) {
+                setTimeout(() => {
+                    this.parent.showMaskRow(current.axis);
+                }, 0);
             }
             const colVFtable: boolean = this.parent.enableColumnVirtualization && this.parent.isFrozenGrid();
             const xAxis: boolean = current.axis === 'X'; const top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
@@ -1380,7 +1395,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
         if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization
             && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()) {
             (<{ setTable?: Function }>(<Grid>this.parent).contentModule)
-                .setTable(content.querySelector('.' + literals.table));
+                .setTable(content.querySelector('.' + literals.table + ':not(.e-masked-table)'));
         }
     }
 

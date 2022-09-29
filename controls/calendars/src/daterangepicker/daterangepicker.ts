@@ -253,6 +253,7 @@ export class DateRangePicker extends CalendarBase {
     private mobileRangePopupWrap: HTMLElement;
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
+    protected isPropChanged: boolean = false;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -2819,7 +2820,7 @@ export class DateRangePicker extends CalendarBase {
         if (this.enableRtl) {
             this.calendarElement.classList.add(RTL);
         }
-        attributes(this.calendarElement, <{ [key: string]: string }>{ 'role': 'calendar' });
+        attributes(this.calendarElement, <{ [key: string]: string }>{ 'data-role': 'calendar' });
         super.createHeader();
         super.createContent();
     }
@@ -3363,7 +3364,7 @@ export class DateRangePicker extends CalendarBase {
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
             this.presetElement = this.createElement('div', { className: PRESETS, attrs: { 'tabindex': '0' } });
             const listTag: HTMLElement = ListBase.createList(this.createElement, this.presetsItem, null, true);
-            attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
+            attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options','tabindex':'0' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
             const customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
@@ -3423,7 +3424,13 @@ export class DateRangePicker extends CalendarBase {
             enableRtl: this.enableRtl,
             zIndex: this.zIndex,
             open: () => {
-                attributes(this.inputElement, { 'aria-expanded': 'true' });
+                attributes(this.inputElement, { 'aria-expanded': 'true', 'aria-owns': this.inputElement.id + '_options' });
+                if(this.value){
+                    attributes(this.inputElement, { 'aria-activedescendant': this.inputElement.id});
+                }
+                else{
+                    this.inputElement.removeAttribute('aria-activedescendant');
+                }
                 addClass([this.inputWrapper.buttons[0]], ACTIVE);
                 if (!this.isMobile) {
                     if (this.cancelButton) {
@@ -3478,6 +3485,8 @@ export class DateRangePicker extends CalendarBase {
             },
             close: () => {
                 attributes(this.inputElement, { 'aria-expanded': 'false' });
+                this.inputElement.removeAttribute('aria-owns');
+                this.inputElement.removeAttribute('aria-activedescendant');
                 removeClass([this.inputWrapper.buttons[0]], ACTIVE);
                 if (this.isRangeIconClicked) {
                     (this.inputWrapper.container.children[1] as HTMLElement).focus();
@@ -3736,7 +3745,7 @@ export class DateRangePicker extends CalendarBase {
         }
         const target: HTMLElement = <HTMLElement>e.target;
         if (!this.inputWrapper.container.contains(target as Node) ||
-            (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]') && e.type === 'mousedown')) {
+            (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]') && e.type !== 'mousedown')) {
             if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
                 this.closeEventArgs && !this.closeEventArgs.cancel)) {
                 e.preventDefault();
@@ -3778,9 +3787,8 @@ export class DateRangePicker extends CalendarBase {
             this.createElement
         );
         attributes(this.inputElement, {
-            'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
-            'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'tabindex': '0', 'aria-expanded': 'false','role': 'combobox', 
+            'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         });
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
@@ -4194,9 +4202,8 @@ export class DateRangePicker extends CalendarBase {
         this.unBindEvents();
         this.hide(null);
         const ariaAttrs: object = {
-            'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
-            'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'tabindex': '0', 'aria-expanded': 'false','role': 'combobox', 
+            'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'aria-invalid': 'false', 'spellcheck': 'false'
         };
         if (this.inputElement) {
@@ -4544,9 +4551,6 @@ export class DateRangePicker extends CalendarBase {
         const format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (const prop of Object.keys(newProp)) {
             const openPopup: string[] = ['maxDays', 'minDays', 'value'];
-            if (openPopup.indexOf(prop) < 0) {
-                this.hide(null);
-            }
             switch (prop) {
             case 'width':
                 this.setEleWidth(this.width);
@@ -4567,7 +4571,6 @@ export class DateRangePicker extends CalendarBase {
                 break;
             case 'readonly':
                 Input.setReadonly(this.readonly, this.inputElement);
-                this.inputElement.setAttribute('aria-readonly', '' + this.readonly);
                 this.setRangeAllowEdit();
                 break;
             case 'cssClass':
@@ -4749,7 +4752,13 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ depth: newProp.depth }, true);
                 this.refreshChange();
                 break;
+            default:
+                this.isPropChanged = true;
             }
+            if (openPopup.indexOf(prop) < 0 && !this.isPropChanged) {
+                this.hide(null);
+            }
+        this.isPropChanged = false;
         }
     }
 }

@@ -24,15 +24,15 @@ export class CriticalPath {
     public showCriticalPath(isCritical: boolean): void {
         const modelIds: string[] = this.parent.ids;
         const totalRecords: IGanttData[] = this.parent.flatData;
-        if (isCritical && this.parent.flatData.length > 0 && !this.parent.enableMultiTaskbar) {
+        if (isCritical && this.parent.flatData.length > 0) {
             this.parent.enableCriticalPath = true;
             const parentRecords: IGanttData[] = this.parent.treeGrid.parentData;
             let checkEndDateTaskid: number | string;
             let checkEndDate: Date = parentRecords[0].ganttProperties.endDate;
             let dateDifference: number = 0;
-            const checkBeyondEnddate: number[] = [];
+            const checkBeyondEnddate: any[] = [];
             const totalPredecessorsCollection: IGanttData[] = [];
-            const totalPredecessorsCollectionId: number[] = [];
+            const totalPredecessorsCollectionId: any[] = [];
             let predecessorIndex: number = 0;
             const taskBeyondEnddate: number[] = [];
             const predecessorTaskBeyondEnddate: number[] = [];
@@ -69,12 +69,12 @@ export class CriticalPath {
                 totalRecords[j].slack = dateDifference + ' ' + totalRecords[j].ganttProperties.durationUnit;
                 totalRecords[j].ganttProperties.slack = dateDifference + ' ' + totalRecords[j].ganttProperties.durationUnit;
                 if (totalRecords[j].ganttProperties.endDate >= checkEndDate) {
-                    checkBeyondEnddate.push(parseInt(totalRecords[j].ganttProperties.taskId, 10));
+                    checkBeyondEnddate.push(totalRecords[j].ganttProperties.taskId);
                 }
                 if (totalRecords[j].ganttProperties.predecessor) {
                     if (totalRecords[j].ganttProperties.predecessor.length !== 0) {
                         totalPredecessorsCollection.push(totalRecords[j]);
-                        totalPredecessorsCollectionId.push(parseInt(totalRecords[j].ganttProperties.taskId, 10));
+                        totalPredecessorsCollectionId.push((totalRecords[j].ganttProperties.taskId));
                     }
                 }
             }
@@ -90,7 +90,14 @@ export class CriticalPath {
                         predecessorIndex = modelIds.indexOf(checkBeyondEnddate[k].toString());
                     }
                     else {
-                        predecessorIndex = this.resourceCollectionIds.indexOf(checkBeyondEnddate[k].toString());
+                        let currentRecords: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
+                            return parseInt(data.ganttProperties.taskId) == checkBeyondEnddate[k];
+                        });
+                        for (let i: number = 0; i < currentRecords.length; i++) {
+                            if (!currentRecords[i].hasChildRecords && currentRecords[i].ganttProperties.endDate >= this.maxEndDate) {
+                                predecessorIndex = currentRecords[i].index;
+                            }
+                        }
                     }
                     if (totalRecords[predecessorIndex].ganttProperties.progress < 100) {
                         totalRecords[predecessorIndex].isCritical = true;
@@ -113,12 +120,20 @@ export class CriticalPath {
                 let from: number | string = -1;
                 let toPredecessor: number | string = -1;
                 let fromPredecessor: number | string = -1;
+                let tempTaskId: any;
                 const currentIndex: number = x;
                 const predecessor: IPredecessor[] = totalPredecessorsCollection[x].ganttProperties.predecessor;
                 const individualPredecessorLength: number = totalPredecessorsCollection[x].ganttProperties.predecessor.length;
-                const taskid: number = (parseInt(totalPredecessorsCollection[x].ganttProperties.taskId, 10));
+                const taskid: any = ((totalPredecessorsCollection[x].ganttProperties.taskId));
                 for (let y: number = 0; y < individualPredecessorLength; y++) {
-                    if (parseInt(predecessor[y].from, 10) === taskid) {
+                    if (!isNaN(Number(predecessor[y].from)) && typeof(taskid) != "string") {
+                        tempTaskId = parseInt((predecessor[y].from),10);
+                    } else if (!isNaN(Number(predecessor[y].from)) && typeof(taskid) === "string") {
+                        tempTaskId = predecessor[y].from;
+                    } else {
+                        tempTaskId = predecessor[y].from;
+                    }
+                    if (tempTaskId === taskid) {
                         if (to === -1) {
                             if (!predecessor[y].offset) {
                                 to = predecessor[y].to;
@@ -137,7 +152,14 @@ export class CriticalPath {
                             }
                         }
                     }
-                    if (parseInt(predecessor[y].to, 10) === taskid) {
+                    if (!isNaN(Number(predecessor[y].to)) && typeof(taskid) != "string") {
+                        tempTaskId = parseInt((predecessor[y].to),10);
+                    } else if (!isNaN(Number(predecessor[y].to)) && typeof(taskid) === "string") {
+                        tempTaskId = predecessor[y].to;
+                    } else {
+                        tempTaskId = predecessor[y].to;
+                    }
+                    if (tempTaskId === taskid) {
                         if (from === -1) {
                             if (!predecessor[y].offset) {
                                 from = predecessor[y].from;
@@ -203,7 +225,7 @@ export class CriticalPath {
             this.detailPredecessorCollection = collection;
             this.predecessorCollectionTaskIds = collectionTaskId;
         }
-        if (isCritical === false && this.parent.flatData.length > 0 && !this.parent.enableMultiTaskbar) {
+        if (isCritical === false && this.parent.flatData.length > 0) {
             let pathIndex: number;
             this.parent.enableCriticalPath = false;
             for (let z: number = 0; z < this.criticalPathCollection.length; z++) {
@@ -216,9 +238,11 @@ export class CriticalPath {
         }
     }
     /* eslint-disable-next-line */
-    public slackCalculation(fromDataObject: object[], collection: object[], collectionTaskId: number[], checkEndDate: Date, flatRecords: IGanttData[], modelRecordIds: string[]): void {
+    public slackCalculation(fromDataObject: object[], collection: object[], collectionTaskId: any, checkEndDate: Date, flatRecords: IGanttData[], modelRecordIds: string[]): void {
         const fromDateArray: string[] = fromDataObject[0]['fromdata'].split(',');
         const fromDataPredecessor: string[] = fromDataObject[0]['fromDataPredecessor'].split(',');
+        collectionTaskId = collectionTaskId.toString();
+        collectionTaskId = collectionTaskId.split(',');
         let fromDateArray1: string[] = [];
         let fromTaskIdIndex: number;
         let indexFromTaskId: number;
@@ -230,8 +254,8 @@ export class CriticalPath {
         let ffslack: number;
         for (let i: number = 0; i < fromDateArray.length; i++) {
             fromDateArray1 = fromDateArray[i].split(':');
-            fromTaskIdIndex = collectionTaskId.indexOf(parseInt(fromDateArray1[0], 10));
-            totaskId = collectionTaskId.indexOf(parseInt(fromDataObject[0]['todateID'], 10));
+            fromTaskIdIndex = collectionTaskId.indexOf((fromDateArray1[0].toString()));
+            totaskId = collectionTaskId.indexOf((fromDataObject[0]['todateID'].toString()));
             if (this.parent.viewType === 'ProjectView') {
                 indexFromTaskId = modelRecordIds.indexOf(fromDateArray1[0].toString());
                 indexToTaskId = modelRecordIds.indexOf(fromDataObject[0]['todateID'].toString());
@@ -580,6 +604,7 @@ export class CriticalPath {
     private finalCriticalPath(collection: object[], taskBeyondEnddate: number[], flatRecords: IGanttData[], modelRecordIds: string[], checkEndDate: Date) {
         let criticalPathIds: number[] = [];
         let index: number;
+        let predecessorFrom: any;
         for (let x: number = collection.length - 1; x >= 0; x--) {
             if (this.parent.viewType === 'ProjectView') {
                 index = modelRecordIds.indexOf(collection[x]['taskid'].toString());
@@ -623,7 +648,12 @@ export class CriticalPath {
                     /* eslint-disable-next-line */
                     dateDifference = this.parent.dataOperation.getDuration(currentData.endDate,flatRecords[toID].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
                 }
-                if (parseInt(predecessorLength[i].from, 10) === flatRecords[index][this.parent.taskFields.id] &&
+                if (typeof(flatRecords[index][this.parent.taskFields.id]) === 'number') {
+                    predecessorFrom = parseInt(predecessorLength[i].from, 10);
+                } else {
+                    predecessorFrom = predecessorLength[i].from
+                }
+                if (predecessorFrom === flatRecords[index][this.parent.taskFields.id] &&
                     flatRecords[toID].slack === noSlackValue && dateDifference <= 0) {
                     flatRecords[index].slack = noSlackValue;
                     flatRecords[index].ganttProperties.slack = noSlackValue;
@@ -659,17 +689,37 @@ export class CriticalPath {
         const ganttChartElement: HTMLElement = this.parent.ganttChartModule.chartElement;
         this.parent.removeCriticalPathStyles();
         for (let i: number = 0; i < criticalPathIds.length; i++) {
-            let criticalData: ITaskData;
+            let criticalData: IGanttData;
             if (this.parent.viewType === 'ProjectView') {
-                criticalData = this.parent.flatData[this.parent.ids.indexOf(criticalPathIds[i].toString())];
+                criticalData = this.parent.currentViewData[this.parent.ids.indexOf(criticalPathIds[i].toString())];
             }
             else {
-                criticalData = this.parent.flatData[this.resourceCollectionIds.indexOf(criticalPathIds[i].toString())];
+                let currentRecords: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
+                    return (data.ganttProperties.taskId).toString() == criticalPathIds[i].toString();
+                });
+                for (let i: number = 0; i < currentRecords.length; i++) {
+                    if (currentRecords[i].ganttProperties.isCritical || currentRecords[i].ganttProperties.endDate >= this.maxEndDate) {
+                        criticalData = currentRecords[i];
+                    }
+                }
             }
             const index: number = this.parent.currentViewData.indexOf(criticalData);
             const element: HTMLElement = this.parent.getRowByIndex(index);
             let taskClass: string;
             const columnFields: TaskFieldsModel = this.parent.taskFields;
+            if (criticalData.parentItem) {
+                const parentRecord: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
+                    return criticalData.parentItem.uniqueID == data.uniqueID;
+                })
+                const parentIndex: number = this.parent.currentViewData.indexOf(parentRecord[0]);
+                const parentElement: HTMLElement = this.parent.getRowByIndex(parentIndex);
+                let parentTaskbarElement = parentElement.querySelectorAll('.e-taskbar-main-container')
+                for (let i: number = 0; i < parentTaskbarElement.length; i++) {
+                    if (parentTaskbarElement[i].getAttribute('rowuniqueid') == criticalData['rowUniqueID']) {
+                        addClass(parentTaskbarElement[i].querySelectorAll('.e-gantt-child-taskbar-inner-div'), cls.criticalChildTaskBarInnerDiv);
+                    }
+                }
+            }
             /* eslint-disable-next-line */
             if (this.parent.allowUnscheduledTasks && !criticalData[columnFields.startDate] && !criticalData[columnFields.endDate] && criticalData[columnFields.duration]) {
                 taskClass = cls.criticalUnscheduledTask;
@@ -677,7 +727,8 @@ export class CriticalPath {
             else {
                 taskClass = cls.criticalChildProgressBarInnerDiv;
             }
-            if (element) {
+            if (element && (this.parent.viewType === 'ProjectView' || (this.parent.viewType === 'ResourceView' &&
+               !criticalData.hasChildRecords))) {
                 if (element.getElementsByClassName('e-milestone-top')[0]) {
                     addClass(element.querySelectorAll('.e-milestone-top'), cls.criticalMilestoneTop);
                 }
@@ -696,14 +747,25 @@ export class CriticalPath {
             let index: number = 0;
             let currentdata: object;
             let checking: string[] = [];
-            let checkint: number;
+            let checkint: any;
+            let values: string[];
+            let offsetValue: string;
             for (let i: number = 0; i < this.criticalPathCollection.length; i++) {
                 index = collectionTaskId.indexOf(this.criticalPathCollection[i]);
                 currentdata = collection[index];
                 if (index !== -1 && currentdata['to']) {
                     checking = currentdata['to'].split(',');
                     for (let j: number = 0; j < checking.length; j++) {
-                        checkint = parseInt(checking[j], 10);
+                        values = checking[j].split('+');
+                        offsetValue = '+';
+                        if (checking[j].indexOf('-') >= 0) {
+                            values = checking[j].split('-');
+                            offsetValue = '-';
+                        }
+                        checkint = (values[0].replace(":", ""));
+                        if (typeof(criticalPathIds[j]) === "number") {
+                            checkint = parseInt(values[0], 10);
+                        }
                         if (criticalPathIds.indexOf(checkint) !== -1) {
                             const lineElement: NodeList = this.parent.element.querySelectorAll('#ConnectorLineparent' +
                                 currentdata['taskid'] + 'child' + checkint);

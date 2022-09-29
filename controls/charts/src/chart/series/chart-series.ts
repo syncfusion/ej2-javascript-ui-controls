@@ -73,6 +73,16 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public fill: string;
 
     /**
+     * Used to format the point data label that accepts any global string format like 'C', 'n1', 'P' etc.
+     * It also accepts placeholder like '{value}°C' in which value represent the point data label, e.g, 20°C.
+     *
+     * @default null
+     */
+
+     @Property(null)
+     public format: string;
+
+    /**
      * The opacity for the background.
      *
      * @default 1
@@ -234,6 +244,15 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     @Property(5)
     public height: number;
+
+    /**
+     *If set true , marker get filled with series color.
+     *
+     * @default false
+     */
+
+     @Property(false)
+     public isFilled: boolean;
 
     /**
      * The width of the marker in pixels.
@@ -1577,7 +1596,7 @@ export class Series extends SeriesBase {
      * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
      */
 
-    @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
+    @Complex<BorderModel>({ color: null, width: 0 }, Border)
     public border: BorderModel;
 
     /**
@@ -2186,6 +2205,10 @@ export class Series extends SeriesBase {
                 'transform': transform,
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
+            if (this.seriesElement) {
+                this.seriesElement.setAttribute('aria-label', (this.name + ',' + this.type + ' series with ' + this.points.length + ' data points'));
+                this.seriesElement.setAttribute('aria-hidden', 'false');
+            }
             if (!this.chart.enableCanvas || this.type === 'Bubble') {
                 this.seriesElement.setAttribute("tabindex", index === 0 ? "0" : "");
                 this.seriesElement.setAttribute("style", "outline: none");

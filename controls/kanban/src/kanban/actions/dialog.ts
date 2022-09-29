@@ -201,7 +201,7 @@ export class KanbanDialog {
             remove(element);
             divElement = createElement('div');
             element = createElement('textarea', {
-                className: cls.FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
+                className: cls.FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3', 'aria-label': this.parent.cardSettings.contentField },
                 innerHTML: fieldValue as string
             });
             wrapper.appendChild(divElement).appendChild(element);

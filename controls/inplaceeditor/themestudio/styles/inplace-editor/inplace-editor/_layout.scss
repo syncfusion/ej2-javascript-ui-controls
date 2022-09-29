@@ -1,4 +1,5 @@
 @include export-module('inplaceeditor-layout') {
+
   /*! inplaceeditor layout */
 
   .e-bigger .e-inplaceeditor,
@@ -327,7 +328,7 @@
   .e-inplaceeditor-tip.e-bigger {
     width: auto;
 
-    .e-input-group+.e-editable-loading {
+    .e-input-group + .e-editable-loading {
 
       @if $inplace-skin == 'material' {
         .e-spinner-inner {
@@ -354,7 +355,7 @@
   .e-inplaceeditor,
   .e-inplaceeditor-tip {
 
-    .e-input-group+.e-editable-loading {
+    .e-input-group + .e-editable-loading {
 
       @if $inplace-skin == 'material' {
         .e-spinner-inner {
@@ -363,14 +364,14 @@
       }
     }
 
-    .e-editable-elements:not(.e-richtexteditor)+.e-editable-loading {
+    .e-editable-elements:not(.e-richtexteditor) + .e-editable-loading {
 
       .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
         stroke-width: inherit;
       }
     }
 
-    .e-input-group+.e-editable-loading {
+    .e-input-group + .e-editable-loading {
 
       @if $inplace-skin == 'material' {
         .e-spinner-inner {
@@ -379,7 +380,7 @@
       }
     }
 
-    .e-editable-elements:not(.e-richtexteditor)+.e-editable-loading {
+    .e-editable-elements:not(.e-richtexteditor) + .e-editable-loading {
 
       .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
         stroke-width: inherit;
@@ -496,11 +497,11 @@
           padding: $editor-big-tip-wrapper-padding;
         }
 
-        .e-editable-title+.e-editable-wrapper {
+        .e-editable-title + .e-editable-wrapper {
           padding: $editor-big-wrapper-title-with-padding;
         }
 
-        .e-editable-title+.e-editable-container {
+        .e-editable-title + .e-editable-container {
           padding: $editor-big-wrapper-title-with-padding;
         }
       }
@@ -577,11 +578,11 @@
           }
         }
 
-        .e-editable-title+.e-editable-wrapper {
+        .e-editable-title + .e-editable-wrapper {
           padding: $editor-nrml-wrapper-title-with-padding;
         }
 
-        .e-editable-title+.e-editable-container {
+        .e-editable-title + .e-editable-container {
           padding: $editor-nrml-wrapper-title-with-padding;
         }
       }
@@ -612,7 +613,6 @@
             float: left;
           }
         }
-
       }
     }
   }
@@ -651,8 +651,7 @@
       font-size: $editor-big-tip-title-font-size;
     }
 
-    .e-bigger .e-inplaceeditor .e-editable-action-buttons .e-btn-icon.e-icons
-    .e-bigger.e-inplaceeditor .e-editable-action-buttons .e-btn-icon.e-icons {
+    .e-bigger .e-inplaceeditor .e-editable-action-buttons .e-btn-icon.e-icons .e-bigger.e-inplaceeditor .e-editable-action-buttons .e-btn-icon.e-icons {
       font-size: 22px;
     }
   }

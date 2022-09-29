@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Connector } from '../../../src/diagram/objects/connector';
+import { BezierSegment, Connector } from '../../../src/diagram/objects/connector';
 import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel, BpmnFlowModel, StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
@@ -19,7 +19,7 @@ import { SnapConstraints } from '../../../src/diagram/index';
 import { DiagramTools, DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { IKeyEventArgs } from '../../../src/diagram/objects/interface/IElement'
+import { ICollectionChangeEventArgs, IKeyEventArgs, IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
 Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
 /**
  * Interaction Specification Document
@@ -1864,6 +1864,64 @@ describe('Diagram Control', () => {
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             expect((diagram.selectedItems.connectors as ConnectorModel)[0].segments &&
                 (diagram.selectedItems.connectors as ConnectorModel)[0].segments.length !== 0).toBe(true);
+            diagram.drawingObject = null;
+            done();
+        });
+        it('Draw freehand connector',(done:Function)=>{
+            diagram.tool = DiagramTools.DrawOnce;
+            let connector: ConnectorModel = {
+                id:'freehand1',type:'Freehand'
+            };
+            diagram.drawingObject = connector;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 170, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 230, 350);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 260, 470);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
+            mouseEvents.mouseUpEvent(diagramCanvas, 400, 160);
+            expect((diagram.selectedItems.connectors as ConnectorModel)[0].segments && 
+            ((diagram.selectedItems.connectors as ConnectorModel)[0].segments[1] as BezierSegment).vector1.angle !== 0).toBe(true);
+            diagram.drawingObject = null;
+            done();
+        });
+        it('Draw freehand connector on mouseleave', (done: Function) => {
+            diagram.tool = DiagramTools.DrawOnce;
+            let connectors: ConnectorModel = {
+                id: 'freehand2', type: 'Freehand',
+            };
+            diagram.drawingObject = connectors;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 165, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 260, 365);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 350, 390);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 430);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 500, 190);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect((diagram.selectedItems.connectors as ConnectorModel)[0].segments &&
+                ((diagram.selectedItems.connectors as ConnectorModel)[0].segments[1] as BezierSegment).vector1.distance !== 0).toBe(true);
+            diagram.drawingObject = null;
+            done();
+        });
+        it('Draw freehand connector and perform delete undo functions', (done: Function) => {
+            diagram.tool = DiagramTools.DrawOnce;
+            let connectors: ConnectorModel = {
+                id: 'freehand3', type: 'Freehand',
+            };
+            diagram.drawingObject = connectors;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 195, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 260, 365);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 370, 390);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 430);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 430, 190);
+            mouseEvents.mouseUpEvent(diagramCanvas,430,190);
+            let connectorId:string = diagram.selectedItems.connectors[0].id;
+            diagram.remove();
+            diagram.undo();
+            diagram.select([diagram.nameTable[connectorId]]);
+            expect((diagram.selectedItems.connectors as ConnectorModel)[0].segments &&
+                (diagram.selectedItems.connectors.length !== 0 && (diagram.selectedItems.connectors as ConnectorModel).id === connectorId)).toBe(true);
             diagram.drawingObject = null;
             done();
         });
@@ -3854,4 +3912,102 @@ describe('Drawing Shapes', () => {
         done();
     });
 
+});
+
+describe('Checking diagramAction in CollectionChange and PropertyChange Event', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramString' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel)[] = [];
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+        let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 150 };
+        let node2: NodeModel = { id: 'node3', width: 50, height: 50, offsetX: 300, offsetY: 200 };
+        let node3: NodeModel = { id: 'node4', width: 50, height: 50, offsetX: 370, offsetY: 200 };
+        diagram = new Diagram({
+            width: 550, height: 550, nodes: [node, node1, node2, node3],
+           snapSettings: { constraints: SnapConstraints.ShowLines }
+        });
+
+        diagram.appendTo('#diagramString');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking diagramAction Interaction in Collection Change', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.collectionChange = (args: ICollectionChangeEventArgs) => {
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            diagram.cut();
+            expect(args.diagramAction == 'Render').toBe(true);
+            diagram.paste();
+           expect(args.diagramAction == 'PublicMethod').toBe(true);
+           diagram.undo();
+           diagram.dataBind();
+           expect(args.diagramAction == 'UndoRedo').toBe(true);
+           diagram.redo();
+           diagram.dataBind();
+           let node4: NodeModel = { id: 'node5', width: 100, height: 100, offsetX: 300, offsetY: 300 };
+           diagram.add(node4);
+           diagram.dataBind();
+           expect(args.diagramAction == 'Render').toBe(true);
+           let obj = diagram.nameTable[node4.id];
+           diagram.remove(obj);
+           expect(args.diagramAction == 'PublicMethod').toBe(true);
+           mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 150, 100);
+           mouseEvents.mouseUpEvent(diagramCanvas, 150, 100);
+           expect(args.diagramAction == 'ToolAction').toBe(true);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 200, 100);
+           mouseEvents.mouseDownEvent(diagramCanvas, 200, 100);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 210, 140);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 250, 160);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 280, 180);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 300, 200);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 330, 210);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 360, 260);
+           mouseEvents.mouseMoveEvent(diagramCanvas, 400, 300);
+           mouseEvents.mouseUpEvent(diagramCanvas, 400, 300);
+           diagram.group();
+           expect(args.diagramAction == 'Group');
+        
+        };
+        done();
+    });
+    it('Checking diagramAction Interaction in PropertyChange', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+            expect(args.diagramAction == 'Render').toBe(true);
+            var node5 = { id: 'node6', width: 100, height: 100, offsetX: 800, offsetY: 300 };
+            diagram.add(node5);
+            diagram.dataBind();
+            mouseEvents.clickEvent(diagramCanvas, 800, 300);
+            diagram.nodes[5].style.fill = 'red';
+            diagram.undo();
+            diagram.dataBind();
+            expect(args.diagramAction == 'UndoRedo').toBe(true);
+            diagram.redo();
+            diagram.dataBind();
+            expect(args.diagramAction == 'UndoRedo').toBe(true);
+            mouseEvents.clickEvent(diagramCanvas, 400, 150);
+            mouseEvents.dblclickEvent(diagramCanvas, 400, 150);
+            diagram.nodes[1].annotations[0].content = 'property';
+            diagram.unSelect(diagram.nodes[1]);
+            expect(args.diagramAction == 'TextEdit');
+            diagram.drag(diagram.nodes[2], 400, 300);
+            expect(args.diagramAction == 'isGroupDragging');
+        };
+        done();
+    });
 });

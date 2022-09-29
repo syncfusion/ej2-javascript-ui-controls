@@ -1,4 +1,5 @@
 @include export-module('progress-button-layout') {
+
   /*! Progress Button Layout */
   .e-progress-btn {
     position: relative;
@@ -70,15 +71,15 @@
         .e-spinner {
           display: block;
           line-height: 1;
-       }
-    }
+        }
+      }
 
       &.e-spin-center {
         .e-spinner {
           display: flex;
           justify-content: center;
-         }
-     }
+        }
+      }
 
       &.e-spin-left:not(.e-round) {
         .e-spinner {
@@ -87,7 +88,7 @@
           .e-spinner-inner {
             top: -1px;
           }
-         }
+        }
 
         &.e-rtl {
           .e-spinner {
@@ -110,9 +111,9 @@
           .e-spinner {
             padding-left: 0;
             padding-right: $progress-btn-spinner-padding;
-            }
           }
-    }
+        }
+      }
 
       &.e-spin-top {
         padding-bottom: $progress-btn-spin-btn-padding;
@@ -120,7 +121,7 @@
 
         .e-spinner {
           padding-bottom: $progress-btn-spinner-padding;
-          }
+        }
       }
 
       &.e-spin-bottom {
@@ -142,9 +143,9 @@
             .e-spinner {
               padding-left: $progress-btn-spinner-padding-small;
               padding-right: 0;
-              }
             }
-      }
+          }
+        }
 
         &.e-spin-right:not(.e-round) {
           .e-spinner {
@@ -155,9 +156,9 @@
             .e-spinner {
               padding-left: 0;
               padding-right: $progress-btn-spinner-padding-small;
-              }
             }
-      }
+          }
+        }
 
         &.e-spin-top {
           padding-bottom: $progress-btn-small-spin-btn-padding;
@@ -165,7 +166,7 @@
 
           .e-spinner {
             padding-bottom: $progress-btn-spinner-padding-small;
-         }
+          }
         }
 
         &.e-spin-bottom {
@@ -174,10 +175,10 @@
 
           .e-spinner {
             padding-top: $progress-btn-spinner-padding-small;
-         }
+          }
+        }
       }
     }
-  }
 
     &.e-round-corner {
       border-radius: 5em;
@@ -189,14 +190,14 @@
       .e-progress {
         left: auto;
         right: 0;
-       }
+      }
 
       &.e-vertical {
         .e-progress {
           bottom: auto;
           top: 0;
-         }
-       }
+        }
+      }
     }
 
     .e-spinner-pane {
@@ -252,51 +253,51 @@
         height: auto;
         opacity: 1;
         top: 0;
-        }
+      }
 
       to {
         height: auto;
         opacity: 0;
         top: -100px;
-        }
       }
+    }
 
     @keyframes ProgressSlideDown {
       from {
         height: auto;
         opacity: 1;
         top: 0;
-        }
+      }
 
       to {
         height: auto;
         opacity: 0;
         top: 100px;
-        }
       }
+    }
 
     @keyframes ProgressZoomIn {
       from {
         opacity: 1;
-        transform: translate(0, 0)scale(1);
-        }
+        transform: translate(0, 0) scale(1);
+      }
 
       to {
         opacity: 0;
-        transform: translate(0, 0)scale(3);
-        }
+        transform: translate(0, 0) scale(3);
       }
+    }
 
     @keyframes ProgressZoomOut {
       from {
-        transform: translate(0, 0)scale(1);
+        transform: translate(0, 0) scale(1);
       }
 
       to {
-        transform: translate(0, 0)scale(0);
-        }
+        transform: translate(0, 0) scale(0);
       }
-}
+    }
+  }
 
   #{if(&, '&', '*')}.e-bigger .e-progress-btn,
   #{if(&, '&', '*')}.e-bigger.e-progress-btn {
@@ -304,7 +305,7 @@
       &.e-spin-left:not(.e-round) {
         .e-spinner {
           padding-right: $progress-btn-spinner-padding-bigger;
-       }
+        }
 
         &.e-rtl {
           .e-spinner {
@@ -312,12 +313,12 @@
             padding-right: 0;
           }
         }
-     }
+      }
 
       &.e-spin-right:not(.e-round) {
         .e-spinner {
           padding-left: $progress-btn-spinner-padding-bigger;
-       }
+        }
 
         &.e-rtl {
           .e-spinner {
@@ -325,7 +326,7 @@
             padding-right: $progress-btn-spinner-padding-bigger;
           }
         }
-     }
+      }
 
       &.e-spin-top {
         padding-bottom: $progress-btn-bigger-spin-btn-padding;
@@ -333,8 +334,8 @@
 
         .e-spinner {
           padding-bottom: $progress-btn-spinner-padding-bigger;
+        }
       }
-    }
 
       &.e-spin-bottom {
         padding-bottom: $progress-btn-bigger-spin-btn-padding;
@@ -342,14 +343,14 @@
 
         .e-spinner {
           padding-top: $progress-btn-spinner-padding-bigger;
+        }
       }
-    }
 
       &.e-small {
         &.e-spin-left:not(.e-round) {
           .e-spinner {
             padding-right: $progress-btn-spinner-padding-bigger-small;
-        }
+          }
 
           &.e-rtl {
             .e-spinner {
@@ -357,7 +358,7 @@
               padding-right: 0;
             }
           }
-      }
+        }
 
         &.e-spin-right:not(.e-round) {
           .e-spinner {
@@ -370,7 +371,7 @@
               padding-right: $progress-btn-spinner-padding-bigger-small;
             }
           }
-      }
+        }
 
         &.e-spin-top {
           padding-bottom: $progress-btn-bigger-small-spin-btn-padding;
@@ -378,8 +379,8 @@
 
           .e-spinner {
             padding-bottom: $progress-btn-spinner-padding-bigger-small;
-         }
-       }
+          }
+        }
 
         &.e-spin-bottom {
           padding-bottom: $progress-btn-bigger-small-spin-btn-padding;
@@ -387,9 +388,9 @@
 
           .e-spinner {
             padding-top: $progress-btn-spinner-padding-bigger-small;
+          }
         }
       }
     }
-   }
   }
 }

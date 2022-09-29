@@ -1,10 +1,11 @@
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @mixin user-select {
   -moz-user-select: none;
   -ms-user-select: none;
   -webkit-user-select: none;
   user-select: none;
 }
+
 @mixin sibling-style {
   @if $skin-name == 'material' {
     border-radius: 10px;
@@ -13,6 +14,7 @@
     border: 4px solid transparent;
   }
 }
+
 @mixin sibling-before($position) {
   @if $skin-name == 'material' {
     @if $position == 'rtl' {
@@ -33,6 +35,7 @@
     }
   }
 }
+
 @include export-module('treeview-layout') {
   @keyframes rotation {
     from {
@@ -44,7 +47,7 @@
     }
   }
 
-  @-webkit-keyframes rotation {
+  @-webkit-keyframes rotation { /* stylelint-disable-line at-rule-no-vendor-prefix */
     from {
       -webkit-transform: rotate(0deg);
     }
@@ -198,7 +201,7 @@
           }
         }
 
-        & +  .e-list-icon + .e-list-img {
+        & + .e-list-icon + .e-list-img {
           & + .e-list-text {
             max-width: $treeview-big-check-icon-img-wrap-width;
           }
@@ -259,7 +262,7 @@
       margin: $treeview-big-image-margin;
       @if $skin-name == 'bootstrap4' {
         font-size: $treeview-big-image-font-size;
-        }
+      }
       @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
         & + .e-list-text {
           padding: $treeview-big-image-text-padding;
@@ -279,7 +282,7 @@
         margin: $treeview-big-icon-margin;
         width: $treeview-big-icon-size;
       }
-  }
+    }
 
     .e-icon-collapsible::before,
     .e-icon-expandable::before {
@@ -291,7 +294,7 @@
       @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
 
         .e-text-content {
-          padding-left:  $treeview-big-drag-item-text-padding-left;
+          padding-left: $treeview-big-drag-item-text-padding-left;
         }
 
         .e-icon-collapsible,
@@ -349,7 +352,7 @@
 
           .e-text-content {
             padding-left: 0;
-            padding-right:  $treeview-big-drag-item-text-padding-left;
+            padding-right: $treeview-big-drag-item-text-padding-left;
           }
         }
       }
@@ -387,7 +390,7 @@
             margin: $treeview-icon-image-margin;
           }
         }
-    }
+      }
       @if $skin-name == 'bootstrap4' {
         .e-icon-collapsible,
         .e-icon-expandable {
@@ -458,7 +461,7 @@
           }
         }
 
-        & +  .e-list-icon + .e-list-img {
+        & + .e-list-icon + .e-list-img {
           & + .e-list-text {
             max-width: $treeview-check-icon-img-wrap-width;
           }
@@ -509,7 +512,6 @@
       }
 
       .e-icons.e-icon-collapsible {
-
         -webkit-transform: rotate(90deg);
         transform: rotate(90deg);
       }
@@ -608,9 +610,9 @@
       .e-ripple-container {
         bottom: $ripple-size;
         height: $ripple-height;
-        left:  $ripple-size;
-        right:  $ripple-size;
-        top:  $ripple-size;
+        left: $ripple-size;
+        right: $ripple-size;
+        top: $ripple-size;
         width: $ripple-width;
       }
     }
@@ -632,7 +634,7 @@
 
       .e-input-group {
         height: $treeview-input-height;
-        @if($skin-name == 'FluentUI') {
+        @if ($skin-name == 'FluentUI') {
           margin-top: 3px;
         }
         @else if($skin-name == 'tailwind') {
@@ -849,7 +851,7 @@
         .e-icon-collapsible,
         .e-icon-expandable {
           @if ($skin-name != 'bootstrap5' and $skin-name != 'FluentUI') {
-            margin:  $treeview-drag-icon-margin;
+            margin: $treeview-drag-icon-margin;
           }
 
           @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
@@ -1016,13 +1018,13 @@
       .e-list-img,
       .e-list-icon {
         cursor: auto;
-        }
+      }
 
       .e-list-url {
         cursor: default;
         pointer-events: none;
-        }
       }
+    }
 
     &.e-interaction.e-fullrow-wrap {
       .e-text-content {
@@ -1030,5 +1032,5 @@
       }
     }
   }
-  // sass-lint:enable no-vendor-prefixes
+  /* stylelint-enable property-no-vendor-prefix */
 }

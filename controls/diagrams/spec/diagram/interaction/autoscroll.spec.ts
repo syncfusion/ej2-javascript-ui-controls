@@ -9,7 +9,7 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
 import { MouseEvents } from './mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-import { SnapConstraints, BasicShapeModel, DiagramConstraints } from '../../../src/diagram/index';
+import { SnapConstraints, BasicShapeModel, DiagramConstraints, ConnectorModel } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
 describe('Diagram Control', () => {
@@ -480,6 +480,351 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             expect(diagram.nodes.length === 2).toBe(true)
             done();
+        });
+    });
+
+    describe('AutoScroll Node resizing - Bottom', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check node resizing at bottom', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[3]]);
+            let bounds: any = document.getElementById('resizeSouthEast').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50 + 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 290).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10 + 10);
+                }, 110);
+        });
+    });
+
+    describe('AutoScroll Node resizing - Top', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check node resizing at top', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[1]]);
+            let bounds: any = document.getElementById('resizeNorthEast').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50 - 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y - 50 - 25 - 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 310).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y - 50 - 25 - 10 - 10);
+            }, 110);
+        });
+    });
+    describe('AutoScroll Node resizing - Left NorthWest', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check node resizing at Left NorthWest', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            let bounds: any = document.getElementById('resizeNorthWest').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50, center.y - 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50 - 25, center.y - 50 - 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50 - 25 - 10, center.y - 50 - 25 - 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 310).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x - 50 - 25 - 10 - 10, center.y - 50 - 25 - 10 - 10);
+            }, 110);
+        });
+    });
+    describe('AutoScroll Node resizing - Left SouthWest', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check node resizing at Left SouthWest', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[2]]);
+            let bounds: any = document.getElementById('resizeSouthWest').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50, center.y + 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50 - 25, center.y + 50 + 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50 - 25 - 10, center.y + 50 + 25 + 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 290).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x - 50 - 25 - 10 - 10, center.y + 50 + 25 + 10 + 10);
+            }, 110);
+        });
+    });
+    describe('AutoScroll Node resizing - Right SouthEast', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check node resizing at Right SouthEast', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[3]]);
+            let bounds: any = document.getElementById('resizeSouthEast').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x + 50, center.y + 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x + 50 + 25, center.y + 50 + 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x + 50 + 25 + 10, center.y + 50 + 25 + 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 290).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x + 50 + 25 + 10 + 10, center.y + 50 + 25 + 10 + 10);
+            }, 110);
+        });
+    });
+    describe('AutoScroll Node resizing - Right NorthEast', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check node resizing at Right NorthEast', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[1]]);
+            let bounds: any = document.getElementById('resizeNorthEast').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x + 50, center.y - 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x + 50 + 25, center.y - 50 - 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x + 50 + 25 + 10, center.y - 50 - 25 - 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 310).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x - 50 - 25 - 10 - 10, center.y - 50 - 25 - 10 - 10);
+            }, 110);
+        });
+    });
+    describe('AutoScroll Connector end point dragging', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 200, y: 180 }, annotations: [{ content: 'Connector' }]
+            };
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: -220, offsetY: -240, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 150, height: 100, offsetX: 290, offsetY: -240, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 150, height: 100, offsetX: -220, offsetY: 140, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 150, height: 100, offsetX: 290, offsetY: 140, annotations: [{ content: 'Node4' }]
+            };
+            diagram = new Diagram({
+                width: '700px', height: '500px', nodes: [node, node2, node3, node4],
+                connectors: [connector],
+                scrollSettings: { horizontalOffset: 300, verticalOffset: 300, viewPortHeight: 400, viewPortWidth: 400, scrollLimit: 'Infinity', canAutoScroll: true }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check connector end point dragging', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.connectors[0]]);
+            let bounds: any = document.getElementById('connectorTargetThumb').getBoundingClientRect();
+            let center: PointModel = { x: bounds.x, y: bounds.y };
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50 + 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10);
+            setTimeout(() => {
+                expect(Math.ceil(diagram.scroller.verticalOffset) === 290).toBe(true);
+                done();
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x , center.y + 50 + 25 + 10 + 10);
+            }, 110);
         });
     });
 });

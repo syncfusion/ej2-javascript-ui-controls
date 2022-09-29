@@ -44,10 +44,13 @@ $ddl-bigger-small-line-height: 32px !default;
 $ddl-bigger-small-list-text-indent: 14px !default;
 $ddl-bigger-small-list-header-font-size: $text-xs !default;
 
-//
-
 $ddl-list-border-color: $border-light !default;
 $ddl-list-gradient-color: $border-light !default;
+$mention-gradient-color: $white !default;
+$mention-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
+$mention-chip-bg-color: $content-bg-color-alt2 !default;
+$mention-chip-border-radius: 2px !default;
+$mention-chip-border: none !default;
 $ddl-list-bg-color: $flyout-bg-color !default;
 $ddl-list-header-bg-color: $content-bg-color-focus !default;
 $ddl-list-tap-color: transparent !default;
@@ -56,6 +59,7 @@ $ddl-nodata-font-color: $content-text-color !default;
 $ddl-list-default-font-color: $content-text-color !default;
 $ddl-list-active-border-color: $content-bg-color !default;
 $ddl-list-active-font-color: $content-text-color-selected !default;
+$mention-active-font-color: $primary !default;
 $ddl-list-active-bg-color: $content-bg-color-selected !default;
 $ddl-list-hover-border-color: $content-bg-color !default;
 $ddl-list-hover-bg-color: $content-bg-color-hover !default;
@@ -65,12 +69,13 @@ $ddl-default-header-font-color: $content-text-color !default;
 $ddl-list-focus-color: $content-bg-color-focus !default;
 $ddl-multi-column-border-color: $border-light !default;
 $ddl-list-icon-color: $icon-color !default;
+
 // Small Size color
 $ddl-small-list-font-color: $content-text-color !default;
+
 // Touch Small color
 $ddl-bigger-small-list-font-color: $content-text-color !default;
 $ddl-group-list-item-text-intent: 0 !default;
-
 
 @include export-module('dropdownbase-tailwind') {
   .e-dropdownbase .e-list-item.e-active,

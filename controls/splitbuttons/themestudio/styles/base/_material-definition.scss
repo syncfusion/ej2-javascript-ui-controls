@@ -3,7 +3,7 @@
 
 @if not variable-exists('is-roboto-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains
-  @import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
+  @import url('https://fonts.googleapis.com/css?family=Roboto:400,500');// stylelint-disable-line no-invalid-position-at-import-rule
 }
 
 $is-roboto-loaded: 'true' !default;

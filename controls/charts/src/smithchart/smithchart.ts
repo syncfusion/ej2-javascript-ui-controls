@@ -369,7 +369,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
                 font.size = this.themeStyle.fontSize || title.textStyle.size;
                 const element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
-                element.setAttribute('aria-label', title.description || args.text);
+                element.setAttribute('tabindex', "0");
                 const titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
                 this.svgObject.appendChild(groupEle);
                 if (title.subtitle.text !== '' && title.subtitle.visible) {
@@ -432,7 +432,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 border.width / 2, border.width / 2,
                 this.availableSize.width - border.width,
                 this.availableSize.height - border.width));
-        this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
+        let element: Element = this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
+        element.setAttribute('aria-hidden', 'true');
     }
     /**
      * Called internally if any of the property value changed.
@@ -487,6 +488,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     private initPrivateVariable(): void {
         this.animateSeries = true;
+        this.element.setAttribute('aria-label', this.title.description || this.title.text);
+        this.element.setAttribute('tabindex', "0");
     }
     /**
      * To Initialize the control rendering.

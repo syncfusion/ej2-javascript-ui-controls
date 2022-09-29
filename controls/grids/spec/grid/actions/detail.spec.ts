@@ -812,7 +812,7 @@ describe('Detail template module', () => {
             gridObj = null;
         });
     });
-
+    
     describe('EJ2-61821 - Destroying Grid with child Grid', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

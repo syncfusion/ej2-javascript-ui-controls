@@ -2,59 +2,6 @@
 
 ## [Unreleased]
 
-## 20.2.46 (2022-08-30)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I394983` - Resolved template column not shown in case of stacked header enabled.
-
-## 20.2.45 (2022-08-23)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I387291` - Resolved no records to display when we update the datasource in async way(using Observables).
-- `#F174814` , `#I395357` - Resolved expand/collapse icon not visible while initial rendering(using Observables).
-
-## 20.2.44 (2022-08-16)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I393339` - Resolved script error thrown When hierarchy mode is Both and performing an initial search in case of virtualization enabled.
-
-## 20.2.40 (2022-07-26)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#F175410` - Resolved adding multiple rows through add record method in batch editing.
-
-## 20.2.39 (2022-07-19)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I384210` - Resolved infinite scrolling does not working properly when we toggle between virtualization to infinite scrolling.
-- `#F175598` - The checkbox column selection works properly when the child has an empty child array.
-
-## 20.2.38 (2022-07-12)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I379658` - Remote data aggregate renders properly while on expand/collapse.
-- `#I381526` - Checkbox column selection works properly when multiple hierarchy level record with filtering, searching actions performed.
-- `#I383115`, `#F175737` - Resolved data repeats when we set dataSource through set timeout or created event and also while changing dataSource with virtualization.
-- `#I372485` - `addRecord` method works properly while adding as in between row with infinite scrolling enabled.
-
 ## 20.2.36 (2022-06-30)
 
 ### Tree Grid

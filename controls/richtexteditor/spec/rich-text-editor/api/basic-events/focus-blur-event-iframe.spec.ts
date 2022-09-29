@@ -52,7 +52,7 @@ describe('RTE IFRAME FOCUS and BLUR EVENTS - ', () => {
             expect(blurSpy).toHaveBeenCalled();
         });
     });
-
+    
     describe(' change event when save interval is 0- ', () => {
         let rteObj: RichTextEditor;
         let blurSpy: jasmine.Spy = jasmine.createSpy('onBlur');

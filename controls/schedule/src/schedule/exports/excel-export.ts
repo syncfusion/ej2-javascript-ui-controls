@@ -35,7 +35,8 @@ export class ExcelExport {
         this.processWorkbook(exportColumns, exportName, exportType, eventCollection, separator);
     }
 
-    private processWorkbook(fields: ExportFieldInfo[], name: string, type: ExcelFormat, eventCollection: Record<string, any>[], separator: string): void {
+    private processWorkbook(fields: ExportFieldInfo[], name: string, type: ExcelFormat, eventCollection: Record<string, any>[],
+                            separator: string): void {
         const columns: Column[] = [];
         const rows: Record<string, any>[] = [];
         const columnHeader: Record<string, any>[] = [];

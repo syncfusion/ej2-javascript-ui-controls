@@ -274,7 +274,13 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             PreviousPagerTooltip: 'Go to previous pager items',
             PagerDropDown: 'Items per page',
             PagerAllDropDown: 'Items',
-            All: 'All'
+            All: 'All',
+            Container:'Pager Container',
+            Information: 'Pager Information',
+            ExternalMsg: 'Pager external message',
+            Page: 'Page ',
+            Of: ' of ',
+            Pages: ' Pages',
         };
         this.containerModule = new NumericContainer(this);
         this.pagerMessageModule = new PagerMessage(this);
@@ -287,8 +293,9 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     protected render(): void {
         this.element.setAttribute('data-role', 'pager');
-        this.element.setAttribute('aria-label', 'Pager Container');
         this.element.setAttribute('tabindex', '-1');
+        this.initLocalization();
+        this.element.setAttribute('aria-label', this.getLocalizedLabel('Container'));
         if (this.cssClass) {
             addClass([this.element], [this.cssClass]);
         }
@@ -303,7 +310,6 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 this.pagerTemplate();
             }
         } else {
-            this.initLocalization();
             this.updateRTL();
             this.totalRecordsCount = this.totalRecordsCount || 0;
             this.renderFirstPrevDivForDevice();

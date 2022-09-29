@@ -1,12 +1,14 @@
 @import 'definition.scss';
 
 $skin-name: 'tailwind';
+
 //layout variables
 $diagram-border-stroke-width: 2;
 $diagram-lane-border-stroke-width: 2;
 $diagram-highlighter-border-stroke-width: 2;
-$diagram-symbolpalette-shape-radius: 00px;
+$diagram-symbolpalette-shape-radius: 00px;/* stylelint-disable-line length-zero-no-unit */
 $diagram-tooltip: none;
+
 //normal
 $diagram-endpoint-handle-color: $white;
 $diagram-endpoint-handle-connected-border: $white;
@@ -28,6 +30,7 @@ $diagram-ruler-tick-stroke: $series-3;
 
 $diagram-background-color: $white;
 $diagram-editbox-fontcolor: $black;
+
 //end normal
 //primary
 $diagram-endpoint-handle-connected-color: $primary;
@@ -55,6 +58,7 @@ $diagram-lane-border-strokes: $primary;
 $diagram-text-edit-selection-color: $primary-text-color;
 
 $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
+
 //end primary
 
 .e-icons {
@@ -68,32 +72,32 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 
 @include export-module('diagram-tailwind-icons') {
   .e-diagram-menu {
-    .e-bringforward::before { content: '\e747'; }
-    .e-bringfront::before { content: '\e744'; }
-    .e-sendback::before { content: '\e716'; }
-    .e-sendbackward::before { content: '\e7a3'; }
-    .e-delete::before { content: '\e844'; }
-    .e-ungroup::before { content: '\e7a4'; }
-    .e-group::before { content: '\e74d'; }
-    .e-undo::before { content: '\e7bd'; }
-    .e-redo::before { content: '\e7b9'; }
-    .e-copy::before { content: '\e7ce'; }
-    .e-cut::before { content: '\e763'; }
-    .e-save::before { content: '\e704'; }
-    .e-paste::before { content: '\e75e'; }
-    .e-zoomin::before { content: '\e70a'; }
-    .e-italic::before { content: '\e722'; }
-    .e-close::before { content: '\e771'; }
-    .e-pan::before { content: '\e712'; }
-    .e-bold::before { content: '\e79d'; }
-    .e-underline::before { content: '\e7d4'; }
-    .e-zoomout::before { content: '\e779'; }
-    .e-export::before { content: '\e7bf'; }
-    .e-print::before { content: '\e76c'; }
-    .e-order::before { content: '\e765'; }
-}
+    .e-bringforward::before{ content: '\e747'; }
+    .e-bringfront::before{ content: '\e744'; }
+    .e-sendback::before{ content: '\e716'; }
+    .e-sendbackward::before{ content: '\e7a3'; }
+    .e-delete::before{ content: '\e844'; }
+    .e-ungroup::before{ content: '\e7a4'; }
+    .e-group::before{ content: '\e74d'; }
+    .e-undo::before{ content: '\e7bd'; }
+    .e-redo::before{ content: '\e7b9'; }
+    .e-copy::before{ content: '\e7ce'; }
+    .e-cut::before{ content: '\e763'; }
+    .e-save::before{ content: '\e704'; }
+    .e-paste::before{ content: '\e75e'; }
+    .e-zoomin::before{ content: '\e70a'; }
+    .e-italic::before{ content: '\e722'; }
+    .e-close::before{ content: '\e771'; }
+    .e-pan::before{ content: '\e712'; }
+    .e-bold::before{ content: '\e79d'; }
+    .e-underline::before{ content: '\e7d4'; }
+    .e-zoomout::before{ content: '\e779'; }
+    .e-export::before{ content: '\e7bf'; }
+    .e-print::before{ content: '\e76c'; }
+    .e-order::before{ content: '\e765'; }
+  }
 
   .e-symbolpalette {
-    .e-clear-searchtext::before { content: '\e737'; }
-}
+    .e-clear-searchtext::before{ content: '\e737'; }
+  }
 }

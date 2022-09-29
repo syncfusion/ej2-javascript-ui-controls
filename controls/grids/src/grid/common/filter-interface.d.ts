@@ -4,6 +4,7 @@
 import { Component } from '@syncfusion/ej2-base';
 import { DataManager, Deferred } from '@syncfusion/ej2-data';
 import { DataStateChangeEventArgs } from '../base/interface';
+import { LoadingIndicatorModel } from '../base/grid-model';
 /** @hidden */
 export interface XLColumn {
     field?: string;
@@ -31,6 +32,8 @@ export interface IXLFilter extends Component<HTMLElement> {
     renderTemplates?: Function;
     allowSorting?: boolean;
     cssClass?: string;
+    loadingIndicator?: LoadingIndicatorModel;
+    showMaskRow?: Function;
 }
 /** @hidden */
 export interface FilterStateObj {

@@ -287,11 +287,11 @@ export class FilterDialog {
             this.parent.element.appendChild(sortWrapper);
             let sortAscendElement: HTMLElement = createElement('button', {
                 className: (sortOrder === 'Ascending' ? cls.SORT_SELECTED_CLASS + ' ' : '') + cls.MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Ascend', attrs: { 'type': 'button' }
+                id: this.parent.element.id + '_Sort_Ascend', attrs: { 'type': 'button', 'aria-label': 'button' },
             });
             let sortDescendElement: HTMLElement = createElement('button', {
                 className: (sortOrder === 'Descending' ? cls.SORT_SELECTED_CLASS + ' ' : '') + cls.MEMBER_SORT_CLASS,
-                id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button' }
+                id: this.parent.element.id + '_Sort_Descend', attrs: { 'type': 'button', 'aria-label': 'button' }
             });
             let sortBtnElement: Button = new Button({
                 iconCss: cls.ICON + ' ' + cls.SORT_ASCEND_ICON_CLASS, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass

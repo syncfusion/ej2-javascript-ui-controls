@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Side } from '../enum/enum';import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Side } from '../enum/enum';import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { DiagramTooltipModel } from '../objects/tooltip-model';import { DiagramTooltip } from '../objects/tooltip';
 
 /**
  * Interface for a class UserHandle
@@ -144,6 +144,13 @@ export interface UserHandleModel {
      * @default false
      */
     disableConnectors?: boolean;
+
+    /**
+    * Used to show tooltip for user handle on mouse over.
+    *
+    * @default {}
+    */
+    tooltip?: DiagramTooltipModel;
 
     /**
      * defines geometry of the html element

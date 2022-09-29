@@ -258,6 +258,7 @@ export class CalculatedField implements IAction {
                     className: 'e-list-icon ' + cls.GRID_REMOVE + ' e-icons'
                 });
                 append([element], allElement[i].querySelector('.e-acrdn-header-icon') as HTMLElement);
+                addClass([allElement[i]], cls.SELECT_CLASS);
             }
         }
     }
@@ -394,7 +395,7 @@ export class CalculatedField implements IAction {
             } else {
                 let index: number = parseInt(node.getAttribute('id').split(this.parentID + '_')[1], 10);
                 if (typeof index === 'number') {
-                    this.accordion.removeItem(index);
+                    this.accordion.hideItem(index);
                 }
             }
         }
@@ -1153,7 +1154,7 @@ export class CalculatedField implements IAction {
                 });
                 pivotCalcDiv.appendChild(formulaTitle);
             }
-            let inputDiv: HTMLElement = createElement('div', { id: this.parentID + 'outerDiv', className: cls.CALCINPUTDIV });
+            let inputDiv: HTMLElement = createElement('div', { id: this.parentID + 'innerDiv', className: cls.CALCINPUTDIV });
             let inputObj: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'ddlelement',
                 attrs: { 'type': 'text' },
@@ -1176,6 +1177,7 @@ export class CalculatedField implements IAction {
                             'tabindex': '0',
                             'aria-disabled': 'false',
                             'aria-label': this.parent.localeObj.getConstant('fieldTooltip'),
+                            'role': 'button'
                         },
                         className: cls.ICON + ' ' + cls.CALC_INFO
                     });
@@ -1274,7 +1276,7 @@ export class CalculatedField implements IAction {
                 let okBtn: HTMLElement = outerDiv.querySelector('.' + cls.CALCOKBTN);
                 outerDiv.appendChild(okBtn);
             } else {
-                 if (this.parent.dataType === 'olap') {
+                if (this.parent.dataType === 'olap') {
                     outerDiv.appendChild(olapFieldTreeDiv);
                 }
                 outerDiv.appendChild(pivotCalcDiv);
@@ -1388,7 +1390,7 @@ export class CalculatedField implements IAction {
             for (let type of memberTypeData) {
                 mData.push({ value: type, text: this.parent.localeObj.getConstant(type) });
             }
-         let fields: { [key: string]: Object }[] =
+            let fields: { [key: string]: Object }[] =
                 PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
             for (let item of fields as IOlapField[]) {
                 if (item.spriteCssClass &&
@@ -1397,8 +1399,8 @@ export class CalculatedField implements IAction {
                     fieldData.push({ value: item.id, text: item.caption });
                 }
             }
-        let memberTypeObj: DropDownList = new DropDownList({
-            dataSource: mData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            let memberTypeObj: DropDownList = new DropDownList({
+                dataSource: mData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 fields: { value: 'value', text: 'text' },
                 value: this.fieldType !== null ? this.fieldType : mData[0].value as string,
                 readonly: this.isEdit,

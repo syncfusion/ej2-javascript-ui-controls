@@ -1,5 +1,5 @@
-
 @include export-module('gantt-theme') {
+
   /*! Gantt theme */
 
   .e-gantt {
@@ -37,7 +37,7 @@
     }
 
     .e-grid .e-focused:not(.e-menu-item) {
-      box-shadow: $grid-active-container-border !important; // sass-lint:disable-line no-important
+      box-shadow: $grid-active-container-border !important; /* stylelint-disable-line declaration-no-important */
     }
 
     .e-temp-content {
@@ -58,7 +58,7 @@
 
     .e-gantt-tree-grid-pane {
       .e-timeline-single-header-outer-div {
-        height: $gantt-timeline-single-header-outer-div !important; // sass-lint:disable-line no-important
+        height: $gantt-timeline-single-header-outer-div !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-grid td.e-active {
@@ -89,7 +89,7 @@
       }
 
       .e-timeline-single-header-outer-div {
-        height: $gantt-chart-timeline-single-header-outer-div !important; // sass-lint:disable-line no-important
+        height: $gantt-chart-timeline-single-header-outer-div !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-timeline-top-header-cell {
@@ -142,11 +142,9 @@
           width: $gantt-collapse-progress-width;
         }
 
-
         .e-collapsed-taskbar-drag {
           background-color: $gantt-child-progress-bar;
         }
-
 
         .e-left-connectorpoint-outer-div {
           display: none;
@@ -259,7 +257,6 @@
         .e-progressbar-handler-after {
           border-bottom-color: $progress-handler-background;
         }
-
       }
 
       .e-gantt-dependency-view-container {
@@ -469,103 +466,98 @@
         .e-task-label {
           color: transparent;
         }
-
       }
 
       .e-predecessor-touch-mode {
 
         .e-task-label {
-          color: transparent !important; // sass-lint:disable-line no-important
+          color: transparent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-line {
-          border-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+          border-color: $gantt-inactive-parent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-connector-line-right-arrow {
-          border-left-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+          border-left-color: $gantt-inactive-parent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-connector-line-left-arrow {
-          border-right-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+          border-right-color: $gantt-inactive-parent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-gantt-child-taskbar-inner-div {
-          background: $gantt-inactive-child !important; // sass-lint:disable-line no-important
-          border: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+          background: $gantt-inactive-child !important; /* stylelint-disable-line declaration-no-important */
+          border: $gantt-inactive-child !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-gantt-child-progressbar-inner-div {
-          background-color: transparent !important; // sass-lint:disable-line no-important
-          border: transparent !important; // sass-lint:disable-line no-important
+          background-color: transparent !important; /* stylelint-disable-line declaration-no-important */
+          border: transparent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-milestone-top {
-          border-bottom-color: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+          border-bottom-color: $gantt-inactive-child !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-milestone-bottom {
-          border-top-color: $gantt-inactive-child !important; // sass-lint:disable-line no-important
+          border-top-color: $gantt-inactive-child !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-gantt-parent-taskbar-inner-div {
-          background-color: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
-          border: $gantt-inactive-parent !important; // sass-lint:disable-line no-important
+          background-color: $gantt-inactive-parent !important; /* stylelint-disable-line declaration-no-important */
+          border: $gantt-inactive-parent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-gantt-parent-progressbar-inner-div {
-          background-color: transparent !important; // sass-lint:disable-line no-important
-          border: transparent !important; // sass-lint:disable-line no-important
+          background-color: transparent !important; /* stylelint-disable-line declaration-no-important */
+          border: transparent !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-active-child-task {
 
           .e-gantt-child-taskbar-inner-div {
-            background: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
-            border: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            background: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
+            border: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-milestone-top {
-            border-bottom-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border-bottom-color: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-milestone-bottom {
-            border-top-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border-top-color: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
           }
-
         }
 
         .e-active-connected-task {
 
           .e-gantt-child-taskbar-inner-div {
-            background: $gantt-connected-task !important; // sass-lint:disable-line no-important
-            border: $gantt-connected-task !important; // sass-lint:disable-line no-important
+            background: $gantt-connected-task !important; /* stylelint-disable-line declaration-no-important */
+            border: $gantt-connected-task !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-milestone-top {
-            border-bottom-color: $gantt-connected-task !important; // sass-lint:disable-line no-important
+            border-bottom-color: $gantt-connected-task !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-milestone-bottom {
-            border-top-color: $gantt-connected-task !important; // sass-lint:disable-line no-important
+            border-top-color: $gantt-connected-task !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-line {
-            border-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border-color: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-connector-line-right-arrow {
-            border-left-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border-left-color: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
           }
 
           .e-connector-line-left-arrow {
-            border-right-color: $gantt-child-progress-bar !important; // sass-lint:disable-line no-important
+            border-right-color: $gantt-child-progress-bar !important; /* stylelint-disable-line declaration-no-important */
           }
-
         }
-
       }
-
     }
 
     .e-icons {
@@ -573,9 +565,8 @@
     }
 
     .e-grid .e-icons:not(.e-stop):not(.e-check):not(.e-icon-left):not(.e-date-icon) {
-      color: $gantt-context-menu-icon-color !important; // sass-lint:disable-line no-important
+      color: $gantt-context-menu-icon-color !important; /* stylelint-disable-line declaration-no-important */
     }
-
   }
 
   .e-gantt-dialog {
@@ -598,7 +589,6 @@
       .e-icon-dlg-close {
         color: $gantt-dialog-close-icon-hover-color;
       }
-
     }
 
     .e-tab {
@@ -618,7 +608,6 @@
               color: $gantt-tab-header-active-font-color;
             }
           }
-
         }
 
         .e-toolbar-item {
@@ -629,9 +618,7 @@
             .e-tab-text {
               color: $gantt-tab-header-font-color;
             }
-
           }
-
         }
 
         .e-toolbar-item:not(.e-active) .e-tab-wrap:hover {
@@ -644,13 +631,9 @@
           .e-tab-text {
             color: $gantt-tab-header-hover-font-color;
           }
-
         }
-
       }
-
     }
-
   }
 
   .e-gantt.e-device {
@@ -663,7 +646,6 @@
     .e-backarrowspan {
       color: $gantt-gridpopup-span;
     }
-
   }
 
   .e-gantt .e-gantt-chart .e-criticalconnector-line {

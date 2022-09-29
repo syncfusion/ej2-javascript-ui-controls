@@ -28,7 +28,6 @@ export class NonWorkingDay {
             this.nonworkingContainer = createElement('div', {
                 className: cls.nonworkingContainer
             });
-            this.nonworkingContainer.setAttribute("role","NonWorkingDays")
             this.parent.ganttChartModule.chartBodyContent.appendChild(this.nonworkingContainer);
         }
     }

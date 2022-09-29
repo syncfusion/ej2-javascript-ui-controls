@@ -114,7 +114,7 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.refresh();
-        });       
+        });      
     });
     it('memory leak', () => {
         profile.sample();

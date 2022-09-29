@@ -4,7 +4,8 @@ $dialog-resize-handler-width: 15px;
 $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
 $resize-hanlder-bottom-rtl: 2px;
-//default 
+
+//default
 $dialog-bg-color: $bg-base-0 !default;
 $dialog-icon-color: $content-font !default;
 $dialog-active-icon-color: $selection-font !default;
@@ -14,6 +15,7 @@ $dialog-header-border: none !default;
 $dialog-close-icon-normal-opacity: initial !default;
 $dialog-close-icon-active-opacity: initial !default;
 $dialog-footer-content-border-top: none !default;
+$dialog-alert-footer-content-border-top: none !default;
 $dialog-border: 1px solid $border-default !default;
 $dialog-close-icon-content: '\e7a7' !default;
 $header-content-border-radius: 1px 1px 0 0 !default;
@@ -79,4 +81,5 @@ $dialog-hover-focus-btn-bg-color: $selection-bg !default;
 $dialog-active-btn-bg-color: $selection-bg !default;
 $dialog-headericon-bottom: 0 !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+
 //enddefault

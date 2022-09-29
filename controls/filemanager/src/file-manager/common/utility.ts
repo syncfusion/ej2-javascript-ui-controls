@@ -991,7 +991,7 @@ export function readDropPath(parent: IFileManager): void {
     } else {
         if (parent.navigationpaneModule) {
             let node: Element = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
-            if(!node){
+            if (!node) {
                 let liElement = document.querySelector('[data-id = "' + getValue('id', parent.dropData) + '"]');
                 pathId = liElement.getAttribute("data-uid");
                 node = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);

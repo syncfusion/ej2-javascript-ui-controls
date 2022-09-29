@@ -363,7 +363,6 @@ export class DragAndDrop extends ActionBase {
         this.actionObj.scrollInterval = null;
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = false;
-        this.actionObj.action = null;
         if (this.isAllowDrop(e)) {
             return;
         }
@@ -373,12 +372,12 @@ export class DragAndDrop extends ActionBase {
             cancel: false, data: this.getChangedData(this.updatedData), selectedData: this.updatedData,
             event: e, element: this.actionObj.element, target: target
         };
+        this.actionObj.action = null;
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (dragEventArgs.cancel) {
                 return;
             }
-            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.activeViewOptions.group.allowGroupEdit
-                && !this.parent.rowAutoHeight && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
+            if (this.parent.isSpecificResourceEvents()) {
                 this.parent.crudModule.crudObj.isCrudAction = true;
                 this.parent.crudModule.crudObj.sourceEvent =
                     [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.element.getAttribute('data-group-index'), 10)]];
@@ -613,7 +612,9 @@ export class DragAndDrop extends ActionBase {
                 this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd = util.addDays(util.resetTime(dragEnd), 1);
             }
-            this.updateAllDayEvents(dragStart, dragEnd, this.parent.activeViewOptions.group.byDate ? colIndex : undefined);
+            const index: number = this.parent.activeViewOptions.group.byDate || (this.parent.virtualScrollModule &&
+                !this.parent.activeViewOptions.timeScale.enable) ? colIndex : undefined;
+            this.updateAllDayEvents(dragStart, dragEnd, index);
         }
         this.actionObj.start = new Date(+dragStart);
         this.actionObj.end = new Date(+dragEnd);
@@ -738,10 +739,12 @@ export class DragAndDrop extends ActionBase {
 
     private updateEventHeight(event: Record<string, any>, index?: number, colIndex?: number): void {
         this.verticalEvent.initializeValues();
-        let datesCount: number = 0;
+        let datesCount: number = this.verticalEvent.getStartCount();
         if (!this.parent.uiStateValues.isGroupAdaptive) {
             for (let i: number = 0; i < this.actionObj.groupIndex; i++) {
-                datesCount = datesCount + this.verticalEvent.dateRender[i].length;
+                if (this.verticalEvent.dateRender[i]) {
+                    datesCount = datesCount + this.verticalEvent.dateRender[i].length;
+                }
             }
         }
         const indexGroup: number = this.parent.uiStateValues.isGroupAdaptive ? datesCount : this.actionObj.groupIndex;

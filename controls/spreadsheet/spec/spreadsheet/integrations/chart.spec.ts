@@ -2,6 +2,7 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, GDPData } from '../util/datasource.spec';
 import { CellModel, getFormatFromType, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
+import { getComponent } from '@syncfusion/ej2-base';
 
 /**
  *  Chart test cases
@@ -120,6 +121,21 @@ describe('Chart ->', () => {
                 expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li:nth-child(2)').textContent).toBe('Sum: 197.61');
                 done();
             });
+            it('Chart data not refreshed after merge action', (done: Function) => {
+                const chartObj: any = getComponent(helper.getElementFromSpreadsheet('.e-accumulationchart'), 'accumulationchart');
+                expect(chartObj.series[0].dataSource[5].y).toBe(2.9);
+                expect(chartObj.series[0].dataSource[6].y).toBe(2.4);
+                expect(chartObj.series[1].dataSource[4].y).toBe(2.85);
+                expect(chartObj.series[1].dataSource[5].y).toBe(2.94);
+                expect(chartObj.series[1].dataSource[6].y).toBe(2.93);
+                helper.invoke('merge', ['B6:C10']);
+                expect(chartObj.series[0].dataSource[5].y).toBe(0);
+                expect(chartObj.series[0].dataSource[6].y).toBe(0);
+                expect(chartObj.series[1].dataSource[4].y).toBe(0);
+                expect(chartObj.series[1].dataSource[5].y).toBe(0);
+                expect(chartObj.series[1].dataSource[6].y).toBe(0);
+                done();
+            });
             it('ej2-react-ui-components/issues/79 -> Charts are not loaded if data range is not from active sheet', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 spreadsheet.activeSheetIndex = 1;
@@ -132,6 +148,30 @@ describe('Chart ->', () => {
                     expect(spreadsheet.sheets[1].rows[0].cells[0].chart[0].range).toEqual('Sheet1!A1:C3');
                     done();
                 });
+            });
+        });
+        describe('Dependent use cases->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ index: 1, cells: [{ index: 6, chart: [{ type: 'Pie', range: 'A1:E8' }] }] }],
+                    columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Sheet rename update on chart range', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[6].chart[0].range).toEqual('Sheet1!A1:E8');
+                helper.triggerMouseAction(
+                    'dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'),
+                    helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+                const editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                editorElem.click();
+                editorElem.value = 'Sheet11';
+                helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                expect(spreadsheet.sheets[0].rows[1].cells[6].chart[0].range).toEqual('Sheet11!A1:E8');
+                done();
             });
         });
     });

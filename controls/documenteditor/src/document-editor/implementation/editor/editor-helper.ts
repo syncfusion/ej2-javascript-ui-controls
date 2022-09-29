@@ -100,14 +100,14 @@ export class HelperMethods {
         }
         return hex;
     }
-    public static convertHexToRgb(colorCode: string): any {
+    public static convertHexToRgb(colorCode: string): any  {
         let r: number;
         let g: number;
         let b: number;
         if (colorCode) {
             colorCode = colorCode.replace(/[^0-9A-â€Œâ€‹F]/gi, '');   // To remove # from color code string.
             const colCodeNo: number = parseInt(colorCode, 16);
-            if (colorCode.length == 8) {
+            if(colorCode.length == 8){
                 r = (colCodeNo >> 32) & 255;
                 g = (colCodeNo >> 16) & 255;
                 b = (colCodeNo >> 8) & 255;
@@ -116,8 +116,9 @@ export class HelperMethods {
                 g = (colCodeNo >> 8) & 255;
                 b = colCodeNo & 255;
             }
-            return { 'r': r, 'g': g, 'b': b };;
+            return { 'r': r, 'g': g, 'b': b };
         }
+        return undefined;
     }
 
     public static addCssStyle(css: string): void {

@@ -9538,6 +9538,9 @@ export class Selection {
                 case 40:
                     this.handleControlShiftDownKey();
                     break;
+                case 56:
+                    this.owner.toggleShowHiddenMarksInternal();
+                    break;
             }
         } else {
             switch (key) {

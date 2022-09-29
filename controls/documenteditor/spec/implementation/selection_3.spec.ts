@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer, SfdtExport, DocumentHelper } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, SfdtExport, DocumentHelper} from '../../src/index';
 import { DocumentEditorContainer} from '../../src/document-editor-container/document-editor-container';
 import { Toolbar} from '../../src/document-editor-container/tool-bar/tool-bar';
 import { TestHelper } from '../test-helper.spec';

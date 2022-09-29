@@ -481,8 +481,7 @@ export class BezierSegment extends StraightSegment {
     public getClassName(): string {
         return 'BezierSegment';
     }
-
-    /**
+	/**
     * @private
     * Returns the total points of the bezier curve
     */
@@ -496,7 +495,7 @@ export class BezierSegment extends StraightSegment {
             }
         return points;
     }
-    
+
     /**
     * @private
     * Returns the total points of the bezier curve
@@ -536,7 +535,7 @@ export class BezierSegment extends StraightSegment {
                        t * t * t * ptEnd.y;
             points.push({x ,y} as PointModel);
         }
-    
+
     }
 
 }

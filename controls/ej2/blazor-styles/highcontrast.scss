@@ -3,6 +3,7 @@
  */
 @import "base/highcontrast.scss";
 @import "accordion/highcontrast.scss";
+@import "appbar/highcontrast.scss";
 @import "drop-down-list/highcontrast.scss";
 @import "input/highcontrast.scss";
 @import "popup/highcontrast.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/highcontrast.scss";
 @import "radio-button/highcontrast.scss";
 @import "switch/highcontrast.scss";
+@import "floating-action-button/highcontrast.scss";
+@import "speed-dial/highcontrast.scss";
 @import "list-view/highcontrast.scss";
 @import "sortable/highcontrast.scss";
 @import "daterangepicker/highcontrast.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/highcontrast.scss";
 @import "splitter/highcontrast.scss";
 @import "excel-filter/highcontrast.scss";
+@import "skeleton/highcontrast.scss";
 @import "grid/highcontrast.scss";
 @import "file-manager/highcontrast.scss";
 @import "treegrid/highcontrast.scss";
@@ -64,8 +68,10 @@
 @import "rich-text-editor/highcontrast.scss";
 @import "gantt/highcontrast.scss";
 @import "icons/highcontrast.scss";
+@import "image-editor/highcontrast.scss";
 @import "inplace-editor/highcontrast.scss";
 @import "kanban/highcontrast.scss";
+@import "message/highcontrast.scss";
 @import "toast/highcontrast.scss";
 @import "pdfviewer/highcontrast.scss";
 @import "timepicker/highcontrast.scss";

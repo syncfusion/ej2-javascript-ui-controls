@@ -2768,7 +2768,8 @@ describe('EJ2-61734 - disableHtmlEncode property is not working with Excel Filte
         };
         gridObj.actionComplete = actionComplete;        
         (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
-    });    
+    });
+    
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

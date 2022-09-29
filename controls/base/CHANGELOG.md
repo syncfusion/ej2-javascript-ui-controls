@@ -2,31 +2,7 @@
 
 ## [Unreleased]
 
-## 20.2.48 (2022-09-06)
-
-### Common
-
-#### Bug Fixes
-
-- `#I401438` - The issue with the "License registration through `npx` command" has been resolved.
-
-## 20.2.46 (2022-08-30)
-
-### Common
-
-#### Bug Fixes
-
-- `#SF378052`, `#F176538` - The touch scroll issue in `Grid` has been resolved.
-
-## 20.2.39 (2022-07-19)
-
-### Common
-
-#### Bug Fixes
-
-- `#I372767`, `#I370308` - The empty space issue in `Treeview` component while dragging the element has been resolved.
-
-## 20.2.38 (2022-07-12)
+## 20.3.47 (2022-09-29)
 
 ### Common
 
@@ -105,6 +81,12 @@
 
 - `#I324684` - Resolved the `Treeview` check box issues in safari browser.
 - `#I342741`, `#F172105`, `#I365783`, `#F172867`, `#I367588`, `#I358914` - Provided the `draggable` support for the mobile and touch devices.
+
+### Common
+
+#### Bug Fixes
+
+- `I324684` - Resolved the `Treeview` check box issues in safari browser.
 
 ## 17.4.51 (2020-02-25)
 

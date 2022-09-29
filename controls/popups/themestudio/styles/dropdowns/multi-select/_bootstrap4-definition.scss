@@ -76,6 +76,7 @@ $ddl-rtl-mob-sel-chip-padding: 0 8px 0 4px !default;
 $ddl-rtl-mob-chip-padding: 0 4px 0 8px !default;
 $ddl-overall-close-left: 10px !default;
 $ddl-overall-close-top: 10px !default;
+
 //$ddl-overall-bigger-close-top: 15px !default;
 $ddl-rtl-hooker-left: -15px !default;
 $ddl-chip-close-mob-top: 0 !default;
@@ -120,6 +121,7 @@ $ddl-delim-text-padding-right: 6px !default;
 $ddl-list-rtl-padding-right: 15px !default;
 $ddl-close-rtl-icon-left: 38px !default;
 $ddl-chip-close-rtl-left: -15px !default;
+
 // //$ddl-delim-font-color: $grey-light-font !default;
 $ddl-close-icon-color: $gray-700 !default;
 $ddl-bigger-chip-close-font: 10px !default;
@@ -136,6 +138,7 @@ $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
 $ddl-multiselect-group-list-group-item-rtl-padding-right: 20px !default;
 $ddl-multiselect-label-position: 15px !default;
 $multiselect-disable-font-color: $gray-600 !default;
+
 // Small size
 $ddl-select-all-height-small: 22px !default;
 $ddl-small-chip-height: 20px !default;
@@ -152,6 +155,7 @@ $ddl-chip-close-small-top: 5px !default;
 $ddl-chip-close-hooker-small-left: 4px !default;
 $ddl-chip-close-hooker-small-top: 7px !default;
 $ddl-delimviewheight-small: 22px !default;
+
 // Touch Small size
 $ddl-select-all-height-bigger-small: 34px !default;
 $ddl-bigger-small-chip-height: 30px !default;
@@ -188,7 +192,7 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
     border-right-width: 1px;
   }
 
-  .e-bigger .e-multi-select-wrapper .e-chips>.e-chipcontent {
+  .e-bigger .e-multi-select-wrapper .e-chips > .e-chipcontent {
     font-size: 14px;
   }
 
@@ -242,5 +246,4 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
     height: $multiselect-closer-bigger-height;
     margin-top: $ddl-closer-margin-top-bigger;
   }
-
 }

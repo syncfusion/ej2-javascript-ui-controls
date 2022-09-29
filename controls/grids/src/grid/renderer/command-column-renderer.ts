@@ -7,7 +7,7 @@ import { IGrid, ICellRenderer, CommandModel } from '../base/interface';
 import { CommandButtonType } from '../base/enum';
 import { CellRenderer } from './cell-renderer';
 import { appendChildren } from '../base/util';
-import { destroy, commandColumnDestroy } from '../base/constant';
+import { destroy, commandColumnDestroy  } from '../base/constant';
 
 /**
  * `CommandColumn` used to render command column in grid
@@ -72,7 +72,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         let node: Element = this.element.cloneNode() as Element;
         const uid: string = 'uid';
         node.appendChild(this.unbounDiv.cloneNode());
-        (<HTMLElement>node).setAttribute('aria-label', 'is Command column column header ' + cell.column.headerText);
+        (<HTMLElement>node).setAttribute('aria-label', this.localizer.getConstant('CommandColumnAria') + cell.column.headerText);
         if (cell.column.commandsTemplate) {
             if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string') {
                 const tempID: string = this.parent + 'commandsTemplate';

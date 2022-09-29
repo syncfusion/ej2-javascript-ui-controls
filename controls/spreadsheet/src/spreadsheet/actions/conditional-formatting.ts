@@ -1,9 +1,9 @@
 import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
 import { renderCFDlg, locale, dialog, focus } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
-import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getSheet, getCellIndexes } from '../../workbook/index';
+import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes } from '../../workbook/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
-import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, workbookFormulaOperation } from '../../workbook/common/index';
+import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange } from '../../workbook/common/index';
 import { extend, getNumberDependable, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -204,7 +204,8 @@ export class ConditionalFormatting {
 
         const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
         const value1Inp: HTMLInputElement =
-            this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } }) as HTMLInputElement;
+        this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text', 
+        'aria-label': dlgText } }) as HTMLInputElement;
         const duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
 
         const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
@@ -283,83 +284,6 @@ export class ConditionalFormatting {
         for (let i: number = 0; i < ranges.length; i++) {
             const indexes: number[] = getRangeIndexes(ranges[i].includes(':') ? ranges[i] : `${ranges[i]}:${ranges[i]}`);
             if (rowIdx >= indexes[0] && rowIdx <= indexes[2] && colIdx >= indexes[1] && colIdx <= indexes[3]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private checkRange(indexes: number[][], cf: ConditionalFormatModel): boolean {
-        const ranges: string[] = cf.range.trim().split(',');
-        let left: boolean; let right: boolean; let top: boolean; let bottom; let cfIdx: number[];
-        const checkRange: (idx: number[]) => boolean = (idx: number[]): boolean => {
-            for (let i: number = 0; i < ranges.length; i++) {
-                cfIdx = getRangeIndexes(ranges[i].includes(':') ? ranges[i] : `${ranges[i]}:${ranges[i]}`);
-                if (idx[0] <= cfIdx[0] && idx[1] <= cfIdx[1] && idx[2] >= cfIdx[2] && idx[3] >= cfIdx[3]) {
-                    return true;
-                } else {
-                    top = idx[0] >= cfIdx[0] && idx[0] <= cfIdx[2];
-                    bottom = idx[2] >= cfIdx[0] && idx[2] <= cfIdx[2];
-                    left = idx[1] >= cfIdx[1] && idx[1] <= cfIdx[3];
-                    right = idx[3] >= cfIdx[1] && idx[3] <= cfIdx[3];
-                    if (top && bottom) {
-                        if (left || right || (idx[1] < cfIdx[1] && idx[3] > cfIdx[3])) {
-                            if (idx[0] - cfIdx[0] > 0) {
-                                return true;
-                            }
-                            if (cfIdx[2] - idx[2] > 0) {
-                                return true;
-                            }
-                        }
-                        if (left && idx[1] !== cfIdx[1]) {
-                            return true;
-                        }
-                        if (right && idx[3] !== cfIdx[3]) {
-                            return true;
-                        }
-                    } else if (left && right) {
-                        if (top || bottom || (idx[0] < cfIdx[0] && idx[2] > cfIdx[2])) {
-                            if (idx[1] - cfIdx[1] > 0) {
-                                return true;
-                            }
-                            if (cfIdx[3] - idx[3] > 0) {
-                                return true;
-                            }
-                        }
-                        if (top) {
-                            if (idx[0] !== cfIdx[0]) {
-                                return true;
-                            }
-                        } else if (bottom && idx[2] !== cfIdx[2]) {
-                            return true;
-                        }
-                    } else if (top || bottom) {
-                        if (left) {
-                            if (idx[1] !== cfIdx[1]) {
-                                return true;
-                            }
-                            if (idx[0] - cfIdx[0] > 0) {
-                                return true;
-                            } else if (cfIdx[2] - idx[2] > 0) {
-                                return true;
-                            }
-                        } else if (right) {
-                            if (idx[3] !== cfIdx[3]) {
-                                return true;
-                            }
-                            if (idx[0] - cfIdx[0] > 0) {
-                                return true;
-                            } else if (cfIdx[2] - idx[2] > 0) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        };
-        for (let j: number = 0; j < indexes.length; j++) {
-            if (checkRange(indexes[j])) {
                 return true;
             }
         }
@@ -521,7 +445,7 @@ export class ConditionalFormatting {
     }
 
     private applyCF(args: ApplyCFArgs): void {
-        const checkRange: boolean = !args.cfModel;
+        const rangeCheck: boolean = !args.cfModel;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cfRule: ConditionalFormatModel[] = args.cfModel || sheet.conditionalFormats;
         let indexes: number[][] = [args.indexes];
@@ -549,8 +473,8 @@ export class ConditionalFormatting {
             }
         }
         for (let i: number = cfRule.length - 1; i >= 0; i--) {
-            if (checkRange && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i]) :
-                !this.checkRange(indexes, cfRule[i]))) {
+            if (rangeCheck && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i]) :
+                !checkRange(indexes, cfRule[i].range))) {
                 continue;
             }
             isEditCellUpdated = this.updateCF(args, sheet, <ConditionalFormat>cfRule[i], isEditCellUpdated);

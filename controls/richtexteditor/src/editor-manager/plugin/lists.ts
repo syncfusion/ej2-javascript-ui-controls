@@ -39,8 +39,8 @@ export class Lists {
     }
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.LIST_TYPE, this.applyListsHandler, this);
-        this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.onKeyUp, this);
+        this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
         this.parent.observer.on(EVENTS.SPACE_ACTION, this.spaceKeyAction, this);
     }
     private testList(elem: Element): boolean {
@@ -189,8 +189,7 @@ export class Lists {
         this.removeList(range, e);
         this.firstListBackSpace(range, e);
     }
-    
-    private removeList(range: Range, e: IHtmlKeyboardEvent): void {
+    private removeList(range: Range, e: IHtmlKeyboardEvent): void{
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
@@ -200,9 +199,9 @@ export class Lists {
         if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
         isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
-        (Browser.userAgent.indexOf('Firefox') != -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
+        (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
         range.startOffset === 0 && range.endOffset === 1)) {
-            if (Browser.userAgent.indexOf('Firefox') != -1) {
+            if (Browser.userAgent.indexOf('Firefox') !== -1) {
                 detach(range.commonAncestorContainer.childNodes[0]);
             } else if (range.commonAncestorContainer.nodeName === 'LI') {
                 detach(range.commonAncestorContainer.parentElement);
@@ -212,10 +211,9 @@ export class Lists {
             e.event.preventDefault();
         }
     }
-    
     private onKeyUp(): void {
-        if (!isNOU(this.commonLIParent) && !isNOU(this.commonLIParent.querySelector('.removeList'))) {
-            let currentLIElem: Element = this.commonLIParent.querySelector('.removeList')
+        if (!isNOU(this.commonLIParent) && !isNOU(this.commonLIParent.querySelector('.removeList'))){
+            const currentLIElem: Element = this.commonLIParent.querySelector('.removeList');
             while (!isNOU(currentLIElem.firstChild)) {
                 this.parent.domNode.insertAfter((currentLIElem.firstChild as Element), currentLIElem);
             }
@@ -224,7 +222,7 @@ export class Lists {
     }
 
     private firstListBackSpace(range: Range, e: IHtmlKeyboardEvent): void {
-        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        const startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         if (!isNOU(startNode.closest('OL'))) {
             this.commonLIParent = startNode.closest('OL');
         } else if (!isNOU(startNode.closest('UL'))) {
@@ -234,7 +232,7 @@ export class Lists {
         isNOU(startNode.previousSibling) && !isNOU(this.commonLIParent) && isNOU(this.commonLIParent.previousSibling) &&
         (isNOU(this.commonLIParent.parentElement.closest('OL')) && isNOU(this.commonLIParent.parentElement.closest('UL')) &&
         isNOU(this.commonLIParent.parentElement.closest('LI')))) {
-            let currentElem = createElement('P');
+            const currentElem = createElement('P');
             currentElem.innerHTML = '&#8203;';
             startNode.classList.add('removeList');
             this.commonLIParent.parentElement.insertBefore(currentElem, this.commonLIParent);
@@ -474,23 +472,26 @@ export class Lists {
 
     private applyListsHandler(e: IHtmlSubCommands): void {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        if (Browser.userAgent.indexOf('Firefox') != -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement) {
+        if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement) {
             const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
-            let startNode: Element = <Element>((startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) : range.startOffset]) || range.startContainer);
-            let endNode: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset] || range.endContainer);
+            const startNode: Element = <Element>((startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) :
+                range.startOffset]) || range.startContainer);
+            const endNode: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) :
+                range.endOffset] || range.endContainer);
             let lastSelectionNode: any = endNode.lastChild.nodeName === 'BR' ? (isNOU(endNode.lastChild.previousSibling) ? endNode
                 : endNode.lastChild.previousSibling) : endNode.lastChild;
             while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
             lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
                 lastSelectionNode = lastSelectionNode.lastChild;
             }
-            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, lastSelectionNode, 0, lastSelectionNode.textContent.length);
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, lastSelectionNode, 0,
+                                                       lastSelectionNode.textContent.length);
             range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         }
         if (range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
         range.startOffset === range.endOffset && range.startOffset === 0 &&
-        this.parent.editableElement.textContent.length === 0 && (this.parent.editableElement.childNodes[0].nodeName != 'TABLE' &&
-        this.parent.editableElement.childNodes[0].nodeName != 'IMG')) {
+        this.parent.editableElement.textContent.length === 0 && (this.parent.editableElement.childNodes[0].nodeName !== 'TABLE' &&
+        this.parent.editableElement.childNodes[0].nodeName !== 'IMG')) {
             const focusNode: Node = range.startContainer.childNodes[0];
             this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, focusNode, focusNode, 0, 0);
             range = this.parent.nodeSelection.getRange(this.parent.currentDocument);

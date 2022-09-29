@@ -112,7 +112,7 @@ export class ActionBase {
         const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let trElement: HTMLElement[] = [].slice.call(viewElement.querySelector('tr').children);
         if (!this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0 &&
-            !this.parent.isAdaptive && !this.parent.enableAdaptiveUI) {
+            !this.parent.isAdaptive && !this.parent.enableAdaptiveUI && !this.parent.virtualScrollModule) {
             trElement = this.getResourceElements(trElement as HTMLTableCellElement[]);
         }
         const leftOffset: ClientRect = trElement[0].getBoundingClientRect();
@@ -208,7 +208,7 @@ export class ActionBase {
         let originalElement: HTMLElement[];
         const guid: string = element.getAttribute('data-guid');
         const isMorePopup: boolean = element.offsetParent && element.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS);
-        if (isMorePopup || this.parent.activeView.isTimelineView()) {
+        if (isMorePopup || this.parent.activeView.isTimelineView() || (this.actionObj.action !== 'resize' && this.parent.virtualScrollModule)) {
             originalElement = [].slice.call(this.parent.element.querySelectorAll('[data-guid="' + guid + '"]'));
         } else {
             const tr: HTMLElement = closest(element, 'tr') as HTMLElement;
@@ -433,7 +433,9 @@ export class ActionBase {
         let workDays: number[] = this.parent.activeViewOptions.workDays;
         let groupOrder: string[];
         if (this.parent.activeViewOptions.group.resources.length > 0) {
-            const resources: TdData[] = this.parent.resourceBase.lastResourceLevel.
+            const renderedResource: TdData[] = this.parent.virtualScrollModule && this.parent.virtualScrollModule.isHorizontalScroll ?
+                this.parent.resourceBase.renderedResources : this.parent.resourceBase.lastResourceLevel;
+            const resources: TdData[] = renderedResource.
                 filter((res: TdData) => res.groupIndex === this.actionObj.groupIndex);
             dateRender = resources[0].renderDates;
             const elementSelector: string = `.${cls.WORK_CELLS_CLASS}[data-group-index="${this.actionObj.groupIndex}"]`;

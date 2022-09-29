@@ -268,7 +268,7 @@ export class Edit {
                                 if (formulaRefIndicator) {
                                     formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                 }
-                                if (this.editCellData.sheetIndex === sheet.id - 1) {
+                                if (getSheet(this.parent, this.editCellData.sheetIndex).id === sheet.id) {
                                     this.endEdit(false, e);
                                 } else {
                                     this.parent.goTo(this.editCellData.fullAddr);
@@ -644,7 +644,7 @@ export class Edit {
                         editorElem.textContent.length - 1 && !this.isCellEdit &&
                         this.validCharacters.indexOf(this.editCellData.value.substring(this.selectionStart - 1,
                                                                                        this.selectionStart)) === -1) {
-                        if (this.editCellData.sheetIndex === sheet.id - 1) {
+                        if (getSheet(this.parent, this.editCellData.sheetIndex).id === sheet.id) {
                             const curPos: number = window.getSelection().focusOffset;
                             if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                 if (formulaRefIndicator) {

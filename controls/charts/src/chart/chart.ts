@@ -219,6 +219,15 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public enablePinchZooming: boolean;
 
     /**
+     * If set to true, chart can be rendered with toolbar at initial load.
+     *
+     * @default false
+     */
+
+    @Property(false)
+    public showToolbar: boolean;
+
+    /**
      * If set to true, chart can be zoomed by using mouse wheel.
      *
      * @default false
@@ -1667,6 +1676,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.tooltipModule.previousPoints = [];
         }
         this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute('aria-label', this.description || this.title);
         this.element.setAttribute("class", this.element.getAttribute("class") + " e-chart-focused");
         if (this.element.id === '') {
             const collection: number = document.getElementsByClassName('e-chart').length;
@@ -1700,6 +1710,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.isRtlEnabled = (window.getComputedStyle(document.querySelector('body')).direction === 'rtl');
             this.cartesianChartRendering(loadEventData);
         }
+        this.applyZoomkit();
     }
 
 
@@ -2441,7 +2452,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     null, null, null, null, null, null, null, null, this.enableCanvas
                 );
             if (element) {
-                element.setAttribute('aria-label', this.description || this.title);
                 element.setAttribute('tabindex', '0');
                 element.setAttribute('class', 'e-chart-focused');
             }
@@ -2477,10 +2487,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject,
                 null, null, null, null, null, null, null, null, this.enableCanvas
             );
-        if (element) {
-            element.setAttribute('aria-label', this.description || this.subTitle);
-            element.setAttribute('tabindex', '0');
-        }
     }
     private renderBorder(): void {
         let x: number = 0;
@@ -2501,6 +2507,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBorder', rect, this.renderer) as HTMLElement
             || this.renderer.drawRectangle(rect) as HTMLElement;
+        this.htmlObject.setAttribute('aria-hidden', 'true');
 
         appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw);
         // to draw back ground image for chart
@@ -2536,6 +2543,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder },
                 this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
             this.htmlObject = this.renderer.drawRectangle(rect) as HTMLElement;
+            this.htmlObject.setAttribute('aria-hidden', 'true');
             appendChildElement(
                 this.enableCanvas, this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y',
                 null, null, true, true, previousRect
@@ -3697,7 +3705,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
-        if (this.highlightMode !== 'None') {
+        if (this.highlightMode !== 'None' || this.legendSettings.enableHighlight) {
             modules.push({
                 member: 'Highlight',
                 args: [this]

@@ -95,6 +95,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isSelectAll: boolean;
     private clearIconWidth: number = 0;
     private previousFilterText:string = '';
+    private selectedElementID: string;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -824,7 +825,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.refreshPopup();
                 this.renderReactTemplates();
                 this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
-                attributes(this.inputElement, { 'aria-expanded': 'true' });
+                attributes(this.inputElement, { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options'});
+                if(this.selectedElementID == null){
+                    this.inputElement.removeAttribute('aria-activedescendant');
+                }else{
+                    attributes(this.inputElement, { 'aria-activedescendant': this.selectedElementID});
+                }
                 if (this.isFirstClick) {
                     this.loadTemplate();
                 }
@@ -896,11 +902,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     protected getAriaAttributes(): { [key: string]: string } {
         const ariaAttributes: { [key: string]: string } = {
             'aria-disabled': 'false',
-            'aria-owns': this.element.id + '_options',
-            'role': 'listbox',
-            'aria-multiselectable': 'true',
-            'aria-activedescendant': 'null',
-            'aria-haspopup': 'true',
+            'role': 'combobox',
             'aria-expanded': 'false'
         };
         return ariaAttributes;
@@ -910,7 +912,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             attributes(this.ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
         }
         const disableStatus: boolean = (this.inputElement.disabled) ? true : false;
-        attributes(this.inputElement, this.getAriaAttributes());
+        if(!this.isPopupOpen())
+        {
+            attributes(this.inputElement, this.getAriaAttributes());
+        }
         if (disableStatus) {
             attributes(this.inputElement, { 'aria-disabled': 'true' });
         }
@@ -1000,7 +1005,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     private updateActionList(
         ulElement: HTMLElement,
-        list: { [key: string]: Object }[] | number[] | boolean[] | string[], e?: Object, isUpdated?: boolean): void {
+        list: { [key: string]: Object }[] | number[] | boolean[] | string[],
+        e?: Object, isUpdated?: boolean): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
         if (this.mode === 'CheckBox' && this.showSelectAll) {
             this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
@@ -1761,7 +1767,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.mode === 'CheckBox' && this.enableSelectionOrder) {
             if(this.allowFiltering) {
-              this.previousFilterText = this.targetElement();
+                this.previousFilterText = this.targetElement();
             }
             this.checkBackCommand(e);
         }
@@ -2711,6 +2717,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.removeValue(temp, e, null, true);
                     }
                 }
+                this.selectedElementID = null;
+                this.inputElement.removeAttribute('aria-activedescendant');
             } else {
                 this.clearAllCallback(e);
             }
@@ -3192,7 +3200,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.chipCollectionWrapper) {
                 this.removeChipSelection();
             }
-            attributes(this.inputElement, { 'aria-activedescendant': element.id });
+            this.selectedElementID = element.id;
         }
     }
     private updateDelimeter(delimChar: string, e?: MouseEvent | KeyboardEventArgs): void {
@@ -4205,6 +4213,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.overAllWrapper.classList.remove(iconAnimation);
                     this.popupObj.hide(new Animation(eventArgs.animation));
                     attributes(this.inputElement, { 'aria-expanded': 'false' });
+                    this.inputElement.removeAttribute('aria-owns');
+                    this.inputElement.removeAttribute('aria-activedescendant');
                     if (this.allowFiltering) {
                         this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
                     }
@@ -4394,8 +4404,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
-        Input.createSpanElement(this.overAllWrapper, this.createElement)
-        Input.calculateWidth(this.inputElement, this.overAllWrapper);
+        Input.createSpanElement(this.overAllWrapper, this.createElement);
+        Input.calculateWidth(this.inputElement.parentElement.parentElement, this.overAllWrapper);
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] && this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
         }
@@ -4542,7 +4552,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.ulElement = null;
         this.mainListCollection = null;
         super.destroy();
-        const temp: string[] = ['readonly', 'aria-disabled', 'aria-placeholder', 'placeholder'];
+        const temp: string[] = ['readonly', 'aria-disabled',  'placeholder'];
         let length: number = temp.length;
         while (length > 0) {
             this.inputElement.removeAttribute(temp[length - 1]);

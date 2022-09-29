@@ -122,7 +122,7 @@ export class Selection {
                 this.parent.notify(mergedRange, mergeArgs);
                 if (mergeArgs.isActiveCell) {
                     let cell: CellModel = getCell(sRange[0], sRange[1], sheet, false, true);
-                    isActiveCell = cell.rowSpan > 1 || cell.colSpan > 1;
+                    isActiveCell = cell.rowSpan > 1 && sRange[0] <= args.rowIdx && sRange[2] >= args.rowIdx;
                 }
                 if (rowIdx === args.rowIdx || isActiveCell) {
                     ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;

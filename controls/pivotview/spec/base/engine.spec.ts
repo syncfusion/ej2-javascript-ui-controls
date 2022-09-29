@@ -269,10 +269,10 @@ describe('PivotView spec', () => {
             };
             let pivotEngine: PivotEngine;
             let pageSettings: IPageSettings = {
-                columnSize: 2,
-                rowSize: 2,
-                columnCurrentPage: 1,
-                rowCurrentPage: 1
+                columnPageSize: 2,
+                rowPageSize: 2,
+                currentColumnPage: 1,
+                currentRowPage: 1
             };
             let customProperties: ICustomProperties = {
                 mode: '',
@@ -294,10 +294,10 @@ describe('PivotView spec', () => {
             });
             it('Ensure the page data', () => {
                 let pageSettings: IPageSettings = {
-                    columnSize: 4,
-                    rowSize: 4,
-                    columnCurrentPage: 2,
-                    rowCurrentPage: 2
+                    columnPageSize: 4,
+                    rowPageSize: 4,
+                    currentColumnPage: 2,
+                    currentRowPage: 2
                 };
                 let customProperties: ICustomProperties = {
                     mode: '',
@@ -580,10 +580,10 @@ describe('PivotView spec', () => {
                     isDrillThrough: undefined,
                     localeObj: undefined,
                     pageSettings: {
-                        columnCurrentPage: 1,
-                        rowCurrentPage: 1,
-                        columnSize: 1,
-                        rowSize: 1
+                        currentColumnPage: 1,
+                        currentRowPage: 1,
+                        columnPageSize: 1,
+                        rowPageSize: 1
                     }
                 };
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);

@@ -95,7 +95,7 @@ describe('Map layer testing', () => {
         afterAll(() => {
             maps.destroy();
             maps.mapsTooltipModule = new MapsTooltip(maps);
-            maps.mapsTooltipModule.destroy(maps);
+            maps.mapsTooltipModule.destroy();
             remove(ele);
         });
 

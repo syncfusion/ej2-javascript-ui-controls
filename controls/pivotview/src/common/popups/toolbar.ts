@@ -338,7 +338,7 @@ export class Toolbar {
         let textarea: HTMLElement = createElement('textarea', {
             className: cls.MDX_QUERY_CONTENT,
             innerHTML: this.parent.olapEngineModule.getMDXQuery(this.parent.dataSourceSettings).trim(),
-            attrs: { 'readonly': 'readonly' }
+            attrs: { 'readonly': 'readonly', 'aria-label': this.parent.localeObj.getConstant('mdxQuery') }
         });
         outerDiv.appendChild(textarea);
         this.mdxDialog.content = outerDiv;
@@ -1653,9 +1653,7 @@ export class Toolbar {
     private changeDropDown(args: ChangeEventArgs): void {
         let chartSettings: ChartSettingsModel = JSON.parse(this.parent.getPersistData()).chartSettings;
         if (!(chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined)) {
-            let checked: boolean = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(args.value.toString()) > -1 ?
-                false : true;
-            (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = checked;
+            (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked = true;
         }
         if (['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(args.value.toString()) > -1) {
             (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).disabled = true;

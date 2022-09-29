@@ -47,7 +47,7 @@ export class FullScreen {
                     }
                     this.parent.element.classList.add(classes.CLS_FULL_SCREEN);
                     this.toggleParentOverflow(true);
-                    let isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true: false;
+                    const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
                     this.parent.setContentHeight(null, isExpand);
                     if (this.parent.toolbarModule) {
                         if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {
@@ -96,7 +96,7 @@ export class FullScreen {
                     for (let i: number = 0; i < elem.length; i++) {
                         removeClass([elem[i]], ['e-rte-overflow']);
                     }
-                    let isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true: false;
+                    const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
                     this.parent.setContentHeight(null, isExpand);
                     if (this.parent.toolbarModule) {
                         if (!(this.parent.getBaseToolbarObject().toolbarObj.items[0] as { [key: string]: string }).properties) {

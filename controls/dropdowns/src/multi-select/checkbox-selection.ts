@@ -290,11 +290,8 @@ export class CheckBoxSelection {
             prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {
                 'aria-disabled': 'false',
-                'aria-owns': this.parent.element.id + '_options',
-                'role': 'listbox',
-                'aria-activedescendant': null,
+                'role': 'combobox',
                 'autocomplete': 'off',
-                'autocorrect': 'off',
                 'autocapitalize': 'off',
                 'spellcheck': 'false'
             });

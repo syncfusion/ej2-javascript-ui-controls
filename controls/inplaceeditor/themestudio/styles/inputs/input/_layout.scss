@@ -1,4 +1,5 @@
 @include export-module('input-layout') {
+
   /*! input layout */
   .e-input-group,
   .e-input-group.e-control-wrapper {
@@ -31,14 +32,14 @@
   .e-input-group.e-control-wrapper {
     font-family: $input-font-family;
     font-size: $input-font-size;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-input-group.e-disabled,
   .e-input-group.e-control-wrapper.e-disabled {
     font-family: $input-font-family;
     font-size: $input-font-size;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-input-group input.e-input,
@@ -320,7 +321,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-input-group:not(.e-disabled) .e-input-group-icon:hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -339,7 +340,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
   .e-input-group:not(.e-rtl):not(.e-disabled) .e-input-group-icon:last-child:hover,
   .e-input-group.e-control-wrapper:not(.e-rtl):not(.e-disabled) .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -350,16 +350,13 @@
     }
   }
 
-  .e-input-group .e-input-group-icon + .e-input-group-icon
-  .e-input-group.e-control-wrapper .e-input-group-icon + .e-input-group-icon {
+  .e-input-group .e-input-group-icon + .e-input-group-icon .e-input-group.e-control-wrapper .e-input-group-icon + .e-input-group-icon {
     @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5') {
       border-left-width: $zero-value;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group:not(.e-disabled) .e-input-group-icon:not(:last-child):hover + .e-input-group-icon:not(:last-child):hover
-  .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:not(:last-child):hover + .e-input-group-icon:not(:last-child):hover {
+  .e-input-group:not(.e-disabled) .e-input-group-icon:not(:last-child):hover + .e-input-group-icon:not(:last-child):hover .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:not(:last-child):hover + .e-input-group-icon:not(:last-child):hover {
     @if $input-skin-name == 'highcontrast' {
       -moz-box-sizing: border-box;
       -webkit-box-sizing: border-box;
@@ -422,7 +419,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
   .e-input-group:not(.e-disabled) .e-input-group-icon:first-child:hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:first-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -473,10 +469,10 @@
     }
   }
 
-  .e-input-group.e-float-icon-left >.e-input-group-icon,
-  .e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-float-icon-left >.e-input-group-icon,
-  .e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $input-left-icon-font-size;
       margin: $zero-value;
@@ -506,18 +502,18 @@
     padding: $input-bigger-child-padding;
   }
 
-  .e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-input-group.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-float-input.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $input-bigger-left-icon-font-size;
       margin: $zero-value;
@@ -527,18 +523,18 @@
     }
   }
 
-  .e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-small .e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon {
+  .e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-input-group.e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-small .e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-float-input.e-control-wrapper.e-input-group.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $input-small-left-icon-font-size;
       margin: $zero-value;
@@ -548,18 +544,18 @@
     }
   }
 
-  .e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-input-group.e-float-input.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-input-group.e-control-wrapper.e-float-input.e-small.e-float-icon-left>.e-input-group-icon {
+  .e-input-group.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-input-group.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-input-group.e-float-input.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-input-group.e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-input-group.e-control-wrapper.e-float-input.e-small.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $input-bigger-small-left-icon-font-size;
       margin: $zero-value;
@@ -569,15 +565,15 @@
     }
   }
 
-  .e-input-group.e-float-icon-left:not(.e-disabled)>.e-input-group-icon:active,
-  .e-input-group.e-control-wrapper.e-float-icon-left:not(.e-disabled)>.e-input-group-icon:active {
+  .e-input-group.e-float-icon-left:not(.e-disabled) > .e-input-group-icon:active,
+  .e-input-group.e-control-wrapper.e-float-icon-left:not(.e-disabled) > .e-input-group-icon:active {
     @if $input-skin-name == 'material' {
       background: transparent;
     }
   }
 
-  .e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       cursor: auto;
     }
@@ -702,7 +698,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
   .e-input-group:not(.e-rtl):not(.e-disabled) .e-input + .e-input-group-icon:last-child:hover,
   .e-input-group.e-control-wrapper:not(.e-rtl):not(.e-disabled) .e-input + .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -713,7 +708,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
   .e-input-group:not(.e-disabled) .e-input-group-icon:not(:last-child):hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:not(:last-child):hover {
     @if $input-skin-name == 'highcontrast' {
@@ -724,7 +718,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-float-input.e-input-group.e-small:not(:disabled) .e-input-group-icon:first-child:hover,
   .e-float-input.e-control-wrapper.e-input-group.e-small:not(:disabled) .e-input-group-icon:first-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -767,7 +761,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-rtl:not(.e-disabled) .e-input-group-icon:last-child:hover,
   .e-input-group.e-control-wrapper.e-rtl:not(.e-disabled) .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -792,8 +786,8 @@
     }
   }
 
-  .e-input-group.e-rtl .e-input-group-icon  + .e-input,
-  .e-input-group.e-control-wrapper.e-rtl .e-input-group-icon  + .e-input {
+  .e-input-group.e-rtl .e-input-group-icon + .e-input,
+  .e-input-group.e-control-wrapper.e-rtl .e-input-group-icon + .e-input {
     @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'bootstrap5' and $input-skin-name != 'FluentUI') {
       border-right-width: $zero-value;
     }
@@ -980,7 +974,7 @@
   .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     font-size: $float-placeholder-font-size;
     font-style: $input-font-style;
-    font-weight: 400;
+    font-weight: normal;
     left: 0;
     overflow: hidden;
     padding-left: $float-label-padding;
@@ -994,11 +988,11 @@
     user-select: none;
     white-space: nowrap;
     width: 100%;
-   }
+  }
 
   label.e-float-text,
   .e-float-input label.e-float-text,
-  .e-float-input.e-control-wrapper  label.e-float-text,
+  .e-float-input.e-control-wrapper label.e-float-text,
   .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     top: -11px;
@@ -1006,7 +1000,7 @@
 
   label.e-float-text,
   .e-float-input label.e-float-text,
-  .e-float-input.e-control-wrapper  label.e-float-text,
+  .e-float-input.e-control-wrapper label.e-float-text,
   .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-bigger:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -1652,7 +1646,7 @@
   .e-float-input.e-input-group.e-control-wrapper.e-disabled {
     font-family: $input-font-family;
     font-size: $input-font-size;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-float-input input,
@@ -1851,7 +1845,7 @@
   .e-small .e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-float-input:not(.e-error) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -1870,7 +1864,7 @@
   .e-small .e-float-input.e-control-wrapper:not(.e-error) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-float-input:not(.e-input-group) .e-float-line::before,
@@ -1927,7 +1921,7 @@
   .e-rtl .e-float-input label.e-float-text,
   .e-rtl .e-float-input.e-control-wrapper label.e-float-text,
   .e-rtl label.e-float-text,
-  .e-rtl .e-float-input.e-control-wrapper  label.e-float-text,
+  .e-rtl .e-float-input.e-control-wrapper label.e-float-text,
   .e-rtl.e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-rtl .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-rtl.e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -1940,6 +1934,7 @@
     transform-origin: right top;
   }
 
+  /* stylelint-disable selector-max-empty-lines */
   .e-float-input.e-rtl:not(.e-input-focus) label.e-float-text.e-label-bottom,
   .e-rtl .e-float-input:not(.e-input-focus) label.e-float-text.e-label-bottom,
   .e-float-input.e-rtl.e-control-wrapper:not(.e-input-focus) label.e-float-text.e-label-bottom,
@@ -2042,7 +2037,8 @@
   .e-bigger.e-small.e-rtl .e-float-input.e-control-wrapper input:not(:focus):not(:valid) label.e-float-text.e-label-bottom {
     padding-right: $float-label-padding;
   }
-
+  /* stylelint-enable selector-max-empty-lines */
+  
   .e-input-group.e-corner.e-rtl .e-input:first-child,
   .e-input-group.e-corner.e-rtl .e-input-group-icon:first-child,
   .e-input-group.e-control-wrapper.e-corner.e-rtl .e-input:first-child,
@@ -2495,32 +2491,32 @@
   .e-input-group:not(.e-filled) .e-input-group-icon::after,
   .e-input-group.e-control-wrapper:not(.e-filled) .e-input-group-icon::after {
     @include input-ripple-style;
- }
+  }
 
   .e-input-group .e-input-group-icon.e-input-btn-ripple::after,
   .e-input-group.e-control-wrapper .e-input-group-icon.e-input-btn-ripple::after {
     @include input-ripple-animation;
   }
 
-  // sass-lint:disable no-vendor-prefixes  
+    
   input.e-input#{$css}::-ms-clear,
   .e-float-input input::-ms-clear,
   .e-float-input.e-control-wrapper input::-ms-clear {
     display: none;
   }
 
-  input.e-input[type='search']::-webkit-search-decoration,
-  input.e-input[type='search']::-webkit-search-cancel-button,
-  input.e-input[type='search']::-webkit-search-results-button,
-  input.e-input[type='search']::-webkit-search-results-decoration,
-  .e-float-input input[type='search']::-webkit-search-decoration,
-  .e-float-input input[type='search']::-webkit-search-cancel-button,
-  .e-float-input input[type='search']::-webkit-search-results-button,
-  .e-float-input input[type='search']::-webkit-search-results-decoration,
-  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-decoration,
-  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-cancel-button,
-  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-results-button,
-  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-results-decoration {
+  input.e-input[type = 'search']::-webkit-search-decoration,
+  input.e-input[type = 'search']::-webkit-search-cancel-button,
+  input.e-input[type = 'search']::-webkit-search-results-button,
+  input.e-input[type = 'search']::-webkit-search-results-decoration,
+  .e-float-input input[type = 'search']::-webkit-search-decoration,
+  .e-float-input input[type = 'search']::-webkit-search-cancel-button,
+  .e-float-input input[type = 'search']::-webkit-search-results-button,
+  .e-float-input input[type = 'search']::-webkit-search-results-decoration,
+  .e-float-input.e-control-wrapper input[type = 'search']::-webkit-search-decoration,
+  .e-float-input.e-control-wrapper input[type = 'search']::-webkit-search-cancel-button,
+  .e-float-input.e-control-wrapper input[type = 'search']::-webkit-search-results-button,
+  .e-float-input.e-control-wrapper input[type = 'search']::-webkit-search-results-decoration {
     -webkit-appearance: none;
   }
 
@@ -2556,7 +2552,7 @@
     right: $zero-value;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}::-webkit-input-placeholder,
   input.e-input#{$css}:-moz-placeholder,
   input.e-input#{$css}:-ms-input-placeholder,
@@ -2565,7 +2561,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}::-webkit-input-placeholder,
   textarea.e-input#{$css}:-moz-placeholder,
   textarea.e-input#{$css}:-ms-input-placeholder,
@@ -2574,7 +2570,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-bigger input.e-input#{$css}::-webkit-input-placeholder,
   input.e-bigger.e-input#{$css}::-webkit-input-placeholder,
   .e-bigger input.e-input#{$css}:-moz-placeholder,
@@ -2587,7 +2583,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-bigger textarea.e-input#{$css}::-webkit-input-placeholder,
   textarea.e-bigger.e-input#{$css}::-webkit-input-placeholder,
   .e-bigger textarea.e-input#{$css}:-moz-placeholder,
@@ -2600,7 +2596,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-small input.e-input#{$css}::-webkit-input-placeholder,
   input.e-small.e-input#{$css}::-webkit-input-placeholder,
   .e-small input.e-input#{$css}:-moz-placeholder,
@@ -2613,7 +2609,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-small textarea.e-input#{$css}::-webkit-input-placeholder,
   textarea.e-small.e-input#{$css}::-webkit-input-placeholder,
   .e-small textarea.e-input#{$css}:-moz-placeholder,
@@ -2626,7 +2622,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-bigger input.e-small.e-input#{$css}::-webkit-input-placeholder,
   .e-small input.e-bigger.e-input#{$css}::-webkit-input-placeholder,
   .e-bigger input.e-small.e-input#{$css}:-moz-placeholder,
@@ -2639,7 +2635,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-bigger textarea.e-small.e-input#{$css}::-webkit-input-placeholder,
   .e-small textarea.e-bigger.e-input#{$css}::-webkit-input-placeholder,
   .e-bigger textarea.e-small.e-input#{$css}:-moz-placeholder,
@@ -2652,96 +2648,95 @@
     font-style: $input-font-style;
   }
 
-
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}:-moz-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}:-moz-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group input.e-input:-moz-placeholder {
+  
+  .e-input-group input.e-input:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group textarea.e-input:-moz-placeholder {
+  
+  .e-input-group textarea.e-input:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder {
+  
+  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group.e-control-wrapper textarea.e-input:-moz-placeholder {
+  
+  .e-input-group.e-control-wrapper textarea.e-input:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}:-moz-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group input.e-input:-moz-placeholder {
+  
+  .e-input-group input.e-input:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
-  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder {
+  
+  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}:-moz-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}::-moz-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}::-moz-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}:-ms-input-placeholder {
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}:-ms-input-placeholder {
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}::-webkit-input-placeholder {
     font-style: $input-font-style;
     user-select: none;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}::-webkit-input-placeholder {
     font-style: $input-font-style;
     user-select: none;
@@ -2837,8 +2832,7 @@
   .e-float-input.e-small:not(.e-input-group) input,
   .e-float-input.e-small:not(.e-input-group) input.e-input,
   .e-small .e-float-input:not(.e-input-group) input,
-  .e-small .e-float-input:not(.e-input-group) input.e-input
-  .e-float-input.e-control-wrapper.e-small:not(.e-input-group) input,
+  .e-small .e-float-input:not(.e-input-group) input.e-input .e-float-input.e-control-wrapper.e-small:not(.e-input-group) input,
   .e-float-input.e-control-wrapper.e-small:not(.e-input-group) input.e-input,
   .e-small .e-float-input.e-control-wrapper:not(.e-input-group) input,
   .e-small .e-float-input.e-control-wrapper:not(.e-input-group) input.e-input  {
@@ -3970,8 +3964,7 @@
   .e-rtl .e-float-input.e-float-icon-left .e-input-in-wrap,
   .e-rtl .e-float-input.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
   .e-rtl .e-input-group.e-float-icon-left .e-input-in-wrap,
-  .e-rtl .e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap
-  .e-float-input.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
+  .e-rtl .e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap .e-float-input.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-float-input.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-input-group.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-input-group.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap {
@@ -4219,11 +4212,9 @@
   }
 
   .e-input-group.e-bigger.e-small:not(.e-float-input) .e-input,
-  .e-bigger .e-input-group.e-small:not(.e-float-input) .e-input
-  .e-small .e-input-group.e-bigger:not(.e-float-input) .e-input,
+  .e-bigger .e-input-group.e-small:not(.e-float-input) .e-input .e-small .e-input-group.e-bigger:not(.e-float-input) .e-input,
   .e-input-group.e-control-wrapper.e-bigger.e-small:not(.e-float-input) .e-input,
-  .e-bigger .e-input-group.e-control-wrapper.e-small:not(.e-float-input) .e-input
-  .e-small .e-input-group.e-control-wrapper.e-bigger:not(.e-float-input) .e-input,
+  .e-bigger .e-input-group.e-control-wrapper.e-small:not(.e-float-input) .e-input .e-small .e-input-group.e-control-wrapper.e-bigger:not(.e-float-input) .e-input,
   .e-float-input.e-bigger.e-small input,
   .e-bigger .e-float-input.e-small input,
   .e-small .e-float-input.e-bigger input,
@@ -4352,8 +4343,8 @@
     }
   }
 
-  .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-float-input:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-font-size;
     @if $input-skin-name == 'material' {
@@ -4379,10 +4370,10 @@
     user-select: text;
   }
 
-  .e-bigger .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-font-size;
@@ -4416,10 +4407,10 @@
     user-select: text;
   }
 
-  .e-small .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-small .e-float-input:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
   .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-small-font-size;
@@ -4449,12 +4440,12 @@
     user-select: text;
   }
 
-  .e-bigger .e-float-input.e-small:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-outline) input:-webkit-autofill ~ label.e-float-text,
   .e-small.e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
@@ -4603,7 +4594,7 @@
   .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     font-size: $float-placeholder-font-size;
     font-style: $input-font-style;
-    font-weight: 400;
+    font-weight: normal;
     left: 0;
     overflow: hidden;
     padding-left: $float-label-padding;
@@ -4617,9 +4608,9 @@
     user-select: none;
     white-space: nowrap;
     width: 100%;
-   }
+  }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}::-webkit-textarea-placeholder,
   textarea.e-input#{$css}:-moz-placeholder,
   textarea.e-input#{$css}:-ms-textarea-placeholder,
@@ -4628,7 +4619,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-small textarea.e-input#{$css}::-webkit-textarea-placeholder,
   textarea.e-small.e-input#{$css}::-webkit-textarea-placeholder,
   .e-small textarea.e-input#{$css}:-moz-placeholder,
@@ -4641,7 +4632,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-bigger textarea.e-small.e-input#{$css}::-webkit-textarea-placeholder,
   .e-small textarea.e-bigger.e-input#{$css}::-webkit-textarea-placeholder,
   .e-bigger textarea.e-small.e-input#{$css}:-moz-placeholder,
@@ -4654,7 +4645,7 @@
     font-style: $input-font-style;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-bigger textarea.e-input#{$css}::-webkit-textarea-placeholder,
   textarea.e-bigger.e-input#{$css}::-webkit-textarea-placeholder,
   .e-bigger textarea.e-input#{$css}:-moz-placeholder,
@@ -4667,8 +4658,8 @@
     font-style: $input-font-style;
   }
 
-  .e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-font-size;
     @if $input-skin-name == 'material' {
@@ -4699,10 +4690,10 @@
     user-select: text;
   }
 
-  .e-small .e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-small .e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-small .e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-small-font-size;
@@ -4732,12 +4723,12 @@
     user-select: text;
   }
 
-  .e-bigger .e-float-input.e-small textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input.e-small textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-small.e-bigger .e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-small.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
@@ -4770,10 +4761,10 @@
     user-select: text;
   }
 
-  .e-bigger .e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-font-size;
@@ -5229,6 +5220,43 @@
     }
   }
 
+  .e-outline.e-float-input.e-control-wrapper.e-numeric label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 80px);
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-numeric label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper.e-static-clear label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper.e-numeric.e-static-clear label.e-float-text.e-label-top span.e-float-text-content.e-float-text-overflow {
+    @if $input-skin-name == 'material' {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-static-clear label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow,
+  .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-icon {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 45px);
+    }
+  }
+
+  .e-outline.e-float-input.e-control-wrapper.e-static-clear label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-icon {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 75px);
+    }
+  }
+  
+  .e-outline.e-float-input.e-control-wrapper.e-numeric.e-static-clear label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow {
+    @if $input-skin-name == 'material' {
+      width: calc(100% - 110px);
+    }
+  }
+
   .e-outline.e-float-input.e-input-group:not(.e-float-icon-left).e-input-focus .e-float-line::before,
   .e-outline.e-float-input.e-input-group:not(.e-float-icon-left).e-input-focus .e-float-line::after,
   .e-outline.e-float-input.e-input-group.e-float-icon-left.e-input-focus .e-input-in-wrap .e-float-line::before,
@@ -5336,7 +5364,7 @@
   .e-outline.e-input-group.e-bigger.e-disabled .e-input-group-icon,
   .e-bigger .e-outline.e-input-group.e-disabled .e-input-group-icon,
   .e-outline.e-input-group.e-control-wrapper.e-bigger.e-disabled .e-input-group-icon,
-  .e-bigger .e-outline.e-input-group.e-control-wrapper.e-disabled  .e-input-group-icon {
+  .e-bigger .e-outline.e-input-group.e-control-wrapper.e-disabled .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $outline-bigger-input-icon-font-size;
     }
@@ -5546,7 +5574,7 @@
   .e-outline.e-input-group.e-control-wrapper .e-input-group-icon.e-bigger + .e-input-group-icon.e-bigger:last-child,
   .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon + .e-input-group-icon:last-child,
   .e-outline.e-input-group.e-control-wrapper.e-small.e-bigger .e-input-group-icon + .e-input-group-icon:last-child,
-  .e-outline.e-input-group.e-control-wrapper.e-small  .e-input-group-icon.e-bigger + .e-input-group-icon.e-bigger:last-child,
+  .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon.e-bigger + .e-input-group-icon.e-bigger:last-child,
   .e-bigger .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon + .e-input-group-icon:last-child,
   .e-bigger .e-outline.e-input-group.e-small .e-input-group-icon + .e-input-group-icon:last-child {
     @if $input-skin-name == 'material' {
@@ -6030,7 +6058,6 @@
     }
   }
 
-
   input.e-input.e-bigger.e-small.e-outline,
   .e-bigger input.e-input.e-small.e-outline,
   .e-outline.e-input-group.e-small.e-bigger:not(.e-float-icon-left) input.e-input,
@@ -6459,7 +6486,6 @@
     }
   }
 
-
   .e-bigger.e-outline label.e-float-text::before,
   .e-bigger.e-outline label.e-float-text::after,
   .e-bigger.e-outline.e-float-input label.e-float-text::before,
@@ -6614,7 +6640,7 @@
   .e-rtl.e-outline.e-float-input label.e-float-text::after,
   .e-rtl.e-outline.e-float-input.e-control-wrapper label.e-float-text::after {
     @if $input-skin-name == 'material' {
-      border-radius: $outline-label-border-radius $zero-value ;
+      border-radius: $outline-label-border-radius $zero-value;
       border-right: $zero-value;
       left: $outline-label-after-left-rtl;
     }
@@ -6736,8 +6762,7 @@
   .e-rtl .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon.e-bigger + .e-input-group-icon.e-bigger:last-child,
   .e-rtl.e-bigger .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon + .e-input-group-icon:last-child,
   .e-bigger .e-rtl.e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon + .e-input-group-icon:last-child,
-  .e-rtl.e-bigger .e-outline.e-input-group.e-small .e-input-group-icon + .e-input-group-icon:last-child
-  .e-bigger .e-rtl.e-outline.e-input-group.e-small .e-input-group-icon + .e-input-group-icon:last-child {
+  .e-rtl.e-bigger .e-outline.e-input-group.e-small .e-input-group-icon + .e-input-group-icon:last-child .e-bigger .e-rtl.e-outline.e-input-group.e-small .e-input-group-icon + .e-input-group-icon:last-child {
     @if $input-skin-name == 'material' {
       margin-right: $zero-value;
     }
@@ -6750,11 +6775,9 @@
     }
   }
 
-
   .e-rtl.e-outline.e-input-group .e-input-group-icon,
   .e-rtl .e-outline.e-input-group .e-input-group-icon,
-  .e-rtl.e-outline.e-input-group.e-control-wrapper .e-input-group-icon
-  .e-rtl .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
+  .e-rtl.e-outline.e-input-group.e-control-wrapper .e-input-group-icon .e-rtl .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
       margin-left: $outline-input-icon-margin-right;
       margin-right: $outline-input-icon-margin-left;
@@ -6770,8 +6793,7 @@
   .e-rtl.e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon,
   .e-rtl .e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon,
   .e-rtl .e-outline.e-input-group.e-control-wrapper .e-clear-icon.e-small,
-  .e-small .e-rtl.e-outline.e-input-group.e-control-wrapper .e-clear-icon
-  .e-rtl.e-small .e-outline.e-input-group.e-control-wrapper .e-clear-icon {
+  .e-small .e-rtl.e-outline.e-input-group.e-control-wrapper .e-clear-icon .e-rtl.e-small .e-outline.e-input-group.e-control-wrapper .e-clear-icon {
     @if $input-skin-name == 'material' {
       padding-left: $outline-small-input-icon-margin-left;
       padding-right: $zero-value;
@@ -6784,8 +6806,7 @@
   .e-rtl .e-outline.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
   .e-small .e-rtl.e-outline.e-input-group .e-input-group-icon,
   .e-rtl.e-small .e-outline.e-input-group .e-input-group-icon,
-  .e-small .e-rtl.e-outline.e-input-group.e-control-wrapper .e-input-group-icon
-  .e-rtl.e-small .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
+  .e-small .e-rtl.e-outline.e-input-group.e-control-wrapper .e-input-group-icon .e-rtl.e-small .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
       margin-left: $outline-small-input-icon-margin-left;
       margin-right: $zero-value;
@@ -6797,8 +6818,7 @@
   .e-rtl.e-outline.e-input-group .e-clear-icon.e-bigger,
   .e-rtl.e-outline.e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
   .e-bigger .e-rtl.e-outline.e-input-group .e-clear-icon,
-  .e-bigger .e-rtl.e-outline.e-input-group.e-control-wrapper .e-clear-icon
-  .e-rtl .e-outline.e-input-group.e-bigger .e-clear-icon,
+  .e-bigger .e-rtl.e-outline.e-input-group.e-control-wrapper .e-clear-icon .e-rtl .e-outline.e-input-group.e-bigger .e-clear-icon,
   .e-rtl .e-outline.e-input-group.e-control-wrapper.e-bigger .e-clear-icon,
   .e-rtl .e-outline.e-input-group .e-clear-icon.e-bigger,
   .e-rtl .e-outline.e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
@@ -7215,41 +7235,41 @@
   .e-outline.e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-outline.e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      font-size:  $outline-float-label-font-size;
+      font-size: $outline-float-label-font-size;
     }
   }
 
-  .e-outline.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-outline.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      animation-name: slideTopUp;
+      animation-name: slideTopUp;/* stylelint-disable-line no-unknown-animations */
     }
   }
 
-  .e-outline.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-outline.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
       font-size: $outline-float-label-font-size;
     }
   }
 
-  .e-bigger .e-outline.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-outline.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-outline.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-outline.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      animation-name: slideTopUp;
+      animation-name: slideTopUp;/* stylelint-disable-line no-unknown-animations */
     }
   }
 
-  .e-bigger .e-outline.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-outline.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-outline.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-outline.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
@@ -7257,21 +7277,21 @@
     }
   }
 
-  .e-small .e-outline.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-small.e-outline.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-small .e-outline.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-outline.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      animation-name: slideTopUp;
+      animation-name: slideTopUp;/* stylelint-disable-line no-unknown-animations */
     }
   }
 
-  .e-small .e-outline.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-small.e-outline.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-small .e-outline.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-outline.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
@@ -7279,27 +7299,27 @@
     }
   }
 
-  .e-bigger .e-outline.e-float-input.e-small input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-outline.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-outline.e-float-input.e-bigger.e-small input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-small.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-outline.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-outline.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-small input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-outline.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-small.e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small .e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      animation-name: slideTopUp;
+      animation-name: slideTopUp;/* stylelint-disable-line no-unknown-animations */
     }
   }
 
-  .e-bigger .e-outline.e-float-input.e-small textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-outline.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-outline.e-float-input.e-bigger.e-small textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-outline.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-outline.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-small textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-outline.e-float-input.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-outline.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-small.e-bigger .e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-small.e-outline.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
@@ -7516,8 +7536,7 @@
   .e-filled.e-float-input.e-small:not(.e-input-group) input,
   .e-filled.e-float-input.e-small:not(.e-input-group) input.e-input,
   .e-small .e-filled.e-float-input:not(.e-input-group) input,
-  .e-small .e-filled.e-float-input:not(.e-input-group) input.e-input
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-group) input,
+  .e-small .e-filled.e-float-input:not(.e-input-group) input.e-input .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-group) input,
   .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-group) input.e-input,
   .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input,
   .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input.e-input  {
@@ -8442,11 +8461,9 @@
   }
 
   .e-filled.e-input-group.e-bigger.e-small:not(.e-float-input) .e-input,
-  .e-bigger .e-filled.e-input-group.e-small:not(.e-float-input) .e-input
-  .e-small .e-filled.e-input-group.e-bigger:not(.e-float-input) .e-input,
+  .e-bigger .e-filled.e-input-group.e-small:not(.e-float-input) .e-input .e-small .e-filled.e-input-group.e-bigger:not(.e-float-input) .e-input,
   .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small:not(.e-float-input) .e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small:not(.e-float-input) .e-input
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-bigger:not(.e-float-input) .e-input {
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small:not(.e-float-input) .e-input .e-small .e-filled.e-input-group.e-control-wrapper.e-bigger:not(.e-float-input) .e-input {
     @if $input-skin-name == 'material' {
       min-height: $bigger-small-filled-default-input-min-height;
     }
@@ -8502,7 +8519,7 @@
   .e-filled.e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-filled.e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      font-size:  $filled-float-label-font-size;
+      font-size: $filled-float-label-font-size;
       left: $filled-input-label-left;
       letter-spacing: .009375em;
       line-height: 1.15;
@@ -8567,8 +8584,8 @@
     }
   }
 
-  .e-filled.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
       font-size: $filled-float-label-font-size;
@@ -8578,8 +8595,8 @@
     }
   }
 
-  .e-filled.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-filled.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
       font-size: $filled-float-label-font-size;
@@ -8637,10 +8654,10 @@
     }
   }
 
-  .e-bigger .e-filled.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
@@ -8651,10 +8668,10 @@
     }
   }
 
-  .e-bigger .e-filled.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
@@ -8699,10 +8716,10 @@
     }
   }
 
-  .e-small .e-filled.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
@@ -8713,10 +8730,10 @@
     }
   }
 
-  .e-small .e-filled.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-small .e-filled.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
@@ -8775,12 +8792,12 @@
     }
   }
 
-  .e-bigger .e-filled.e-float-input.e-small input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input input:-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small input:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill input:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input input:-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill input:-webkit-autofill ~ label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
@@ -8793,12 +8810,12 @@
     }
   }
 
-  .e-bigger .e-filled.e-float-input.e-small textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input textarea:-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill~label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input textarea:-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill textarea:-webkit-autofill ~ label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom,
@@ -9030,8 +9047,7 @@
 
   .e-filled.e-float-input.e-rtl label.e-float-text,
   .e-filled.e-float-input.e-rtl label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
+  .e-rtl .e-filled.e-float-input label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper label.e-float-text,
   .e-filled.e-float-input.e-rtl:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -9080,14 +9096,12 @@
 
   .e-filled.e-float-input.e-bigger.e-rtl label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-bigger label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input.e-bigger label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl.e-bigger label.e-float-text,
+  .e-rtl .e-filled.e-float-input.e-bigger label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl.e-bigger label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper.e-bigger label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-rtl label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-rtl label.e-float-text.e-label-bottom,
-  .e-rtl.e-bigger .e-filled.e-float-input label.e-float-text
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
+  .e-rtl.e-bigger .e-filled.e-float-input label.e-float-text .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-rtl.e-control-wrapper label.e-float-text.e-label-bottom,
   .e-rtl.e-bigger .e-filled.e-float-input.e-control-wrapper label.e-float-text,
   .e-bigger.e-filled.e-float-input.e-rtl:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -9144,14 +9158,12 @@
 
   .e-filled.e-float-input.e-small.e-rtl label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-small label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input.e-small label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small label.e-float-text,
+  .e-rtl .e-filled.e-float-input.e-small label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper.e-small label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small label.e-float-text,
   .e-small .e-filled.e-float-input.e-rtl label.e-float-text,
   .e-small .e-filled.e-float-input.e-rtl label.e-float-text.e-label-bottom,
-  .e-rtl.e-small .e-filled.e-float-input label.e-float-text
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
+  .e-rtl.e-small .e-filled.e-float-input label.e-float-text .e-small .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
   .e-small .e-filled.e-float-input.e-rtl.e-control-wrapper label.e-float-text.e-label-bottom,
   .e-rtl.e-small .e-filled.e-float-input.e-control-wrapper label.e-float-text,
   .e-small.e-filled.e-float-input.e-rtl:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -9208,14 +9220,12 @@
 
   .e-filled.e-float-input.e-small.e-bigger.e-rtl label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-small.e-bigger label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input.e-small.e-bigger label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small.e-bigger label.e-float-text,
+  .e-rtl .e-filled.e-float-input.e-small.e-bigger label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small.e-bigger label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper.e-small.e-bigger label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-rtl label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-rtl label.e-float-text.e-label-bottom,
-  .e-rtl.e-small.e-bigger .e-filled.e-float-input label.e-float-text
-  .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
+  .e-rtl.e-small.e-bigger .e-filled.e-float-input label.e-float-text .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-rtl.e-control-wrapper label.e-float-text.e-label-bottom,
   .e-rtl.e-small.e-bigger .e-filled.e-float-input.e-control-wrapper label.e-float-text,
   .e-small.e-bigger.e-filled.e-float-input.e-rtl:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -9949,8 +9959,8 @@
     }
   }
 
-  .e-filled.e-input-group:not(.e-float-input).e-float-icon-left >.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left >.e-input-group-icon {
+  .e-filled.e-input-group:not(.e-float-input).e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $filled-input-icon-size;
       margin: $zero-value;
@@ -9960,12 +9970,12 @@
     }
   }
 
-  .e-filled.e-input-group:not(.e-float-input).e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group:not(.e-float-input).e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group:not(.e-float-input).e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group:not(.e-float-input).e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $bigger-filled-input-icon-size;
       margin: $zero-value;
@@ -9975,12 +9985,12 @@
     }
   }
 
-  .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-float-icon-left>.e-input-group-icon.e-small,
-  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-input-group:not(.e-float-input).e-float-icon-left>.e-input-group-icon,
-  .e-small .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-float-icon-left > .e-input-group-icon.e-small,
+  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-filled.e-input-group:not(.e-float-input).e-float-icon-left > .e-input-group-icon,
+  .e-small .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $small-filled-input-icon-size;
       margin: $zero-value;
@@ -9990,12 +10000,12 @@
     }
   }
 
-  .e-filled.e-input-group:not(.e-float-input).e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper:not(.e-float-input).e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper:not(.e-float-input).e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper:not(.e-float-input).e-small.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group:not(.e-float-input).e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper:not(.e-float-input).e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper:not(.e-float-input).e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper:not(.e-float-input).e-small.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $bigger-small-filled-input-icon-size;
       margin: $zero-value;
@@ -10005,10 +10015,10 @@
     }
   }
 
-  .e-filled.e-input-group.e-float-icon-left >.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left >.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       margin: $zero-value;
       min-height: $filled-input-left-icon-min-height;
@@ -10017,18 +10027,18 @@
     }
   }
 
-  .e-filled.e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       margin: $zero-value;
       min-height: $bigger-filled-input-left-icon-min-height;
@@ -10037,18 +10047,18 @@
     }
   }
 
-  .e-filled.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-filled.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-filled.e-float-input.e-input-group.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left > .e-input-group-icon.e-small,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       margin: $zero-value;
       min-height: $small-filled-input-left-icon-min-height;
@@ -10057,18 +10067,18 @@
     }
   }
 
-  .e-filled.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-float-input.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small.e-float-icon-left>.e-input-group-icon {
+  .e-filled.e-input-group.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-float-input.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger.e-float-icon-left > .e-input-group-icon,
+  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left > .e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small.e-float-icon-left > .e-input-group-icon {
     @if $input-skin-name == 'material' {
       margin: $zero-value;
       min-height: $bigger-small-filled-input-left-icon-min-height;
@@ -10090,8 +10100,7 @@
 
   .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input .e-input-in-wrap label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
+  .e-rtl .e-filled.e-float-input .e-input-in-wrap label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -10108,8 +10117,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-bigger .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-bigger .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-filled.e-float-input.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom
-  .e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom .e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text,
   .e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
@@ -10122,14 +10130,12 @@
 
   .e-filled.e-float-input.e-bigger.e-rtl .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-bigger .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input.e-bigger .e-input-in-wrap label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl.e-bigger .e-input-in-wrap label.e-float-text,
+  .e-rtl .e-filled.e-float-input.e-bigger .e-input-in-wrap label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl.e-bigger .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper.e-bigger .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger .e-input-in-wrap label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
+  .e-rtl.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-rtl.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl.e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-bigger.e-filled.e-float-input.e-rtl:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -10150,8 +10156,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-filled.e-float-input.e-small:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom
-  .e-small .e-filled.e-float-input.e-bigger .e-input-in-wrap label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom .e-small .e-filled.e-float-input.e-bigger .e-input-in-wrap label.e-float-text,
   .e-small .e-filled.e-float-input .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-small .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
@@ -10164,14 +10169,12 @@
 
   .e-filled.e-float-input.e-small.e-rtl .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-small .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input.e-small .e-input-in-wrap label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small .e-input-in-wrap label.e-float-text,
+  .e-rtl .e-filled.e-float-input.e-small .e-input-in-wrap label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper.e-small .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap label.e-float-text,
   .e-small .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text,
   .e-small .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl.e-small .e-filled.e-float-input .e-input-in-wrap label.e-float-text
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
+  .e-rtl.e-small .e-filled.e-float-input .e-input-in-wrap label.e-float-text .e-small .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
   .e-small .e-filled.e-float-input.e-rtl.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl.e-small .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-small.e-filled.e-float-input.e-rtl:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -10192,8 +10195,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-filled.e-float-input.e-small.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom
-  .e-small.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom .e-small.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
@@ -10206,14 +10208,12 @@
 
   .e-filled.e-float-input.e-small.e-bigger.e-rtl .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-small.e-bigger .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl .e-filled.e-float-input.e-small.e-bigger .e-input-in-wrap label.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small.e-bigger .e-input-in-wrap label.e-float-text,
+  .e-rtl .e-filled.e-float-input.e-small.e-bigger .e-input-in-wrap label.e-float-text .e-filled.e-float-input.e-control-wrapper.e-rtl.e-small.e-bigger .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-rtl.e-control-wrapper.e-small.e-bigger .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger .e-input-in-wrap label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-rtl .e-input-in-wrap label.e-float-text.e-label-bottom,
-  .e-rtl.e-small.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text
-  .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
+  .e-rtl.e-small.e-bigger .e-filled.e-float-input .e-input-in-wrap label.e-float-text .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl .e-input-in-wrap label.e-float-text,
   .e-small.e-bigger .e-filled.e-float-input.e-rtl.e-control-wrapper .e-input-in-wrap label.e-float-text.e-label-bottom,
   .e-rtl.e-small.e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-small.e-bigger.e-filled.e-float-input.e-rtl:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -10801,8 +10801,7 @@
   .e-rtl .e-filled.e-float-input.e-float-icon-left .e-input-in-wrap,
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
   .e-rtl .e-filled.e-input-group.e-float-icon-left .e-input-in-wrap,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap
-  .e-filled.e-float-input.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
+  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap .e-filled.e-float-input.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-filled.e-float-input.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-filled.e-input-group.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-filled.e-input-group.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap {
@@ -10959,7 +10958,7 @@
     }
   }
 
-  .e-filled.e-float-input.e-input-group.e-float-icon-left  .e-float-line::after,
+  .e-filled.e-float-input.e-input-group.e-float-icon-left .e-float-line::after,
   .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left .e-float-line::after {
     @if $input-skin-name == 'material' {
       @include input-group-animation-right;

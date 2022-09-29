@@ -290,9 +290,7 @@ export class Resize extends ActionBase {
             if (resizeEventArgs.cancel) {
                 return;
             }
-            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.rowAutoHeight
-                && !this.parent.activeViewOptions.group.allowGroupEdit && !this.parent.virtualScrollModule
-                && this.parent.activeViewOptions.group.byGroupID) {
+            if (this.parent.isSpecificResourceEvents()) {
                 this.parent.crudModule.crudObj.sourceEvent =
                     [this.parent.resourceBase.lastResourceLevel[parseInt(resizeEventArgs.element.getAttribute('data-group-index'), 10)]];
                 this.parent.crudModule.crudObj.targetEvent = this.parent.crudModule.crudObj.sourceEvent;

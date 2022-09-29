@@ -678,11 +678,10 @@ describe('Command Column ', () => {
             gridObj.dataBound = dataBound;
             gridObj.goToPage(2);
         });
-  
+
         afterAll(function () {
             destroy(gridObj);
             gridObj = null;
         });
     });
-
 });

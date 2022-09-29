@@ -67,8 +67,6 @@ describe('Schedule work week view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 2).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');

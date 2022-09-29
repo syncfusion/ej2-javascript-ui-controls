@@ -464,7 +464,7 @@ function getViewPortHeight(): number {
  */
 function getViewPortWidth(): number {
     const windowWidth : number = window.innerWidth;
-    let documentReact: ClientRect = document.documentElement.getBoundingClientRect();
-    let offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : documentReact.width;
+    const documentReact: ClientRect = document.documentElement.getBoundingClientRect();
+    const offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : documentReact.width;
     return windowWidth - (windowWidth - offsetWidth);
 }

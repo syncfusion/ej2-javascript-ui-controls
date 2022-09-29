@@ -53,7 +53,7 @@ export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
     cancel?: boolean
     /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
-     * 
+     *
      * @function
      * @param {string} value - Returns the value.
      * @returns {string} - returns the string value
@@ -197,7 +197,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     public timeModule: TimePicker;
     /**
-     * Specifies the name of the field which is used to map data to the server. 
+     * Specifies the name of the field which is used to map data to the server.
      * If name is not given, then component ID is taken as mapping field name.
      *
      * {% codeBlock src='inplace-editor/name/index.md' %}{% endcodeBlock %}
@@ -228,13 +228,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public template: string | HTMLElement;
     /**
      * Defines whether to allow the cross-scripting site or not.
-     * 
+     *
      * @default true
      */
     @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
-     * It enables or disables the parsing of HTML string content into HTML DOM elements for In-place Editor. 
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for In-place Editor.
      * If the value of the property is set to false, the In-place Editor value will be displayed as HTML string instead of HTML DOM elements.
      *
      * @default true
@@ -243,7 +243,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public enableHtmlParse: boolean;
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -329,7 +329,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      *
      * - `Never`: The corresponding field value will never be set initially in the component.
      * - `Always`: The corresponding field value will be set initially in the component.
-     * 
+     *
      * @default 'Never'
      */
     @Property('Never')
@@ -341,7 +341,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * - `Cancel`: Cancel's the editing and resets the old content.
      * - `Submit`: Submit the edited content to the server.
      * - `Ignore`: No action is perform with this type and allows to have many containers open.
-     * 
+     *
      * @default 'Submit'
      */
     @Property('Submit')
@@ -358,7 +358,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     public enablePersistence: boolean;
     /**
      * Specifies whether to enable editing mode or not.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -534,8 +534,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     @Event()
     public destroyed: EmitType<Event>;
     
+    
+    
     private initializeValue(): void{
-        this.needsID=true;
+        
         this.initRender=true;
         this.isTemplate=false;
         this.isVue=false;
@@ -595,6 +597,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.setClass('add', this.cssClass);
         this.renderComplete();
     }
+   
     /**
      * Initializes a new instance of the In-place editor class.
      *
@@ -603,6 +606,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     public constructor(options?: InPlaceEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        this.needsID = true;
     }
     private setClass(action: string, val: string): void {
         if (!this.isEmpty(val)) {

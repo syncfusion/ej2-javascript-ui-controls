@@ -142,6 +142,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected isListSearched: boolean = false;
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
+    protected selectedElementID : string;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -553,8 +554,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 } else if (htmlAttr === 'style') {
                     this.inputWrapper.container.setAttribute('style', this.htmlAttributes[htmlAttr]);
                 } else {
-                    const defaultAttr: string[] = ['title', 'id', 'placeholder', 'aria-placeholder',
-                        'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
+                    const defaultAttr: string[] = ['title', 'id', 'placeholder', 
+                        'role', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
                     const validateAttr: string[] = ['name', 'required'];
                     if (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox') {
                         defaultAttr.push('tabindex');
@@ -581,11 +582,8 @@ export class DropDownList extends DropDownBase implements IInput {
     protected getAriaAttributes(): { [key: string]: string } {
         return {
             'aria-disabled': 'false',
-            'aria-owns': this.element.id + '_options',
             'role': 'combobox',
-            'aria-haspopup': 'true',
             'aria-expanded': 'false',
-            'aria-activedescendant': 'null',
             'aria-live': 'polite',
             'aria-labelledby': this.hiddenElement.id
         };
@@ -1345,10 +1343,6 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.setValue(e as KeyboardEventArgs)) {
             return;
         }
-        attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
-        if (this.isFilterLayout() && this.filterInput) {
-            attributes(this.filterInput, { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
-        }
         if ((!this.isPopupOpen && !isNullOrUndefined(li)) || (this.isPopupOpen && !isNullOrUndefined(e) &&
             (e.type !== 'keydown' || e.type === 'keydown' && (e as KeyboardEventArgs).action === 'enter'))) {
             this.isSelectCustom = false;
@@ -1359,7 +1353,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (Browser.info.name !== 'mozilla') {
             attributes(this.inputElement, { 'aria-label': this.inputElement.value });
-            attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id });
+            attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id != '' ? this.inputElement.id : this.element.id});
             this.targetElement().removeAttribute('aria-live');
         }
     }
@@ -1754,11 +1748,8 @@ export class DropDownList extends DropDownBase implements IInput {
             prepend([parentElement], popupElement);
             attributes(this.filterInput, {
                 'aria-disabled': 'false',
-                'aria-owns': this.element.id + '_options',
-                'role': 'listbox',
-                'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null,
+                'role': 'combobox',
                 'autocomplete': 'off',
-                'autocorrect': 'off',
                 'autocapitalize': 'off',
                 'spellcheck': 'false'
             });
@@ -2057,7 +2048,13 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (!isNullOrUndefined(this.list)) {
                     this.unWireListEvents(); this.wireListEvents();
                 }
-                attributes(this.targetElement(), { 'aria-expanded': 'true' });
+                this.selectedElementID = this.selectedLI ? this.selectedLI.id : null
+                attributes(this.targetElement(), { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options', 'aria-activedescendant': this.selectedElementID});
+                this.inputElement.setAttribute('aria-expanded', 'true');
+                if(this.selectedElementID == null)
+                {
+                    this.targetElement().removeAttribute('aria-activedescendant');
+                }
                 const inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
                 const animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
@@ -2334,6 +2331,9 @@ export class DropDownList extends DropDownBase implements IInput {
             this.filterInput = null;
         }
         attributes(this.targetElement(), { 'aria-expanded': 'false' });
+        this.inputElement.setAttribute('aria-expanded', 'false');
+        this.targetElement().removeAttribute('aria-owns');
+        this.targetElement().removeAttribute('aria-activedescendant');
         this.inputWrapper.container.classList.remove(dropDownListClasses.iconAnimation);
         if (this.isFiltering()) {
             this.actionCompleteData.isUpdated = false;
@@ -2392,6 +2392,7 @@ export class DropDownList extends DropDownBase implements IInput {
             if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
                 this.inputElement.setAttribute('type', 'text');
             }
+            this.inputElement.setAttribute('aria-expanded', 'false');
         } else {
             this.inputElement = this.createElement('input', { attrs: { role: 'combobox', type: 'text' } }) as HTMLInputElement;
             if (this.element.tagName !== this.getNgDirective()) {
@@ -2435,8 +2436,8 @@ export class DropDownList extends DropDownBase implements IInput {
         this.inputWrapper.container.style.width = formatUnit(this.width);
         this.inputWrapper.container.classList.add('e-ddl');
         Input.calculateWidth(this.inputElement, this.inputWrapper.container);
-        if (!isNullOrUndefined(this.inputWrapper) && !isNullOrUndefined(this.inputWrapper.buttons[0]) && this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0] && this.floatLabelType !== 'Never') {
-            this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+        if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && this.inputWrapper.container.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never') {
+            this.inputWrapper.container.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
         }
         this.wireEvent();
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -2486,7 +2487,7 @@ export class DropDownList extends DropDownBase implements IInput {
             attributes(this.inputElement, { 'aria-labelledby': floatLabelElement.id });
         }
         this.renderComplete();
-        }
+    }
 
     private setFooterTemplate(popupEle: HTMLElement): void {
         let compiledString: Function;
@@ -2763,8 +2764,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 Input.removeFloating(this.inputWrapper);
                 Input.addFloating(this.inputElement, newProp.floatLabelType, this.placeholder, this.createElement);
                 if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0] && this.floatLabelType !== 'Never') {
-                   this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
-                }  
+                    this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
+                }
                 break;
             case 'showClearButton':
                 Input.setClearButton(newProp.showClearButton, this.inputElement, this.inputWrapper, null, this.createElement);
@@ -2888,7 +2889,11 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.list.children[0]) || this.list.classList.contains(dropDownBaseClasses.noData)) {
             this.renderPopup(e);
         }
-        attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
+        attributes(this.targetElement(), { 'aria-activedescendant': this.selectedElementID});
+        if(this.selectedElementID == null)
+        {
+            this.targetElement().removeAttribute('aria-activedescendant');
+        }
     }
 
     protected renderHightSearch(): void {
@@ -2994,10 +2999,9 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         if (this.inputElement) {
-            const attrArray: string[] = ['readonly', 'aria-disabled', 'aria-placeholder',
-                'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
-                'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
+            const attrArray: string[] = ['readonly', 'aria-disabled', 'placeholder', 'aria-labelledby', 
+                'aria-expanded', 'autocomplete', 'aria-readonly', 'autocapitalize',
+                'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
             for (let i: number = 0; i < attrArray.length; i++) {
                 this.inputElement.removeAttribute(attrArray[i]);
             }

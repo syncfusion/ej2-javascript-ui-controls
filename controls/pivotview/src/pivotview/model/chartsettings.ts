@@ -1,5 +1,5 @@
 import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';
-import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition } from '@syncfusion/ej2-charts';
+import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
 import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';
@@ -3378,6 +3378,14 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     public enableScrollOnMultiAxis: boolean;
 
     /**
+    * Allows to display chart series in accordance with member name in all chart area.
+    * > It is applicable only when `enableMultipleAxis` property is set to **true**.
+    * @default false
+    */
+    @Property(false)
+    public showMemberSeries: boolean;
+
+    /**
      * Allow options to customize the title in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
      */
     @Complex<PivotChartFontModel>(Theme.chartTitleFont, Font)
@@ -3716,6 +3724,13 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
+
+    /**
+     * It triggers when the legend series clicked.
+     * @event
+     */
+     @Event()
+    public legendClick: EmitType<ILegendClickEventArgs>;
 
     /**
      * It triggers before each axis label is rendered.

@@ -27,7 +27,7 @@
 
       #{if(&, '&', '*')} .e-content table tbody tr.e-month-hide:last-child {
         display: $datepicker-othermonth-row;
-	}
+      }
     }
 
     #{if(&, '&', '*')}.e-popup-wrapper {
@@ -46,7 +46,7 @@
       top: 0;
       width: 100%;
       z-index: 999;
-	}
+    }
 
     #{if(&, '&', '*')} .e-model-header {
       background-color: $datepicker-modal-header-bg;
@@ -60,8 +60,8 @@
         font-weight: $model-year-font-weight;
         line-height: $model-year-line-height;
         margin: 0;
+      }
     }
-}
 
     #{if(&, '&', '*')} .e-model-month,
     #{if(&, '&', '*')} .e-model-day {
@@ -70,10 +70,10 @@
       line-height: $model-month-line-height;
       margin: 0;
     }
-}
+  }
 }
 
-// sass-lint:disable-all
+/* stylelint-disable */
 .e-date-overflow {
   overflow: hidden !important;
 }
@@ -96,6 +96,14 @@
     top:0 !important;
     left: 0 !important;
   }
+
+  .e-datepicker.e-popup-wrapper.e-popup-expand.e-lib.e-popup.e-control.e-popup-open {
+    @if $skin-name == 'material' {
+    min-width: 100%;
+    min-height:100%;
+    }
+  }
+
 }
 
 .e-content-placeholder.e-datepicker.e-placeholder-datepicker {
@@ -109,8 +117,66 @@
   min-height: 40px;
 }
 
-// sass-lint:enable-all
 
+.e-datepick-mob-popup-wrap {
+
+  @if $skin-name == 'material' {
+  
+  #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
+
+    #{if(&, '&', '*')} .e-model-header {
+      height: 15%;
+
+      #{if(&, '&', '*')} .e-popup-close {
+        float: right;
+        margin-right: 10px;
+        padding: 5px;
+      }
+
+      #{if(&, '&', '*')} .e-popup-close::before {
+        content: '\e932';
+        font-family: 'e-icons';
+        color: rgba(0, 0, 0, 0.54);
+      }
+    }
+
+    #{if(&, '&', '*')} .e-calendar {
+      min-width: 100%;
+      min-height:100%;
+      height:100%;
+
+      th{
+        font-size: 9px;
+      }
+      
+      #{if(&, '&', '*')} .e-header.e-month {
+        height: 10%;
+      }
+
+    }
+
+  #{if(&, '&', '*')} .e-calendar-cell-container {
+    height:85%;
+  }
+
+  .e-footer-container
+  {
+    height: 10%;
+  }
+
+  #{if(&, '&', '*')} .e-content.e-month
+  {
+    height: 80%;
+    table
+    {
+    height:100%;
+    }
+
+  }
+
+  }
+}
+}
 
 @media screen and (orientation: landscape) and (max-height: 360px) {
 
@@ -121,3 +187,65 @@
   }
 }
 
+@media screen and (orientation: landscape) {
+  .e-datepick-mob-popup-wrap {
+    @if $skin-name == 'material' {
+    #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
+      #{if(&, '&', '*')} .e-model-header {
+
+        float: left;
+        height: 100%;
+        width: 30%;
+
+        .e-popup-close {
+          float: left;
+          padding: 5px;
+        }
+
+        .e-model-year {
+          font-size: 3.2vw;
+          margin-top: 35%;
+        }
+
+      }
+
+      #{if(&, '&', '*')} .e-model-month ,
+      #{if(&, '&', '*')} .e-model-day {
+        display: block;
+        font-size: 4vw;
+        margin-top: 10%;
+      }
+
+      #{if(&, '&', '*')} .e-header.e-month ,
+      #{if(&, '&', '*')} .e-footer-container {
+        height: 10%;
+      }
+
+      .e-content.e-month {
+        height: 75%;
+      }
+
+      .e-calendar {
+        display: flex;
+      }
+
+      .e-calendar-cell-container {
+        float: right;
+        height: 90%;
+        width: 70%;
+      }
+
+      .e-calendar.e-device .e-month table tbody {
+        display: table-row-group;
+      }
+
+      #{if(&, '&', '*')} .e-content.e-month table ,
+      #{if(&, '&', '*')} .e-content.e-decade table ,
+      #{if(&, '&', '*')} .e-content.e-year table {
+        height: 100%;
+      }
+    }
+  }
+}
+}
+/* stylelint-enable */

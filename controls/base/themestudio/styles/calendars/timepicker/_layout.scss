@@ -7,7 +7,7 @@
 
   .e-time-wrapper,
   #{if(&, '&', '*')}.e-control-wrapper.e-time-wrapper {
-    // sass-lint:disable no-vendor-prefixes
+    /* stylelint-disable property-no-vendor-prefix */
     -webkit-tap-highlight-color: transparent;
 
     #{if(&, '&', '*')} .e-time-icon.e-icons {
@@ -16,7 +16,6 @@
         min-height: $timepicker-normal-input-min-height;
         min-width: $timepicker-normal-input-min-width;
       }
-
     }
 
     #{if(&, '&', '*')} .e-time-icon.e-icons.e-disabled {
@@ -38,7 +37,7 @@
     top: 0;
     width: 100%;
     z-index: 999;
-	}
+  }
 
   #{&}.e-timepicker.e-popup {
     border-style: solid;
@@ -166,7 +165,7 @@
   }
 }
 
-// sass-lint:disable-all
+/* stylelint-disable */
 
 .e-time-overflow {
   overflow: hidden;
@@ -192,4 +191,4 @@
   }
 }
 
-// sass-lint:enable-all
+/* stylelint-enable */

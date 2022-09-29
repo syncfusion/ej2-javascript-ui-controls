@@ -289,39 +289,28 @@ describe('Hide & Show ->', () => {
     });
 
     describe('CR-Issues->', () => {
-        describe('EJ2-50923', () => {
-            beforeEach((done: Function) => {
+        describe('EJ2-50923, EJ2-53947', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{  ranges: [{ dataSource:defaultData }] }] , scrollSettings: { enableVirtualization: false }
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Getting error while unhide 200 hidden rows in spreadsheet->', (done: Function) => {
+            it('EJ2-50923 - Getting error while unhide 200 hidden rows in spreadsheet->', (done: Function) => {
                 helper.invoke('hideRow', [2,202]);
                 expect(helper.getInstance().sheets[0].rows[2].hidden).toBeTruthy();
                 expect(helper.getInstance().sheets[0].rows[202].hidden).toBeTruthy();
+                helper.invoke('hideRow', [2, 202, false]);
                 setTimeout(() => {
-                    helper.invoke('hideRow', [2, 202, false]);
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
-                        expect(helper.getInstance().sheets[0].rows[202].hidden).toBeFalsy();
-                        done();
-                    });
+                    expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
+                    expect(helper.getInstance().sheets[0].rows[202].hidden).toBeFalsy();
+                    done();
                 });
             });
-        });
-        describe('EJ2-53947->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Undo-Redo actions are not working for hidden rows->', (done: Function) => {
+
+            it('EJ2-53947 - Undo-Redo actions are not working for hidden rows->', (done: Function) => {
                 helper.invoke('selectRange', ['A3:A7']);
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                 helper.openAndClickCMenuItem(2, 0, [8], true);
@@ -330,11 +319,9 @@ describe('Hide & Show ->', () => {
                    expect(helper.getInstance().sheets[0].rows[5].hidden).toBeTruthy();
                    helper.invoke('selectRange', ['B2']);
                    helper.getElement('#' + helper.id + '_undo').click();
-                    setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
-                        expect(helper.getInstance().sheets[0].rows[5].hidden).toBeFalsy();
-                        done();
-                    });
+                   expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
+                   expect(helper.getInstance().sheets[0].rows[5].hidden).toBeFalsy();
+                   done();
                 });
             });
         });
@@ -387,14 +374,12 @@ describe('Hide & Show ->', () => {
                     helper.invoke('selectRange', ['A1']);
                     helper.getElement('#' + helper.id + '_sorting').click();
                     helper.getElement('#' + helper.id + '_clearfilter').click();
+                    helper.invoke('hideColumn', [2, 2, false]);
                     setTimeout(() => {
-                        helper.invoke('hideColumn', [2, 2, false]);
-                        setTimeout(() => {
-                            expect(helper.invoke('getCell', [5, 3]).textContent).toBe('30');
-                            expect(helper.invoke('getCell', [2, 3]).textContent).toBe('20');
-                            expect(helper.invoke('getCell', [10, 3]).textContent).toBe('50');
-                            done();
-                        });
+                        expect(helper.invoke('getCell', [5, 3]).textContent).toBe('30');
+                        expect(helper.invoke('getCell', [2, 3]).textContent).toBe('20');
+                        expect(helper.invoke('getCell', [10, 3]).textContent).toBe('50');
+                        done();
                     });
                 });
             });

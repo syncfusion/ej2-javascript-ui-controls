@@ -303,7 +303,7 @@ export interface ExportOptions {
     /**
      * Defines the delimiter for csv file export.
      * By default, csv files are using comma(,) as separator. You can specify this property to change the delimiter in csv file.
-    */
+     */
     separator?: string;
 }
 
@@ -452,6 +452,7 @@ export interface IRenderer {
     resetColWidth(): void;
     getAdjustedDate?(date: Date): Date;
     viewIndex: number;
+    colLevels: TdData[][];
 }
 
 /** @private */

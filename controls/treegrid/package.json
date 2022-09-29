@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-treegrid",
-	"version": "20.2.46",
+	"version": "20.4.3",
 	"description": "Essential JS 2 TreeGrid Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-treegrid.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-treegrid.es2015.js",
+	"es2015": "./dist/es6/ej2-treegrid.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-data": "*",

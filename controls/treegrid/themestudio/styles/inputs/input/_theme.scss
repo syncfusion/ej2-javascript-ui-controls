@@ -1,4 +1,5 @@
 @include export-module('input-theme') {
+
   /*! input theme */
 
   input.e-input#{$css},
@@ -41,7 +42,8 @@
     color: $input-group-disabled-color;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
+  /* stylelint-disable selector-no-vendor-prefix */
   .e-input#{$css}[disabled],
   .e-input-group .e-input[disabled],
   .e-input-group.e-control-wrapper .e-input[disabled],
@@ -126,7 +128,6 @@
     color: inherit;
   }
 
-  // sass-lint:disable no-vendor-prefixes 
   /*! Added color to textbox for disbaled state */
   .e-float-input:not(.e-disabled) input[disabled],
   .e-float-input.e-control-wrapper:not(.e-disabled) input[disabled],
@@ -297,7 +298,7 @@
 
   label.e-float-text,
   .e-float-input label.e-float-text,
-  .e-float-input.e-control-wrapper  label.e-float-text,
+  .e-float-input.e-control-wrapper label.e-float-text,
   .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-bigger:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -393,7 +394,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes 
   .e-input-group:not(.e-disabled) .e-input-group-icon:active,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:active {
     background: $input-group-pressed-bg;
@@ -463,7 +463,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
   .e-input-group.e-rtl:not(.e-disabled) .e-input-group-icon:last-child:hover,
   .e-input-group.e-control-wrapper.e-rtl:not(.e-disabled) .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -471,7 +470,6 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
   .e-input-group:not(.e-rtl):not(.e-disabled) .e-input + .e-input-group-icon:last-child:hover,
   .e-input-group.e-control-wrapper:not(.e-rtl):not(.e-disabled) .e-input + .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -479,7 +477,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group:not(.e-disabled) .e-input-group-icon:first-child:hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:first-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -487,7 +485,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group:not(.e-disabled) .e-input-group-icon:not(:last-child):hover + .e-input-group-icon:not(:last-child):hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:not(:last-child):hover + .e-input-group-icon:not(:last-child):hover {
     @if $input-skin-name == 'highcontrast' {
@@ -495,7 +493,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group:not(.e-rtl):not(.e-disabled) .e-input-group-icon:last-child:hover,
   .e-input-group.e-control-wrapper:not(.e-rtl):not(.e-disabled) .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -521,138 +519,138 @@
     @include input-selection;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group input.e-input:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group input.e-input:-moz-placeholder,
   .e-input-group.e-control-wrapper input.e-input:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group input.e-input:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper input.e-input:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group textarea.e-input:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper textarea.e-input:-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}::-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group input.e-input::-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper input.e-input::-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}::-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group textarea.e-input::-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper textarea.e-input::-moz-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}:-ms-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group input.e-input:-ms-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper input.e-input:-ms-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}:-ms-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper textarea.e-input:-ms-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group textarea.e-input:-ms-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}::-webkit-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper input.e-input::-webkit-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group input.e-input::-webkit-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-input#{$css}::-webkit-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group textarea.e-input::-webkit-input-placeholder {
     color: $input-placeholder;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-control-wrapper textarea.e-input::-webkit-input-placeholder {
     color: $input-placeholder;
   }
@@ -864,7 +862,7 @@
     border-color: $input-box-border-color;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
   .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus,
@@ -886,7 +884,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group .e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
   .e-input-group .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus,
@@ -899,7 +897,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input#{$css}:focus:not(.e-success):not(.e-warning).e-error,
   .e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) input:focus,
   .e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus,
@@ -913,7 +911,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input#{$css}:focus:not(.e-error):not(.e-warning).e-success,
   .e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) input:focus,
   .e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus,
@@ -927,7 +925,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input#{$css}:focus:not(.e-success):not(.e-error).e-warning,
   .e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) input:focus,
   .e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus,
@@ -970,7 +968,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes 
+   
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
     @if $input-skin-name != 'material' {
@@ -990,7 +988,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes 
+   
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning).e-error,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning).e-error {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
@@ -999,7 +997,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes 
+   
   .e-input-group.e-input-focus:not(.e-error):not(.e-warning).e-success,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-error):not(.e-warning).e-success {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
@@ -1008,7 +1006,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes 
+   
   .e-input-group.e-input-focus:not(.e-success):not(.e-error).e-warning,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-error).e-warning {
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
@@ -1044,9 +1042,9 @@
   .e-input-focus.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error) .e-input:last-child:focus,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) span.e-input-group-icon {
     @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'bootstrap5' and $input-skin-name != 'FluentUI') {
-      border-color:  $input-group-border-left-focus;
+      border-color: $input-group-border-left-focus;
     }
-   }
+  }
 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) span:first-child.e-input-group-icon,
   .e-input-group.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) .e-input:last-child:focus,
@@ -1057,7 +1055,7 @@
     @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'bootstrap5') {
       border-color: transparent;
     }
-   }
+  }
 
   .e-input-group:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left),
   .e-input-group.e-float-icon-left:not(.e-success):not(.e-warning):not(.e-error) .e-input-in-wrap,
@@ -1083,7 +1081,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes 
+   
   .e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error) {
     @if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'highcontrast' {
@@ -1132,16 +1130,16 @@
   .e-input-group,
   .e-input-group.e-control-wrapper {
     border-bottom-color: $input-box-border-color;
-   }
+  }
 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input:focus,
   .e-input-group.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input:focus,
   .e-input-group.e-control-wrapper.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:focus,
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input,
-  .e-input-group.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error)  .e-input,
-  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left)  .e-input,
-  .e-input-group.e-control-wrapper.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error)  .e-input {
+  .e-input-group.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input,
+  .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left) .e-input,
+  .e-input-group.e-control-wrapper.e-float-icon-left.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input {
     @if $input-skin-name == 'material' {
       border-bottom-color: transparent;
       border-top-color: transparent;
@@ -1395,7 +1393,6 @@
     color: $input-placeholder;
   }
 
-
   .e-float-input:not(.e-error) textarea:focus ~ label.e-float-text,
   .e-float-input:not(.e-error) textarea:valid ~ label.e-float-text,
   .e-float-input:not(.e-error) textarea ~ label.e-label-top.e-float-text,
@@ -1602,8 +1599,7 @@
   .e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
   .e-small .e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
   .e-float-input.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
-  .e-bigger .e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text
-  .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
   .e-small .e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
   .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
@@ -1616,8 +1612,7 @@
   .e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
   .e-small .e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
   .e-float-input.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text
-  .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
   .e-small .e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
   .e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
@@ -1785,41 +1780,41 @@
     }
   }
 
-  .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text {
     color: $float-label-font-color;
   }
 
-  .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text {
     color: $float-label-font-color;
   }
 
@@ -2021,7 +2016,7 @@
   }
 
   .e-outline.e-float-input.e-success.e-input-focus input:focus ~ label.e-float-text,
-  .e-outline.e-float-input.e-input-group.e-success.e-valid-input  label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-input-group.e-success.e-valid-input label.e-float-text.e-label-top,
   .e-outline.e-float-input.e-bigger.e-success.e-input-focus input:focus ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-success.e-input-focus input:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-small.e-success.e-input-focus input:focus ~ label.e-float-text,
@@ -2076,7 +2071,7 @@
   }
 
   .e-outline.e-float-input.e-error.e-input-focus input:focus ~ label.e-float-text,
-  .e-outline.e-float-input.e-input-group.e-error.e-valid-input  label.e-label-top.e-float-text,
+  .e-outline.e-float-input.e-input-group.e-error.e-valid-input label.e-label-top.e-float-text,
   .e-outline.e-float-input.e-bigger.e-error.e-input-focus input:focus ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-error.e-input-focus input:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-small.e-error.e-input-focus input:focus ~ label.e-float-text,
@@ -2365,7 +2360,7 @@
   .e-filled.e-float-input.e-control-wrapper,
   .e-filled.e-float-input.e-input-group.e-control-wrapper {
     @if $input-skin-name == 'material' {
-      background:  $filled-input-bg-color;
+      background: $filled-input-bg-color;
       transition: $background-color-transition;
     }
   }
@@ -2400,7 +2395,7 @@
     }
   }
 
-  // Filled input border color changes 
+  // Filled input border color changes
 
   .e-filled.e-input-group:hover:not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled):not(.e-float-icon-left),
   .e-filled.e-input-group.e-control-wrapper:hover:not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled):not(.e-float-icon-left),
@@ -2476,7 +2471,7 @@
     }
   }
 
-  // Filled input floating label color configuration 
+  // Filled input floating label color configuration
 
   .e-filled label.e-float-text,
   .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
@@ -2830,8 +2825,7 @@
   .e-filled.e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
   .e-small .e-filled.e-float-input:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
   .e-filled.e-float-input.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error) textarea[readonly]:focus ~ label.e-float-text.e-label-top,
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error) textarea[readonly]:focus ~ label.e-label-top.e-float-text,
@@ -2844,8 +2838,7 @@
   .e-filled.e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
   .e-small .e-filled.e-float-input:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
   .e-filled.e-float-input.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text,
   .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-error).e-input-focus textarea[readonly] ~ label.e-float-text.e-label-top,
   .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-error).e-input-focus textarea[readonly] ~ label.e-label-top.e-float-text,
@@ -2889,63 +2882,63 @@
     }
   }
 
-  .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error):not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-bigger.e-small.e-control-wrapper.e-autofill:not(.e-error) textarea:not(:focus):-webkit-autofill ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-input#{$css}:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled input.e-input:-moz-placeholder,
   .e-input-group.e-filled.e-control-wrapper input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
@@ -2953,196 +2946,196 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-input#{$css}:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-input#{$css}:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled textarea.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper textarea.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-input#{$css}::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled input.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper input.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-input#{$css}::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled textarea.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper textarea.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-input#{$css}:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled input.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper input.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-input#{$css}:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper textarea.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group textarea.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' {
       color: $input-placeholder-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group textarea.e-input:-moz-placeholder {
     @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' {
       color: $input-placeholder-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group .e-input:-ms-input-placeholder {
     @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' {
       color: $input-placeholder-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-input#{$css}::-webkit-input-placeholder {
     @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' {
       color: $input-placeholder-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled textarea.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-input#{$css}::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper input.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled input.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-input#{$css}::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled textarea.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-control-wrapper textarea.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
@@ -3323,21 +3316,21 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-disabled.e-input#{$css}:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled input.e-input:-moz-placeholder,
   .e-input-group.e-filled.e-disabled.e-control-wrapper input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
@@ -3345,175 +3338,175 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-disabled.e-input#{$css}:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper input.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-disabled.e-input#{$css}:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled textarea.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper textarea.e-input:-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-disabled.e-input#{$css}::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled input.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper input.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-disabled.e-input#{$css}::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled textarea.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper textarea.e-input::-moz-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-disabled.e-input#{$css}:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled input.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper input.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-disabled.e-input#{$css}:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper textarea.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled textarea.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   input.e-filled.e-disabled.e-input#{$css}::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper input.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled input.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   textarea.e-filled.e-disabled.e-input#{$css}::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled textarea.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  
   .e-input-group.e-filled.e-disabled.e-control-wrapper textarea.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-disabled-font-color;
     }
   }
 
-  // Filled input ripple action 
+  // Filled input ripple action
 
   .e-filled.e-input-group.e-float-icon-left:not(.e-float-input)::before,
   .e-filled.e-input-group.e-float-icon-left:not(.e-float-input)::after,
@@ -3541,7 +3534,6 @@
       @include input-group-success-animation-bg;
     }
   }
-
 
   .e-filled.e-float-input.e-input-group.e-float-icon-left.e-success .e-float-line::before,
   .e-filled.e-float-input.e-input-group.e-float-icon-left.e-success .e-float-line::after,
@@ -3946,43 +3938,43 @@
     }
   }
 
-  .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-success:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
   }
 
-  .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-bigger.e-small.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-bigger.e-small.e-control-wrapper.e-autofill.e-success textarea:not(:focus):-webkit-autofill ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-success-color;
     }
@@ -4228,43 +4220,43 @@
     }
   }
 
-  .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-control-wrapper.e-autofill.e-warning:not(.e-input-focus) input:not(:focus):-webkit-autofill ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }
   }
 
-  .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-bigger.e-small.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text,
-  .e-filled.e-bigger.e-small.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill~label.e-float-text {
+  .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-bigger.e-small.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-small.e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger .e-filled.e-float-input.e-small.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text,
+  .e-filled.e-bigger.e-small.e-control-wrapper.e-autofill.e-warning textarea:not(:focus):-webkit-autofill ~ label.e-float-text {
     @if $input-skin-name == 'material' {
       color: $input-warning-color;
     }

@@ -224,17 +224,20 @@ $float-label-rtl-value: -7px !default;
 @mixin input-sizing {
   box-sizing: border-box;
 }
+
 @mixin input-height ($height) {
   height: $height;
 }
+
 @mixin input-state-color ($color) {
   border-color: $color;
 }
+
 @mixin input-selection {
   background: $theme-primary;
   color: $theme-primary-font;
 }
-// sass-lint:disable no-vendor-prefixes  
+/* stylelint-disable property-no-vendor-prefix */
 @mixin float-label-alignment {
   -moz-transform: translate(-0%, -50%);
   -ms-transform: translate(-0%, -50%);
@@ -262,36 +265,47 @@ $float-label-rtl-value: -7px !default;
 @mixin input-group-animation {
   content: '';
 }
+
 @mixin input-group-animation-left {
   content: '';
 }
+
 @mixin input-group-animation-width {
   content: '';
 }
+
 @mixin input-group-animation-right {
   content: '';
 }
+
 @mixin input-group-animation-bg {
   content: '';
 }
+
 @mixin input-group-hover-bg {
   content: '';
 }
+
 @mixin input-group-success-animation-bg {
   content: '';
 }
+
 @mixin input-group-warning-animation-bg {
   content: '';
 }
+
 @mixin input-group-error-animation-bg {
   content: '';
 }
+
 @mixin input-ripple-parent {
   content: '';
 }
+
 @mixin input-ripple-style {
   content: '';
 }
+
 @mixin input-ripple-animation {
   content: '';
 }

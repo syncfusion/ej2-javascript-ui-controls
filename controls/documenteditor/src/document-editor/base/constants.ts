@@ -56,3 +56,5 @@ export const internalviewChangeEvent: string = 'internalviewChange';
 export const beforeXmlHttpRequestSend: string = 'beforeXmlHttpRequestSend';
 /** @hidden */
 export const protectionTypeChangeEvent: string = 'protectionTypeChange';
+/** @hidden */
+export const internalDocumentEditorSettingsChange: string = 'internalDocumentEditorSettingsChange';

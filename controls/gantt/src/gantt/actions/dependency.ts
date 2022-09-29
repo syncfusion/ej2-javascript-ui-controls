@@ -14,6 +14,7 @@ export class Dependency {
     private dateValidateModule: DateProcessor;
     private parentRecord: IParent[] = [];
     private parentIds: string[] = [];
+    private parentPredecessors: IGanttData[] = [];
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -30,9 +31,7 @@ export class Dependency {
         for (let count: number = length; count >= 0; count--) {
             const ganttData: IGanttData = predecessorTasks[count];
             const ganttProp: ITaskData = ganttData.ganttProperties;
-            if (!ganttData.hasChildRecords) {
-                this.ensurePredecessorCollectionHelper(ganttData, ganttProp);
-            }
+            this.ensurePredecessorCollectionHelper(ganttData, ganttProp);     
         }
     }
     /**
@@ -137,6 +136,7 @@ export class Dependency {
         const predecessor: string = predecessorValue.toString();
         const collection: IPredecessor[] = [];
         let match: string[];
+        let isrelationship: string;
         let values: string[];
         let offsetValue: string;
         let predecessorText: string;
@@ -148,8 +148,28 @@ export class Dependency {
                 values = el.split('-');
                 offsetValue = '-';
             }
-            match = values[0].match(/(\d+|[A-z]+)/g);
+            match=[];
             const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
+            const isExist1: number = this.parent.viewType === 'ResourceView' ? ids.indexOf('T' + values[0]) : ids.indexOf(values[0]);
+            if (isExist1 !== -1) {
+                match[0] = values[0];
+            }
+            else {
+                if(ids.indexOf(values[0])===-1) {
+                    match = values[0].split(" ")
+                    if (match.length === 1) {
+                        if (match[0].indexOf(" ") != -1) {
+                            match = values[0].match(/(\d+|[A-z]+)/g);
+                        }
+                        else {
+                            match[0] = values[0].slice(0, -2);
+                            match[1] = values[0].slice(-2);
+                        }
+                    }
+                } else {
+                    match[0] = values[0];
+                }
+            }
             const isExist: number = this.parent.viewType === 'ResourceView' ? ids.indexOf('T' + match[0]) : ids.indexOf(match[0]);
             /*Validate for appropriate predecessor*/
             if (match[0] && isExist !== -1) {
@@ -178,10 +198,18 @@ export class Dependency {
                 offsetUnit: offsetUnits.durationUnit,
                 offset: offsetUnits.duration
             };
-            const isOwnParent: boolean = this.checkIsParent(match[0]);
-            if (!isOwnParent) {
+            let fromData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.to);
+            let toData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.from);
+            let isValid: boolean 
+            if (this.parent.connectorLineEditModule && toData && fromData) {
+               isValid = this.parent.connectorLineEditModule.validateParentPredecessor(toData, fromData);
+               if(isValid)
                 collection.push(obj);
             }
+            else {
+               collection.push(obj);
+            }
+            match.splice(0);
         });
         return collection;
     }
@@ -197,6 +225,9 @@ export class Dependency {
         const predecessors: IPredecessor[] = data.ganttProperties.predecessor;
         const durationUnitTexts: Object = this.parent.durationUnitTexts;
         let resultString: string = '';
+        let temp1: string;
+        let match: string[];
+        match=[];
         if (predecessors) {
             const length: number = predecessors.length;
             for (let i: number = 0; i < length; i++) {
@@ -206,6 +237,14 @@ export class Dependency {
                     : data.ganttProperties.rowUniqueID;
                 if (currentValue.from !== id.toString()) {
                     temp = currentValue.from + currentValue.type;
+                    if (typeof(data.ganttProperties.taskId) === "string") {
+                        match[0] = temp.slice(0, -2);
+                        match[1] = temp.slice(-2);
+                        temp1 = match[0]+" "+match[1]
+                    } else {
+                        temp1 = temp
+                    }
+                    temp = temp1
                     if (currentValue.offset !== 0) {
                         temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
                         const multiple: boolean = currentValue.offset !== 1;
@@ -286,9 +325,7 @@ export class Dependency {
         const length: number = predecessorsCollection.length;
         for (let count: number = 0; count < length; count++) {
             ganttRecord = predecessorsCollection[count];
-            if (!ganttRecord.hasChildRecords) {
-                this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
-            }
+            this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
         }
     }
     /**
@@ -338,9 +375,24 @@ export class Dependency {
      */
     public updatedRecordsDateByPredecessor(): void {
         const flatData: IGanttData[] = this.parent.flatData;
-        for (let count: number = 0; count < flatData.length; count++) {
+        const totLength: number = this.parent.flatData.length;
+        for (let count: number = 0; count < totLength; count++) {
             if (flatData[count].ganttProperties.predecessor) {
                 this.validatePredecessorDates(flatData[count]);
+                if (flatData[count].hasChildRecords && this.parent.editModule) {
+                    this.parent.editModule['updateChildItems'](flatData[count]);
+                }
+            }
+        }
+    }
+    public updateParentPredecessor (): void  {
+        if (this.parent.enablePredecessorValidation)
+        {
+            const parentPredecessorLength: number = this.parentPredecessors.length;
+            for (let i: number = parentPredecessorLength - 1; i >= 0; i--)
+            {
+                let item: IGanttData = this.parentPredecessors[i];
+                this.validatePredecessorDates(item);
             }
         }
     }
@@ -370,6 +422,10 @@ export class Dependency {
                 const predecessor: IPredecessor = predecessors[count];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
                 record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+                if (this.parent.isLoad && this.parentPredecessors.indexOf(ganttRecord) == -1 
+                    && (ganttRecord.hasChildRecords || record.hasChildRecords)) {
+                        this.parentPredecessors.push(ganttRecord);
+                    }
                 if (record.ganttProperties.isAutoSchedule || this.parent.validateManualTasksOnLinking) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
                 }
@@ -406,8 +462,8 @@ export class Dependency {
             }
             this.parent.dataOperation.updateWidthLeft(childGanttRecord);
 
-            if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
-                && this.parent.isInPredecessorValidation && !this.parent.isLoad) {
+            if (!this.parent.isLoad && childGanttRecord.parentItem && this.parent.isInPredecessorValidation &&
+                this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule) {
                     if (this.parentIds.indexOf(childGanttRecord.parentItem.uniqueID) === -1) {
                         this.parentIds.push(childGanttRecord.parentItem.uniqueID);
                         this.parentRecord.push(childGanttRecord.parentItem);

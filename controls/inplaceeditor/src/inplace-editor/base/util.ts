@@ -66,11 +66,10 @@ export function parseValue(type: string, val: valueType, model: modelType): stri
         result = val.toString();
         break;
     }
-    return result;    
+    return result;
 }
 
 /**
- *
  * @param {string} type - specifies the string value
  * @param {valueType} val - specifies the value type
  * @returns {valueType} - returns the value type
@@ -97,10 +96,10 @@ export function getCompValue(type: string, val: valueType): valueType {
  * @returns {string} - returns the string
  * @hidden
  */
- export function encode(value: string): string {
-    var data = [];
-    for (var i = value.length - 1; i >= 0; i--) {
-        data.unshift(["&#", value[i].charCodeAt(0), ";"].join(""));
+export function encode(value: string): string {
+    const data = [];
+    for (let i = value.length - 1; i >= 0; i--) {
+        data.unshift(['&#', value[i].charCodeAt(0), ';'].join(''));
     }
-    return data.join("");
+    return data.join('');
 }

@@ -941,7 +941,7 @@ export class Render {
         removeClass(this.parent.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR), [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
     }
 
-    private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number): HTMLElement {
+    private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number, column: Column): HTMLElement { 
         if (this.parent.enableValueSorting && this.parent.dataType === 'pivot') {
             let vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
             let len: number = (cell.type === 'grand sum' &&
@@ -953,19 +953,12 @@ export class Render {
             if (vSort !== undefined && lock && (rCnt === len || (rCnt + 1) === len && cell.level > -1 &&
                 this.parent.engineModule.headerContent[(rCnt + 1)][cCnt] && this.parent.engineModule.headerContent[(rCnt + 1)][cCnt].level === -1)
                 && this.parent.dataSourceSettings.valueAxis === 'column') {
-                if (tCell.querySelector('.e-sortfilterdiv')) {
-                    tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
-                        'e-descending' : 'e-ascending');
-                    tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
-                        'e-icon-descending' : 'e-icon-ascending');
-                    tCell.querySelector('.e-sortfilterdiv').classList.add('e-value-sort-icon');
-                } else {
-                    tCell.appendChild(createElement('div', {
-                        className: (vSort.sortOrder === 'Descending' ?
-                            'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
-                            'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon')
-                    }));
-                }
+                tCell.querySelector('div div').appendChild(createElement('span', {
+                    className: (vSort.sortOrder === 'Descending' ?
+                        'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
+                        'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
+                        styles: column.textAlign === 'Right' ? 'float: left' : ''
+                }));
             }
             // return tCell;
         }
@@ -1169,7 +1162,7 @@ export class Render {
                         (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
                         if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
                             === vSort.headerText) {
-                            tCell.appendChild(createElement('div', {
+                            tCell.appendChild(createElement('span', {
                                 className: (vSort.sortOrder === 'Descending' ?
                                     'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
                                     'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
@@ -1442,23 +1435,13 @@ export class Render {
                     if (window.navigator.userAgent.indexOf('Edge') > -1 || window.navigator.userAgent.indexOf('Trident') > -1) {
                         (tCell.children[0] as HTMLElement).style.display = 'table';
                     } else {
-                        (tCell.children[0] as HTMLElement).style.display = this.gridSettings.allowTextWrap ? 'inline' : 'block';
+                        (tCell.children[0] as HTMLElement).style.display = 'block';
                     }
-                    if (tCell.children[0].classList.contains('e-stackedheadercelldiv')) {
-                        let span: HTMLElement = createElement('span', {
-                            className: 'e-stackedheadertext' + ' ' + cls.CELLVALUE,
-                            innerHTML: tCell.children[0].innerHTML
-                        });
-                        tCell.children[0].innerHTML = '';
-                        tCell.children[0].append(div);
-                        tCell.children[0].append(span);
-                    } else {
-                        this.updateWrapper(tCell, div);
-                    }
+                    this.updateWrapper(tCell, div);
                 } else {
                     this.updateWrapper(tCell);
                 }
-                tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex);
+                tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex, args.cell.column);
                 if (this.parent.cellTemplate) {
                     let index: string = tCell.getAttribute('index');
                     let colindex: string = tCell.getAttribute('data-colindex');
@@ -1492,11 +1475,13 @@ export class Render {
         this.parent.trigger(events.headerCellInfo, args);
     }
     private updateWrapper(tCell: HTMLElement, div?: HTMLElement): HTMLElement {
-        if (tCell.children[0].classList.contains('e-headercelldiv')) {
-            let outerDiv: HTMLElement = createElement('div');
+        if (tCell.querySelectorAll('.e-headercelldiv').length > 0 || tCell.querySelectorAll('.e-stackedheadercelldiv').length > 0) {
+            let outerDiv: HTMLElement = createElement('div', {
+                className: cls.PIVOT_CELL_CONTAINER
+            });
             let innerDiv: HTMLElement = createElement('div', {
                 className: (div ? 'e-stackedheadertext' : 'e-headertext') + ' ' + cls.CELLVALUE,
-                innerHTML: tCell.children[0].children[0].innerHTML
+                innerHTML: tCell.querySelectorAll('.e-headercelldiv').length > 0 ? (tCell.querySelector('.e-headercelldiv') as HTMLElement).innerHTML : (tCell.querySelector('.e-stackedheadercelldiv') as HTMLElement).innerHTML
             });
             if (div) {
                 outerDiv.append(div);
@@ -1674,7 +1659,8 @@ export class Render {
                 let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) ?
                     (this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
                 let toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
-                gridHeight = parHeight - (gBarHeight + toolBarHeight) - 1;
+                let pagerHeight: number = this.parent.element.querySelector('.' + cls.GRID_PAGER) ? (this.parent.element.querySelector('.' + cls.GRID_PAGER) as HTMLElement).offsetHeight : 0;
+                gridHeight = parHeight - (gBarHeight + toolBarHeight + pagerHeight) - 1;
                 gridHeight = gridHeight < 40 ? 40 : gridHeight;
                 if (elementCreated) {
                     let tableHeight: number =
@@ -1956,7 +1942,7 @@ export class Render {
         } else {
             this.colPos++;
             /* eslint-disable-next-line */
-            let pivotValue: IAxisSet = (<any>args.data)[this.colPos];
+            let pivotValue: IAxisSet = (<any>args.data)[args.column.customAttributes.cell ? (args.column.customAttributes.cell as IAxisSet).colIndex : this.colPos];
             if (isNullOrUndefined(pivotValue.value) || isNullOrUndefined(pivotValue.formattedText) || pivotValue.formattedText === "") {
                 args.value = this.parent.exportType === 'Excel' ? null : '';
             } else {
@@ -2021,9 +2007,9 @@ export class Render {
         let rowSpan: number = 1;
         if (((args as any).gridCell as any).column.customAttributes) {
             let cell: IAxisSet = ((args as any).gridCell as any).column.customAttributes.cell;
-            if (this.actualText !== cell.actualText && cell.colSpan > 1 && cell.level > -1) {
-                ((args as any).gridCell as any).colSpan = (args.cell as any).colSpan = cell.colSpan > -1 ? cell.colSpan : 1;
-            }
+            // if (this.actualText !== cell.actualText && cell.colSpan > 1 && cell.level > -1) {
+            //     ((args as any).gridCell as any).colSpan = (args.cell as any).colSpan = cell.colSpan > -1 ? cell.colSpan : 1;
+            // }
             rowSpan = cell.rowSpan > -1 ? cell.rowSpan : 1;
             if ((args as any).name === 'excelHeaderQueryCellInfo') {
                 if (cell.rowSpan > -1) {

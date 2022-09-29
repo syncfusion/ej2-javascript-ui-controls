@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges } from '@syncfusion/ej2-base';
-import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, Complex, getInstance, L10n } from '@syncfusion/ej2-base';
+import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, getInstance, L10n } from '@syncfusion/ej2-base';
 import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { CarouselModel, CarouselItemModel } from './carousel-model';
@@ -9,7 +9,10 @@ import { CarouselModel, CarouselItemModel } from './carousel-model';
 const CLS_CAROUSEL: string = 'e-carousel';
 const CLS_ACTIVE: string = 'e-active';
 const CLS_RTL: string = 'e-rtl';
+const CLS_PARTIAL: string = 'e-partial';
+const CLS_SLIDE_CONTAINER: string = 'e-carousel-slide-container';
 const CLS_ITEMS: string = 'e-carousel-items';
+const CLS_CLONED: string = 'e-cloned';
 const CLS_ITEM: string = 'e-carousel-item';
 const CLS_PREVIOUS: string = 'e-previous';
 const CLS_NEXT: string = 'e-next';
@@ -163,7 +166,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
      *  * Slide
      *  * Fade
      *  * Custom
-     * 
+     *
      *  @default 'Slide'
      */
     @Property('Slide')
@@ -318,6 +321,16 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     public buttonsVisibility: CarouselButtonVisibility;
 
     /**
+     * Enables active slide with partial previous/next slides.
+     *
+     * Slide animation only applicable if the partialVisible is enabled.
+     *
+     * @default false
+     */
+    @Property(false)
+    public partialVisible: boolean;
+
+    /**
      * Accepts HTML attributes/custom attributes to add in individual carousel item.
      *
      * @default null
@@ -423,6 +436,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                     this.applySlideInterval();
                 }
                 this.handleNavigatorsActions(this.selectedIndex);
+                if (this.partialVisible) {
+                    this.reRenderSlides();
+                }
                 break;
             case 'enableRtl':
                 if (this.enableRtl) {
@@ -484,15 +500,27 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 break;
             case 'items':
             case 'dataSource':
-                target = this.element.querySelector(`.${CLS_ITEMS}`);
-                if (target) {
-                    this.resetTemplates(['itemTemplate']);
-                    remove(target);
+                this.reRenderSlides();
+                break;
+            case 'partialVisible':
+                if (this.partialVisible) {
+                    addClass([this.element], CLS_PARTIAL);
+                } else {
+                    removeClass([this.element], CLS_PARTIAL);
                 }
-                this.renderSlides();
+                this.reRenderSlides();
                 break;
             }
         }
+    }
+
+    private reRenderSlides(): void {
+        const target: Element = this.element.querySelector(`.${CLS_ITEMS}`);
+        if (target) {
+            this.resetTemplates(['itemTemplate']);
+            remove(target);
+        }
+        this.renderSlides();
     }
 
     private initialize(): void {
@@ -503,6 +531,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (this.enableRtl) {
             carouselClasses.push(CLS_RTL);
         }
+        if (this.partialVisible) {
+            carouselClasses.push(CLS_PARTIAL);
+        }
         addClass([this.element], carouselClasses);
         setStyleAttribute(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
         attributes(this.element, { 'tabindex': '0', 'aria-roledescription': 'carousel', 'aria-label': this.localeObj.getConstant('slideShow') });
@@ -512,8 +543,25 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderSlides(): void {
+        let slideContainer: HTMLElement = this.element.querySelector('.' + CLS_SLIDE_CONTAINER);
+        if (!slideContainer) {
+            slideContainer = this.createElement('div', { className: CLS_SLIDE_CONTAINER });
+            this.element.appendChild(slideContainer);
+        }
         const itemsContainer: HTMLElement = this.createElement('div', { className: CLS_ITEMS, attrs: { 'aria-live': this.autoPlay ? 'off' : 'polite' } });
-        this.element.appendChild(itemsContainer);
+        slideContainer.appendChild(itemsContainer);
+        if (this.partialVisible && this.loop) {
+            if (this.items.length > 0) {
+                this.items.slice(-2).forEach((item: CarouselItemModel, index: number) => {
+                    this.renderSlide(item, item.template, index, itemsContainer, true);
+                });
+            }
+            else if (this.dataSource.length > 0) {
+                this.dataSource.slice(-2).forEach((item: Record<string, any>, index: number) => {
+                    this.renderSlide(item, this.itemTemplate, index, itemsContainer, true);
+                });
+            }
+        }
         if (this.items.length > 0) {
             this.slideItems = this.items as Record<string, any>[];
             this.items.forEach((item: CarouselItemModel, index: number) => {
@@ -525,21 +573,44 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 this.renderSlide(item, this.itemTemplate, index, itemsContainer);
             });
         }
+        if (this.partialVisible && this.loop) {
+            if (this.items.length > 0) {
+                this.items.slice(0, 2).forEach((item: CarouselItemModel, index: number) => {
+                    this.renderSlide(item, item.template, index, itemsContainer, true);
+                });
+            }
+            else if (this.dataSource.length > 0) {
+                this.dataSource.slice(0, 2).forEach((item: Record<string, any>, index: number) => {
+                    this.renderSlide(item, this.itemTemplate, index, itemsContainer, true);
+                });
+            }
+        }
         this.renderTemplates();
+        if (this.partialVisible) {
+            itemsContainer.style.setProperty('--carousel-items-count', `${itemsContainer.children.length}`);
+            const slideWidth: number = itemsContainer.firstElementChild.clientWidth;
+            const cloneCount: number = this.loop ? 2 : 0;
+            itemsContainer.style.transitionProperty = 'none';
+            itemsContainer.style.transform = `translateX(${-(slideWidth) * (this.selectedIndex + cloneCount)}px)`;
+        }
         this.autoSlide();
         this.renderTouchActions();
         this.renderKeyboardActions();
     }
 
-    private renderSlide(item: Record<string, any>, itemTemplate: string, index: number, container: HTMLElement): void {
+    private renderSlide(item: Record<string, any>, itemTemplate: string, index: number, container: HTMLElement,
+                        isClone: boolean = false): void {
         const itemEle: HTMLElement = this.createElement('div', {
             id: getUniqueID('carousel_item'),
-            className: `${CLS_ITEM} ${item.cssClass ? item.cssClass : ''} ${this.selectedIndex === index ? CLS_ACTIVE : ''}`,
+            className: `${CLS_ITEM} ${item.cssClass ? item.cssClass : ''} ${this.selectedIndex === index && !isClone ? CLS_ACTIVE : ''}`,
             attrs: {
-                'aria-hidden': this.selectedIndex === index ? 'false' : 'true', 'data-index': index.toString(),
+                'aria-hidden': this.selectedIndex === index && !isClone ? 'false' : 'true', 'data-index': index.toString(),
                 'aria-role': 'group', 'aria-roledescription': 'slide'
             }
         });
+        if (isClone) {
+            itemEle.classList.add(CLS_CLONED);
+        }
         if (!isNullOrUndefined(item.htmlAttributes)) {
             this.setHtmlAttributes(item.htmlAttributes, itemEle);
         }
@@ -554,7 +625,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             return;
         }
         const navigators: HTMLElement = this.createElement('div', { className: CLS_NAVIGATORS });
-        const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_ITEMS}`) as HTMLElement;
+        const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_SLIDE_CONTAINER}`) as HTMLElement;
         itemsContainer.insertAdjacentElement('afterend', navigators);
         this.renderNavigatorButton('Previous');
         this.renderNavigatorButton('Next');
@@ -563,8 +634,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     private renderNavigatorButton(direction: CarouselSlideDirection): void {
         const buttonContainer: HTMLElement = this.createElement('div', {
-            className: (direction === 'Previous' ? CLS_PREVIOUS : CLS_NEXT) + ' ' + (this.buttonsVisibility === 'VisibleOnHover' ? CLS_HOVER_ARROWS : ''),
-            attrs: { 'aria-label': this.localeObj.getConstant(direction === 'Previous' ? 'previousSlide' : 'nextSlide') }
+            className: (direction === 'Previous' ? CLS_PREVIOUS : CLS_NEXT) + ' ' + (this.buttonsVisibility === 'VisibleOnHover' ? CLS_HOVER_ARROWS : '')
         });
         if (direction === 'Previous' && this.previousButtonTemplate) {
             addClass([buttonContainer], CLS_TEMPLATE);
@@ -577,7 +647,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             const template: HTMLElement[] = this.templateParser(this.nextButtonTemplate)({ type: 'Next' }, this, 'nextButtonTemplate', templateId, false);
             append(template, buttonContainer);
         } else {
-            const button: HTMLElement = this.createElement('button');
+            const button: HTMLElement = this.createElement('button', {
+                attrs: { 'aria-label': this.localeObj.getConstant(direction === 'Previous' ? 'previousSlide' : 'nextSlide') }
+            });
             const buttonObj: Button = new Button({
                 cssClass: CLS_FLAT + ' ' + CLS_ROUND + ' ' + (direction === 'Previous' ? CLS_PREV_BUTTON : CLS_NEXT_BUTTON),
                 iconCss: CLS_ICON + ' ' + (direction === 'Previous' ? CLS_PREV_ICON : CLS_NEXT_ICON),
@@ -678,20 +750,19 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     private applyAnimation(): void {
         removeClass([this.element], [CLS_CUSTOM_ANIMATION, CLS_FADE_ANIMATION, CLS_SLIDE_ANIMATION, CLS_ANIMATION_NONE]);
-        switch (this.animationEffect)
-        {
-            case 'Slide':
-                addClass([this.element], CLS_SLIDE_ANIMATION);
-                break;
-            case 'Fade':
-                addClass([this.element], CLS_FADE_ANIMATION);
-                break;
-            case 'None':
-                addClass([this.element], CLS_ANIMATION_NONE);
-                break;
-            case 'Custom':
-                addClass([this.element], CLS_CUSTOM_ANIMATION);
-                break;
+        switch (this.animationEffect) {
+        case 'Slide':
+            addClass([this.element], CLS_SLIDE_ANIMATION);
+            break;
+        case 'Fade':
+            addClass([this.element], CLS_FADE_ANIMATION);
+            break;
+        case 'None':
+            addClass([this.element], CLS_ANIMATION_NONE);
+            break;
+        case 'Custom':
+            addClass([this.element], CLS_CUSTOM_ANIMATION);
+            break;
         }
     }
 
@@ -751,7 +822,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (this.element.querySelectorAll(`.${CLS_ITEM}.${CLS_PREV_SLIDE},.${CLS_ITEM}.${CLS_NEXT_SLIDE}`).length > 0) {
             return;
         }
-        const allSlides: HTMLElement[] = [].slice.call(this.element.querySelectorAll(`.${CLS_ITEM}`));
+        const allSlides: HTMLElement[] = [].slice.call(this.element.querySelectorAll(`.${CLS_ITEM}:not(.e-cloned)`));
         const activeSlide: HTMLElement = this.element.querySelector(`.${CLS_ITEM}.${CLS_ACTIVE}`);
         if (isNullOrUndefined(activeSlide) && this.showIndicators) {
             const activeIndicator: HTMLElement = this.element.querySelector(`.${CLS_INDICATOR_BAR}.${CLS_ACTIVE}`) as HTMLElement;
@@ -795,6 +866,25 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 slideDirection: direction,
                 isSwiped: isSwiped
             };
+            if (this.partialVisible) {
+                const container: HTMLElement = this.element.querySelector('.' + CLS_ITEMS);
+                const slideWidth: number = allSlides[currentIndex].clientWidth;
+                container.style.transitionProperty = 'transform';
+                if (this.loop) {
+                    if (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next') {
+                        container.style.transform = `translateX(${-(slideWidth) * (allSlides.length + 2)}px)`;
+                    }
+                    else if (this.slideChangedEventArgs.currentIndex === this.slideItems.length - 1 && this.slideChangedEventArgs.slideDirection === 'Previous') {
+                        container.style.transform = `translateX(${-(slideWidth)}px)`;
+                    }
+                    else {
+                        container.style.transform = `translateX(${-(slideWidth) * (currentIndex + 2)}px)`;
+                    }
+                }
+                else {
+                    container.style.transform = `translateX(${-(slideWidth) * (currentIndex)}px)`;
+                }
+            }
             let slideHeight: number;
             if (this.animationEffect === 'Slide') {
                 if (direction === 'Previous') {
@@ -827,6 +917,13 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
 
     private onTransitionEnd(): void {
         if (this.slideChangedEventArgs) {
+            if (this.partialVisible && this.loop && (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next' ||
+                this.slideChangedEventArgs.currentIndex === this.slideItems.length - 1 && this.slideChangedEventArgs.slideDirection === 'Previous')) {
+                const container: HTMLElement = this.element.querySelector('.' + CLS_ITEMS);
+                const slideWidth: number = this.slideChangedEventArgs.currentSlide.clientWidth;
+                container.style.transitionProperty = 'none';
+                container.style.transform = `translate(${-(slideWidth) * (this.slideChangedEventArgs.currentIndex + 2)}px)`;
+            }
             addClass([this.slideChangedEventArgs.currentSlide], CLS_ACTIVE);
             removeClass([this.slideChangedEventArgs.previousSlide], CLS_ACTIVE);
             this.trigger('slideChanged', this.slideChangedEventArgs, () => {

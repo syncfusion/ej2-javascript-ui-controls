@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-popups",
-	"version": "20.2.49",
+	"version": "19.21.6",
 	"description": "A package of Essential JS 2 popup components such as Dialog and Tooltip that is used to display information or messages in separate pop-ups.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-popups.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-popups.es2015.js",
+	"es2015": "./dist/es6/ej2-popups.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*"

@@ -3,7 +3,7 @@
  */
 import { Gantt } from '../../src/index';
 import { createElement, getValue } from '@syncfusion/ej2-base';
-import { resourceData, scheduleModeData,scheduleModeData1} from '../base/data-source.spec';
+import { resourceData, scheduleModeData,scheduleModeData1 } from '../base/data-source.spec';
 import { destroyGantt, triggerMouseEvent, createGantt } from '../base/gantt-util.spec';
 
 describe('Gantt spec for tooltip', () => {
@@ -321,10 +321,12 @@ describe('Toottip with html tag', () => {
         triggerMouseEvent(marker, 'mouseover', 50);
         expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">&lt;i&gt;Parent Task 1&lt;/i&gt;</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td>:</td><td class = "e-gantt-tooltip-value"> 5 days</td></tr></tbody></table>');
     }); 
-   afterAll(() => {
+afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-});
    
+})
+
+

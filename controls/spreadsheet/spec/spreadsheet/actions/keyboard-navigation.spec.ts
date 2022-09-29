@@ -126,7 +126,7 @@ describe('Spreadsheet cell navigation module ->', () => {
                 setTimeout(() => {
                     expect(instance.sheets[0].selectedRange).toBe('B10:B10');
                     done();
-                });
+                }, 50);
             });
         });
     });
@@ -145,7 +145,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('C5:C5');
                 done();
-            });
+            }, 50);
         });
         it('When showheader is false and in finite mode, Keyboard navigation is not working - right', (done: Function) => {
             helper.triggerKeyNativeEvent(38);

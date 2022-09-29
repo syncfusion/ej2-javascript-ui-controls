@@ -2453,4 +2453,62 @@ describe('Mouse cursor inside the preview shape', () => {
         },
             1000);
     });
+});  describe('Checking description for text element styles',()=>{
+    let diagram: Diagram;
+    let palette: SymbolPalette;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { styles: 'width:100%;height:500px;' });
+        ele.appendChild(createElement('div', { id: 'symbolDescription', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'textStyles', styles: 'width:50%;height:500px;float:left;' }));
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '70%', height: 500
+        });
+        diagram.appendTo('#textStyles');
+        var BpmnShape : NodeModel[] =[{
+                id: 'BPMNnode1', style: { strokeWidth: 2 }, shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Start', trigger: 'None' } },
+            },
+        ]
+        var ConnectorShape : ConnectorModel[] =[{
+            id: 'Connector1', style: { strokeWidth: 2 }, sourceID : 'BPMNnode1',
+        },
+    ]
+        var palettes = [
+            {
+                id: 'BpmnShapes', expanded: true, symbols: BpmnShape
+                , title: 'Bpmn'
+            }
+        ];
+        palette = new SymbolPalette({
+            width: '25%', height: '500px',
+            palettes: palettes,
+            symbolHeight: 50, symbolWidth: 50,
+            symbolPreview: { height: 100, width: 100 },
+            enableSearch: true,
+            symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+            getSymbolInfo: (symbol: NodeModel | ConnectorModel): SymbolInfo => {
+                return { fit: true, description : {text : 'description', color : 'black', fill : 'yellow',fontFamily:'Calibri', fontSize:5, bold : true, italic : false, textDecoration : 'Underline'  } };
+            }
+        });
+        palette.appendTo('#symbolDescription');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        palette.destroy();
+        ele.remove();
+    });
+    it('Checking the styles of symbol description ', (done: Function) => {
+        if ((palette.getSymbolInfo as SymbolInfo).description.text !== undefined) {
+            expect((palette.getSymbolInfo as SymbolInfo).description.color == 'black').toBe(true);
+            expect((palette.getSymbolInfo as SymbolInfo).description.fill == 'yellow').toBe(true);
+            expect((palette.getSymbolInfo as SymbolInfo).description.fontFamily == 'Calibri').toBe(true);
+            expect((palette.getSymbolInfo as SymbolInfo).description.bold == true).toBe(true);
+            expect((palette.getSymbolInfo as SymbolInfo).description.fontSize == 5).toBe(true);
+            expect((palette.getSymbolInfo as SymbolInfo).description.italic == false).toBe(true);
+            expect((palette.getSymbolInfo as SymbolInfo).description.textDecoration == 'Underline').toBe(true);
+            done();
+        }
+    });
 });

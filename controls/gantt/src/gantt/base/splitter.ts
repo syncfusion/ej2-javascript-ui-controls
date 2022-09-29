@@ -81,11 +81,11 @@ export class Splitter {
     }
     /**
      * @param {SplitterSettingsModel} splitter .
-     * @param {boolean} isDynamic .
+     
      * @returns {string} .
      * @private
      */
-    public calculateSplitterPosition(splitter: SplitterSettingsModel, isDynamic?: boolean): string {
+    public calculateSplitterPosition(splitter: SplitterSettingsModel): string {
         if (!isNullOrUndefined(this.splitterObject) && this.parent.enablePersistence) {
             return this.splitterObject.paneSettings[0].size;
         }
@@ -98,9 +98,8 @@ export class Splitter {
                 return this.getSpliterPositionInPercentage(splitter.position);
             } else if (!isNullOrUndefined(splitter.columnIndex) && splitter.columnIndex >= 0) {
                 if ((splitter.columnIndex * 150) < this.parent.ganttWidth || !this.parent.element.classList.contains('e-device')) {
-                   return isDynamic ? this.getSpliterPositionInPercentage(
-                        this.getTotalColumnWidthByIndex(splitter.columnIndex).toString() + 'px') :
-                        this.getSpliterPositionInPercentage((splitter.columnIndex * 150) + 'px');
+                   return this.getSpliterPositionInPercentage(
+                    this.getTotalColumnWidthByIndex(splitter.columnIndex).toString() + 'px');
                 } else {
                     return this.getSpliterPositionInPercentage((splitter.columnIndex * 130) + 'px');
                 }
@@ -133,10 +132,10 @@ export class Splitter {
      */
     private getTotalColumnWidthByIndex(index: number): number {
         let width: number = 0;
-        const tr: NodeList = this.parent.treeGrid.element.querySelectorAll('.e-headercell');
+        const tr: any = this.parent.ganttColumns;
         index = tr.length > index ? index : tr.length;
         for (let column: number = 0; column < index; column++) {
-            width = width + (tr[column] as HTMLElement).offsetWidth;
+            width = width + parseInt(tr[column].width);
         }
         return width;
     }
@@ -147,7 +146,7 @@ export class Splitter {
     public updateSplitterPosition(): void {
         this.splitterObject.separatorSize = this.parent.splitterSettings.separatorSize >= 4 ?
             this.parent.splitterSettings.separatorSize : 4;
-        const splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings, true);
+        const splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings);
         this.splitterObject.paneSettings[0].min = this.getSpliterPositionInPercentage(this.parent.splitterSettings.minimum);
         this.splitterObject.dataBind();
         this.splitterObject.paneSettings[0].size = splitterPosition;

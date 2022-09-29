@@ -1,4 +1,4 @@
-import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, Complex, getInstance, L10n } from '@syncfusion/ej2-base';import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { Button } from '@syncfusion/ej2-buttons';
+import { Component, EventHandler, Collection, Property, Event, EmitType, formatUnit, INotifyPropertyChanged, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { ChildProperty, addClass, removeClass, setStyleAttribute, attributes, getUniqueID, compile, getInstance, L10n } from '@syncfusion/ej2-base';import { append, closest, isNullOrUndefined, remove, classList, Touch, SwipeEventArgs, KeyboardEvents, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { Button } from '@syncfusion/ej2-buttons';
 import {CarouselAnimationEffect,CarouselButtonVisibility,SlideChangingEventArgs,SlideChangedEventArgs} from "./carousel";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -55,7 +55,7 @@ export interface CarouselModel extends ComponentModel{
      *  * Slide
      *  * Fade
      *  * Custom
-     * 
+     *
      *  @default 'Slide'
      */
     animationEffect?: CarouselAnimationEffect;
@@ -189,6 +189,15 @@ export interface CarouselModel extends ComponentModel{
      * @default 'Visible'
      */
     buttonsVisibility?: CarouselButtonVisibility;
+
+    /**
+     * Enables active slide with partial previous/next slides.
+     *
+     * Slide animation only applicable if the partialVisible is enabled.
+     *
+     * @default false
+     */
+    partialVisible?: boolean;
 
     /**
      * Accepts HTML attributes/custom attributes to add in individual carousel item.

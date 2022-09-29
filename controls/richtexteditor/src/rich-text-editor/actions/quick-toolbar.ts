@@ -26,6 +26,8 @@ export class QuickToolbar {
     public linkQTBar: BaseQuickToolbar;
     public textQTBar: BaseQuickToolbar;
     public imageQTBar: BaseQuickToolbar;
+    public audioQTBar: BaseQuickToolbar;
+    public videoQTBar: BaseQuickToolbar;
     public tableQTBar: BaseQuickToolbar;
     public inlineQTBar: BaseQuickToolbar;
     private renderFactory: RendererFactory;
@@ -108,14 +110,13 @@ export class QuickToolbar {
     }
 
     private keyUpQT(e: KeyboardEvent): void {
-        if(e.which == 27) {
+        if (e.which === 27) {
             this.hideQuickToolbars();
         }
-        
     }
 
     private renderQuickToolbars(): void {
-        if (this.linkQTBar || this.imageQTBar || this.textQTBar || this.tableQTBar) {
+        if (this.linkQTBar || this.imageQTBar || this.audioQTBar || this.videoQTBar || this.textQTBar || this.tableQTBar) {
             return;
         }
         this.linkQTBar = this.createQTBar('Link', 'Scrollable', this.parent.quickToolbarSettings.link, RenderType.LinkToolbar);
@@ -124,6 +125,10 @@ export class QuickToolbar {
         this.renderFactory.addRenderer(RenderType.TextToolbar, this.textQTBar);
         this.imageQTBar = this.createQTBar('Image', 'MultiRow', this.parent.quickToolbarSettings.image, RenderType.ImageToolbar);
         this.renderFactory.addRenderer(RenderType.ImageToolbar, this.imageQTBar);
+        this.audioQTBar = this.createQTBar('Audio', 'MultiRow', this.parent.quickToolbarSettings.audio, RenderType.AudioToolbar);
+        this.renderFactory.addRenderer(RenderType.AudioToolbar, this.audioQTBar);
+        this.videoQTBar = this.createQTBar('Video', 'MultiRow', this.parent.quickToolbarSettings.video, RenderType.VideoToolbar);
+        this.renderFactory.addRenderer(RenderType.VideoToolbar, this.videoQTBar);
         this.tableQTBar = this.createQTBar('Table', 'MultiRow', this.parent.quickToolbarSettings.table, RenderType.TableToolbar);
         this.renderFactory.addRenderer(RenderType.TableToolbar, this.tableQTBar);
         if (this.linkQTBar) {
@@ -133,6 +138,14 @@ export class QuickToolbar {
         if (this.imageQTBar) {
             EventHandler.add(this.imageQTBar.element, 'mousedown', this.onMouseDown, this);
             EventHandler.add(this.imageQTBar.element, 'keyup', this.keyUpQT, this);
+        }
+        if (this.audioQTBar) {
+            EventHandler.add(this.audioQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.audioQTBar.element, 'keyup', this.keyUpQT, this);
+        }
+        if (this.videoQTBar) {
+            EventHandler.add(this.videoQTBar.element, 'mousedown', this.onMouseDown, this);
+            EventHandler.add(this.videoQTBar.element, 'keyup', this.keyUpQT, this);
         }
         if (this.textQTBar) {
             EventHandler.add(this.textQTBar.element, 'mousedown', this.onMouseDown, this);
@@ -165,7 +178,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
-        if (this.parent.readonly || target.tagName.toLowerCase() === "img") {
+        if (this.parent.readonly || target.tagName.toLowerCase() === 'img') {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);
@@ -201,10 +214,16 @@ export class QuickToolbar {
         if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close') && document.body.contains(this.imageQTBar.element)) {
             this.imageQTBar.hidePopup();
         }
+        if (this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close') && document.body.contains(this.audioQTBar.element)) {
+            this.audioQTBar.hidePopup();
+        }
+        if (this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close') && document.body.contains(this.videoQTBar.element)) {
+            this.videoQTBar.hidePopup();
+        }
         if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
             this.tableQTBar.hidePopup();
         }
-        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
+        if (!isNOU(this.parent) && this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }
     }
@@ -327,6 +346,16 @@ export class QuickToolbar {
             EventHandler.remove(this.imageQTBar.element, 'keyup', this.keyUpQT);
             this.imageQTBar.destroy();
         }
+        if (this.audioQTBar) {
+            EventHandler.remove(this.audioQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.audioQTBar.element, 'keyup', this.keyUpQT);
+            this.audioQTBar.destroy();
+        }
+        if (this.videoQTBar) {
+            EventHandler.remove(this.videoQTBar.element, 'mousedown', this.onMouseDown);
+            EventHandler.remove(this.videoQTBar.element, 'keyup', this.keyUpQT);
+            this.videoQTBar.destroy();
+        }
         if (this.tableQTBar) {
             EventHandler.remove(this.tableQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.tableQTBar.element, 'keyup', this.keyUpQT);
@@ -354,6 +383,7 @@ export class QuickToolbar {
         this.parent.on(events.keyUp, this.keyUpHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseUpHandler, this);
         this.parent.on(events.renderInlineToolbar, this.renderInlineQuickToolbar, this);
+        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     private unWireInlineQTBarEvents(): void {
@@ -363,6 +393,7 @@ export class QuickToolbar {
         this.parent.off(events.keyUp, this.keyUpHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseUpHandler);
         this.parent.off(events.renderInlineToolbar, this.renderInlineQuickToolbar);
+        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     // eslint-disable-next-line
     private toolbarUpdated(args: NotifyArgs): void {
@@ -371,6 +402,12 @@ export class QuickToolbar {
         }
         if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
             this.imageQTBar.hidePopup();
+        }
+        if (this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close')) {
+            this.audioQTBar.hidePopup();
+        }
+        if (this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close')) {
+            this.videoQTBar.hidePopup();
         }
         if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
             this.tableQTBar.hidePopup();
@@ -401,7 +438,6 @@ export class QuickToolbar {
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     private onKeyDown(e: NotifyArgs): void {
@@ -409,6 +445,12 @@ export class QuickToolbar {
         if (args.which === 8 || args.which === 46) {
             if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
                 this.imageQTBar.hidePopup();
+            }
+            if (this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close')) {
+                this.audioQTBar.hidePopup();
+            }
+            if (this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close')) {
+                this.videoQTBar.hidePopup();
             }
         }
     }
@@ -443,6 +485,12 @@ export class QuickToolbar {
         if (this.imageQTBar) {
             this.imageQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
+        if (this.audioQTBar) {
+            this.audioQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
+        }
+        if (this.videoQTBar) {
+            this.videoQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
+        }
         if (this.linkQTBar) {
             this.linkQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
@@ -474,7 +522,6 @@ export class QuickToolbar {
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     /**

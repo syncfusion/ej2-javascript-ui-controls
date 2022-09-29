@@ -282,7 +282,7 @@ export class ChartData {
         return this.commonXvalues;
     }
 
-    private getDistinctValues(first: number [], second: number[] = []): number[] {
+    private getDistinctValues(first: number[] = [], second: number[] = []): number[] {
             let intial: object = {};
             let result: number[] = [];
             let index: number;

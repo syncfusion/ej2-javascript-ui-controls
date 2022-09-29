@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-splitbuttons",
-	"version": "20.2.38",
+	"version": "19.12.0",
 	"description": "A package of feature-rich Essential JS 2 components such as DropDownButton, SplitButton, ProgressButton and ButtonGroup.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-splitbuttons.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-splitbuttons.es2015.js",
+	"es2015": "./dist/es6/ej2-splitbuttons.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-popups": "*"

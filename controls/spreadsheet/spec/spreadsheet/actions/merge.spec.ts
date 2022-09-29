@@ -102,7 +102,7 @@ describe('Merge ->', () => {
                     helper.invoke('selectRange', ['B5:C5']);
                     setTimeout(() => {
                         done();
-                    });
+                    }, 50);
                 });
             });
         });
@@ -130,7 +130,7 @@ describe('Merge ->', () => {
                     expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
                     done();
                 });
-            });
+            }, 10);
         });
     });
 
@@ -259,8 +259,8 @@ describe('Merge ->', () => {
                     expect(td.rowSpan).toBe(6);
                     expect(td.colSpan).toBe(7);
                     done();
-                }, 10);
-            }, 10)
+                }, 50);
+            }, 50)
         });
     });
 
@@ -276,18 +276,10 @@ describe('Merge ->', () => {
             helper.click('#' + helper.id + '_merge');
             setTimeout(() => {
                expect(helper.getElements('.e-merge-alert-dlg.e-dialog').length).toBe(1);
+               helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
                 helper.click('.e-dialog .e-primary');
                 done();
             });
-            
-        });
-    });
-    describe('Checking for Dialog not open  ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
         });
         it('Checking for Dialog is not open', (done: Function) => {
             helper.invoke('selectRange', ['I2:J4']);

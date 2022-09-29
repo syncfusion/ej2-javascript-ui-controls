@@ -9,7 +9,6 @@ import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-
  * @hidden
  */
 export class PdfExport {
-    private control: TreeMap ;
 
     /**
      * Constructor for Maps
@@ -18,7 +17,6 @@ export class PdfExport {
      */
     // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: TreeMap) {
-        this.control = control;
     }
 
     /**
@@ -31,25 +29,25 @@ export class PdfExport {
      * @returns {Promise} - Returns the string.
      * @private
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload ?: boolean): Promise<string> {
+    public export(treeMap: TreeMap, type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload ?: boolean): Promise<string> {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
+                    'width': treeMap.availableSize.width.toString(),
+                    'height': treeMap.availableSize.height.toString()
                 }
             });
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            const exportElement: HTMLElement = this.control.svgObject.cloneNode(true) as HTMLElement;
+            const exportElement: HTMLElement = treeMap.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
             if (!isNullOrUndefined(backgroundElement)) {
                 const backgroundColor: string = backgroundElement.getAttribute('fill');
-                if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark' || this.control.theme === 'Bootstrap5' || this.control.theme === 'Bootstrap5Dark'
-                    || this.control.theme === 'Fluent' || this.control.theme === 'FluentDark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                if ((treeMap.theme === 'Tailwind' || treeMap.theme === 'TailwindDark' || treeMap.theme === 'Bootstrap5' || treeMap.theme === 'Bootstrap5Dark'
+                    || treeMap.theme === 'Fluent' || treeMap.theme === 'FluentDark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
                     (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
                 }
             }
@@ -72,7 +70,7 @@ export class PdfExport {
                 document.pageSettings.orientation = orientation;
                 imageString = imageString.slice(imageString.indexOf(',') + 1);
                 document.pages.add().graphics.drawImage(
-                    new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
+                    new PdfBitmap(imageString), 0, 0, (treeMap.availableSize.width - 60), treeMap.availableSize.height
                 );
                 if (allowDownload) {
                     document.save(fileName + '.pdf');
@@ -91,13 +89,10 @@ export class PdfExport {
     }
 
     /**
-     * To destroy the ImageExport.
-     *
-     * @param {TreeMap} treemap - Specifies the treemap instance.
+     * To destroy the PdfExport.
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(treemap: TreeMap): void {
-        // Destroy method performed here
-    }
+    public destroy(): void { }
 }

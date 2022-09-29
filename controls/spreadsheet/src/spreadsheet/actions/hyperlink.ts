@@ -117,6 +117,7 @@ export class SpreadsheetHyperlink {
         }
         if (!this.parent.element.querySelector('.e-hyperlink-dlg')) {
             const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+            let displayText: string;
             dialogInst.show({
                 width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-hyperlink-dlg',
                 header: l10n.getConstant('InsertLink'),
@@ -129,7 +130,9 @@ export class SpreadsheetHyperlink {
                     if (dlgArgs.cancel) {
                         args.cancel = true;
                     }
-                    dialogInst.dialogInstance.content = this.hyperlinkContent(); dialogInst.dialogInstance.dataBind();
+                    dialogInst.dialogInstance.content = this.hyperlinkContent();
+                    displayText = (dialogInst.dialogInstance.content.querySelector('.e-text') as HTMLInputElement).value;
+                    dialogInst.dialogInstance.dataBind();
                     focus(this.parent.element);
                 },
                 open: (): void => {
@@ -142,7 +145,7 @@ export class SpreadsheetHyperlink {
                         content: l10n.getConstant('Insert'), isPrimary: true, disabled: true
                     },
                     click: (): void => {
-                        this.dlgClickHandler();
+                        this.dlgClickHandler(displayText);
                         dialogInst.hide();
                     }
                 }]
@@ -150,7 +153,7 @@ export class SpreadsheetHyperlink {
         }
     }
 
-    private dlgClickHandler(): void {
+    private dlgClickHandler(displayText: string): void {
         let value: string;
         let address: string;
         let sheet: SheetModel = this.parent.getActiveSheet();
@@ -158,13 +161,15 @@ export class SpreadsheetHyperlink {
         const item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
             getElementsByClassName('e-content')[0].querySelector('.e-item.e-active') as HTMLElement;
         if (item) {
+            value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
+            if (value === displayText) {
+                value = null;
+            }
             if (item.querySelector('.e-webpage')) {
-                value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
                 const args: HyperlinkModel = { address: address };
                 this.parent.insertHyperlink(args, cellAddress, value, false);
             } else {
-                value = (item.getElementsByClassName('e-cont')[0].querySelector('.e-text') as CellModel).value;
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
                 const dlgContent: HTMLElement = item.getElementsByClassName('e-cont')[2] as HTMLElement;
                 if (dlgContent.getElementsByClassName('e-list-item')[0].querySelector('.e-active')) {
@@ -209,6 +214,7 @@ export class SpreadsheetHyperlink {
     private editHyperlinkHandler(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        let displayText: string;
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-edithyperlink-dlg',
             header: l10n.getConstant('EditLink'),
@@ -221,7 +227,9 @@ export class SpreadsheetHyperlink {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-                dialogInst.dialogInstance.content = this.hyperEditContent(); dialogInst.dialogInstance.dataBind();
+                dialogInst.dialogInstance.content = this.hyperEditContent();
+                displayText = (dialogInst.dialogInstance.content.querySelector('.e-text') as HTMLInputElement).value;
+                dialogInst.dialogInstance.dataBind();
                 focus(this.parent.element);
             },
             open: (): void => {
@@ -238,7 +246,7 @@ export class SpreadsheetHyperlink {
                     content: l10n.getConstant('Update'), isPrimary: true
                 },
                 click: (): void => {
-                    this.dlgClickHandler();
+                    this.dlgClickHandler(displayText);
                     dialogInst.hide();
                 }
             }]
@@ -855,18 +863,20 @@ export class SpreadsheetHyperlink {
             range = rangeArr[1];
         }
         const rangeIndexes: number[] = range ? getRangeIndexes(range) : getRangeIndexes(sheet.activeCell);
+        let cellEle: HTMLElement; let classList: string[];
         for (let rowIdx: number = rangeIndexes[0]; rowIdx <= rangeIndexes[2]; rowIdx++) {
             for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
                 if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
-                    const prevELem: HTMLElement = this.parent.getCell(rowIdx, colIdx);
-                    const classList: string[] = [];
-                    for (let i: number = 0; i < prevELem.classList.length; i++) {
-                        classList.push(prevELem.classList[i]);
+                    classList = [];
+                    if (cellEle = this.parent.getCell(rowIdx, colIdx)) {
+                        for (let i: number = 0; i < cellEle.classList.length; i++) {
+                            classList.push(cellEle.classList[i]);
+                        }
                     }
                     this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: rowIdx, colIdx: colIdx });
                     for (let i: number = 0; i < classList.length; i++) {
-                        if (!this.parent.getCell(rowIdx, colIdx).classList.contains(classList[i])) {
-                            this.parent.getCell(rowIdx, colIdx).classList.add(classList[i]);
+                        if (!cellEle.classList.contains(classList[i])) {
+                            cellEle.classList.add(classList[i]);
                         }
                     }
                 }

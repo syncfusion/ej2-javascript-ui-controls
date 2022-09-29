@@ -269,6 +269,34 @@ describe('Touch functionalities', () => {
         });
     });
 
+    describe('Disable swiping', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const schOptions: ScheduleModel = {
+                height: 500, width: 300, currentView: 'Day',
+                selectedDate: new Date(2022, 7, 5), allowSwiping: false
+            };
+            schObj = createSchedule(schOptions, []);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('prevent date navigate swipe action', (done: DoneFn) => {
+            triggerSwipeEvent(schObj.element.querySelector('.e-table-container'), 300);
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                .toEqual('<div class="e-header-day">Fri</div><div class="e-header-date e-navigate" role="link">5</div>');
+            setTimeout(
+                () => {
+                    expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                        .toEqual('<div class="e-header-day">Fri</div><div class="e-header-date e-navigate" role="link">5</div>');
+                    expect(schObj.element.querySelector('.e-table-container').childNodes.length).toEqual(1);
+                    expect(schObj.selectedDate.getTime()).toEqual(new Date(2022, 7, 5).getTime());
+                    done();
+                },
+                400);
+        });
+    });
+
     describe('RTL Touch actions', () => {
         let schObj: Schedule;
         beforeAll(() => {

@@ -1,4 +1,4 @@
-//default 
+//default
 $hscroll-skin: 'material' !default;
 $hscroll-default-bg: $grey-900 !default;
 $hscroll-press-bg: rgba($grey-white, .18) !default;
@@ -50,7 +50,7 @@ $hscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12)
   border-radius: 50%;
   border-width: 1px;
   box-sizing: border-box;
-  content: '' ;
+  content: '';
   height: 1px;
   left: 50%;
   position: absolute;
@@ -68,10 +68,11 @@ $hscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12)
   0% {
     border-color: $hscroll-ribble-animation-border-frame;
     box-shadow: $hscroll-ribble-animation-shadow-frame;
-    }
+  }
 
   100% {
     box-shadow: $hscroll-ribble-animation-shadow-frame-end;
-    }
- }
+  }
+}
+
 //enddefault

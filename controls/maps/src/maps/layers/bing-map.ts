@@ -39,4 +39,12 @@ export class BingMap {
             return '';
         }
     }
+
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.maps = null;
+        this.subDomains = [];
+    }
 }

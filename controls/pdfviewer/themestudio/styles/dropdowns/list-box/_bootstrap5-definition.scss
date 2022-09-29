@@ -44,6 +44,7 @@ $listbox-checkbox-right-margin: -2px 0 0 8px !default;
 $listbox-checkbox-left-margin: -2px 8px 0 0 !default;
 $listbox-rtl-checkbox-left-margin: -2px 0 0 8px !default;
 $listbox-rtl-checkbox-right-margin: -2px 8px 0 0 !default;
+
 //ListView In-built template variables
 $listbox-template-padding: 8px 16px !default;
 $listbox-template-avatar-padding-right: 16px !default;
@@ -70,8 +71,10 @@ $listbox-template-multiline-header-font-size: $text-sm !default;
 $listbox-template-multiline-padding: 4px !default;
 $listbox-template-multiline-content-font-size: $text-sm !default;
 $listbox-template-multiline-avatar-top: 0 !default;
+$listbox-filter-height: calc(100% - 47px) !default;
 $listbox-filter-small-height: calc(100% - 45px) !default;
 $listbox-filter-bigger-small-height: calc(100% - 45px) !default;
+$listbox-filter-bigger-height: calc(100% - 55px) !default;
 $listbox-item-height: 36px !default;
 
 $listbox-border-color: $border-light;

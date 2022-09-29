@@ -17,7 +17,7 @@ $input-active-bg-color: $active-bg-color !default;
 $input-active-font-color: $active-font-color !default;
 $input-press-font-color: $active-font-color !default;
 
-//default 
+//default
 $input-skin-name: 'material' !default;
 $input-box-border-radius: $zero-value !default;
 $input-group-child-border-width: $zero-value !default;
@@ -131,7 +131,7 @@ $float-input-child-bigger-margin-top: 6px !default;
 $input-disable-group-border-width: $zero-value $zero-value $one-value $zero-value !default;
 $input-opacity: 1 !default;
 $input-opacity-filter: 100 !default;
-$input-group-border-width-focus: $zero-value $zero-value $one-value $zero-value !default;;
+$input-group-border-width-focus: $zero-value $zero-value $one-value $zero-value !default;
 $input-group-border-type-focus: $border-type !default;
 $input-group-border-color-focus: $input-box-border-color !default;
 $input-group-border-color-hover: $input-box-border-color !default;
@@ -232,7 +232,8 @@ $input-bigger-small-left-child-min-width: 30px !default;
 $input-icon-inner-width: 10px !default;
 $input-icon-inner-height: 10px !default;
 $input-clear-icon-font: '\e932' !default;
-$input-readonly-bg-color: none !default;;
+$input-readonly-bg-color: none !default;
+
 //enddefault
 
 // Outline textbox
@@ -337,21 +338,25 @@ $outline-input-group-disabled-color: rgba($grey-light-font, .38) !default;
 @mixin input-sizing {
   box-sizing: content-box;
 }
+
 @mixin input-height ($height) {
   content: '';
 }
+
 @mixin input-state-color ($color) {
   border-bottom-color: $color;
 }
+
 @mixin input-selection {
   background: $input-accent;
   color: $grey-light-font;
 }
+
 @mixin float-label-alignment {
   content: '';
 }
 
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @mixin input-group-animation {
   -moz-transition: .2s cubic-bezier(.4, 0, .4, 1);
   bottom: 0;
@@ -361,33 +366,43 @@ $outline-input-group-disabled-color: rgba($grey-light-font, .38) !default;
   transition: .2s cubic-bezier(.4, 0, .4, 1);
   width: 0;
 }
+
 @mixin input-group-animation-left {
   left: 50%;
 }
+
 @mixin input-group-animation-width {
   width: 50%;
 }
+
 @mixin input-group-animation-right {
   right: 50%;
 }
+
 @mixin input-group-animation-bg {
   background: $input-active-border-color;
 }
+
 @mixin input-group-hover-bg {
   background: $input-group-border-color-hover;
 }
+
 @mixin input-group-success-animation-bg {
   background: $input-success-color;
 }
+
 @mixin input-group-warning-animation-bg {
   background: $input-warning-color;
 }
+
 @mixin input-group-error-animation-bg {
   background: $input-error-color;
 }
+
 @mixin input-ripple-parent {
   position: relative;
 }
+
 @mixin input-ripple-style {
   background: $grey-400;
   border-radius: 100%;
@@ -402,15 +417,17 @@ $outline-input-group-disabled-color: rgba($grey-light-font, .38) !default;
   transform: scale(0);
   width: 50%;
 }
+
 @mixin input-ripple-animation {
   animation: e-input-ripple .45s linear;
 }
+
 @keyframes e-input-ripple {
   100% {
     opacity: 0;
     transform: scale(4);
-   }
- }
+  }
+}
 
 //Filled input configuration
 $filled-input-font-size: 14px !default;
@@ -546,7 +563,7 @@ $filled-input-overlay-bg-color: rgba($grey-black, .87) !default;
 $filled-input-overlay-focused-bg-color: $grey-dark !default;
 $filled-input-overlay-activated-bg-color: rgba($grey-500, .12) !default;
 $background-color-transition: opacity 15ms linear,
-background-color 15ms linear !default;
+  background-color 15ms linear !default;
 $filled-input-hover-border-color: rgba($grey-dark-font, .42) !default;
 $filled-input-float-label-color: rgba($grey-dark-font, .6) !default;
 $filled-input-disabled-font-color: rgba($grey-light-font, .38) !default;

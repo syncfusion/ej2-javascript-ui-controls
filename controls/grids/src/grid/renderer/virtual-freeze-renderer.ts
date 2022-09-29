@@ -83,7 +83,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     private setFreezeSelection(args: { uid: string, set: boolean, clearAll?: boolean }): void {
-        setFreezeSelection(args, this.virtualRenderer);
+        setFreezeSelectionAction(args, this.virtualRenderer);
     }
 
     /**
@@ -190,7 +190,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
      */
     public getColGroup(): Element {
         const mCol: Element = this.parent.getMovableVirtualContent();
-        return this.isXaxis() ? mCol.querySelector(literals.colGroup) : this.colgroup;
+        return this.isXaxis() ? mCol.querySelector(literals.colGroup + ':not(.e-masked-colgroup)') : this.colgroup;
     }
 
     /**
@@ -397,7 +397,7 @@ export function collectRows(tableName: freezeTable, virtualRenderer: VirtualCont
  * @returns {void}
  * @hidden
  */
-export function setFreezeSelection(args: { uid: string, set: boolean, clearAll?: boolean },
+export function setFreezeSelectionAction(args: { uid: string, set: boolean, clearAll?: boolean },
                                    virtualRenderer: VirtualContentRenderer): void {
     const leftKeys: string[] = Object.keys(virtualRenderer.vgenerator.cache);
     const movableKeys: string[] = Object.keys(virtualRenderer.vgenerator.movableCache);
@@ -564,7 +564,7 @@ export function getHeaderCells(virtualRenderer: VirtualContentRenderer, parent: 
 export function getVirtualFreezeHeader(virtualRenderer: VirtualContentRenderer, parent: IGrid): Element {
     let headerTable: Element;
     if (isXaxis(virtualRenderer)) {
-        headerTable = parent.getMovableVirtualHeader().querySelector('.' + literals.table);
+        headerTable = parent.getMovableVirtualHeader().querySelector('.' + literals.table + ':not(.e-masked-table)');
     } else {
         headerTable = parent.getFrozenVirtualHeader().querySelector('.' + literals.table);
     }
@@ -706,7 +706,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     private setFreezeSelection(args: { uid: string, set: boolean, clearAll?: boolean }): void {
-        setFreezeSelection(args, this.virtualRenderer);
+        setFreezeSelectionAction(args, this.virtualRenderer);
     }
 
     private getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean, isScroll: boolean }): void {

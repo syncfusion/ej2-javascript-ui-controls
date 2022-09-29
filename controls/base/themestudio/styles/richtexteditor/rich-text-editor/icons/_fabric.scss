@@ -1,6 +1,7 @@
 /*! component's theme wise override definitions and variables */
 
 @include export-module('richtexteditor-fabric-icons') {
+
   /*! richtexteditor icons */
 
   .e-rte-toolbar,
@@ -126,7 +127,17 @@
       content: '\e335';
     }
 
-    .e-replace::before {
+    .e-audio::before {
+      content: '\e940';
+    }
+
+    .e-video::before {
+      content: '\e941';
+    }
+
+    .e-replace::before,
+    .e-audio-replace::before,
+    .e-video-replace::before {
       content: '\e359';
     }
 
@@ -138,7 +149,9 @@
       content: '\e35b';
     }
 
-    .e-remove::before {
+    .e-remove::before,
+    .e-audio-remove::before,
+    .e-video-remove::before {
       content: '\e33e';
     }
 
@@ -146,7 +159,9 @@
       content: '\e34e';
     }
 
-    .e-display::before {
+    .e-display::before,
+    .e-audio-display::before,
+    .e-video-display::before {
       content: '\e358';
     }
 
@@ -154,7 +169,8 @@
       content: '\e33c';
     }
 
-    .e-img-dimension::before {
+    .e-img-dimension::before,
+    .e-video-dimension::before {
       content: '\e336';
     }
 

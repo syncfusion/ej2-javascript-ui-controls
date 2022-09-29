@@ -156,7 +156,8 @@ export class BatchEdit {
         const mCont: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
         const mHdr: Element = this.parent.getHeaderContent().querySelector('.' + literals.movableHeader);
         const clear: boolean = (!e.container.isContent || !e.container.isDataCell) && !(this.parent.frozenRows && e.container.isHeader);
-        if (!e.byKey || clear) {
+        if (!e.byKey || clear || (this.parent.isFrozenGrid() && e.element && closest(e.element, '.e-gridheader')
+            && !e.element.parentElement.hasAttribute('data-rowindex'))) {
             if (this.parent.isEdit && clear) {
                 this.saveCell();
             }
@@ -182,12 +183,13 @@ export class BatchEdit {
             switch (e.keyArgs.action) {
             case 'tab':
             case 'shiftTab':
-                let indent: number = this.parent.isRowDragable() && this.parent.isDetail() ? 2 :
+                // eslint-disable-next-line no-case-declarations
+                const indent: number = this.parent.isRowDragable() && this.parent.isDetail() ? 2 :
                     this.parent.isRowDragable() || this.parent.isDetail() ? 1 : 0;
                 // eslint-disable-next-line no-case-declarations
-                const col: Column = this.parent.getColumns()[e.indexes[1] - indent];
+                const col: Column = this.parent.getColumns()[cellIndex - indent];
                 if (col && !this.parent.isEdit) {
-                    this.editCell(e.indexes[0], col.field);
+                    this.editCell(rowIndex, col.field);
                 }
                 if (isEdit || this.parent.isLastCellPrimaryKey) {
                     this.editCellFromIndex(rowIndex, cellIndex);

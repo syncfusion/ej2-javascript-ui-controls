@@ -31,6 +31,7 @@ $chip-rtl-avatar-wrapper-border-radius: 0 !default;
 $chip-rtl-avatar-margin: 0 0 0 8px !default;
 $chip-rtl-leading-icon-margin: 0 0 0 8px !default;
 $chip-rtl-delete-icon-margin: 0 4px 0 -4px !default;
+
 //Touch
 $chip-touch-border-radius: 0 !default;
 $chip-touch-avatar-wrapper-border-radius: 0 !default;
@@ -49,6 +50,7 @@ $chip-touch-multi-selection-icon-margin: 0 4px 0 -4px !default;
 $chip-touch-delete-icon-font-size: 12px !default;
 $chip-touch-delete-icon-size: 32px !default;
 $chip-touch-delete-icon-margin: 0 -4px 0 4px !default;
+
 //Touch-RTL
 $chip-touch-rtl-avatar-wrapper-border-radius: 0 !default;
 $chip-touch-rtl-avatar-margin: 0 -4px 0 8px !default;
@@ -68,15 +70,15 @@ $chip-choice-focus-active-bg-color: $primary !default;
 $chip-pressed-bg-color: $content-bg-color-alt5 !default;
 $chip-disabled-bg-color: $secondary-bg-color-disabled !default;
 $chip-pressed-active-bg-color: $primary !default;
-$chip-avatar-bg-color: $content-bg-color-alt2  !default;
-$chip-avatar-hover-bg-color: $content-bg-color-alt2  !default;
-$chip-avatar-focus-bg-color: $content-bg-color-alt2  !default;
-$chip-avatar-active-bg-color: $content-bg-color-alt2  !default;
-$chip-avatar-choice-active-bg-color: $primary  !default;
+$chip-avatar-bg-color: $content-bg-color-alt2 !default;
+$chip-avatar-hover-bg-color: $content-bg-color-alt2 !default;
+$chip-avatar-focus-bg-color: $content-bg-color-alt2 !default;
+$chip-avatar-active-bg-color: $content-bg-color-alt2 !default;
+$chip-avatar-choice-active-bg-color: $primary !default;
 $chip-avatar-focus-active-bg-color: $content-bg-color-alt4 !default;
 $chip-avatar-choice-focus-active-bg-color: $chip-choice-focus-active-bg-color !default;
 $chip-avatar-pressed-bg-color: $content-bg-color-alt2 !default;
-$chip-avatar-pressed-active-bg-color: $content-bg-color-alt2  !default;
+$chip-avatar-pressed-active-bg-color: $content-bg-color-alt2 !default;
 $chip-avatar-disabled-bg-color: $chip-disabled-bg-color !default;
 $chip-font-color: $content-text-color !default;
 $chip-hover-font-color: $content-text-color !default;
@@ -184,10 +186,12 @@ $chip-outline-avatar-margin: 0 4px 0 -13px !default;
 $chip-outline-icon-margin: 0 4px 0 4px !default;
 $chip-outline-delete-icon-margin: 0 3px 0 4px !default;
 $chip-outline-avatar-size: 22px !default;
+
 //outline-rtl
 $chip-outline-rtl-avatar-margin: 0 -13px 0 4px !default;
 $chip-outline-rtl-icon-margin: 0 4px 0 4px !default;
 $chip-outline-rtl-delete-icon-margin: 0 4px 0 3px !default;
+
 //theme
 //primary
 $chip-primary-bg-color: $primary !default;
@@ -228,6 +232,7 @@ $chip-primary-active-border-color: $primary-bg-color-pressed !default;
 $chip-primary-focus-active-border-color: $primary-bg-color-pressed !default;
 $chip-primary-pressed-border-color: $primary-bg-color-pressed !default;
 $chip-primary-disabled-border-color: $primary-bg-color-disabled !default;
+
 //success
 $chip-success-bg-color: $success-bg-color !default;
 $chip-success-hover-bg-color: $success-bg-color-hover !default;
@@ -267,6 +272,7 @@ $chip-success-active-border-color: $success-bg-color-pressed !default;
 $chip-success-focus-active-border-color: $success-bg-color-pressed !default;
 $chip-success-pressed-border-color: $success-bg-color-pressed !default;
 $chip-success-disabled-border-color: $success-bg-color-disabled !default;
+
 //info
 $chip-info-bg-color: $info-bg-color !default;
 $chip-info-hover-bg-color: $info-bg-color-hover !default;
@@ -306,6 +312,7 @@ $chip-info-active-border-color: $info-bg-color-pressed !default;
 $chip-info-focus-active-border-color: $info-bg-color-pressed !default;
 $chip-info-pressed-border-color: $info-bg-color-pressed !default;
 $chip-info-disabled-border-color: $info-bg-color-disabled !default;
+
 //warning
 $chip-warning-bg-color: $warning-bg-color !default;
 $chip-warning-hover-bg-color: $warning-bg-color-hover !default;
@@ -345,6 +352,7 @@ $chip-warning-active-border-color: $warning-bg-color-pressed !default;
 $chip-warning-focus-active-border-color: $warning-bg-color-pressed !default;
 $chip-warning-pressed-border-color: $warning-bg-color-pressed !default;
 $chip-warning-disabled-border-color: $warning-bg-color-disabled !default;
+
 //danger
 $chip-danger-bg-color: $danger-bg-color !default;
 $chip-danger-hover-bg-color: $danger-bg-color-hover !default;
@@ -384,6 +392,7 @@ $chip-danger-active-border-color: $danger-bg-color-pressed !default;
 $chip-danger-focus-active-border-color: $danger-bg-color-pressed !default;
 $chip-danger-pressed-border-color: $danger-bg-color-pressed !default;
 $chip-danger-disabled-border-color: $danger-border-color-disabled !default;
+
 //outline-theme
 //primary
 $chip-outline-primary-bg-color: transparent !default;
@@ -424,6 +433,7 @@ $chip-outline-primary-focus-active-border-color: $primary-bg-color-pressed !defa
 $chip-outline-primary-active-border-color: $primary-bg-color-pressed !default;
 $chip-outline-primary-pressed-border-color: $primary-bg-color-pressed !default;
 $chip-outline-primary-disabled-border-color: $content-bg-color-alt3 !default;
+
 //success
 $chip-outline-success-bg-color: transparent !default;
 $chip-outline-success-hover-bg-color: $success-bg-color-hover !default;
@@ -463,6 +473,7 @@ $chip-outline-success-active-border-color: $success-bg-color-pressed !default;
 $chip-outline-success-focus-active-border-color: $success-bg-color-pressed !default;
 $chip-outline-success-pressed-border-color: $success-bg-color-pressed !default;
 $chip-outline-success-disabled-border-color: $content-bg-color-alt3 !default;
+
 //info
 $chip-outline-info-bg-color: transparent !default;
 $chip-outline-info-hover-bg-color: $info-bg-color-hover !default;
@@ -502,6 +513,7 @@ $chip-outline-info-active-border-color: $info-bg-color-pressed !default;
 $chip-outline-info-focus-active-border-color: $info-bg-color-pressed !default;
 $chip-outline-info-pressed-border-color: $info-bg-color-pressed !default;
 $chip-outline-info-disabled-border-color: $content-bg-color-alt3 !default;
+
 //warning
 $chip-outline-warning-bg-color: transparent !default;
 $chip-outline-warning-hover-bg-color: $warning-bg-color-hover !default;
@@ -510,7 +522,7 @@ $chip-outline-warning-active-bg-color: $warning-bg-color-pressed !default;
 $chip-outline-warning-focus-active-bg-color: $warning-bg-color-pressed !default;
 $chip-outline-warning-pressed-bg-color: $warning-bg-color-pressed !default;
 $chip-outline-warning-disabled-bg-color: transparent !default;
-$chip-outline-warning-avatar-bg-color: $warning  !default;
+$chip-outline-warning-avatar-bg-color: $warning !default;
 $chip-outline-warning-avatar-hover-bg-color: $chip-outline-warning-hover-bg-color !default;
 $chip-outline-warning-avatar-focus-bg-color: $chip-outline-warning-focus-bg-color !default;
 $chip-outline-warning-avatar-active-bg-color: $chip-outline-warning-active-bg-color !default;
@@ -521,8 +533,8 @@ $chip-outline-warning-font-color: $warning-dark !default;
 $chip-outline-warning-hover-font-color: $warning-text !default;
 $chip-outline-warning-focus-font-color: $warning-text !default;
 $chip-outline-warning-active-font-color: $warning-text-pressed !default;
-$chip-outline-warning-focus-active-font-color: $warning-text-pressed  !default;
-$chip-outline-warning-pressed-font-color: $warning-text-pressed  !default;
+$chip-outline-warning-focus-active-font-color: $warning-text-pressed !default;
+$chip-outline-warning-pressed-font-color: $warning-text-pressed !default;
 $chip-outline-warning-disabled-font-color: $content-text-color-disabled !default;
 $chip-outline-warning-close-icon-font-color: $warning-dark !default; //not added
 $chip-outline-warning-close-icon-hover-font-color: $chip-outline-warning-hover-font-color !default;
@@ -541,6 +553,7 @@ $chip-outline-warning-active-border-color: $warning-bg-color-pressed !default;
 $chip-outline-warning-focus-active-border-color: $warning-bg-color-pressed !default;
 $chip-outline-warning-pressed-border-color: $warning-bg-color-pressed !default;
 $chip-outline-warning-disabled-border-color: $content-bg-color-alt3 !default;
+
 //danger
 $chip-outline-danger-bg-color: transparent !default;
 $chip-outline-danger-hover-bg-color: $danger-bg-color-hover !default;
@@ -584,11 +597,15 @@ $chip-outline-danger-disabled-border-color: $content-bg-color-alt3 !default;
 // box shadows
 // primary
 $chip-primary-box-shadow: $primary-shadow-focus !default;
+
 // success
 $chip-success-box-shadow: $success-shadow-focus !default;
+
 // danger
 $chip-danger-box-shadow: $danger-shadow-focus !default;
+
 // warning
 $chip-warning-box-shadow: $warning-shadow-focus !default;
+
 // info
 $chip-info-box-shadow: $info-shadow-focus !default;

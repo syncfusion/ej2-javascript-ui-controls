@@ -94,7 +94,8 @@ export class WorkbookNumberFormat {
                 if (cell.format.indexOf('<') > -1 || cell.format.indexOf('>') > -1) {
                     args.value = args.result = this.processCustomConditions(cell);
                 } else {
-                    args.value = args.result = this.processCustomAccounting(cell, range[0], range[1], args.td, currencySymbol);
+                    args.value = args.result = this.processCustomAccounting(
+                        cell, range[0], range[1], args.td, currencySymbol, args.skipRowFill);
                     isCustomText = (!isNumber(cell.value) || cell.format && cell.format.indexOf('@') > -1) ? true : false;
                 }
                 cell.format = orgFormat;
@@ -154,7 +155,8 @@ export class WorkbookNumberFormat {
         }
     }
 
-    private processCustomFill(format: string, cell: CellModel, rowIdx: number, colIdx: number, tdElem?: HTMLElement): string {
+    private processCustomFill(
+        format: string, cell: CellModel, rowIdx: number, colIdx: number, tdElem?: HTMLElement, skipRowFill?: boolean): string {
         const idx: number = cell.format.indexOf('*');
         const repeatChar: string = format[idx + 1];
         const codes: string[] = format.split(format[idx] + repeatChar);
@@ -173,15 +175,12 @@ export class WorkbookNumberFormat {
                 secText = secText.split('0').join('');
             }
         }
-        this.isRowFill = true;
-        this.parent.notify(rowFillHandler, { cell: cell,
-            rowIdx: rowIdx,
-            colIdx: colIdx,
-            value: repeatChar,
-            formatText: formatText,
-            secText: secText,
-            td: tdElem
-        });
+        if (!skipRowFill) {
+            this.isRowFill = true;
+            this.parent.notify(
+                rowFillHandler, { cell: cell, rowIdx: rowIdx, colIdx: colIdx, value: repeatChar, formatText: formatText, secText: secText,
+                    td: tdElem });
+        }
         return formatText;
     }
 
@@ -297,7 +296,8 @@ export class WorkbookNumberFormat {
         }
     }
 
-    private processCustomAccounting(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, currencySymbol?: string): string {
+    private processCustomAccounting(
+        cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, currencySymbol?: string, skipRowFill?: boolean): string {
         let cellValue: number;
         const custFormat: string[] = cell.format.split(';');
         const numberStatusAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
@@ -327,7 +327,7 @@ export class WorkbookNumberFormat {
             cell.value = orgValue;
             return formattedNumber;
         }
-        return this.processCustomNumberFormat(cell, rowIdx, colIdx, td);
+        return this.processCustomNumberFormat(cell, rowIdx, colIdx, td, skipRowFill);
     }
 
     private processCustomText(cell: CellModel): string {
@@ -400,7 +400,7 @@ export class WorkbookNumberFormat {
         return format;
     }
 
-    private processCustomNumberFormat(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement): string {
+    private processCustomNumberFormat(cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, skipRowFill?: boolean): string {
         if (cell.format === '') {
             return '';
         }
@@ -437,7 +437,7 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('*') > -1) {
                 isFormatted = true;
-                formattedText = this.processCustomFill(customFormat, cell, rowIdx, colIdx, td);
+                formattedText = this.processCustomFill(customFormat, cell, rowIdx, colIdx, td, skipRowFill);
             }
             if (customFormat === 'General') {
                 isFormatted = true;
@@ -829,10 +829,6 @@ export class WorkbookNumberFormat {
     }
 
     public checkDateFormat(args: DateFormatCheckArgs): void {
-        if (args.processCustomDate) {
-            this.processCustomDate({} as NumberFormatArgs, args.cell);
-            return;
-        }
         if (isNullOrUndefined(args.value)) {
             return;
         }

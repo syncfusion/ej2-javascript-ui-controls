@@ -1445,10 +1445,10 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.scrollSettings = dataObj.scrollSettings || {};
     diagram.commandManager = dataObj.commandManager || {};
     /**
-     * EJ2-62846-Exception occurs after save and load when layers are undefined.
-     */
+    * EJ2-62846-Exception occurs after save and load when layers are undefined.
+    */
     if(dataObj.layers && dataObj.layers.length > 0){
-    sortLayerObjects(dataObj);
+       sortLayerObjects(dataObj);
     }
     diagram.layers = dataObj.layers || [];
     diagram.rulerSettings.horizontalRuler.arrangeTick = arrangeTickHorizontal;
@@ -1511,7 +1511,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     if (dataObj.selectedItems) {
         dataObj.selectedItems.nodes = [];
         dataObj.selectedItems.connectors = [];
-		//EJ2-61674 Excetion occurs when move the node after perform save and load
+		//EJ2-61674 Exception occurs when we move the node after save and load
 		dataObj.selectedItems.selectedObjects = [];
     }
     diagram.selectedItems = dataObj.selectedItems;

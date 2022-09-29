@@ -1,4 +1,5 @@
 $skin-name: 'tailwind' !default;
+
 //Layout Variables Start
 //Mouse Mode Start
 $toast-icon-nrml-height: 20px !default;
@@ -19,6 +20,7 @@ $toast-content-nrml-padding: 8px 0 !default;
 $toast-nrml-border-radious: 6px !default;
 $toast-font-nrml-size: $text-sm !default;
 $toast-title-font-nrml-size: $text-sm !default;
+
 //Mouse Mode End
 
 //Touch Mode Start
@@ -39,6 +41,7 @@ $toast-content-bgr-padding: 12px 0 !default;
 $toast-bgr-border-radious: 6px !default;
 $toast-font-bgr-size: $text-sm !default;
 $toast-title-font-weight: bold !default;
+
 //Touch Mode End
 //Layout Variables End
 
@@ -55,6 +58,7 @@ $toast-icon-color: $icon-color !default;
 $toast-close-icon-color: $icon-color !default;
 $toast-title-color: $content-text-color !default;
 $toast-content-color: $content-text-color-alt1 !default;
+
 // Toast Type Definitions Start
 $toast-success-bg-color: $success-light !default;
 $toast-success-color: $success-bg-color !default;
@@ -91,5 +95,6 @@ $toast-danger-content-color: $toast-danger-color !default;
 $toast-danger-hover-bg-color: $danger-light !default;
 $toast-danger-hover-color: $toast-danger-color !default;
 $toast-danger-hover-box-shadow: $shadow !default;
+
 // Toast Type Definitions End
 //Theme Variables End

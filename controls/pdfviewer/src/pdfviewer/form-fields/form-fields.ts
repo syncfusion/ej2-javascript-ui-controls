@@ -1134,12 +1134,8 @@ export class FormFields {
                     this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
                 }
                 // eslint-disable-next-line
-                let isFormField = annot.shapeAnnotationType == 'Path' || annot.shapeAnnotationType == "SignatureText" || annot.shapeAnnotationType == "SignatureImage";
-                if (!isFormField) {
-                     // EJ2-60330 , This event will not trigger for formField.
-                     // So we have added the above condition, it should not trigger in all the time, 
-                     // because this code is for form field
-                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
+                if(annot.shapeAnnotationType === 'Path' || annot.shapeAnnotationType === "SignatureText"){
+                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);
                 }
                 this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
             }
@@ -1216,9 +1212,8 @@ export class FormFields {
                     this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
                 }
                 // eslint-disable-next-line
-                let isFormField = annot.shapeAnnotationType == "SignatureImage";
-                if (!isFormField) {                     
-                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, 'HandWrittenSignature', annot.bounds, annot.opacity, null, null, signString);
+                if( annot.shapeAnnotationType === "SignatureImage"){                   
+                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id,annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);                  
                 }
                 this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
     }
@@ -1820,6 +1815,7 @@ export class FormFields {
             inputdiv.className = 'e-pdfviewer-formFields';
         }
         inputdiv.id = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index;
+        inputdiv.ariaLabel = this.pdfViewer.element.id + 'input_' + pageIndex;
         inputdiv.style.zIndex = 1000;
     }
     /**

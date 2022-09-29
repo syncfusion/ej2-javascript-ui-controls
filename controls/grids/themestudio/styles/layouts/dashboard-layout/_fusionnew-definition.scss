@@ -83,11 +83,10 @@ $panel-drag-prevent: none !default;
 $panel-content-template-height: inherit !default;
 $panel-content-template-width: inherit !default;
 
-// sass-lint:disable-all
+/* stylelint-disable */
 $panel-dragging-zindex: 1111 !important !default;
 $panel-drag-prevent: none !default;
 
-// sass-lint:disable-all
 $element-width-complete: 100% !important !default;
 
 // colors

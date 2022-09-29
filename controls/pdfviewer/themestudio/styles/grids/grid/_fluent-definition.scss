@@ -42,7 +42,7 @@ $group-grouped-droparea-bg-color: $content-bg-color !default;
 $grid-hover-icon-color: $icon-color-hover !default;
 $grid-dragcell-border-color: $border-light !default;
 $grid-drap-drop-icon-color: $icon-color !default;
-$grid-clone-dropitemscount-bg-color: $primary  !default;
+$grid-clone-dropitemscount-bg-color: $primary !default;
 $grid-clone-dropitemscount-color: $content-text-color-alt2 !default;
 $grid-clone-row-border-color: $border-light !default;
 $grid-dropitemscount-color: $white !default;
@@ -77,7 +77,6 @@ $grid-responsive-header-background: $content-bg-color !default;
 $grid-adatptive-apply-btn-disable: $primary-bg-color-disabled !default;
 $grid-outter-border: $grid-header-border-color !default;
 $grid-column-reorder-icon-color: $primary !default;
-
 
 // Dimension
 $grid-content-padding: 7px !default;
@@ -347,6 +346,7 @@ $grid-bigger-rhandler-height: $grid-bigger-headercell-line-height !default;
 $grid-bigger-rowcell-line-height: 1 !default;
 $grid-bigger-font-size: 16px !default;
 $group-unpgrouicon-margin-left: -13px !default;
+$grid-group-ungroupicon-margin-left: -9px !default;
 $grid-group-clone-text-align: left !default;
 $grid-clone-padding: 2px 8px 2px !default;
 $grid-bigger-first-last-rowcell-padding: 8px !default;
@@ -494,7 +494,8 @@ $grid-rtl-column-menu-margin: -20px -18px -1px -22px !default;
 $grid-rtl-textwrap-column-menu-margin: -17px -13px -23px -25px !default;
 $grid-filter-checkbox-width: 0 !default;
 $grid-filter-checkbox-white-space: nowrap !default;
-// group animator 
+
+// group animator
 $grid-group-animator-bigger-cell-margin: 15px 0 15px 0 !default;
 $grid-group-animator-bigger-drop-height: 54px !default;
 $grid-animator-bigger-area-margin: 22px !default;
@@ -561,6 +562,7 @@ $grid-reorder-downarrow-top-margin: 0 !default;
 $grid-bigger-toolbar-icon-size: $grid-bigger-icons-font-size !default;
 $grid-reorderarrow-margin-left: -2px !default;
 $grid-column-chooser-cancel-icon-size: 10px !default;
+
 // bootstrap 5 support
 $grid-sort-number-size: 16px !default;
 $grid-bigger-sort-number-size: 18px !default;

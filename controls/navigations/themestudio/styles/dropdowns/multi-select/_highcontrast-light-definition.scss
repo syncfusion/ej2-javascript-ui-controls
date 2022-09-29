@@ -1,4 +1,4 @@
-//default 
+//default
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: 'highcontrast' !default;
 $ddl-delim-font-size: 14px !default;
@@ -129,6 +129,7 @@ $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
 $ddl-multiselect-group-list-group-item-rtl-padding-right: 10px !default;
 $ddl-multiselect-label-position: 15px !default;
 $multiselect-disable-font-color: $disable !default;
+
 // Small size
 $ddl-select-all-height-small: 26px !default;
 $ddl-small-chip-height: 20px !default;
@@ -141,6 +142,7 @@ $ddl-delim-small-font-size: 13px !default;
 $ddl-small-closer-margin-top: -2.9em !default;
 $ddl-chip-close-hooker-small-left: 7px !default;
 $ddl-delimviewheight-small: 24px !default;
+
 // Touch Small size
 $ddl-select-all-height-bigger-small: 40px !default;
 $ddl-bigger-small-chip-height: 26px !default;
@@ -161,95 +163,116 @@ $ddl-closer-margin-top-bigger-small: -3.2em !default;
         color: $content-font;
         top: 12px;
       }
-    }.e-multiselect #{if(&, '&', '*')} {
+    }
+    .e-multiselect #{if(&, '&', '*')} {
       #{if(&, '&', '*')} input {
-        // sass-lint:disable no-vendor-prefixes
+        /* stylelint-disable property-no-vendor-prefix */
         #{if(&, '&', '*')}.e-dropdownbase:-moz-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
-        }#{if(&, '&', '*')}.e-dropdownbase::-moz-placeholder {
+        }
+        #{if(&, '&', '*')}.e-dropdownbase::-moz-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
-        }#{if(&, '&', '*')}.e-dropdownbase:-ms-input-placeholder {
+        }
+        #{if(&, '&', '*')}.e-dropdownbase:-ms-input-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
-        }#{if(&, '&', '*')}.e-dropdownbase::-webkit-input-placeholder {
+        }
+        #{if(&, '&', '*')}.e-dropdownbase::-webkit-input-placeholder {
           color: $content-font-alt;
           font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }
       }
-    }#{if(&, '&', '*')} .e-chips-collection {
+    }
+    #{if(&, '&', '*')} .e-chips-collection {
       #{if(&, '&', '*')} .e-chips {
         #{if(&, '&', '*')}:hover {
           #{if(&, '&', '*')} .e-chipcontent {
             color: $content-font;
-          }#{if(&, '&', '*')} .e-chips-close.e-icon::before {
+          }
+          #{if(&, '&', '*')} .e-chips-close.e-icon::before {
             color: $content-font;
           }
-        }#{if(&, '&', '*')} .e-chips-close.e-icon::before {
+        }
+        #{if(&, '&', '*')} .e-chips-close.e-icon::before {
           line-height: 26px;
           top: 0;
         }
       }
-    }#{if(&, '&', '*')} .e-delim-values {
+    }
+    #{if(&, '&', '*')} .e-delim-values {
       #{if(&, '&', '*')}.e-delim-view {
         color: $border-fg;
       }
-    }#{if(&, '&', '*')}.e-delimiter {
+    }
+    #{if(&, '&', '*')}.e-delimiter {
       #{if(&, '&', '*')} .e-delim-values {
         color: $border-fg;
       }
-    }#{if(&, '&', '*')} .e-searcher input[type='text'] {
+    }
+    #{if(&, '&', '*')} .e-searcher input[type='text'] {
       color: $content-font;
       height: 100%;
-      min-height: 28px;#{if(&, '&', '*')}::selection {
+      min-height: 28px;
+      #{if(&, '&', '*')}::selection {
         background-color: $selection-bg;
-        }
       }
-  }#{&}.e-popup {
+    }
+  }
+  #{&}.e-popup {
     #{if(&, '&', '*')}.e-multi-select-list-wrapper {
       #{if(&, '&', '*')}.e-ddl,
       .e-bigger #{if(&, '&', '*')}.e-ddl {
         #{if(&, '&', '*')}.e-checkbox .e-filter-parent .e-clear-icon {
           padding-left: 0;
         }
-      }#{if(&, '&', '*')}.e-checkbox {
+      }
+      #{if(&, '&', '*')}.e-checkbox {
         #{if(&, '&', '*')} .e-selectall-parent {
           border-bottom: 1px solid $content-font;
-        }#{if(&, '&', '*')} .e-list-parent {
+        }
+        #{if(&, '&', '*')} .e-list-parent {
           #{if(&, '&', '*')} .e-list-item.e-item-focus.e-active.e-hover {
             background-color: $selection-bg;
-          }#{if(&, '&', '*')} .e-list-item.e-item-focus.e-active {
+          }
+          #{if(&, '&', '*')} .e-list-item.e-item-focus.e-active {
             border: 2px solid $selection-bg;
-          }#{if(&, '&', '*')} .e-list-item.e-active.e-hover:not(.e-item-focus) {
+          }
+          #{if(&, '&', '*')} .e-list-item.e-active.e-hover:not(.e-item-focus) {
             border-bottom: 2px solid $content-font;
             border-left: 2px solid $content-font;
             border-right: 2px solid $content-font;
             border-top: 2px solid $content-font;
           }
-       }
-     }#{if(&, '&', '*')} .e-list-parent {
+        }
+      }
+      #{if(&, '&', '*')} .e-list-parent {
         #{if(&, '&', '*')} .e-list-item.e-item-focus {
           border: 2px solid $hover-bg;
-        }#{if(&, '&', '*')} .e-list-item.e-active.e-hover {
+        }
+        #{if(&, '&', '*')} .e-list-item.e-active.e-hover {
           background-color: $content-font;
           border-bottom: $ddl-popup-active-border-width solid $content-font;
           border-left: $ddl-popup-active-border-width solid $content-font;
           border-right: $ddl-popup-active-border-width solid $content-font;
           border-top: $ddl-popup-active-border-width solid $content-font;
-        }#{if(&, '&', '*')} .e-list-item.e-hover:not(.e-active) {
+        }
+        #{if(&, '&', '*')} .e-list-item.e-hover:not(.e-active) {
           border: 2px solid $hover-border;
-        }#{if(&, '&', '*')} .e-list-item:not(.e-hover):not(.e-item-focus) {
+        }
+        #{if(&, '&', '*')} .e-list-item:not(.e-hover):not(.e-item-focus) {
           border: 2px solid $bg-base-0;
-        }#{if(&, '&', '*')} .e-list-item.e-active {
+        }
+        #{if(&, '&', '*')} .e-list-item.e-active {
           border: 2px solid $selection-border;
         }
       }

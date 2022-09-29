@@ -132,7 +132,7 @@ export class Filter implements IAction {
                     const thead: Element = gObj.getFrozenRightHeader().querySelector('thead');
                     thead.appendChild(rowRenderer.element);
                 } else {
-                    this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                    this.parent.getHeaderContent().querySelector('thead:not(.e-masked-thead)').appendChild(rowRenderer.element);
                 }
                 const rowdrag: Element = this.parent.element.querySelector('.e-rowdragheader');
                 this.element = rowRenderer.render(row, <Column[]>gObj.getColumns(), null, null, rowRenderer.element);

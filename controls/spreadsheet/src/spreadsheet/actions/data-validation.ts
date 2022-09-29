@@ -461,7 +461,7 @@ export class DataValidation {
             'span', { className: 'e-header', innerHTML: l10n.getConstant('CellRange') });
         const cellRangeEle: HTMLElement = this.parent.createElement('input', {
             className: 'e-input',
-            attrs: { value: range }
+            attrs: { value: range, 'aria-label': l10n.getConstant('CellRange') }
         });
         cellRangeCont.appendChild(cellRangeText);
         cellRangeCont.appendChild(cellRangeEle);
@@ -545,11 +545,11 @@ export class DataValidation {
                 this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             const minimumInp: HTMLElement = this.parent.createElement('input', {
                 id: 'minvalue',
-                className: 'e-input', attrs: { value: value1 }
+                className: 'e-input', attrs: { value: value1, 'aria-label': l10n.getConstant('Minimum') }
             });
             const maximumInp: HTMLElement = this.parent.createElement('input', {
                 id: 'maxvalue',
-                className: 'e-input', attrs: { value: value2 }
+                className: 'e-input', attrs: { value: value2, 'aria-label': l10n.getConstant('Maximum') }
             });
             minimumCont.appendChild(minimumText);
             minimumCont.appendChild(minimumInp);

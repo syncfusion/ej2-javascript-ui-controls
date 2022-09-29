@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { AjaxSettings, AjaxSettingsModel, ContextMenuSettings, ContextMenuSettingsModel } from '@syncfusion/ej2-filemanager';import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings } from '@syncfusion/ej2-filemanager';import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';import { SaveFormat } from '../../common';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel } from '../base/interface';import { backgroundColor, fontColor, fontFamily, fontSize,  formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList  } from './items';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { AjaxSettings, AjaxSettingsModel, ContextMenuSettings, ContextMenuSettingsModel } from '@syncfusion/ej2-filemanager';import { DetailsViewSettings, DetailsViewSettingsModel, NavigationPaneSettings } from '@syncfusion/ej2-filemanager';import { NavigationPaneSettingsModel, SearchSettings, SearchSettingsModel, SortOrder } from '@syncfusion/ej2-filemanager';import { ToolbarSettingsModel as FileToolbarSettingsModel, ToolbarSettings as FileToolbarSettings } from '@syncfusion/ej2-filemanager';import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-filemanager';import { SaveFormat, DisplayLayoutOptions } from '../../common';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IListDropDownModel } from '../base/interface';import { backgroundColor, fontColor, fontFamily, fontSize,  formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList  } from './items';
 
 /**
  * Interface for a class ToolbarSettings
@@ -145,6 +145,160 @@ export interface ImageSettingsModel {
 
     /**
      * image resizing should be done by percentage calculation.
+     *
+     * @default false
+     */
+    resizeByPercent?: boolean;
+
+}
+
+/**
+ * Interface for a class AudioSettings
+ */
+export interface AudioSettingsModel {
+
+    /**
+     * Specifies whether to allowType based file select.
+     *
+     * @default ['.wav', '.mp3', '.m4a','.wma']
+     */
+    allowedTypes?: string[];
+
+    /**
+     * Specifies whether insert audio inline or break.
+     *
+     * @default 'Inline'
+     */
+    layoutOption?: DisplayLayoutOptions;
+
+    /**
+     * Specifies whether the inserted audio is saved as blob or base64.
+     *
+     * @default 'Blob'
+     */
+    saveFormat?: SaveFormat;
+
+    /**
+     * Specifies the URL of save action that will receive the upload files and save in the server.
+     *
+     * @default 'null'
+     */
+    saveUrl?: string;
+
+    /**
+     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     *
+     * @default 'null'
+     */
+    removeUrl?: string;
+
+    /**
+     * Specifies the path of the location to store the audio and refer it to display the audio.
+     *
+     * @default 'null'
+     */
+    path?: string;
+
+}
+
+/**
+ * Interface for a class VideoSettings
+ */
+export interface VideoSettingsModel {
+
+    /**
+     * Specifies whether to allowType based file select.
+     *
+     * @default ['.mp4', '.mov', '.wmv','.avi']
+     */
+    allowedTypes?: string[];
+
+    /**
+     * Specifies whether insert video inline or break.
+     *
+     * @default 'Inline'
+     */
+    layoutOption?: DisplayLayoutOptions;
+
+    /**
+     * Specifies whether the inserted video is saved as blob or base64.
+     *
+     * @default 'Blob'
+     */
+    saveFormat?: SaveFormat;
+
+    /**
+     * Specifies whether video width.
+     *
+     * @default 'auto'
+     */
+    width?: string;
+
+    /**
+     * Specifies whether video height.
+     *
+     * @default 'auto'
+     */
+    height?: string;
+
+    /**
+     * Specifies the URL of save action that will receive the upload files and save in the server.
+     *
+     * @default 'null'
+     */
+    saveUrl?: string;
+
+    /**
+     * Specifies the path of the location to store the images and refer it to display the images.
+     *
+     * @default 'null'
+     */
+    path?: string;
+
+    /**
+     * To enable resizing for video element.
+     *
+     * @default 'true'
+     */
+    resize?: boolean;
+
+    /**
+     * Specifies the URL of remove action that receives the file information and handle the remove operation in server.
+     *
+     * @default 'null'
+     */
+    removeUrl?: string;
+
+    /**
+     * Defines the minimum Width of the video.
+     *
+     * @default '0'
+     */
+    minWidth?: string | number;
+
+    /**
+     * Defines the maximum Width of the video.
+     *
+     * @default null
+     */
+    maxWidth?: string | number;
+
+    /**
+     * Defines the minimum Height of the video.
+     *
+     * @default '0'
+     */
+    minHeight?: string | number;
+
+    /**
+     * Defines the maximum Height of the video.
+     *
+     * @default null
+     */
+    maxHeight?: string | number;
+
+    /**
+     * Video resizing should be done by percentage calculation.
      *
      * @default false
      */
@@ -389,6 +543,20 @@ export interface QuickToolbarSettingsModel {
      * @default ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink','OpenImageLink', 'EditImageLink', 'RemoveImageLink', 'Display', 'AltText', 'Dimension']
      */
     image?: (string | IToolbarItems)[];
+
+    /**
+     * Specifies the items to render in quick toolbar, when audio selected.
+     *
+     * @default ['AudioReplace', 'Remove', 'AudioLayoutOption']
+     */
+    audio?: (string | IToolbarItems)[];
+
+    /**
+     * Specifies the items to render in quick toolbar, when video selected.
+     *
+     * @default ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension']
+     */
+    video?: (string | IToolbarItems)[];
 
     /**
      * Specifies the items to render in quick toolbar, when text selected.

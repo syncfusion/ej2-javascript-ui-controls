@@ -51,15 +51,15 @@ export class Layout {
     /**
      * @private
      */
+    public existFootnoteHeight: number = 0;
+    /**
+     * @private
+     */
     public isfootMove: boolean = false;
     /**
      * @private
      */
     public footnoteHeight: number = 0;
-    /**
-     * @private
-     */
-     public existFootnoteHeight: number = 0;
     /**
      * @private
      */
@@ -758,7 +758,6 @@ export class Layout {
             }
             this.viewer.clientActiveArea = clientActiveArea;
             this.viewer.clientArea = clientArea;
-            /* eslint-disable-next-line max-len */
             if (!this.islayoutFootnote) {
                 if (this.viewer.clientActiveArea.y + this.viewer.clientActiveArea.height > footnote.y) {
                     this.viewer.clientActiveArea.height -= footnote.height;
@@ -1187,8 +1186,8 @@ export class Layout {
         } else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 let currentLine: LineWidget = element.line;
-                // Added the condition to check While the tab element width is greater then clientActiveArea width and while it was first element of line should not move to next line
                 let isElementMoved : boolean = false;
+                // Added the condition to check While the tab element width is greater then clientActiveArea width and while it was first element of line should not move to next line
 				if(element.indexInOwner !== 0 && element instanceof TabElementBox) {
                     isElementMoved = true;
                     this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) -1);
@@ -1610,7 +1609,7 @@ export class Layout {
                         //     this.viewer.updateClientAreaForTextWrap(rect);
                         //     return rect;
                         // }
-
+                        
                         /* Since the Microsoft Word has different behavior to calculate minimum width required to fit a word to a side of Table, 
                         the minimum width required changes based upon table border value and table alignment.
                         And this value even differ for different word version, such that 2013, will have different minimum required value, where all other version shares the same logic to calculate minimum width required */
@@ -1672,7 +1671,7 @@ export class Layout {
                                         //         isPositionsUpdated = true;
                                         //     }
                                         // }
-                                        if (!isPositionsUpdated) {
+                                       if(!isPositionsUpdated) {
                                             this.isYPositionUpdated = true;
                                             rect.width = this.viewer.clientArea.width;
                                             rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
@@ -2791,7 +2790,6 @@ export class Layout {
         }
         lineWidget.children[startIndex].padding.left = paddingLeft;
     }
-
     private isSplitByHyphen(element: TextElementBox, text: string): boolean {
         if (!isNullOrUndefined(element.previousElement)) {
             if (element.previousElement instanceof TextElementBox || element.previousElement instanceof ListTextElementBox) {
@@ -2995,6 +2993,7 @@ export class Layout {
             }
             isStarted = true;
             let alignElements: LineElementInfo = this.alignLineElements(elementBox, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, i === children.length - 1);
+            line.maxBaseLine = this.maxBaseline;
             topMargin = alignElements.topMargin;
             bottomMargin = alignElements.bottomMargin;
             addSubWidth = alignElements.addSubWidth;
@@ -4911,7 +4910,7 @@ export class Layout {
         return colIndex < row.ownerTable.tableHolder.columns.length;
     }
 
-    private splitWidgets(tableRowWidget: TableRowWidget, viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], splittedWidget: TableRowWidget, isLastRow: boolean, footNoteCollection: FootnoteElementBox[]): TableRowWidget {
+    private splitWidgets(tableRowWidget: TableRowWidget, viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], splittedWidget: TableRowWidget, isLastRow: boolean,footNoteCollection: FootnoteElementBox[]): TableRowWidget {
         if (this.isFirstLineFitForRow(viewer.clientArea.bottom, tableRowWidget) && tableRowWidget.childWidgets.length > 0) {
             splittedWidget = this.getSplittedWidgetForRow(viewer.clientArea.bottom, tableCollection, rowCollection, tableRowWidget, footNoteCollection);
             if (this.documentHelper.splittedCellWidgets.length > 0 || splittedWidget !== tableRowWidget) {
@@ -5012,7 +5011,6 @@ export class Layout {
             }
         } 
     }
-
     public updateWidgetsToTable(tableWidgets: TableWidget[], rowWidgets: TableRowWidget[], row: TableRowWidget, rearrangeRow: boolean): void {
         let startRowIndex: number = row.bodyWidget.page.index;
         let rowHeight: number = this.getRowHeight(row, [row]);
@@ -5058,7 +5056,7 @@ export class Layout {
                 }
                 isInitialLayout = false;
             } else {
-                footnoteElements = [];
+                footnoteElements = []
                 isInitialLayout = false;
                 //Split widget for next page
                 if (this.documentHelper.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height + this.footHeight <= viewer.clientArea.bottom) {
@@ -5792,7 +5790,6 @@ export class Layout {
         newTable.isBidiTable = table.isBidiTable;
         return newTable;
     }
-
     private getSplittedWidgetForPara(bottom: number, paragraphWidget: ParagraphWidget, footNoteCollection: FootnoteElementBox[]): ParagraphWidget {
         let lineBottom: number = paragraphWidget.y;
         let splittedWidget: ParagraphWidget = undefined;
@@ -6861,7 +6858,7 @@ export class Layout {
         return tableWidget;
     }
 
-    public updateWidgetsToPage(tables: TableWidget[], rows: TableRowWidget[], table: TableWidget, rearrangeRow:boolean, endRowWidget?: TableRowWidget, ): void {
+    public updateWidgetsToPage(tables: TableWidget[], rows: TableRowWidget[], table: TableWidget, rearrangeRow:boolean, endRowWidget?: TableRowWidget): void {
         const viewer: LayoutViewer = this.viewer;
         const tableWidget: TableWidget = tables[tables.length - 1] as TableWidget;
         if (!table.isInsideTable) {
@@ -6959,7 +6956,7 @@ export class Layout {
     }
     private isIntersecting(startPosition: number, endPosition: number, adjacentStartPosition: number, adjacentEndPosition: number): boolean {
         return ((HelperMethods.round(adjacentStartPosition, 2) <= HelperMethods.round(startPosition, 2) || HelperMethods.round(adjacentStartPosition, 2) < HelperMethods.round(endPosition, 2))
-           && HelperMethods.round(adjacentEndPosition, 2) > HelperMethods.round(startPosition, 2));
+            && HelperMethods.round(adjacentEndPosition, 2) > HelperMethods.round(startPosition, 2));
     }
     private getAdjacentRowCell(cell: TableCellWidget, cellStartPos: number, cellEndPos: number, rowIndex: number): TableCellWidget[] {
         const adjCells: TableCellWidget[] = [];
@@ -6987,7 +6984,7 @@ export class Layout {
             const adjCellEndIndex = adjCell.columnIndex + adjCell.cellFormat.columnSpan;
             if (i == adjRow.childWidgets.length - 1 ||
                 (HelperMethods.round(adjCellStartPos, 2) > HelperMethods.round(prevCellEndPos, 2)
-                && HelperMethods.round(adjCellStartPos, 2) > HelperMethods.round(cellStartPos, 2))) {
+                    && HelperMethods.round(adjCellStartPos, 2) > HelperMethods.round(cellStartPos, 2))) {
                 if (i == adjRow.childWidgets.length - 1 && adjRow.rowFormat.gridAfter > 0
                     && adjCellEndIndex + adjRow.rowFormat.gridAfter === columnLength) {
                     //Only grid after present after this adjacent cell, no need to continue next.
@@ -7032,6 +7029,7 @@ export class Layout {
         }
         return adjCells;
     }
+
     private addTableRowWidget(area: Rect, row: TableRowWidget[]): Widget {
         const rowWidget: TableRowWidget = row[row.length - 1];
         if ((rowWidget.rowFormat.beforeWidth !== 0 || rowWidget.rowFormat.gridBeforeWidth !== 0) && ((this.documentHelper.alignTablesRowByRow) ? rowWidget.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
@@ -7335,7 +7333,7 @@ export class Layout {
     public updateFieldElements(): void {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
             const fieldBegin: FieldElementBox = this.documentHelper.fields[i];
-            if (this.viewer instanceof PageLayoutViewer || (this.viewer instanceof WebLayoutViewer && !(fieldBegin.line.paragraph.bodyWidget instanceof HeaderFooterWidget))) {
+            if(this.viewer instanceof PageLayoutViewer || (this.viewer instanceof WebLayoutViewer && !(fieldBegin.line.paragraph.bodyWidget instanceof HeaderFooterWidget))){
                 if (!isNullOrUndefined(this.documentHelper.selection)) {
                     const fieldCode: string = this.documentHelper.selection.getFieldCode(fieldBegin);
                     if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages')) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
@@ -7710,7 +7708,6 @@ export class Layout {
             row.ownerTable.footnoteElement.push(footnoteElements[i]);
         }
     }
-    
     private getFootnoteBody(footnoteElements: FootnoteElementBox[]): BodyWidget[] {
         let footnoteWidgets: BodyWidget[] = [];
         for (let i: number = 0; i < footnoteElements.length; i++) {
@@ -9470,8 +9467,8 @@ export class Layout {
                     }
                 }
             }
-            if (paragraph && (vertOrigin === 'Paragraph' || vertOrigin === 'Line') && floatElement.textWrappingStyle !== "InFrontOfText" && floatElement.textWrappingStyle !== "Behind") {
-                if (this.documentHelper.compatibilityMode === 'Word2013') {
+            if(paragraph && (vertOrigin === 'Paragraph' || vertOrigin === 'Line') && floatElement.textWrappingStyle !== "InFrontOfText" && floatElement.textWrappingStyle !== "Behind") {
+                if(this.documentHelper.compatibilityMode === 'Word2013') {
                     if (!paragraph.isInHeaderFooter) {
                         if (indentY + floatElement.height > this.viewer.clientArea.bottom) {
                             indentY = this.viewer.clientArea.bottom - floatElement.height;

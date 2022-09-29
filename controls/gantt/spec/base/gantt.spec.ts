@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,projectNewData2,baselineDatas } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2  } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -668,6 +668,77 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
+    describe('showandhide', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                allowSelection: true,
+                dataSource: unscheduledData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate'
+                },
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+       
+        
+         it('Hide column', () => {
+             ganttObj.hideColumn('Duration','field');
+             expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
+         });
+         it('Show column', () => {
+            ganttObj.showColumn('Duration','field');
+             expect(ganttObj.element.querySelectorAll('.e-headercell')[4].classList.contains('e-hide')).toBe(false);
+         });
+       
+    });
+     describe('render data with null duration and start date', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: [
+                        { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: null, Duration: null, Progress: 30 },
+                    ],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                    },
+                    editSettings: {
+                        allowEditing: true
+                    }
+                }, done);
+        });
+        it('Check duration', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
+        });
+
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+});
     describe('CollapseAll tasks', () => {
         let ganttObj: Gantt;
         let projectNewData = [
@@ -770,7 +841,7 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
-    describe('ExpandAtlevel after collapsing records', () => {
+     describe('ExpandAtlevel after collapsing records', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -817,102 +888,8 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
-    
-});
-describe('milestone render', () => {
-    let ganttObj: Gantt;
-    beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {
-                dataSource: projectNewData2,
-                allowSorting: true,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    progress: 'Progress',
-                    baselineStartDate: 'BaselineStartDate',
-                    baselineEndDate: 'BaselineEndDate',
-                    child: 'subtasks',
-                    duration: 'Duration',
-                },
-                columns:[ { field: 'TaskName', headerText: 'Service Name', width: '250' },
-                { field: 'BaselineStartDate', headerText: 'Planned start time' },
-                { field: 'BaselineEndDate', headerText: 'Planned end time' },
-                { field: 'StartDate', headerText: 'Start time' },
-                { field: 'EndDate', headerText: 'End time' }],
-                editSettings: {
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                toolbar:['ZoomIn', 'ZoomOut', 'ZoomToFit'],
-                allowSelection: true,
-                gridLines: "Both",
-                showColumnMenu: false,
-                highlightWeekends: true,
-                timelineSettings: {
-                    topTier: {
-                        unit: 'Day',
-                        format: 'dd/MM/yyyy'
-                    },
-                    bottomTier: {
-                        unit: 'Hour',
-                        format:"hh:mm"
-                    }
-                },
-                labelSettings: {
-                    leftLabel: 'TaskName',
-                    taskLabel: 'Progress'
-                },
-                height: '600px',
-                allowUnscheduledTasks: true,
-                projectStartDate:  new Date('03/04/2018 09:30:00 AM'),
-                projectEndDate: new Date('03/07/2018 7:00:00 PM'),
-                renderBaseline:true,
-               dayWorkingTime:[{from:8,to:17}],
-               includeWeekend:true,
-               durationUnit:"Minute",
-               dateFormat:"hh:mm a",
-               baselineColor:"green"
-            
-            }, done);
-    });
-    it('milestone renders  duration', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(0);
-    });
-    it('milestone renders  startdate', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.startDate.toDateString()).toBe("Mon Mar 05 2018")
-    });
-    it('milestone renders  enddate', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.endDate.toDateString()).toBe("Mon Mar 05 2018")
-    })
-    it('milestone renders baselineStartdate', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.baselineStartDate.toDateString()).toBe("Mon Mar 05 2018")
-    })
-    it('milestone renders baselineendtdate', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.baselineEndDate.toDateString()).toBe("Mon Mar 05 2018")
-    })
-    it('milestone renders ismilestone', () => {
-        expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
-    })
-   
-
-
-
-    
-    
-    
-    afterAll(() => {
-        destroyGantt(ganttObj);
-    });
-    beforeEach((done: Function) => {
-        setTimeout(done, 2000);
-    });
-});
-describe('milestone render as taskbar ', () => {
+ });
+ describe('milestone render as taskbar ', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
@@ -974,5 +951,91 @@ describe('milestone render as taskbar ', () => {
     });
     beforeEach((done: Function) => {
         setTimeout(done, 2000);
+    });
+    describe('milestone render', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectNewData2,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        progress: 'Progress',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        child: 'subtasks',
+                        duration: 'Duration',
+                    },
+                    columns:[ { field: 'TaskName', headerText: 'Service Name', width: '250' },
+                    { field: 'BaselineStartDate', headerText: 'Planned start time' },
+                    { field: 'BaselineEndDate', headerText: 'Planned end time' },
+                    { field: 'StartDate', headerText: 'Start time' },
+                    { field: 'EndDate', headerText: 'End time' }],
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar:['ZoomIn', 'ZoomOut', 'ZoomToFit'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Day',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Hour',
+                            format:"hh:mm"
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    height: '600px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate:  new Date('03/04/2018 09:30:00 AM'),
+                    projectEndDate: new Date('03/07/2018 7:00:00 PM'),
+                    renderBaseline:true,
+                   dayWorkingTime:[{from:8,to:17}],
+                   includeWeekend:true,
+                   durationUnit:"Minute",
+                   dateFormat:"hh:mm a",
+                   baselineColor:"green"
+    
+                }, done);
+        });
+        it('milestone renders  duration', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(0);
+        });
+        it('milestone renders  startdate', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.startDate.toDateString()).toBe("Mon Mar 05 2018")
+        });
+        it('milestone renders  enddate', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.endDate.toDateString()).toBe("Mon Mar 05 2018")
+        })
+        it('milestone renders baselineStartdate', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.baselineStartDate.toDateString()).toBe("Mon Mar 05 2018")
+        })
+        it('milestone renders baselineendtdate', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.baselineEndDate.toDateString()).toBe("Mon Mar 05 2018")
+        })
+        it('milestone renders ismilestone', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+        })
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
     });
 });

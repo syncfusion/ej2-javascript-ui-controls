@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
-import { BodyWidget, LineWidget, ListTextElementBox, ParagraphWidget, Selection, WUniqueFormat} from '../../../src/index';
+import { BodyWidget, LineWidget, ListTextElementBox, ParagraphWidget, Selection, WParagraphFormat, WUniqueFormat} from '../../../src/index';
 import { Editor } from '../../../src/index';
 import { WListLevel } from '../../../src/document-editor/implementation/list/list-level';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -516,7 +516,7 @@ describe('Checking the numbering applied properly', () => {
         });
 });
 describe('Applying and removing the list and checking the indentation value', () => {
-let container: DocumentEditor;
+    let container: DocumentEditor;
     beforeAll(() => {
         document.body.innerHTML = '';
         let ele: HTMLElement = createElement('div', { id: 'container' });

@@ -1,0 +1,208 @@
+@include export-module('message-theme') {
+  .e-message {
+    background-color: $msg-bg-color;
+    border-color: $msg-border-color;
+    color: $msg-color;
+
+    .e-msg-icon {
+      color: $msg-icon-color;
+    }
+
+    .e-msg-close-icon {
+      background: transparent;
+      color: $msg-close-icon-color;
+    }
+
+    &.e-success {
+      background-color: $msg-success-bg-color;
+      border-color: $msg-success-border-color;
+      color: $msg-success-color;
+
+      .e-msg-icon {
+        color: $msg-success-icon-color;
+      }
+
+      .e-msg-close-icon {
+        color: $msg-success-close-icon-color;
+      }
+    }
+
+    &.e-warning {
+      background-color: $msg-warning-bg-color;
+      border-color: $msg-warning-border-color;
+      color: $msg-warning-color;
+    
+      .e-msg-icon {
+        color: $msg-warning-icon-color;
+      }
+
+      .e-msg-close-icon {
+        color: $msg-warning-close-icon-color;
+      }
+    }
+
+    &.e-info {
+      background-color: $msg-info-bg-color;
+      border-color: $msg-info-border-color;
+      color: $msg-info-color;
+      
+      .e-msg-icon {
+        color: $msg-info-icon-color;
+      }
+
+      .e-msg-close-icon {
+        color: $msg-info-close-icon-color;
+      }
+    }
+
+    &.e-error {
+      background-color: $msg-error-bg-color;
+      border-color: $msg-error-border-color;
+      color: $msg-error-color;
+        
+      .e-msg-icon {
+        color: $msg-error-icon-color;
+      }
+
+      .e-msg-close-icon {
+        color: $msg-error-close-icon-color;
+      }
+    }
+
+    &.e-outlined {
+      background-color: $msg-outline-bg-color;
+      border-color: $msg-outline-border-color;
+      color: $msg-outline-color;
+
+      .e-msg-icon {
+        color: $msg-outline-icon-color;
+      }
+
+      .e-msg-close-icon {
+        color: $msg-outline-close-icon-color;
+      }
+
+      &.e-success {
+        border-color: $msg-outline-success-border-color;
+        color: $msg-outline-success-color;
+
+        .e-msg-icon {
+          color: $msg-outline-success-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-outline-success-close-icon-color;
+        }
+      }
+
+      &.e-warning {
+        border-color: $msg-outline-warning-border-color;
+        color: $msg-outline-warning-color;
+
+        .e-msg-icon {
+          color: $msg-outline-warning-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-outline-warning-close-icon-color;
+        }
+      }
+
+      &.e-info {
+        border-color: $msg-outline-info-border-color;
+        color: $msg-outline-info-color;
+
+        .e-msg-icon {
+          color: $msg-outline-info-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-outline-info-close-icon-color;
+        }
+      }
+
+      &.e-error {
+        border-color: $msg-outline-error-border-color;
+        color: $msg-outline-error-color;
+
+        .e-msg-icon {
+          color: $msg-outline-error-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-outline-error-close-icon-color;
+        }
+      }
+    }
+
+    &.e-filled {
+      background-color: $msg-filled-bg-color;
+      border-color: $msg-filled-border-color;
+      color: $msg-filled-color;
+
+      .e-msg-icon {
+        color: $msg-filled-icon-color;
+      }
+
+      .e-msg-close-icon {
+        color: $msg-filled-close-icon-color;
+      }
+
+      &.e-success {
+        background-color: $msg-filled-success-bg-color;
+        border-color: $msg-filled-success-border-color;
+        color: $msg-filled-success-color;
+
+        .e-msg-icon {
+          color: $msg-filled-success-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-filled-success-close-icon-color;
+        }
+      }
+
+      &.e-warning {
+        background-color: $msg-filled-warning-bg-color;
+        border-color: $msg-filled-warning-border-color;
+        color: $msg-filled-warning-color;
+
+        .e-msg-icon {
+          color: $msg-filled-warning-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-filled-warning-close-icon-color;
+        }
+      }
+
+      &.e-info {
+        background-color: $msg-filled-info-bg-color;
+        border-color: $msg-filled-info-border-color;
+        color: $msg-filled-info-color;
+
+        .e-msg-icon {
+          color: $msg-filled-info-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-filled-info-close-icon-color;
+        }
+      }
+
+      &.e-error {
+        background-color: $msg-filled-error-bg-color;
+        border-color: $msg-filled-error-border-color;
+        color: $msg-filled-error-color;
+
+        .e-msg-icon {
+          color: $msg-filled-error-icon-color;
+        }
+
+        .e-msg-close-icon {
+          color: $msg-filled-error-close-icon-color;
+        }
+      }
+    }
+  }
+}

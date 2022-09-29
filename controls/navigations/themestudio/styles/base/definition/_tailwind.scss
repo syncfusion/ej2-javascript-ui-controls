@@ -93,8 +93,6 @@ $primary-text-color: $white !default;
 $primary-light:       $indigo-400 !default;
 $primary-lighter:       $indigo-100 !default;
 
-
-
 // backgroundColor
 $content-bg-color: $white !default;
 $content-bg-color-alt1: $cool-gray-50 !default;
@@ -122,7 +120,7 @@ $content-text-color-focus: $cool-gray-900 !default;
 $content-text-color-selected: $cool-gray-900 !default;
 $content-text-color-dragged: $cool-gray-900 !default;
 $content-text-color-disabled: $cool-gray-400 !default;
-$placeholder-text-color: $cool-gray-500,  !default;
+$placeholder-text-color: $cool-gray-500, !default;
 
 // icon-color
 $icon-color: $cool-gray-500 !default;
@@ -149,8 +147,6 @@ $tooltip-bg-color: $cool-gray-900 !default;
 $tooltip-border: $cool-gray-900;
 $toooltip-text-color: $cool-gray-50 !default;
 
-
-
 // shadow
 $shadow: 0 1px 3px 0 rgba($black, .1), 0 1px 2px 0 rgba($black, .06) !default;
 $shadow-sm: 0 1px 2px 0 rgba($black, .05) !default;
@@ -163,10 +159,8 @@ $shadow-none: 0 0 rgba($black, 0) !default;
 $shadow-focus-ring1: 0 0 0 1px rgba($primary, 1) !default;
 $shadow-focus-ring2: 0 0 0 2px rgba($content-bg-color, .95), 0 0 0 4px rgba($primary, 1) !default;
 
-
 // FontFamily
 $font-family: 'Inter';
-
 
 // Default Font Size
 $text-xxs: 10px !default;
@@ -192,7 +186,6 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-
 // Font Weight
 $font-weight-lighter:         lighter !default;
 $font-weight-light:           300 !default;
@@ -200,7 +193,6 @@ $font-weight-normal:          400 !default;
 $font-weight-medium:          500 !default;
 $font-weight-bold:            700 !default;
 $font-weight-bolder:          bolder !default;
-
 
 // Secondary-Button
 
@@ -220,14 +212,12 @@ $secondary-bg-color-disabled: $secondary-bg-color !default;
 $secondary-border-color-disabled: $cool-gray-200 !default;
 $secondary-text-color-disabled: $cool-gray-400 !default;
 
-
-
 // Primary-Button
 
 $primary-bg-color: $primary !default;
 $primary-border-color: $primary !default;
 $primary-text: $primary-text-color !default;
-$primary-bg-color-hover: $indigo-700 !default;//mix($black, $primary, 12%) 
+$primary-bg-color-hover: $indigo-700 !default;//mix($black, $primary, 12%)
 $primary-border-color-hover: $primary-bg-color-hover !default;
 $primary-text-hover: $primary-text !default;
 $primary-bg-color-pressed: $indigo-800 !default;//mix($black, $primary, 24%)
@@ -245,7 +235,7 @@ $primary-text-disabled: $primary-text !default;
 $success-bg-color: $success !default;
 $success-border-color: $success !default;
 $success-text: $white !default;
-$success-bg-color-hover: $green-800 !default;//mix($black, $succes, 12%) 
+$success-bg-color-hover: $green-800 !default;//mix($black, $succes, 12%)
 $success-border-color-hover: $success-bg-color-hover !default;
 $success-text-hover: $success-text !default;
 $success-bg-color-pressed: $green-900 !default;//mix($black, $succes, 24%)
@@ -262,7 +252,7 @@ $success-text-disabled: $success-text !default;
 $warning-bg-color: $warning !default;
 $warning-border-color: $warning !default;
 $warning-text: $white !default;
-$warning-bg-color-hover: $orange-800 !default;//mix($black, $succes, 12%) 
+$warning-bg-color-hover: $orange-800 !default;//mix($black, $succes, 12%)
 $warning-border-color-hover: $warning-bg-color-hover !default;
 $warning-text-hover: $warning-text !default;
 $warning-bg-color-pressed: $orange-900 !default;//mix($black, $succes, 24%)
@@ -279,7 +269,7 @@ $warning-text-disabled: $warning-text !default;
 $danger-bg-color: $danger !default;
 $danger-border-color: $danger !default;
 $danger-text: $white !default;
-$danger-bg-color-hover: $red-700 !default;//mix($black, $succes, 12%) 
+$danger-bg-color-hover: $red-700 !default;//mix($black, $succes, 12%)
 $danger-border-color-hover: $danger-bg-color-hover !default;
 $danger-text-hover: $danger-text !default;
 $danger-bg-color-pressed: $red-800 !default;//mix($black, $succes, 24%)
@@ -296,7 +286,7 @@ $danger-text-disabled: $danger-text !default;
 $info-bg-color: $info !default;
 $info-border-color: $info !default;
 $info-text: $white !default;
-$info-bg-color-hover: $cyan-800 !default;//mix($black, $succes, 12%) 
+$info-bg-color-hover: $cyan-800 !default;//mix($black, $succes, 12%)
 $info-border-color-hover: $info-bg-color-hover !default;
 $info-text-hover: $info-text !default;
 $info-bg-color-pressed: $cyan-900 !default;//mix($black, $succes, 24%)
@@ -309,9 +299,7 @@ $info-bg-color-disabled: $cyan-300 !default;
 $info-border-color-disabled: $info-bg-color-disabled !default;
 $info-text-disabled: $info-text !default;
 
-
 // Chart series
-
 
 $series-1: $cool-gray-200;
 $series-2: $cool-gray-300;
@@ -344,3 +332,117 @@ $spreadsheet-selection-6: #3f52b5;
 // Diagram Palette color
 $diagram-palette-background: $white !default;
 $diagram-palette-hover-background: $content-bg-color-hover !default;
+
+//Message component
+
+//Message Default
+$msg-color: $cool-gray-900 !default;
+$msg-bg-color: $cool-gray-100 !default;
+$msg-border-color: $cool-gray-400 !default;
+$msg-color-alt1: $cool-gray-900 !default;
+$msg-bg-color-alt1: $transparent !default;
+$msg-border-color-alt1: $cool-gray-400 !default;
+$msg-color-alt2: $cool-gray-900 !default;
+$msg-bg-color-alt2: $cool-gray-400 !default;
+$msg-border-color-alt2: $cool-gray-400 !default;
+
+$msg-icon-color: $cool-gray-900 !default;
+$msg-icon-color-alt1: $cool-gray-900 !default;
+$msg-icon-color-alt2: $cool-gray-900 !default;
+
+$msg-close-icon-color: $icon-color !default;
+$msg-close-icon-color-alt1: $icon-color !default;
+$msg-close-icon-color-alt2: $black !default;
+
+//Message danger
+$msg-danger-color: $red-700 !default;
+$msg-danger-bg-color: #fff5f5 !default;
+$msg-danger-border-color: #fc8181 !default;
+$msg-danger-color-alt1: $red-600 !default;
+$msg-danger-bg-color-alt1: $transparent !default;
+$msg-danger-border-color-alt1: $red-600 !default;
+$msg-danger-color-alt2: $white !default;
+$msg-danger-bg-color-alt2: $red-600 !default;
+$msg-danger-border-color-alt2: $red-600 !default;
+
+$msg-danger-icon-color: $red-600 !default;
+$msg-danger-icon-color-alt1: $red-600 !default;
+$msg-danger-icon-color-alt2: $white !default;
+
+$msg-danger-close-icon-color: $icon-color !default;
+$msg-danger-close-icon-color-alt1: $icon-color !default;
+$msg-danger-close-icon-color-alt2: $white !default;
+
+//Message success
+$msg-success-color: $green-700 !default;
+$msg-success-bg-color: $green-50 !default;
+$msg-success-border-color: $green-700 !default;
+$msg-success-color-alt1: $green-700 !default;
+$msg-success-bg-color-alt1: $transparent !default;
+$msg-success-border-color-alt1: $green-700 !default;
+$msg-success-color-alt2: $white !default;
+$msg-success-bg-color-alt2: $green-700 !default;
+$msg-success-border-color-alt2: $green-700 !default;
+
+$msg-success-icon-color: $green-700 !default;
+$msg-success-icon-color-alt1: $green-700 !default;
+$msg-success-icon-color-alt2: $white !default;
+
+$msg-success-close-icon-color: $icon-color !default;
+$msg-success-close-icon-color-alt1: $icon-color !default;
+$msg-success-close-icon-color-alt2: $white !default;
+
+//Message warning
+$msg-warning-color: $orange-700 !default;
+$msg-warning-bg-color: $orange-100 !default;
+$msg-warning-border-color: $orange-700 !default;
+$msg-warning-color-alt1: $orange-700 !default;
+$msg-warning-bg-color-alt1: $transparent !default;
+$msg-warning-border-color-alt1: $orange-700 !default;
+$msg-warning-color-alt2: $white !default;
+$msg-warning-bg-color-alt2: $orange-700 !default;
+$msg-warning-border-color-alt2: $orange-700 !default;
+
+$msg-warning-icon-color: $orange-700 !default;
+$msg-warning-icon-color-alt1: $orange-700 !default;
+$msg-warning-icon-color-alt2: $white !default;
+
+$msg-warning-close-icon-color: $icon-color !default;
+$msg-warning-close-icon-color-alt1: $icon-color !default;
+$msg-warning-close-icon-color-alt2: $white !default;
+
+//Message Info
+$msg-info-color: $cyan-700 !default;
+$msg-info-bg-color: $cyan-50 !default;
+$msg-info-border-color: $cyan-700 !default;
+$msg-info-color-alt1: $cyan-700 !default;
+$msg-info-bg-color-alt1: $transparent !default;
+$msg-info-border-color-alt1: $cyan-700 !default;
+$msg-info-color-alt2: $white !default;
+$msg-info-bg-color-alt2: $cyan-700 !default;
+$msg-info-border-color-alt2: $cyan-700 !default;
+
+$msg-info-icon-color: $cyan-700 !default;
+$msg-info-icon-color-alt1: $cyan-700 !default;
+$msg-info-icon-color-alt2: $white !default;
+
+$msg-info-close-icon-color: $icon-color !default;
+$msg-info-close-icon-color-alt1: $icon-color !default;
+$msg-info-close-icon-color-alt2: $white !default;
+
+//App bar
+//Light
+$appbar-bg-color-alt1: $white !default;
+$appbar-color-alt1: $cool-gray-900 !default;
+$appbar-border-color-alt1: $white !default;
+$appbar-hover-bg-color-alt1: rgba(transparent, .056) !default;
+
+//Dark
+$appbar-bg-color-alt2: $cool-gray-800 !default;
+$appbar-color-alt2: $white !default;
+$appbar-border-color-alt2: $cool-gray-800 !default;
+$appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
+
+//shadow
+$appbar-bottom-shadow: 0 1px 3px 0 rgba($black, .1), 0 1px 2px 0 rgba($black, .06) !default;
+$appbar-top-shadow: 0 -1px 3px 0 rgba($black, .1), 0 -1px 2px 0 rgba($black, .06) !default;

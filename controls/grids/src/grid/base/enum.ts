@@ -800,3 +800,14 @@ export type FocusKeys =
     'shiftEnter' |
     'tab' |
     'shiftTab'
+
+/**
+ * Defines Loading Indicator of the Grid.
+ * * Spinner
+ * * Shimmer
+ */
+export type IndicatorType =
+    /**  Defines Loading Indicator as Spinner */
+    'Spinner' |
+    /**  Defines Loading Indicator as Shimmer */
+    'Shimmer';

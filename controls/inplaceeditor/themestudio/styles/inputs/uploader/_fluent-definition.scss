@@ -1,4 +1,4 @@
-// uploader bootstrap theme 
+// uploader bootstrap theme
 $zero-value: 0 !default;
 $upload-root-font-family: $font-family !default;
 $upload-element-opacity: $zero-value !default;
@@ -222,7 +222,7 @@ $upload-in-progress-color: $primary !default;
 $progress-background-color: $content-bg-color-alt3 !default;
 $progress-text-color: $content-text-color-alt2 !default;
 $file-status-color: $content-text-color-alt2 !default;
-$clear-icon-focus-color: transparent !default;
+$clear-icon-focus-color: rgba($black, .12) !default;
 $list-bottom-border: 0 solid $border-light !default;
 $upload-border: 1px dashed $border-dark !default;
 $drag-hover-border: 2px dashed $primary-outline !default;

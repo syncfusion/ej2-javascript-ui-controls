@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 20.3.47 (2022-09-29)
+
+### AppBar
+
+The AppBar displays information and actions related to the current application screen. It is used to show branding, screen titles, navigation, and actions.
+
+- **Modes** - `Regular`, `Prominent`, and `Dense` modes that define the AppBar height.
+- **Content arrangement** - Spacer and separator options can be used to align the content based on the UI requirement with minimal effort.
+- **Color** - `Primary`, `Light`, `Dark`, and `Inherit` options to customize the AppBar color.
+- **Position** - AppBars can be placed at the top or bottom of the screen. It can also be sticky.
+
+### Carousel
+
+#### New Features
+
+- Provided partial visible functionality to carousel which enables the active slide with partial previous/next slide.
+
+### Tab
+
+#### New Features
+
+- `#I237390` - Provided support to disable the animation while switching the tab item.
+
 ## 20.2.49 (2022-09-13)
 
 ### ContextMenu

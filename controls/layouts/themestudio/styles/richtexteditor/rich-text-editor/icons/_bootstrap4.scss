@@ -1,6 +1,7 @@
 /*! component's theme wise override definitions and variables */
 
 @include export-module('richtexteditor-bootstrap4-icons') {
+
   /*! richtexteditor icons */
 
   .e-rte-toolbar,
@@ -126,7 +127,17 @@
       content: '\e776';
     }
 
-    .e-replace::before {
+    .e-audio::before {
+      content: '\e947';
+    }
+
+    .e-video::before {
+      content: '\e948';
+    }
+
+    .e-replace::before,
+    .e-audio-replace::before,
+    .e-video-replace::before {
       content: '\e80d';
     }
 
@@ -138,7 +149,9 @@
       content: '\e795';
     }
 
-    .e-remove::before {
+    .e-remove::before,
+    .e-audio-remove::before,
+    .e-video-remove::before {
       content: '\e773';
     }
 
@@ -146,7 +159,9 @@
       content: '\e72e';
     }
 
-    .e-display::before {
+    .e-display::before,
+    .e-audio-display::before,
+    .e-video-display::before {
       content: '\e788';
     }
 
@@ -154,7 +169,8 @@
       content: '\e80b';
     }
 
-    .e-img-dimension::before {
+    .e-img-dimension::before,
+    .e-video-dimension::before {
       content: '\e791';
     }
 

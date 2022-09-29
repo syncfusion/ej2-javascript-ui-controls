@@ -206,8 +206,8 @@ export class ConditionalFormatting {
                 attrs: { type: 'button', 'title': this.parent.localeObj.getConstant('delete') }
             });
             outerDiv.appendChild(button);
-            let innerDiv: HTMLElement = createElement('div', { id: this.parentID + 'innerDiv', className: cls.FORMAT_INNER });
-            let table: HTMLElement = createElement('table', { id: this.parentID + 'cftable', className: cls.FORMAT_TABLE });
+            let innerDiv: HTMLElement = createElement('div', { id: this.parentID + 'innerDiv' + i, className: cls.FORMAT_INNER });
+            let table: HTMLElement = createElement('table', { id: this.parentID + 'cftable' + i, className: cls.FORMAT_TABLE, attrs: { 'role': 'table' } });
             let tRow: HTMLElement = createElement('tr'); let td: HTMLElement = createElement('td');
             let valuelabel: HTMLElement = createElement('span', {
                 id: this.parentID + 'valuelabel' + i, className: cls.FORMAT_VALUE_LABEL,
@@ -221,7 +221,7 @@ export class ConditionalFormatting {
                 attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
             measureDropdown.appendChild(measureInput); td.appendChild(measureDropdown); tRow.appendChild(td); td = createElement('td');
-            let conditionDropdown: HTMLElement = createElement('div', { id: this.parentID + 'condition' });
+            let conditionDropdown: HTMLElement = createElement('div', { id: this.parentID + 'condition' + i });
             let conditionInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditioninput' + i,
                 attrs: { 'type': 'text', 'tabindex': '0' }
@@ -256,7 +256,7 @@ export class ConditionalFormatting {
             }) as HTMLInputElement;
             td.appendChild(value2); tRow.appendChild(td); table.appendChild(tRow);
             if (this.parent.isAdaptive) {
-                innerDiv.appendChild(table); table = createElement('table', { id: this.parentID + 'cftable', className: cls.FORMAT_TABLE });
+                innerDiv.appendChild(table); table = createElement('table', { id: this.parentID + 'cftable', className: cls.FORMAT_TABLE, attrs: { 'role': 'table' } });
             }
             tRow = createElement('tr'); td = createElement('td');
             let formatlabel: HTMLElement = createElement('span', {
@@ -264,12 +264,12 @@ export class ConditionalFormatting {
                 innerHTML: this.parent.localeObj.getConstant('formatLabel')
             });
             td.appendChild(formatlabel); tRow.appendChild(td); table.appendChild(tRow); tRow = createElement('tr');
-            td = createElement('td'); let fontNameDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontname' });
+            td = createElement('td'); let fontNameDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontname' + i });
             let fontNameInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
             fontNameDropdown.appendChild(fontNameInput); td.appendChild(fontNameDropdown); tRow.appendChild(td); td = createElement('td');
-            let fontSizeDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontsize' });
+            let fontSizeDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontsize' + i });
             let fontSizeInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;

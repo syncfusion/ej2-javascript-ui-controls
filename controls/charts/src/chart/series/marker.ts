@@ -72,7 +72,7 @@ export class Marker extends MarkerExplode {
         location.x = location.x + marker.offset.x;
         location.y = location.y - marker.offset.y;
         const isBoxPlot: boolean = series.type === 'BoxAndWhisker';
-        const fill: string = marker.fill || (isBoxPlot ? point.interior || series.interior : '#ffffff');
+        const fill: string = marker.fill || ((isBoxPlot || series.marker.isFilled) ? point.interior || series.interior : '#ffffff');
         let markerElement: Element;
         const parentElement: Element = isBoxPlot ?
             findlElement(series.seriesElement.childNodes, 'Series_' + series.index + '_Point_' + point.index)
@@ -141,6 +141,7 @@ export class Marker extends MarkerExplode {
                     imageURL, shapeOption,
                     point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
+                if (markerElement) { markerElement.setAttribute('aria-label', (series.xName + ": " + point.y + ', ' + series.name)); } 
                 appendChildElement(
                     this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
                     previousLocation, previousPath, false, false, null, series.chart.duration

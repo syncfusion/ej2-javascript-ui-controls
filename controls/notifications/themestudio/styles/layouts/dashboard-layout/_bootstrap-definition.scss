@@ -74,7 +74,6 @@ $panel-south-east-icon-bottom: -5px !default;
 $panel-south-west-icon-left: -6px !default;
 $panel-south-west-icon-bottom: -5px !default;
 
-
 // north-east-icon-styles
 
 $panel-north-east-icon-right: -6px !default;
@@ -94,10 +93,9 @@ $panel-drop-border-radius: 4px !default;
 // dragging element style
 
 $panel-dragging-cursor: move !default;
-// sass-lint:disable-all
+/* stylelint-disable */
 $panel-dragging-zindex: 1111 !important !default;
 $panel-drag-prevent: none !default;
-// sass-lint:disable-all
 $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: $grey-lighter !default;

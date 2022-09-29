@@ -1484,6 +1484,7 @@ export class FormDesigner {
         let inputElement: HTMLElement = createElement("input");
         let textArea: HTMLElement = createElement('textarea');
         inputElement.id = drawingObject.id;
+        inputElement.setAttribute("aria-label", this.pdfViewer.element.id + "formfilldesigner");
         inputElement.style.position = "absolute";
         if (formFieldAnnotationType === "Textbox") {
             if (drawingObject.isMultiline) {
@@ -1588,7 +1589,7 @@ export class FormDesigner {
                 labelElement.style.cursor = 'pointer';
             labelElement.style.background = drawingObject.backgroundColor;
             innerSpan = createElement("span", { className: "e-pv-radiobtn-span" });
-            innerSpan.id = drawingObject.id;
+            innerSpan.id = drawingObject.id + "_input_span";
             innerSpan.style.width = Math.floor(bounds.width / 2) + "px";
             innerSpan.style.height = Math.floor(bounds.height / 2) + "px";
             if (zoomValue < 1 && bounds.width <= 20 && bounds.height <= 20) {
@@ -3206,6 +3207,7 @@ export class FormDesigner {
             (inputElement as HTMLInputElement).maxLength = obj.maxLength === 0 ? 524288 : obj.maxLength;
         }
         inputElement.tabIndex = this.formFieldIndex;
+        inputElement.setAttribute("aria-label", this.pdfViewer.element.id + "formfilldesigner");
     }
     /**
      * @private

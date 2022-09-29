@@ -369,6 +369,13 @@ export class Scroll {
 
     private destroy(): void {
         this.removeEventListener();
+        const ddbEle: HTMLElement = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn');
+        if (ddbEle) {
+            const ddbObj: DropDownButton = getComponent(ddbEle, DropDownButton);
+            if (ddbObj) {
+                ddbObj.destroy();
+            }
+        }
         this.parent = null;
     }
 

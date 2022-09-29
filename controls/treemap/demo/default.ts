@@ -3,6 +3,7 @@ import { TreeMapHighlight, TreeMapSelection } from '../src/treemap/user-interact
 import { TreeMapTooltip } from '../src/treemap/user-interaction/tooltip';
 import { TreeMapLegend } from '../src/treemap/layout/legend';
 import { DrillDown } from '../demo/Data/Drilldown_Sample';
+import { TreeMapAjax } from '../src';
 TreeMap.Inject(TreeMapTooltip, TreeMapHighlight, TreeMapSelection, TreeMapLegend);
 
 /**
@@ -36,11 +37,15 @@ let treemap: TreeMap = new TreeMap({
         border: { color: 'black', width: 0.5 }
     },
     levels: [
-        { groupPath: 'Continent', fill: '#336699', border: { color: 'black', width: 0.5 } },
-        { groupPath: 'States', fill: '#336699', border: { color: 'black', width: 0.5 } },
-        { groupPath: 'Region', showHeader: false, fill: '#336699', border: { color: 'black', width: 0.5 } },
+        { groupPath: 'Continent', border: { color: 'black', width: 0.5 } },
+        { groupPath: 'States', border: { color: 'black', width: 0.5 } },
+        { groupPath: 'Region', showHeader: false, border: { color: 'black', width: 0.5 } },
     ]
 });
 treemap.appendTo('#container');
-
-
+document.getElementById("fill").onclick = () => {
+    treemap.levels[0].fill = "#336699"
+    treemap.levels[1].fill = "#336699"
+    treemap.levels[2].fill = "#336699"
+    treemap.refresh();
+}

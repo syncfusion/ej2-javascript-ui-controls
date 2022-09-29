@@ -244,7 +244,7 @@ export abstract class Widget implements IWidget {
                 let previousContainer: Widget = undefined;
                 if (widget.containerWidget instanceof TableCellWidget) {
                     previousContainer = widget.containerWidget.getPreviousSplitWidget();
-                } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget && 
+                } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget &&
                     widget.containerWidget.containerWidget.footNoteType === 'Endnote') {
                     previousContainer = widget.containerWidget.previousWidget ? widget.containerWidget.previousWidget : widget.containerWidget.previousRenderedWidget;
                 } else if (!(widget.containerWidget instanceof TableRowWidget
@@ -300,7 +300,7 @@ export abstract class Widget implements IWidget {
                 let nextContainer: Widget = undefined;
                 if (widget.containerWidget instanceof TableCellWidget) {
                     nextContainer = widget.containerWidget.getNextSplitWidget();
-                } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget && 
+                } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget &&
                     widget.containerWidget.containerWidget.footNoteType === 'Endnote') {
                     nextContainer = widget.containerWidget.nextWidget ? widget.containerWidget.nextWidget : widget.containerWidget.nextRenderedWidget;
                 } else if (!(widget.containerWidget instanceof TableRowWidget
@@ -372,7 +372,6 @@ export abstract class Widget implements IWidget {
         }
         return widgets;
     }
-
     public combineWidget(viewer: LayoutViewer): Widget {
         let root: Widget = this;
         let widgets: Widget[] = this.getSplitWidgets();
@@ -388,8 +387,8 @@ export abstract class Widget implements IWidget {
         }
         return root;
     }
-   
-   private combine(widget: Widget, viewer: LayoutViewer): void {
+  
+    private combine(widget: Widget, viewer: LayoutViewer): void {
         if (widget.childWidgets.length > 0) {
             let lastChild: Widget = this.lastChild as Widget;
 
@@ -469,10 +468,10 @@ export abstract class BlockContainer extends Widget {
      * @private
      */
     public footNoteReference: FootnoteElementBox = undefined;
-     /**
-     * @private
-     */
-      public removedHeaderFooters: HeaderFooters[];
+    /**
+    * @private
+    */
+    public removedHeaderFooters: HeaderFooters[];
     /**
      * @private
      */
@@ -543,7 +542,6 @@ export class BodyWidget extends BlockContainer {
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let documentHelper: DocumentHelper = undefined;
         let node: BodyWidget = this;
-        
         if (node.containerWidget instanceof FootNoteWidget) {
             hierarchicalIndex = node.containerWidget.bodyWidgets.indexOf(node) + ';' + hierarchicalIndex;
             if (node.containerWidget.footNoteType === 'Footnote') {
@@ -674,31 +672,31 @@ export class HeaderFooterWidget extends BlockContainer {
     }
     public getTableCellWidget(point: Point): TableCellWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
-        if (this.childWidgets[i] instanceof TableWidget) {
-            const child: TableWidget = this.childWidgets[i] as TableWidget;
-            let tableWidth: number = 0;
-            if (child.wrapTextAround) {
-                tableWidth = child.getTableCellWidth();
-            }
-            if (!(child.wrapTextAround) && child.y <= point.y && (child.y + child.height) >= point.y) {
-                return (child as Widget).getTableCellWidget(point);
-            }
-            if ((child.wrapTextAround &&
-                (child.x <= point.x && (child.x + tableWidth) >= point.x &&
-                    child.y <= point.y && (child.y + child.height) >= point.y))) {
-                return (child as Widget).getTableCellWidget(point);
+            if (this.childWidgets[i] instanceof TableWidget) {
+                const child: TableWidget = this.childWidgets[i] as TableWidget;
+                let tableWidth: number = 0;
+                if (child.wrapTextAround) {
+                    tableWidth = child.getTableCellWidth();
+                }
+                if (!(child.wrapTextAround) && child.y <= point.y && (child.y + child.height) >= point.y) {
+                    return (child as Widget).getTableCellWidget(point);
+                }
+                if ((child.wrapTextAround &&
+                    (child.x <= point.x && (child.x + tableWidth) >= point.x &&
+                        child.y <= point.y && (child.y + child.height) >= point.y))) {
+                    return (child as Widget).getTableCellWidget(point);
+                }
             }
         }
-    }
-    let tableCell: TableCellWidget = undefined;
-    if (this.childWidgets.length > 0) {
-        if ((this.childWidgets[0] as Widget).y <= point.y) {
-            tableCell = (this.childWidgets[this.childWidgets.length - 1] as Widget).getTableCellWidget(point);
-        } else {
-            tableCell = (this.childWidgets[0] as Widget).getTableCellWidget(point);
+        let tableCell: TableCellWidget = undefined;
+        if (this.childWidgets.length > 0) {
+            if ((this.childWidgets[0] as Widget).y <= point.y) {
+                tableCell = (this.childWidgets[this.childWidgets.length - 1] as Widget).getTableCellWidget(point);
+            } else {
+                tableCell = (this.childWidgets[0] as Widget).getTableCellWidget(point);
+            }
         }
-    }
-    return tableCell;
+        return tableCell;
     }
     public equals(widget: Widget): boolean {
         // Todo: Need to work
@@ -1707,14 +1705,14 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-     public isContainInsideTable: boolean = false;
-      /**
+    public isContainInsideTable: boolean = false;
+    /**
      * @private
      */
     public footnoteElement: FootnoteElementBox[];
-     /**
-      * @private
-      */
+    /**
+     * @private
+     */
     get isGridUpdated(): boolean {
         return ((this.flags & 0x4) >> 2) !== 0;
     }
@@ -2689,7 +2687,7 @@ export class TableRowWidget extends BlockWidget {
                 if ((this.height - this.ownerTable.tableFormat.cellSpacing) < cell.height) {
                     this.height = this.ownerTable.tableFormat.cellSpacing + cell.height;
                 }
-            } else if(isNullOrUndefined(cell.cellFormat)) {
+            } else if (isNullOrUndefined(cell.cellFormat)) {
                 i--;
             }
         }
@@ -2893,7 +2891,8 @@ export class TableRowWidget extends BlockWidget {
     public getCellWidget(columnIndex: number, columnSpan: number): TableCellWidget {
         let tableHolder: WTableHolder = this.ownerTable.tableHolder;
         let index: number = tableHolder.getValidColumnIndex(columnIndex);
-        if (index > columnIndex) {
+        if(index > columnIndex)
+        {
             columnSpan -= index - columnIndex;
             columnIndex = index;
         }
@@ -3317,7 +3316,7 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public static getCellLeftBorder(tableCell: TableCellWidget): WBorder {
+     public static getCellLeftBorder(tableCell: TableCellWidget): WBorder {
         let leftBorder: WBorder = undefined;
         let cellBorder: WBorders = tableCell.cellFormat.borders;
         let rowBorders: WBorders = !isNullOrUndefined(tableCell.ownerRow) ? tableCell.ownerRow.rowFormat.borders : undefined;
@@ -3464,7 +3463,8 @@ export class TableCellWidget extends BlockWidget {
             }
             if (!isNullOrUndefined(prevCellRightBorder) && prevCellRightBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(prevCellRightBorder, leftBorder);
-            } else if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
+            }
+            else  if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3598,6 +3598,7 @@ export class TableCellWidget extends BlockWidget {
         }
         return nextCell;
     }
+
     /**
      * @private
      */
@@ -3703,7 +3704,8 @@ export class TableCellWidget extends BlockWidget {
             }
             if (!isNullOrUndefined(prevTopCellBottomBorder) && prevTopCellBottomBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(topBorder, prevTopCellBottomBorder);
-            } else if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
+            }
+            else  if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -3752,22 +3754,22 @@ export class TableCellWidget extends BlockWidget {
             let nextBottomCell: TableCellWidget = undefined;
             let nextRow: TableRowWidget = undefined;
             let rowSpan: number = tableCell.cellFormat.rowSpan;
-            if (rowSpan === 1) {
+            if (rowSpan === 1){
                 nextRow = tableCell.ownerRow.nextWidget as TableRowWidget
-            } else if (rowSpan > 1) {
+            } else if (rowSpan > 1){
                 let row: TableRowWidget = tableCell.containerWidget as TableRowWidget;
                 do {
                     row = row.nextWidget as TableRowWidget;
                     if (isNullOrUndefined(row)) {
                         break;
-                    } else if (row.index === tableCell.rowIndex + rowSpan) {
+                    } else if (row.index === tableCell.rowIndex + rowSpan){
                         nextRow = row;
                         break;
                     }
                 } while (row);
             }
             if (!isNullOrUndefined(nextRow)) {
-                nextBottomCell = nextRow.getCellWidget(tableCell.columnIndex, tableCell.cellFormat.columnSpan);
+                nextBottomCell = nextRow.getCellWidget(tableCell.columnIndex,tableCell.cellFormat.columnSpan);
             }
             //If the border is shared then choose the border based on Conflict Resolution algorithm.
             bottomBorder = tableCell.getAdjacentCellBottomBorder(bottomBorder, nextBottomCell);
@@ -3975,6 +3977,10 @@ export class LineWidget implements IWidget {
     public marginTop: number = 0;
 
     /**
+     * @private
+     */
+    public maxBaseLine: number = 0;
+    /**
      * Rendered elements contains reordered element for RTL layout 
      */
     get renderedElements(): ElementBox[] {
@@ -4045,7 +4051,7 @@ export class LineWidget implements IWidget {
     /**
      * @private
      */
-     get isEndsWithLineBreak(): boolean {
+    get isEndsWithLineBreak(): boolean {
         if (this.children.length > 0) {
             let lastElement: ElementBox = this.children[this.children.length - 1];
             if (lastElement instanceof TextElementBox) {
@@ -4327,7 +4333,7 @@ export abstract class ElementBox {
     /**
      * @private
      */
-     public characterRange: CharacterRangeType = undefined;
+    public characterRange: CharacterRangeType = undefined;
 
     /**
      * @private
@@ -6254,7 +6260,7 @@ export class ImageElementBox extends ShapeBase {
         image.top = this.top;
         image.left = this.left;
         image.bottom = this.bottom;
-        image.right = this.right;        
+        image.right = this.right;
         image.cropHeightScale = this.cropHeightScale;
         image.cropWidthScale = this.cropWidthScale;
         image.cropX = this.cropX;
@@ -8385,10 +8391,10 @@ export class Page {
     }
 
     public destroy(): void {
-        if (this.headerWidget.page === this) {
+        if (this.headerWidget && this.headerWidget.page === this) {
             this.headerWidget.page = undefined;
         }
-        if (this.footerWidget.page === this) {
+        if (this.footerWidget && this.footerWidget.page === this) {
             this.footerWidget.page = undefined;
         }
         if (this.headerWidgetIn && !isNullOrUndefined(this.headerWidgetIn.parentHeaderFooter)) {
@@ -8408,7 +8414,7 @@ export class Page {
             }
             this.footerWidgetIn.destroy();
             this.footerWidgetIn = undefined;
-        }     
+        }
         this.bodyWidgets = [];
         this.bodyWidgets = undefined;
         if (!isNullOrUndefined(this.documentHelper)) {
@@ -8482,7 +8488,7 @@ export class WTableHolder {
         if (offset > this.columns[columnSpan - 1].endOffset) {
             this.columns[columnSpan - 1].endOffset = offset;
         }
-        this.columns[columnSpan - 1].widthType = preferredWidthType; 
+        this.columns[columnSpan - 1].widthType = preferredWidthType;
     }
     /**
      * @private
@@ -8696,7 +8702,7 @@ export class WTableHolder {
     /**
      * @private
      */
-     public getValidColumnIndex(index: number): number {
+    public getValidColumnIndex(index: number): number {
         let endOffset: number = 0;
         for (let i: number = 0; i < this.columns.length; i++) {
             let column: WColumn = this.columns[i];

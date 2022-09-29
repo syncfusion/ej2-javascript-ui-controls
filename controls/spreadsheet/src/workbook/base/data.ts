@@ -4,7 +4,6 @@ import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObjec
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setCell } from './../index';
-import { checkDateFormat, DateFormatCheckArgs } from '../common/index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -188,13 +187,6 @@ export function getValueFromFormat(context: Workbook, cell: CellModel, getIntVal
     if (cell) {
         if (isNullOrUndefined(cell.value)) {
             return '';
-        }
-        if (typeof cell.value === 'string' && cell.value.includes(':')) {
-            const dateEventArgs: DateFormatCheckArgs = { value: cell.value, updatedVal: cell.value, cell: cell };
-            context.notify(checkDateFormat, dateEventArgs);
-            if (dateEventArgs.isTime) {
-                cell.value = dateEventArgs.updatedVal;
-            }
         }
         if (cell.format) {
             const args: NumberFormatArgs = { value: cell.value, formattedText: cell.value, cell: cell, format: cell.format, onLoad: true,

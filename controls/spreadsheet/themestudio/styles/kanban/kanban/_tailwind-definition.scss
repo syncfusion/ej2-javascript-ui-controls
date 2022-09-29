@@ -1,4 +1,5 @@
 $kanban-skin: 'tailwind' !default;
+
 //Layout Variables Start
 $kanban-icons-border-radius: 4px !default;
 $kanban-text-base: $text-base !default;
@@ -27,6 +28,7 @@ $kanban-header-border-color: $cool-gray-300 !default;
 $kanban-tags-bg-color: $content-bg-color-alt3 !default;
 $kanban-tags-color: $content-text-color !default;
 $kanban-card-selection-box-shadow: 0 4px 6px -1px rgba($black, .05), 0 10px 15px -3px rgba($black, .1) !default;
+
 //Theme Variables End
 
 $kanban-table-border-spacing: 8px 0 !default;
@@ -228,4 +230,5 @@ $kanban-col-expand-collapse-bg-color: none;
 $kanban-col-expand-collapse-color: $primary;
 $kanban-col-expand-collapse-border: 1px solid $transparent;
 $kanban-col-expand-collapse-box-shadow: $shadow-focus-ring1;
+
 //Color End

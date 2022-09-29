@@ -100,7 +100,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
      * Sets and gets the options for the text style of the tooltip text for ranges in circular Gauge.
      */
 
-    @Complex<FontModel>({ size: '13px' }, Font)
+    @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -160,7 +160,7 @@ export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
     /**
      * Gets and sets the tooltip text style of annotation.
      */
-    @Complex<FontModel>({ size: '13px' }, Font)
+    @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -263,7 +263,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Gets and sets the text style of the gauge tooltip.
      */
 
-    @Complex<FontModel>({ size: '13px' }, Font)
+    @Complex<FontModel>({ size: '13px', fontFamily: null, opacity: null }, Font)
     public textStyle: FontModel;
 
     /**

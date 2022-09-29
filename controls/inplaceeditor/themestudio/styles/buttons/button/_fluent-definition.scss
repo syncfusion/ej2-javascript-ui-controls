@@ -60,6 +60,7 @@ $btn-icon-padding: 4px 11px !default;
 $btn-small-icon-padding: 3px 7px !default;
 $btn-bigger-icon-padding: 7px 15px !default;
 $btn-bigger-small-icon-padding: 6px 13px !default;
+
 //normal
 $btn-color: $secondary-text-color !default;
 $btn-bgcolor: $secondary-bg-color !default;
@@ -86,6 +87,7 @@ $btn-link-border-color: transparent !default;
 $btn-link-color: $primary !default;
 $btn-link-hover-color: $primary-bg-color-pressed !default;
 $btn-link-disabled-bgcolor: transparent !default;
+
 //endnormal
 //primary
 $btn-ripple-primary-bgcolor: transparent !default;
@@ -105,6 +107,7 @@ $btn-primary-focus-bgcolor: $primary-bg-color-focus !default;
 $btn-primary-disabled-bgcolor: $primary-bg-color-disabled !default;
 $btn-primary-disabled-color: $primary-text-disabled !default;
 $btn-primary-disabled-border-color: $primary-border-color-disabled !default;
+
 //endprimary
 //outline
 $btn-outline-color: $secondary-outline !default;
@@ -154,6 +157,7 @@ $btn-ripple-flat-success-bgcolor: transparent !default;
 $btn-ripple-flat-info-bgcolor: transparent !default;
 $btn-ripple-flat-warning-bgcolor: transparent !default;
 $btn-ripple-flat-danger-bgcolor: transparent !default;
+
 //endflat
 //success
 $btn-success-color: $success-text !default;
@@ -191,6 +195,7 @@ $btn-warning-disabled-bgcolor: $warning-bg-color-disabled !default;
 $btn-warning-disabled-color: $warning-text-disabled !default;
 $btn-warning-disabled-border-color: $warning-border-color-disabled !default;
 $btn-ripple-warning-bgcolor: transparent !default;
+
 //endwarning
 //danger
 $btn-danger-color: $danger-text !default;
@@ -208,6 +213,7 @@ $btn-danger-disabled-color: $warning-text-disabled !default;
 $btn-danger-disabled-border-color: $danger-border-color-disabled !default;
 $btn-danger-hover-color: $danger-text-hover !default;
 $btn-ripple-danger-bgcolor: transparent !default;
+
 //enddanger
 //info
 $btn-info-bgcolor: $info-bg-color !default;
@@ -225,6 +231,7 @@ $btn-info-disabled-border-color: $info-border-color-disabled !default;
 $btn-info-active-color: $info-text-pressed !default;
 $btn-info-hover-color: $info-text-hover !default;
 $btn-ripple-info-bgcolor: transparent !default;
+
 //endinfo
 //round
 $btn-round-focus-color: $secondary-text-color !default;
@@ -235,6 +242,7 @@ $btn-round-color: $btn-color !default;
 $btn-round-hover-bgcolor: $btn-hover-bgcolor !default;
 $btn-round-hover-border-color: $btn-hover-border-color !default;
 $btn-round-hover-color: $btn-hover-color !default;
+
 //endround
 //flatprimary
 $btn-flat-primary-hover-bgcolor: $btn-primary-hover-bgcolor !default;
@@ -252,6 +260,7 @@ $btn-flat-primary-hover-color: $btn-primary-color !default;
 $btn-flat-primary-focus-color: $btn-primary-focus-color !default;
 $btn-flat-primary-active-color: $btn-primary-color !default;
 $btn-flat-primary-active-bgcolor: $btn-primary-active-bgcolor !default;
+
 //endflatprimary
 //flatsuccess
 $btn-flat-success-color: $success-outline !default;
@@ -268,6 +277,7 @@ $btn-flat-success-active-border-color: $btn-success-active-border-color !default
 $btn-flat-success-focus-border-color: $btn-flat-success-border-color !default;
 $btn-flat-success-disabled-border-color: $btn-success-disabled-border-color !default;
 $btn-flat-success-focus-bgcolor: $btn-success-hover-bgcolor !default;
+
 //endflatsuccess
 //flatinfo
 $btn-flat-info-bgcolor: $btn-flat-bgcolor !default;
@@ -284,6 +294,7 @@ $btn-flat-info-hover-color: $btn-info-color !default;
 $btn-flat-info-focus-color: $btn-info-color !default;
 $btn-flat-info-active-color: $btn-info-color !default;
 $btn-flat-info-active-bgcolor: $btn-info-active-bgcolor !default;
+
 //endflatinfo
 //flatwarning
 $btn-flat-warning-bgcolor: $btn-flat-bgcolor !default;
@@ -300,6 +311,7 @@ $btn-flat-warning-hover-color: $btn-warning-color !default;
 $btn-flat-warning-focus-color: $btn-warning-color !default;
 $btn-flat-warning-active-color: $btn-warning-color !default;
 $btn-flat-warning-active-bgcolor: $btn-warning-active-bgcolor !default;
+
 //endflatwarning
 //flatdanger
 $btn-flat-danger-bgcolor: $btn-flat-bgcolor !default;
@@ -316,6 +328,7 @@ $btn-flat-danger-focus-color: $btn-danger-color !default;
 $btn-flat-danger-active-color: $btn-danger-color !default;
 $btn-flat-danger-active-bgcolor: $btn-danger-active-bgcolor !default;
 $btn-flat-danger-disabled-color: $btn-danger-disabled-color !default;
+
 //endflatdanger
 //outlineprimary
 $btn-outline-primary-disabled-color: $primary-text-disabled !default;
@@ -324,23 +337,28 @@ $btn-outline-primary-hover-border-color: $primary !default;
 $btn-outline-primary-hover-bgcolor: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-border-color: $primary !default;
 $btn-outline-primary-active-border-color: $primary !default;
+
 //endoutlineprimay
 //outlinesuccess
 $btn-outline-success-disabled-color: $success-text-disabled !default;
 $btn-outline-success-disabled-border-color: $btn-disabled-bgcolor !default;
 $btn-outline-success-hover-bgcolor: $btn-success-bgcolor !default;
+
 //endoutlinesuccess
 //outlineinfo
 $btn-outline-info-disabled-color: $info-text-disabled !default;
 $btn-outline-info-disabled-border-color: $btn-disabled-bgcolor !default;
+
 //endoutlineinfo
 //outlinewarning
 $btn-outline-warning-disabled-color: $warning-text-disabled !default;
 $btn-outline-warning-disabled-border-color: $btn-disabled-bgcolor !default;
+
 //endoutlinewarning
 //outlinedanger
 $btn-outline-danger-disabled-color: $danger-text-disabled !default;
 $btn-outline-danger-disabled-border-color: $btn-disabled-bgcolor !default;
+
 //endoutlinedanger
 //size
 $btn-box-shadow: none !default;
@@ -351,10 +369,12 @@ $btn-flat-info-disabled-bgcolor: $btn-info-disabled-bgcolor !default;
 $btn-flat-warning-disabled-bgcolor: $btn-warning-disabled-bgcolor !default;
 $btn-flat-danger-disabled-bgcolor: $btn-danger-disabled-bgcolor !default;
 $btn-focus-box-shadow: $shadow-none !default;
+
 // bootstrap5 theme variables
 $btn-primary-focus-box-shadow: $shadow-none !default;
 $btn-success-focus-box-shadow: $shadow-none !default;
 $btn-danger-focus-box-shadow: $shadow-none !default;
 $btn-info-focus-box-shadow: $shadow-none !default;
 $btn-warning-focus-box-shadow: $shadow-none !default;
+
 //endsize

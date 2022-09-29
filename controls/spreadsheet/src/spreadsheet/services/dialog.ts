@@ -76,8 +76,12 @@ export class Dialog {
      *
      * @returns {void}
      */
-    public hide(): void {
+    public hide(disableAnimation?: boolean): void {
         if (this.dialogInstance) {
+            if (disableAnimation) {
+                this.dialogInstance.animationSettings.effect = 'None';
+                this.dialogInstance.dataBind();
+            }
             this.dialogInstance.hide();
         }
     }

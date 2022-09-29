@@ -1,4 +1,5 @@
 @include export-module('h-scroll') {
+
   /*! h-scroll layout */
 
   .e-bigger #{&}.e-hscroll,
@@ -20,7 +21,7 @@
 
     .e-nav-arrow.e-icons {
       font-size: $hscroll-device-arrow-size-bigger;
-     }
+    }
 
     &.e-rtl .e-scroll-overlay.e-scroll-right-overlay {
       left: $hscroll-nav-bgr-width;
@@ -37,7 +38,6 @@
       min-height: $hscroll-nav-bgr-minheight;
       width: $hscroll-nav-bgr-width;
     }
-
   }
 
   #{&}.e-hscroll {
@@ -69,7 +69,7 @@
           }
         }
       }
-   }
+    }
 
     &:not(.e-scroll-device) {
       padding: $hscroll-nrml-padding;
@@ -120,7 +120,7 @@
 
     > * {
       height: inherit;
-     }
+    }
 
     .e-hscroll-content {
       display: inline-block;
@@ -131,7 +131,7 @@
       > * {
         pointer-events: auto;
       }
-  }
+    }
 
     &.e-rtl {
 
@@ -146,7 +146,7 @@
           left: auto;
           right: 0;
         }
-    }
+      }
     }
 
     .e-scroll-nav  {
@@ -170,12 +170,12 @@
 
       &.e-ie-align {
         display: table;
-        }
+      }
     }
 
     .e-nav-arrow {
       position: relative;
-  }
+    }
 
     .e-nav-arrow.e-icons {
       display: table-cell;
@@ -186,8 +186,7 @@
       @if $hscroll-skin == 'tailwind' or $hscroll-skin == 'bootstrap5' {
         font-size: $hscroll-device-arrow-size;
       }
-
-      }
+    }
 
     .e-hscroll-bar {
 
@@ -195,8 +194,8 @@
 
         .e-overlay {
           pointer-events: none;
-          }
         }
       }
+    }
   }
 }

@@ -1,4 +1,5 @@
 @include export-module('richtexteditor-theme') {
+
   /*! tab layout */
 
   .e-richtexteditor {
@@ -192,7 +193,9 @@
       border: 0;
     }
 
-    img.e-img-focus::selection {
+    img.e-img-focus::selection,
+    audio.e-audio-focus::selection,
+    .e-video-focus::selection {
       background: transparent;
       color: transparent;
     }
@@ -207,13 +210,14 @@
         border-left: $rte-content-blockquote-border-left-color;
       }
 
-      .e-content .e-img-focus:not(.e-resize) {
+      .e-content .e-img-focus:not(.e-resize),
+      .e-content .e-video-focus:not(.e-resize) {
         border: $rte-img-border;
       }
 
       .e-content a {
         color: $rte-anchor-color;
-    }
+      }
     }
 
     &.e-rtl {
@@ -314,6 +318,49 @@
         }
       }
     }
+
+    .e-audio-wrap,
+    .e-embed-video-wrap {
+      display: inline-block;
+    }
+
+    .e-clickelem,
+    .e-video-clickelem {
+      display: block;
+      margin: 0;
+      outline: none;
+      padding: 0;
+      position: relative;
+    }
+
+    .e-clickelem::after,
+    .e-video-clickelem::after {
+      background: transparent;
+      bottom: 0;
+      content: '';
+      cursor: default;
+      display: block;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 1;
+    }
+
+    .e-videoheader,
+    .e-embed-videoheader,
+    .e-video-url-wrap {
+      padding-bottom: 5px;
+      padding-top: 15px;
+    }
+
+    .e-video-url-wrap .e-radio-wrapper {
+      padding: 5px;
+    }
+
+    .e-video-url-wrap textarea {
+      height: 80px;
+    }
   }
 
   .e-rte-quick-popup {
@@ -408,7 +455,9 @@
     }
   }
 
-  .e-dialog .e-img-uploadwrap .e-droptext {
+  .e-dialog .e-img-uploadwrap .e-droptext,
+  .e-dialog .e-aud-uploadwrap .e-droptext,
+  .e-dialog .e-vid-uploadwrap .e-droptext {
     border: dashed 2px $rte-upload-drag-border-clr;
     border-radius: 4px;
     color: $rte-drop-text-clr;
@@ -419,6 +468,10 @@
     margin: 0 auto;
     text-align: center;
     width: 300px;
+  }
+
+  .e-dialog .e-vid-uploadwrap .e-droptext {
+    height: 108px;
   }
 
   .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap .e-droptext {
@@ -442,7 +495,8 @@
     z-index: 1000;
   }
 
-  span.e-rte-imageboxmark {
+  span.e-rte-imageboxmark,
+  span.e-rte-videoboxmark {
     background: $rte-img-resize-back-color;
     border: 1px solid $rte-img-resize-color;
     display: block;
@@ -452,7 +506,8 @@
     z-index: 1000;
   }
 
-  .e-mob-rte span.e-rte-imageboxmark {
+  .e-mob-rte span.e-rte-imageboxmark,
+  .e-mob-rte span.e-rte-videoboxmark {
     background: $rte-img-resize-color;
     border: 1px solid $rte-img-resize-back-color;
     border-radius: 15px;
@@ -460,22 +515,26 @@
     width: 20px;
   }
 
-  .e-mob-rte.e-mob-span span.e-rte-imageboxmark {
+  .e-mob-rte.e-mob-span span.e-rte-imageboxmark,
+  .e-mob-rte.e-mob-span span.e-rte-videoboxmark {
     background: $rte-img-resize-back-color;
     border: 1px solid $rte-img-resize-color;
   }
 
-  .e-rte-content .e-content img.e-resize {
+  .e-rte-content .e-content img.e-resize,
+  .e-rte-content .e-content video.e-resize {
     z-index: 1000;
   }
 
   #{if(&, '&', '*')}.e-disabled {
-    user-select: none;.e-rte-toolbar .e-toolbar-item {
-      cursor: default;& .e-tbar-btn.e-icon-btn,
-      & .e-dropdown-btn.e-btn ,
+    user-select: none;
+    .e-rte-toolbar .e-toolbar-item {
+      cursor: default;
+      & .e-tbar-btn.e-icon-btn,
+      & .e-dropdown-btn.e-btn,
       & .e-colorpicker-wrapper .e-btn {
-        &:hover ,
-        &:active ,
+        &:hover,
+        &:active,
         &:focus {
           background: transparent;
           cursor: default;

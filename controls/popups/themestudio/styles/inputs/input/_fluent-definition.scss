@@ -212,7 +212,7 @@ $input-font-color: $content-text-color !default;
 $input-icon-font-color: $icon-color !default;
 $input-clear-icon-color: $icon-color !default;
 $input-clear-icon-hover-color: $icon-color-hover !default;
-$input-clear-icon-hover-bg-color: $content-bg-color-hover  !default;
+$input-clear-icon-hover-bg-color: $content-bg-color-hover !default;
 $input-accent:  $content-bg-color !default;
 $input-placeholder: $placeholder-text-color !default;
 $input-active-border-color: $input-box-border-focus !default;
@@ -223,7 +223,7 @@ $input-group-border-right-focus: transparent !default;
 $input-group-border-left-focus: transparent !default;
 $input-group-active-border: transparent !default;
 $input-group-pressed-bg: $content-bg-color-alt4 !default;
-$input-hover-bg-color: $content-bg-color-hover  !default;
+$input-hover-bg-color: $content-bg-color-hover !default;
 $input-header-font-color: $placeholder-text-color !default;
 $input-group-border-color-focus: $primary !default;
 $input-group-border-color-hover: $border-alt !default;
@@ -249,18 +249,21 @@ $float-label-rtl-value: -10px !default;
 @mixin input-sizing {
   box-sizing: border-box;
 }
+
 @mixin input-height ($height) {
   height: $height;
 }
+
 @mixin input-state-color ($color) {
   border-color: $color;
 }
+
 @mixin input-selection {
   background: $primary-light;
   color: $content-text-color;
 }
 
-// sass-lint:disable no-vendor-prefixes  
+/* stylelint-disable property-no-vendor-prefix */
 @mixin float-label-alignment {
   -moz-transform: translate(-0%, -50%);
   -ms-transform: translate(-0%, -50%);
@@ -273,6 +276,7 @@ $float-label-rtl-value: -10px !default;
   user-select: none;
   width: 100%;
 }
+
 @mixin textarea-float-label-alignment {
   -moz-transform: translate(-0%, -50%);
   -ms-transform: translate(-0%, -50%);
@@ -284,40 +288,51 @@ $float-label-rtl-value: -10px !default;
   transform: translate(-0%, -50%);
   width: 100%;
 }
+
 @mixin input-group-animation {
   content: '';
 }
+
 @mixin input-group-animation-left {
   content: '';
 }
+
 @mixin input-group-animation-width {
   content: '';
 }
+
 @mixin input-group-animation-right {
   content: '';
 }
+
 @mixin input-group-animation-bg {
   content: '';
 }
+
 @mixin input-group-hover-bg {
   content: '';
 }
+
 @mixin input-group-success-animation-bg {
   content: '';
 }
+
 @mixin input-group-warning-animation-bg {
   content: '';
 }
+
 @mixin input-group-error-animation-bg {
   content: '';
 }
+
 @mixin input-ripple-parent {
   content: '';
 }
+
 @mixin input-ripple-style {
   content: '';
 }
+
 @mixin input-ripple-animation {
   content: '';
 }
-

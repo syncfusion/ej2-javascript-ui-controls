@@ -98,12 +98,20 @@ export interface LegendSettingsModel {
     mode?: LegendMode;
 
     /**
-     * Option to customize the padding between legend items.
+     * Option to customize the padding around the legend items.
      *
      * @default 8
      */
 
     padding?: number;
+
+    /**
+     * Option to customize the padding between legend items.
+     *
+     * @default 20
+     */
+
+    itemPadding?: number;
 
     /**
      * Legend in chart can be aligned as follows:
@@ -157,7 +165,7 @@ export interface LegendSettingsModel {
     /**
      * Padding between the legend shape and text.
      *
-     * @default 5
+     * @default 8
      */
 
     shapePadding?: number;
@@ -185,6 +193,14 @@ export interface LegendSettingsModel {
      */
 
     toggleVisibility?: boolean;
+
+    /**
+    * If set to true, the series get highlighted, while hovering the legend.
+    *
+    * @default false
+    */
+
+    enableHighlight?: boolean;
 
     /**
      * Description for legends.

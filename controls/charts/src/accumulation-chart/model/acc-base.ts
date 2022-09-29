@@ -229,6 +229,15 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     @Property(null)
     public template: string;
 
+    /**
+     * Used to format the data label that accepts any global string format like 'C', 'n1', 'P' etc.
+     * It also accepts placeholder like '{value}°C' in which value represent the data label, e.g, 20°C.
+     *  
+     * @default ''
+     */
+     @Property('')
+     public format: string;
+
 }
 
 /**

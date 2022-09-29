@@ -189,15 +189,17 @@ export class TreeMapTooltip {
     }
     /**
      * To destroy the tooltip.
-     *
-     * @param {TreeMap} treeMap - Specifies the instance of the treemap
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(treeMap: TreeMap): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        if (!isNullOrUndefined(this.svgTooltip)) {
+            this.svgTooltip.destroy();
+        }
+        this.svgTooltip = null;
+        this.tooltipSettings = null;
         this.removeEventListener();
+        this.treemap = null;
     }
 }

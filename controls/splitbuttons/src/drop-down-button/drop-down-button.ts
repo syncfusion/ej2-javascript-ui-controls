@@ -122,6 +122,14 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     public target: string | Element;
 
     /**
+     * Specifies the event to close the DropDownButton popup.
+     *
+     * @default ""
+     */
+    @Property('')
+    public closeActionEvents: string;
+
+    /**
      * Triggers while rendering each Popup item of DropDownButton.
      *
      * @event beforeItemRender
@@ -515,6 +523,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (popupElement) {
             EventHandler.add(popupElement, 'click', this.clickHandler, this);
             EventHandler.add(popupElement, 'keydown', this.keyBoardHandler, this);
+            if (this.closeActionEvents) {
+                EventHandler.add(popupElement, this.closeActionEvents, this.focusoutHandler, this);
+            }
         }
         this.rippleFn = rippleEffect(popupElement, { selector: '.' + classNames.ITEM });
     }
@@ -527,6 +538,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (popupElement && popupElement.parentElement) {
             EventHandler.remove(popupElement, 'click', this.clickHandler);
             EventHandler.remove(popupElement, 'keydown', this.keyBoardHandler);
+            if (this.closeActionEvents) {
+                EventHandler.remove(popupElement, this.closeActionEvents, this.focusoutHandler);
+            }
         }
     }
 
@@ -598,6 +612,12 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
     }
 
+    private focusoutHandler(e: MouseEvent): void {
+        if (this.isPopupCreated && !this.canOpen()) {
+            this.closePopup(e);
+        }
+    }
+
     protected clickHandler(e: MouseEvent | KeyboardEventArgs): void {
         const trgt: HTMLElement = e.target as HTMLElement;
         if (closest(trgt, '[id="' + this.element.id + '"]')) {
@@ -665,7 +685,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 this.dropDown.show(null, this.element);
                 addClass([this.element], 'e-active');
                 this.element.setAttribute('aria-expanded', 'true');
-                ul.focus();
+                if (ul) {
+                    ul.focus();
+                }
                 const openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
                 this.trigger('open', openArgs);
             }
@@ -683,7 +705,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             if (!observedArgs.cancel) {
                 this.popupUnWireEvents();
                 const ul: HTMLElement = this.getULElement();
-                const selectedLi: Element = ul.querySelector('.e-selected');
+                let selectedLi: Element;
+                if (ul) {
+                     selectedLi = ul.querySelector('.e-selected');
+                }
                 if (selectedLi) { selectedLi.classList.remove('e-selected'); }
                 this.dropDown.hide();
                 removeClass(this.activeElem, 'e-active');

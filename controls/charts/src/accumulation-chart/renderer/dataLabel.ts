@@ -618,9 +618,9 @@ export class AccumulationDataLabel extends AccumulationBase {
     ): void {
         const id: string = this.accumulation.element.id + '_datalabel_Series_' + series + '_';
         const datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
-        point.label = point.originalText || point.y.toString();
         const border: BorderModel = { width: dataLabel.border.width, color: dataLabel.border.color };
         const argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
+        point.label = this.getDatalabelText(dataLabel.format, this.accumulation, point.originalText || point.y.toString());
         const argsData: IAccTextRenderEventArgs = {
             cancel: false, name: textRender, series: this.accumulation.visibleSeries[0], point: point,
             text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
@@ -629,11 +629,6 @@ export class AccumulationDataLabel extends AccumulationBase {
         point.argsData = argsData;
         const isTemplate: boolean = argsData.template !== null;
         point.labelVisible = !argsData.cancel; point.text = point.label = argsData.text;
-        if (Number(point.label)) {
-            point.label = this.accumulation.intl.formatNumber(+point.label, {
-                useGrouping: this.accumulation.useGroupingSeparator
-            });
-        }
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
         const childElement: HTMLElement = createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
@@ -641,8 +636,20 @@ export class AccumulationDataLabel extends AccumulationBase {
                 getFontStyle(dataLabel.font) + ';border:' + argsData.border.width + 'px solid ' + argsData.border.color + ';'
         });
         this.calculateLabelSize(isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw);
+        
     }
-
+    private getDatalabelText(labelFormat: string, chart: AccumulationChart, labelText: string): string {
+        if (Number(labelText)) {
+            let format: Function;
+            const customLabelFormat: boolean = labelFormat.match('{value}') !== null;
+            format = chart.intl.getNumberFormat({
+                format: customLabelFormat ? '' : labelFormat,
+                useGrouping: chart.useGroupingSeparator
+            });
+            labelText = customLabelFormat ? labelFormat.replace('{value}', format(parseFloat(labelText))) : format(parseFloat(labelText));
+        }
+        return labelText;
+    }
     /**
      * To calculate label size
      */
@@ -680,6 +687,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                 this.finalizeDatalabels(point, modifiedPoints, dataLabel);
                 const id: string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
                 const datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
+                datalabelGroup.setAttribute('aria-hidden', 'true');
                 let dataLabelElement: Element; let location: ChartLocation;
                 let element: Element;
                 if (point.visible && point.labelVisible) {

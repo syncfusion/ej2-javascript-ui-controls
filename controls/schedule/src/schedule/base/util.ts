@@ -29,6 +29,24 @@ export function getElementHeightFromClass(container: Element, elementClass: stri
 }
 
 /**
+ * Method to get width from element
+ *
+ * @param {Element} container Accepts the DOM element
+ * @param {string} elementClass Accepts the element class
+ * @returns {number} Returns the width of the element
+ */
+export function getElementWidthFromClass(container: Element, elementClass: string): number {
+    let width: number = 0;
+    const el: HTMLElement = createElement('div', { className: elementClass }).cloneNode() as HTMLElement;
+    el.style.visibility = 'hidden';
+    el.style.position = 'absolute';
+    container.appendChild(el);
+    width = el.getBoundingClientRect().width;
+    remove(el);
+    return width;
+}
+
+/**
  * Method to get translateY value
  *
  * @param {HTMLElement | Element} element Accepts the DOM element
@@ -38,6 +56,18 @@ export function getTranslateY(element: HTMLElement | Element): number {
     const style: CSSStyleDeclaration = getComputedStyle(element);
     return (<Record<string, any> & Window><unknown>window).WebKitCSSMatrix ?
         new WebKitCSSMatrix(style.webkitTransform).m42 : 0;
+}
+
+/**
+ * Method to get translateX value
+ *
+ * @param {HTMLElement | Element} element Accepts the DOM element
+ * @returns {number} Returns the translateX value of given element
+ */
+export function getTranslateX(element: HTMLElement | Element): number {
+    const style: CSSStyleDeclaration = getComputedStyle(element);
+    return (<Record<string, any> & Window><unknown>window).WebKitCSSMatrix ?
+        new WebKitCSSMatrix(style.webkitTransform).m41 : 0;
 }
 
 /**
@@ -333,9 +363,7 @@ export function getOuterHeight(element: HTMLElement): number {
 export function removeChildren(element: HTMLElement | Element): void {
     const elementChildren: HTMLElement[] | Element[] = [].slice.call(element.children);
     for (const elementChild of elementChildren) {
-        if (!elementChild.classList.contains('blazor-template')) {
-            element.removeChild(elementChild);
-        }
+        element.removeChild(elementChild);
     }
 }
 

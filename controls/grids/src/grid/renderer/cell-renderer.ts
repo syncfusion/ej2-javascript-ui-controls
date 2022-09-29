@@ -28,7 +28,8 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.formatter = locator.getService<IValueFormatter>('valueFormatter');
         this.parent = parent;
         this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { role: 'gridcell', tabindex: '-1' } });
-        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox', 'aria-label': 'checkbox' } });
+        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox',
+            'aria-label': this.localizer.getConstant('CheckBoxLabel') } });
     }
     /**
      * Function to return the wrapper for the TD content
@@ -85,8 +86,8 @@ export class CellRenderer implements ICellRenderer<Column> {
             }
             this.parent.notify('template-result', { template: result });
             result = null;
-            node.setAttribute('aria-label', (<HTMLElement>node).innerText + ' is template cell' + ' column header ' +
-                cell.column.headerText);
+            node.setAttribute('aria-label', (<HTMLElement>node).innerText + this.localizer.getConstant('TemplateCell') +
+                this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
             return false;
         }
         return true;
@@ -205,12 +206,12 @@ export class CellRenderer implements ICellRenderer<Column> {
         const fromFormatter: Object = this.invokeFormatter(column, value, data);
 
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
-        node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
+        node.setAttribute('aria-label', innerHtml + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         if (this.evaluate(node, cell, data, attributes, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {
             node.classList.add(literals.gridChkBox);
-            node.setAttribute('aria-label', 'checkbox');
+            node.setAttribute('aria-label', this.localizer.getConstant('CheckBoxLabel'));
             if (this.parent.selectionSettings.persistSelection) {
                 value = value === 'true';
             } else {
@@ -240,7 +241,7 @@ export class CellRenderer implements ICellRenderer<Column> {
                 addClass([checkWrap], [this.parent.cssClass]);
             }
             node.appendChild(checkWrap);
-            node.setAttribute('aria-label', checked + ' column header ' + cell.column.headerText);
+            node.setAttribute('aria-label', checked + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         }
 
         return node;

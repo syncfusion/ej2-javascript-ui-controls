@@ -175,7 +175,7 @@ $grid-headercelldiv-margin: -5px !default;
 $grid-icon-font-size: 14px !default;
 $grid-border-size: 1px !default;
 $grid-header-padding: 12px !default;
-$grid-header-wrap-sortfilter-div-margin: -34px 3px !default;
+$grid-header-wrap-sortfilter-div-margin: -30px 10px !default;
 $grid-rtl-textwrap-sorticon-margin: -30px 5px !default;
 $grid-rtl-textwrap-sorticon-rightalign-margin: -30px 17px !default;
 $grid-headercelldiv-right-align-padding: 0 5px 0 !default;
@@ -439,7 +439,7 @@ $grid-drag-clone-font-weight: $grid-header-font-weight !default;
 $grid-content-batch-font-color: $grid-content-font-color !default;
 $grid-bigger-group-headercell-hover-padding: $grid-bigger-group-headercell-padding !default;
 
-$grid-header-wrap-rightalign-sortfilter-div-margin: -34px -5px !default;
+$grid-header-wrap-rightalign-sortfilter-div-margin: -30px -5px !default;
 $grid-header-wrap-filtericon-sortfilter-div-margin: -27px 20px -29px 0 !default;
 $grid-bigger-wrap-sortdiv-margin: -31px 8px !default;
 $grid-bigger-wrap-rightalign-sortdiv-margin: -30px -5px !default;
@@ -458,7 +458,7 @@ $grid-border-bottom-width: 1px !default;
 $grid-dragcell-border-style: solid !default;
 $grid-dragcell-border-color: #ddd !default;
 $grid-drap-drop-icon-color: $gray-600 !default;
-$grid-clone-dropitemscount-bg-color: #317ab9  !default;
+$grid-clone-dropitemscount-bg-color: #317ab9 !default;
 $grid-clone-dropitemscount-color: #333 !default;
 $grid-clone-row-border-color: #ddd !default;
 $grid-dropitemscount-color: #fff !default;
@@ -498,7 +498,7 @@ $grid-rtl-textwrap-column-menu-margin: -17px -13px -23px -25px !default;
 $grid-filter-checkbox-width: 0 !default;
 $grid-filter-checkbox-white-space: nowrap !default;
 
-// group animator 
+// group animator
 $grid-group-animator-bigger-cell-margin: 15px 0 15px 0 !default;
 $grid-group-animator-bigger-drop-height: 54px !default;
 $grid-animator-bigger-area-margin: 22px !default;
@@ -561,7 +561,7 @@ $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 1px -2px 0 0 !default;
 $grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
-$grid-rowcell-color: $grid-content-font-color !default;
+$grid-rowcell-color: $grid-content-font-color !default !default;
 $grid-reorderarrow-margin-top: -7.5px !default;
 $grid-reorderdownarrow-margin-top: 2.5px !default;
 $grid-reorder-arrow-top-margin: -1px !default;

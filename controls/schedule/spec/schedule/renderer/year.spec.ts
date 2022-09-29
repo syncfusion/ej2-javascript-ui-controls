@@ -3,7 +3,7 @@
  * Schedule Week view spec
  */
 import { createElement, L10n } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Year, TimelineYear } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Year, TimelineYear, CellClickEventArgs } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -57,7 +57,6 @@ describe('Schedule year view', () => {
         });
 
         it('work cells', () => {
-            expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('role')).toEqual('gridcell');
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('aria-selected')).toEqual('false');
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('data-date')).toEqual(new Date(2020, 11, 27).getTime().toString());
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].innerHTML).toEqual('<span class="e-day" title="Sunday, December 27, 2020">27</span>');
@@ -67,7 +66,6 @@ describe('Schedule year view', () => {
             schObj.showWeekNumber = true;
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-week-number').length).toEqual(72);
-            expect(schObj.element.querySelectorAll('.e-week-number')[0].getAttribute('role')).toEqual('gridcell');
             expect(schObj.element.querySelectorAll('.e-week-number')[0].getAttribute('title')).toEqual('Week 1');
             expect(schObj.element.querySelectorAll('.e-week-number')[0].innerHTML).toEqual('1');
         });
@@ -90,6 +88,9 @@ describe('Schedule year view', () => {
             expect(moreDateHeader.lastElementChild.getAttribute('data-date')).toEqual(new Date(2021, 0, 1).getTime().toString());
         });
 
+        it('checking content rows', () => {
+            expect(schObj.activeView.getContentRows().length).toEqual(0);
+        });
     });
 
     describe('Resource and normal Header Template in timeline year view', () => {
@@ -276,6 +277,136 @@ describe('Schedule year view', () => {
                 expect(schObj.element.querySelectorAll('.e-day.e-title')[11].innerHTML).toBe('May 2022');
             });
         });
+    });
+
+    describe('checking template supports in year', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px',
+                selectedDate: new Date(2022, 1, 1),
+                dayHeaderTemplate: '<div class="date-text">${(data.date).getDay()}</div>',
+                monthHeaderTemplate: '<div class="date-text">${(data.date).getMonth()}</div>',
+                cellTemplate: '<div class="date-text">${(data.date).getDate()}</div>',
+                cellHeaderTemplate: '<div class="date-text">${(data.date).getDate()}</div>',
+                views: [
+                    { option: 'Year' }
+                ]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('All templates checking', () => {
+            expect(schObj.element.querySelectorAll('.e-day.e-title')[0][`innerHTML`]).toBe('<div class="date-text">0</div>');
+            expect(schObj.element.querySelectorAll('.e-week-header')[0][`innerHTML`])
+                .toBe('<tr><th><div class="date-text">0</div></th><th><div class="date-text">1</div></th><th><div class="date-text">2</div></th><th><div class="date-text">3</div></th><th><div class="date-text">4</div></th><th><div class="date-text">5</div></th><th><div class="date-text">6</div></th></tr>');
+            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[0][`innerHTML`]).toBe('<div class="date-text">26</div><div class="date-text">26</div>');
+            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6][`innerHTML`]).toBe('<div class="date-text">1</div><div class="date-text">1</div>');
+        });
+    });
+
+    describe('Client side events', () => {
+        let schObj: Schedule;
+        beforeEach((): void => {
+            schObj = undefined;
+        });
+        afterEach((): void => {
+            util.destroy(schObj);
+        });
+
+        it('events call confirmation', () => {
+            const clickFn: jasmine.Spy = jasmine.createSpy('clickEvent');
+            const dblClickFn: jasmine.Spy = jasmine.createSpy('dblClickEvent');
+            const model: ScheduleModel = {
+                cellClick: clickFn,
+                cellDoubleClick: dblClickFn,
+                views: [
+                    { option: 'Year' }
+                ],
+                selectedDate: new Date(2022, 5, 18)
+            };
+            schObj = util.createSchedule(model, []);
+            (schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement).click();
+            expect(clickFn).toHaveBeenCalledTimes(1);
+        });
+
+        it('cell click', () => {
+            let cellStartTime: number;
+            let cellEndTime: number;
+            let eventName: string;
+            const model: ScheduleModel = {
+                cellClick: (args: CellClickEventArgs) => {
+                    cellStartTime = args.startTime.getTime();
+                    cellEndTime = args.endTime.getTime();
+                    eventName = args.name;
+                },
+                views: [
+                    { option: 'Year' }
+                ],
+                selectedDate: new Date(2022, 5, 18)
+            };
+            schObj = util.createSchedule(model, []);
+            (schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement).click();
+            expect(cellStartTime).toEqual(new Date(2022, 0, 2).getTime());
+            expect(cellEndTime).toEqual(new Date(2022, 0, 3).getTime());
+            expect(eventName).toEqual('cellClick');
+        });
+
+        it('cancel cell click', () => {
+            const model: ScheduleModel = {
+                cellClick: (args: CellClickEventArgs) => args.cancel = true,
+                views: [
+                    { option: 'Year' }
+                ], selectedDate: new Date(2022, 5, 18)
+            };
+            schObj = util.createSchedule(model, []);
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            expect(workCell.classList).not.toContain('e-selected-cell');
+            expect(workCell.getAttribute('aria-selected')).toEqual('false');
+            workCell.click();
+            expect(workCell.classList).not.toContain('e-selected-cell');
+            expect(workCell.getAttribute('aria-selected')).toEqual('false');
+        });
+
+        it('cell double click', () => {
+            let cellStartTime: number;
+            let cellEndTime: number;
+            let eventName: string;
+            const model: ScheduleModel = {
+                cellDoubleClick: (args: CellClickEventArgs) => {
+                    cellStartTime = args.startTime.getTime();
+                    cellEndTime = args.endTime.getTime();
+                    eventName = args.name;
+                },
+                views: [
+                    { option: 'Year' }
+                ],
+                selectedDate: new Date(2022, 5, 18)
+            };
+            schObj = util.createSchedule(model, []);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[7] as HTMLElement, 'dblclick');
+            expect(cellStartTime).toEqual(new Date(2022, 0, 2).getTime());
+            expect(cellEndTime).toEqual(new Date(2022, 0, 3).getTime());
+            expect(eventName).toEqual('cellDoubleClick');
+        });
+
+        it('cancel cell double click', () => {
+            const model: ScheduleModel = {
+                cellDoubleClick: (args: CellClickEventArgs) => args.cancel = true,
+                views: [
+                    { option: 'Year' }
+                ],
+                selectedDate: new Date(2022, 5, 18)
+            };
+            schObj = util.createSchedule(model, []);
+            const workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
+        });
+
     });
 
     describe('EJ2-51013 - Year view Resources with group by date', () => {
@@ -468,7 +599,7 @@ describe('Schedule year view', () => {
         it('Change the scroll position', (done: DoneFn) => {
             schObj.dataBound = () => done();
             const contentWrap: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
-            util.triggerScrollEvent(contentWrap, 120, 140);            
+            util.triggerScrollEvent(contentWrap, 120, 140);
             schObj.showWeekend = false;
             schObj.dataBind();
         });

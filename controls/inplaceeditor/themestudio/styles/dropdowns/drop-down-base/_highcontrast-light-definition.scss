@@ -1,4 +1,4 @@
-//default 
+//default
 $ddl-header-font-weight: 600 !default;
 $ddl-last-child-bottom-border: 0 !default;
 $ddl-default-font-family: inherit !default;
@@ -10,6 +10,8 @@ $ddl-list-rtl-padding-left: 16px !default;
 $ddl-list-border-color: $border-default !default;
 $ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: transparent !default;
+$mention-gradient-color: $border-fg !default;
+$mention-list-box-shadow-color: 0 0 5px 0 rgba(0, 0, 0, .4) !default;
 $ddl-list-bg-color: $bg-base-0 !default;
 $ddl-list-header-bg-color: $bg-base-0 !default;
 $ddl-list-tap-color: transparent !default;
@@ -17,6 +19,7 @@ $ddl-list-header-border-color: 1px $border-default !default;
 $ddl-list-default-font-color: $content-font !default;
 $ddl-list-active-border-color: $selection-border !default;
 $ddl-list-active-font-color: $selection-font !default;
+$mention-active-font-color: $selection-bg !default;
 $ddl-list-active-bg-color: $selection-bg !default;
 $ddl-list-hover-bg-color: $hover-bg !default;
 $ddl-list-hover-border-color: $hover-border !default;
@@ -41,7 +44,7 @@ $ddl-bigger-list-header-font-size: $ddl-list-font-size !default;
 $ddl-list-bottom-border: 2px !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $border-default !default;
-$ddl-list-header-font-size: $ddl-group-list-font-size  !default;
+$ddl-list-header-font-size: $ddl-group-list-font-size !default;
 $ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
 
 // small size
@@ -63,21 +66,26 @@ $ddl-bigger-small-list-header-font-size: 14px !default;
     #{if(&, '&', '*')} .e-list-item {
       #{if(&, '&', '*')} .e-list-icon {
         padding: 0 10px 0 0;
-      }.e-bigger #{if(&, '&', '*')} {
+      }
+      .e-bigger #{if(&, '&', '*')} {
         #{if(&, '&', '*')} .e-list-icon {
           padding: 0 12px 0 0;
         }
-      }#{if(&, '&', '*')}:not(.e-active) {
+      }
+      #{if(&, '&', '*')}:not(.e-active) {
         #{if(&, '&', '*')}.e-hover {
           border: 2px solid $hover-border;
-        }#{if(&, '&', '*')}:not(.e-hover) {
+        }
+        #{if(&, '&', '*')}:not(.e-hover) {
           #{if(&, '&', '*')}:not(.e-item-focus) {
             border: 2px solid $bg-base-0;
           }
         }
-      }#{if(&, '&', '*')}.e-active {
+      }
+      #{if(&, '&', '*')}.e-active {
         border: 2px solid $selection-border;
-      }#{if(&, '&', '*')}.e-item-focus {
+      }
+      #{if(&, '&', '*')}.e-item-focus {
         border: 2px solid $hover-bg;
       }
     }

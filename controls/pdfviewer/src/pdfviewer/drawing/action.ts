@@ -98,7 +98,8 @@ export function findObjectUnderMouse(
         offsetX = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
         offsetY = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
     }
-    const offsetForSelector: number = pdfViewer.touchPadding;
+    //EJ2-63562 - Reduced the offset selector by half to improve selection of fields in mobile devices
+    const offsetForSelector: number = pdfViewer.touchPadding / 2;
     let boundsDiff: number = 0;
     for (let i: number = 0; i < objects.length; i++) {
         if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {

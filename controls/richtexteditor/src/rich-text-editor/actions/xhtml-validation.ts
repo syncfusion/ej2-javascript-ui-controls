@@ -36,8 +36,8 @@ export class XhtmlValidation {
             this.removeTags();
             this.RemoveUnsupported();
             this.currentElement.innerHTML = this.selfEncloseValidation(
-                this.currentElement.innerHTML, this.currentElement.innerText === "\n" ?
-                this.currentElement.innerText.length : this.currentElement.innerText.trim().length);
+                this.currentElement.innerHTML, this.currentElement.innerText === '\n' ?
+                    this.currentElement.innerText.length : this.currentElement.innerText.trim().length);
             this.parent.setProperties({ value: this.currentElement.innerHTML }, true);
         }
     }

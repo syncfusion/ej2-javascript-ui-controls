@@ -1087,7 +1087,7 @@ describe('Chart Control', () => {
         });
         it('Check X axis labels trim with label position outside - legend position is in right and chart width is small', (done: Function) => {
             chartObj.loaded = (args: Arg): void => {
-                let ele0: Element = document.getElementById('Trimcontainer0_AxisLabel_18');
+                let ele0: Element = document.getElementById('Trimcontainer0_AxisLabel_19');
                 expect(ele0.innerHTML.indexOf('...') !== -1).toBe(true);
                 done();
             };

@@ -61,8 +61,6 @@ describe('Schedule Month view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('<div class="e-date-header e-navigate" aria-label="Sunday, October 1, 2017">Oct 1</div>');
@@ -813,6 +811,66 @@ describe('Schedule Month view', () => {
         });
     });
 
+    describe('Multiple resource grouping rendering in mobile device', () => {
+        let schObj: Schedule;
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            const model: ScheduleModel = {
+                width: 300, height: '500px',
+                selectedDate: new Date(2018, 3, 1),
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'MonthAgenda'],
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId', name: 'Owners',
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, workDays: [0, 1, 2, 3], Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, workDays: [0, 2, 3], Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, workDays: [0, 1, 2, 3, 4], Color: '#7499e1' }
+                    ]
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            Browser.userAgent = uA;
+        });
+
+        it('resource treeview testing', () => {
+            expect(schObj.element.querySelectorAll('.e-resource-tree-popup').length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-resource-tree').length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-resource-tree .e-list-item.e-has-child').length).toEqual(2);
+            expect(schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)').length).toEqual(3);
+        });
+
+        it('resource events checked for week view testing', () => {
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+        });
+
+        it('navigation checking for month view testing', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+
+        it('work cells and resource events checked for month view testing', () => {
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(35);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+        });
+    });
+
     describe('Resources with group', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -844,7 +902,7 @@ describe('Schedule Month view', () => {
         });
 
         it('header rows count', () => {
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tr').length).toBe(3);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tbody tr').length).toBe(3);
         });
 
         it('resource cells count', () => {
@@ -895,7 +953,7 @@ describe('Schedule Month view', () => {
         });
 
         it('header rows count', () => {
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tr').length).toBe(3);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tbody tr').length).toBe(3);
         });
 
         it('resource cells count', () => {
@@ -946,7 +1004,7 @@ describe('Schedule Month view', () => {
         });
 
         it('header rows count', () => {
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tr').length).toBe(2);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tbody tr').length).toBe(2);
         });
 
         it('resource cells count', () => {
@@ -1002,7 +1060,7 @@ describe('Schedule Month view', () => {
         });
 
         it('header rows count', () => {
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tr').length).toBe(3);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tbody tr').length).toBe(3);
         });
 
         it('resource cells count', () => {

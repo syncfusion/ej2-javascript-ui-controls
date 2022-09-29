@@ -1,5 +1,5 @@
 @include export-module('document-editor-container-theme') {
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-de-toolbar {
         height: 100%;
     }
@@ -137,7 +137,7 @@
                 height: 40px !important;
                 button {
                     font-size: $e-de-btn-font-size-big !important;
-                    height: auto ​!important;
+                    height: auto !important;
                     @if  $skin-name !='tailwind' {
                         margin: 0 !important;
                     }
@@ -277,10 +277,12 @@
         }
     }
     .e-de-ctnr-segment>div:first-child:not(.e-rtl),
+    .e-de-ctnr-segment-list>div:last-child:not(.e-rtl),
     .e-de-ctnr-segment>button:first-child:not(.e-rtl) {
         margin-right: $de-pane-margin-right;
     }
     .e-de-ctnr-segment.e-de-ctnr-segment-rtl>div:first-child,
+    .e-de-ctnr-segment-list.e-de-ctnr-segment-list-rtl>div:last-child,
     .e-de-ctnr-segment.e-de-ctnr-segment-rtl>button:first-child {
         margin-left: $de-pane-margin-right;
         margin-right: 0;
@@ -700,7 +702,6 @@
             width: $de-text-pane-width-big;
         }
         @if $skin-name=='bootstrap4' {
-            // sass-lint:disable-all
             .e-btn-toggle .e-tbar-btn-text {
                 color: $de-toggle-btn-color !important;
             }
@@ -1272,7 +1273,7 @@
         }
     }
     .e-bigger {
-        @if $skin-name =='tailwind' or $skin-name =='bootstrap5' or $skin-name =='FluentUI' {
+        @if $skin-name =='tailwind' or $skin-name =='bootstrap5' or $skin-name =='FluentUI' or $skin-name =='bootstrap4' {
             .de-split-button>div:first-child {
                 margin-right: 0;
             }
@@ -1393,11 +1394,13 @@
         }
         
         .e-de-ctnr-segment>div:first-child:not(.e-rtl),
+        .e-de-ctnr-segment-list>div:last-child:not(.e-rtl),
         .e-de-ctnr-segment>button:first-child:not(.e-rtl) {
             margin-right: $de-pane-margin-right-big;
         }
         
         .e-de-ctnr-segment.e-de-ctnr-segment-rtl>div:first-child,
+        .e-de-ctnr-segment-list.e-de-ctnr-segment-list-rtl>div:last-child,
         .e-de-ctnr-segment.e-de-ctnr-segment-rtl>button:first-child {
             margin-left: $de-pane-margin-right-big;
             margin-right: 0;
@@ -1638,7 +1641,6 @@
         .e-de-char-fmt-btn>button {
             width: 38.5px;
         }
-        // sass-lint:disable-all
         .e-de-btn-hghlclr>button:first-child {
             padding: 0 6px !important;
         }
@@ -1675,7 +1677,6 @@
             position: absolute;
             top: $de-img-span-top-big;
         }
-        // sass-lint:disable-all
         .e-btn-toggle {
             background-color: $de-toggle-bg-color !important;
             box-shadow: $de-toggle-btn-border !important;

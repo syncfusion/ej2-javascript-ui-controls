@@ -1,5 +1,6 @@
 @import '../context-menu/layout-mixin.scss';
 @include export-module('menu-layout') {
+  
   /*! menu layout */
   .e-menu-wrapper,
   .e-menu-container {
@@ -524,7 +525,7 @@
           }
         }
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
 
 		    & .e-menu-item[aria-expanded = "true"] .e-caret {
 			    -webkit-transition: -webkit-transform .3s ease-in-out;
@@ -543,7 +544,7 @@
           transform: rotate(0deg);
           text-indent: 0;
         }
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
 
       &.e-menu:not(.e-vertical) {
@@ -620,7 +621,7 @@
     }
   }
 
-  .e-bigger .e-menu-wrapper.e-hamburger  ul,
+  .e-bigger .e-menu-wrapper.e-hamburger ul,
   .e-bigger.e-menu-wrapper.e-hamburger ul,
   .e-bigger .e-menu-container.e-hamburger ul,
   .e-bigger.e-menu-container.e-hamburger ul {

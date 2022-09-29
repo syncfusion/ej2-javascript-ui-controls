@@ -704,6 +704,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.pivotGridModule.updatePageSettings(false);
         }
         let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
+        let isPaging: boolean = this.pivotGridModule ? this.pivotGridModule.enablePaging : false;
+        let isVirtualization: boolean = this.pivotGridModule ? this.pivotGridModule.enableVirtualization : false;
         let localeObj: L10n = this.pivotGridModule ? this.pivotGridModule.localeObj :
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         let isDrillThrough: boolean = this.pivotGridModule ?
@@ -730,7 +732,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 localeObj: localeObj,
                 clonedReport: this.clonedReport,
                 globalize: this.globalize,
-                currenyCode: this.currencyCode
+                currenyCode: this.currencyCode,
+                enablePaging: isPaging,
+                enableVirtualization: isVirtualization
             };
         }
         return customProperties;
@@ -768,7 +772,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.pivotGridModule.updatePageSettings(false);
         }
         let customProperties: any = {
-            pageSettings: this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined,
+            pageSettings: (this.pivotGridModule && this.pivotGridModule.enableVirtualization) ? this.pivotGridModule.pageSettings : undefined,
             enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
@@ -979,7 +983,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     super.refresh();
                     break;
                 case 'dataSourceSettings':
-                    if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && newProp.dataSourceSettings.groupSettings.length === 0) {
+                    if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && newProp.dataSourceSettings.groupSettings && newProp.dataSourceSettings.groupSettings.length === 0) {
                         if (!isNullOrUndefined(this.savedDataSourceSettings)) {
                             PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
                             this.savedDataSourceSettings = undefined;
@@ -1270,7 +1274,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         let control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
         //setTimeout(() => {
         let isOlapDataRefreshed: boolean = false;
-        let pageSettings: IPageSettings = pivot.pivotGridModule && pivot.pivotGridModule.enableVirtualization ?
+        let pageSettings: IPageSettings = pivot.pivotGridModule && (pivot.pivotGridModule.enableVirtualization || pivot.pivotGridModule.enablePaging) ?
             pivot.pivotGridModule.pageSettings : undefined;
         let isCalcChange: boolean = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
         let isSorted: boolean = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;

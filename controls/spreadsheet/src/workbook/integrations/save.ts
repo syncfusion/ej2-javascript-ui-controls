@@ -1,10 +1,10 @@
-import { Workbook, CellModel, getCell, isCustomDateTime } from '../base/index';
+import { Workbook, CellModel, getCell } from '../base/index';
 import { executeTaskAsync } from '../common/worker';
-import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol, isNumber } from '../common/index';
+import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
 import { SaveCompleteEventArgs } from '../common/index';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { detach } from '@syncfusion/ej2-base';
 
 /**
  * @hidden
@@ -286,8 +286,6 @@ export class WorkbookSave extends SaveWorker {
                                 colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true
                             });
                             cell.value = getCell(cellIdx[0], i, model).value;
-                        } else if (cell && cell.format && !isNullOrUndefined(cell.value) && !Number(cell.value) && isCustomDateTime(cell)) {
-                            this.parent.notify(events.checkDateFormat, { cell: cell, processCustomDate: true });
                         }
                     }
                 }

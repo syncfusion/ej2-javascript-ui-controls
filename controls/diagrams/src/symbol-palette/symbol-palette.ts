@@ -4,7 +4,7 @@ import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration } from '../diagram/index';
 import { Transform, SwimLane, PathModel, IPaletteExpandArgs } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
@@ -682,7 +682,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * EJ2-61531- Localization support for the symbol palette search box placeholder. 
      * @returns defaultLocale
      */
-    public defaultLocale()
+    private defaultLocale()
     {
         return{ SearchShapes: 'Search Shapes'};
     }
@@ -1169,7 +1169,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         return container;
     }
 
-
+/**
+* Feature [EJ2- 47318] - Support for the change of the symbol description
+* Feature [EJ2- 50705] - Support to add margin between the text and symbols
+*/
 
     private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container): void {
         if (symbolInfo && symbolInfo.description && symbolInfo.description.text) {
@@ -1182,11 +1185,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             textElement.width = width;
             textElement.height = 20;
             textElement.style.strokeColor = 'transparent';
-            textElement.style.fill = 'transparent';
+            textElement.style.color = symbolInfo.description.color || 'black';
+            textElement.style.fill = symbolInfo.description.fill || 'transparent';
+            textElement.style.fontFamily = symbolInfo.description.fontFamily || 'Arial';
+            textElement.style.fontSize = symbolInfo.description.fontSize || 12;
+            textElement.style.bold = symbolInfo.description.bold || false;
+            textElement.style.italic = symbolInfo.description.italic || false;
+            textElement.style.textDecoration = symbolInfo.description.textDecoration || 'None';
             textElement.style.strokeWidth = 0;
             textElement.style.textWrapping = symbolInfo.description.wrap;
             textElement.style.textOverflow = symbolInfo.description.overflow;
-            textElement.margin = { left: 0, right: 0, top: 0, bottom: 5 };
+            textElement.margin = {left : 0, right : 0, top : symbolInfo.description.margin ? symbolInfo.description.margin.top : 0, bottom : symbolInfo.description.margin ? symbolInfo.description.margin.bottom : 5};
             parent.children.push(textElement);
         }
     }
@@ -2036,4 +2045,55 @@ export interface SymbolDescription {
      * @default Wrap
      */
     wrap?: TextWrap;
+    /**
+     * Sets the font color of a text
+     *
+     * @default 'black'
+     */
+    color?: string;
+    /**
+     * Sets the fill color of a shape/path
+     *
+     * @default 'white'
+     */
+    fill?: string;
+    /**
+     * Sets the font type of a text
+     *
+     * @default 'Arial'
+     */
+    fontFamily?: string;
+    /**
+     * Defines the font size of a text
+     *
+     * @default 12
+     */
+    fontSize?: number;
+    /**
+     * Enables/disables the bold style of text
+     *
+     * @default false
+     */
+    bold?: boolean;
+    /**
+     * Enables/disables the italic style of text
+     *
+     * @default false
+     */
+    italic?: boolean;
+    /**
+     * Defines how the text should be decorated. For example, with underline/over line
+     * * Overline - Decorates the text with a line above the text
+     * * Underline - Decorates the text with an underline
+     * * LineThrough - Decorates the text by striking it with a line
+     * * None - Text will not have any specific decoration
+     *
+     * @default 'None'
+     */
+    textDecoration?: TextDecoration;
+	/**
+	 * Sets/Gets the margin of the element
+	 * The margin top and bottom alone works for the symbol description
+	 */
+    margin?: MarginModel;
 }

@@ -196,6 +196,8 @@ export class TextExport {
         this.document = undefined;
         this.lastPara = undefined;
         this.mSections = undefined;
+        this.sections = [];
         this.sections = undefined;
+        this.pageContent = undefined;
     }
 }

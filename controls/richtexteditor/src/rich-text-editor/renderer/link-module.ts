@@ -292,7 +292,8 @@ export class Link {
         const linkText: HTMLInputElement = linkContent.querySelector('.e-rte-linkText') as HTMLInputElement;
         const linkTitle: HTMLInputElement = linkContent.querySelector('.e-rte-linkTitle') as HTMLInputElement;
         const linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
-        this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass });
+        this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl,
+            cssClass: this.parent.cssClass });
         this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
@@ -550,7 +551,7 @@ export class Link {
     private moduleDestroy(): void {
         this.parent = null;
     }
-    
+
     /**
      * For internal use only - Get the module name.
      *

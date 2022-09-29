@@ -433,6 +433,39 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
+  
+  describe('EJ2-62012 - selection not persisted for parent records on Expand/Collapse action', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 2,
+          selectionSettings: { persistSelection: true },
+          columns: [
+            { type: 'checkbox', width: 80 },
+            { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Checkbox selection on Expand/Collapse', () => {
+      (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+      (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[1].querySelector('.e-rowcell')).click();
+      expect(gridObj.getSelectedRowIndexes().length).toBe(2);
+      gridObj.collapseRow(gridObj.getRows()[0], gridObj.getCurrentViewRecords()[0]);
+      expect(gridObj.getSelectedRowIndexes().length).toBe(2);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   describe('TreeGrid CheckBoxSelection5', () => {
     let gridObj: TreeGrid;

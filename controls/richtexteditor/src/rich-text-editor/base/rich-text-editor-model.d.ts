@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { EditorManager } from '../../editor-manager';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { EditorManager } from '../../editor-manager';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -56,6 +56,8 @@ export interface RichTextEditorModel extends ComponentModel{
      * actionOnScroll: 'hide',
      * link: ['Open', 'Edit', 'UnLink'],
      * image: ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'Display', 'AltText', 'Dimension'],
+     * audio: ['AudioReplace', 'AudioRemove', 'AudioLayoutOption'],
+     * video: ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension'],
      * }
      */
     quickToolbarSettings?: QuickToolbarSettingsModel;
@@ -137,6 +139,56 @@ export interface RichTextEditorModel extends ComponentModel{
      * }
      */
     insertImageSettings?: ImageSettingsModel;
+
+    /**
+     * Specifies the audio insert options in Rich Text Editor component and control with the following properties.
+     * * allowedTypes - Specifies the extensions of the audio types allowed to insert on bowering and
+     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
+     * * layoutOption - Sets the default display for an audio when it is inserted in to the RichTextEditor.
+     * Possible options are: 'Inline' and 'Break'.
+     * * saveFormat - Specifies the format to store the audio in the Rich Text Editor (Base64 or Blob).
+     * > If you want to insert a lot of tiny audios in the editor and don't want a specific physical location for
+     * saving audios, you can opt to save format as Base64.
+     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
+     * * path - Specifies the path of the location to store the audios and refer it to display the audios.
+     *
+     * @default
+     * {
+     * allowedTypes: ['.wav', '.mp3', '.m4a','.wma'],
+     * layoutOption: 'Inline',
+     * saveFormat: 'Blob'
+     * saveUrl: null,
+     * path: null,
+     * }
+     */
+    insertAudioSettings?: AudioSettingsModel;
+
+    /**
+     * Specifies the video insert options in Rich Text Editor component and control with the following properties.
+     * * allowedTypes - Specifies the extensions of the video types allowed to insert on bowering and
+     * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
+     * * layoutOption - Sets the default display for an video when it is inserted in to the RichTextEditor.
+     * Possible options are: 'Inline' and 'Break'.
+     * * width - Sets the default width of the video when it is inserted in the RichTextEditor.
+     * * saveFormat - Specifies the format to store the video in the Rich Text Editor (Base64 or Blob).
+     * > If you want to insert a lot of tiny videos in the editor and don't want a specific physical location for
+     * saving videos, you can opt to save format as Base64.
+     * * height - Sets the default height of the video when it is inserted in the RichTextEditor.
+     * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
+     * * path - Specifies the path of the location to store the videos and refer it to display the videos.
+     *
+     * @default
+     * {
+     * allowedTypes: ['.mp4', '.mov', '.wmv','.avi'],
+     * layoutOption: 'Inline',
+     * width: 'auto',
+     * height: 'auto',
+     * saveFormat: 'Blob'
+     * saveUrl: null,
+     * path: null,
+     * }
+     */
+    insertVideoSettings?: VideoSettingsModel;
 
     /**
      * Specifies the table insert options in Rich Text Editor component and control with the following properties.
@@ -618,7 +670,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * If you cancel this event, the dialog remains closed.
      * Set the cancel argument to true to cancel the open of a dialog.
      *
-     * @event 'object'
+     * @event 'beforeDialogOpen'
      * @blazorProperty 'OnDialogOpen'
      * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
@@ -628,7 +680,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when a dialog is opened.
      *
-     * @event 'object'
+     * @event 'dialogOpen'
      * @blazorProperty 'DialogOpened'
      * @blazorType DialogOpenEventArgs
      */
@@ -639,7 +691,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * If you cancel this event, the dialog remains opened.
      * Set the cancel argument to true to prevent closing a dialog.
      *
-     * @event 'object'
+     * @event 'beforeDialogClose'
      * @blazorProperty 'OnDialogClose'
      * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
@@ -648,7 +700,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers after the dialog has been closed.
      *
-     * @event 'object'
+     * @event 'dialogClose'
      * @blazorProperty 'DialogClosed'
      * @blazorType DialogCloseEventArgs
      */
@@ -657,7 +709,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the quick toolbar is being opened.
      *
-     * @event 'object'
+     * @event 'beforeQuickToolbarOpen'
      * @blazorProperty 'OnQuickToolbarOpen'
      */
     beforeQuickToolbarOpen?: EmitType<BeforeQuickToolbarOpenArgs>;
@@ -665,7 +717,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when a quick toolbar is opened.
      *
-     * @event 'object'
+     * @event 'quickToolbarOpen'
      * @blazorProperty 'QuickToolbarOpened'
      * @blazorType QuickToolbarEventArgs
      */
@@ -674,7 +726,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers after the quick toolbar has been closed.
      *
-     * @event 'object'
+     * @event 'quickToolbarClose'
      * @blazorProperty 'QuickToolbarClosed'
      * @blazorType QuickToolbarEventArgs
      */
@@ -684,14 +736,14 @@ export interface RichTextEditorModel extends ComponentModel{
      * This event is deprecated and no longer works. Use `updatedToolbarStatus` event to get the undo and redo status.
      *
      * @deprecated
-     * @event 'object'
+     * @event 'toolbarStatusUpdate'
      */
     toolbarStatusUpdate?: EmitType<Object>;
 
     /**
      * Triggers when the toolbar items status is updated.
      *
-     * @event 'object'
+     * @event 'updatedToolbarStatus'
      * @blazorType ToolbarUpdateEventArgs
      */
     updatedToolbarStatus?: EmitType<ToolbarStatusEventArgs>;
@@ -699,7 +751,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the image is selected or dragged into the insert image dialog.
      *
-     * @event 'object'
+     * @event 'imageSelected'
      * @blazorProperty 'OnImageSelected'
      */
     imageSelected?: EmitType<SelectedEventArgs>;
@@ -714,7 +766,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the selected image begins to upload in the insert image dialog.
      *
-     * @event 'object'
+     * @event 'imageUploading'
      * @blazorProperty 'OnImageUploading'
      */
     imageUploading?: EmitType<UploadingEventArgs>;
@@ -722,7 +774,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the image is successfully uploaded to the server side.
      *
-     * @event 'object'
+     * @event 'imageUploadSuccess'
      * @blazorProperty 'OnImageUploadSuccess'
      * @blazorType ImageSuccessEventArgs
      */
@@ -731,7 +783,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when there is an error in the image upload.
      *
-     * @event 'object'
+     * @event 'imageUploadFailed'
      * @blazorProperty 'OnImageUploadFailed'
      * @blazorType ImageFailedEventArgs
      */
@@ -740,7 +792,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the selected image is cleared from the insert image dialog.
      *
-     * @event 'object'
+     * @event 'imageRemoving'
      * @blazorProperty 'OnImageRemoving'
      */
     imageRemoving?: EmitType<RemovingEventArgs>;
@@ -748,15 +800,64 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers when the selected image is cleared from the Rich Text Editor Content.
      *
-     * @event 'object'
+     * @event 'afterImageDelete'
      * @blazorProperty 'OnImageDelete'
      */
     afterImageDelete?: EmitType<AfterImageDeleteEventArgs>;
 
     /**
+     * Event triggers when the media is selected or dragged into the insert media audio/video dialog.
+     *
+     * @event 'fileSelected'
+     */
+    fileSelected?: EmitType<SelectedEventArgs>;
+
+    /**
+     * Event triggers before the media audio/video upload process.
+     *
+     * @event 'beforeFileUpload'
+     */
+    beforeFileUpload?: EmitType<BeforeUploadEventArgs>;
+
+    /**
+     * Event triggers when the selected media begins to upload in the insert media audio/video dialog.
+     *
+     * @event 'fileUploading'
+     */
+    fileUploading?: EmitType<UploadingEventArgs>;
+
+    /**
+     * Event triggers when the media is successfully uploaded to the server side.
+     *
+     * @event 'fileUploadSuccess'
+     */
+    fileUploadSuccess?: EmitType<Object>;
+
+    /**
+     * Event triggers when there is an error in the media upload.
+     *
+     * @event 'fileUploadFailed'
+     */
+    fileUploadFailed?: EmitType<Object>;
+
+    /**
+     * Event triggers when the selected media is cleared from the insert audio/video dialog.
+     *
+     * @event 'fileRemoving'
+     */
+    fileRemoving?: EmitType<RemovingEventArgs>;
+
+    /**
+     * Event triggers when the selected media is cleared from the Rich Text Editor Content.
+     *
+     * @event 'afterMediaDelete'
+     */
+    afterMediaDelete?: EmitType<AfterMediaDeleteEventArgs>;
+
+    /**
      * Triggers when the Rich Text Editor is rendered.
      *
-     * @event 'object'
+     * @event 'created'
      * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
@@ -764,7 +865,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers when the Rich Text Editor is destroyed.
      *
-     * @event 'object'
+     * @event 'destroyed'
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
      */
@@ -773,7 +874,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
      *
-     * @event 'object'
+     * @event 'beforeSanitizeHtml'
      * @blazorProperty 'OnSanitizeHtml'
      */
     beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
@@ -781,7 +882,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers when Rich Text Editor is focused out.
      *
-     * @event 'object'
+     * @event 'blur'
      * @blazorType BlurEventArgs
      */
     blur?: EmitType<Object>;
@@ -789,7 +890,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers when Rich Text Editor Toolbar items is clicked.
      *
-     * @event 'object'
+     * @event 'toolbarClick'
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
      */
@@ -798,7 +899,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers when Rich Text Editor is focused in
      *
-     * @event 'object'
+     * @event 'focus'
      * @blazorType FocusEventArgs
      */
     focus?: EmitType<Object>;
@@ -806,7 +907,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      *
-     * @event 'object'
+     * @event 'change'
      * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
@@ -814,7 +915,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers only when resizing the image.
      *
-     * @event 'object'
+     * @event 'resizing'
      * @blazorProperty 'Resizing'
      */
     resizing?: EmitType<ResizeArgs>;
@@ -822,7 +923,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers only when start resize the image.
      *
-     * @event 'object'
+     * @event 'resizeStart'
      * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
@@ -830,7 +931,7 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers only when stop resize the image.
      *
-     * @event 'object'
+     * @event 'resizeStop'
      * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<ResizeArgs>;
@@ -838,21 +939,21 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers before cleanup the copied content.
      *
-     * @event 'object'
+     * @event 'beforePasteCleanup'
      */
     beforePasteCleanup?: EmitType<PasteCleanupArgs>;
 
     /**
      * Triggers after cleanup the copied content.
      *
-     * @event 'object'
+     * @event 'afterPasteCleanup'
      */
     afterPasteCleanup?: EmitType<object>;
 
     /**
      * Triggers before drop the image.
      *
-     * @event 'object'
+     * @event 'beforeImageDrop'
      * @blazorProperty 'OnImageDrop'
      */
     beforeImageDrop?: EmitType<ImageDropEventArgs>;

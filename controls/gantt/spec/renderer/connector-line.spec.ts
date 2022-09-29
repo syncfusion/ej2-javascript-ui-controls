@@ -4,10 +4,7 @@
 import { Gantt, Edit } from '../../src/index';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 describe('Gantt connector line support', () => {
-    describe('Gantt connector line rendering', () => {
-        Gantt.Inject(Edit);
-        let ganttObj: Gantt;
-        let connectorLineFSDatasource: Object[] = [
+         let connectorLineFSDatasource: Object[] = [
             {
                 'TaskId': 1, 'TaskName': 'FS',
                 'StartDate': new Date('10/23/2017'), 'Duration': 1, 'Progress': 80
@@ -65,6 +62,9 @@ describe('Gantt connector line support', () => {
                 'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '23,16'
             }
         ];
+    describe('Gantt connector line rendering', () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
 
         let connectorLineSSDatasource: Object[] = [
             {
@@ -465,18 +465,6 @@ describe('Gantt connector line support', () => {
             ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '3FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
-        it('Update Predecessor with current parent', () => {
-            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '1FS');
-            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
-        });
-        it('Update Predecessor with independent parent', () => {
-            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '6FS');
-            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
-        });
-        it('Update Predecessor with some valid and invalid predecessor strings', () => {
-            ganttObj.updatePredecessor(Number(ganttObj.flatData[8].ganttProperties.taskId), '2FS,5FS,4FS,3FS');
-            expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
-        });
         it('Aria-label testing - SS', (done: Function) => {
             ganttObj.dataSource = connectorLineSSDatasource;
             ganttObj.dataBound = () => {
@@ -609,4 +597,47 @@ describe('Gantt connector line support', () => {
             setTimeout(done, 2000);
         });
     });
+     describe('Cancel connector line using actionBegin event', () => {
+         let ganttObj_tree: Gantt;
+         beforeAll((done: Function) => {
+             ganttObj_tree = createGantt(
+                 {
+                     dataSource: connectorLineFSDatasource,
+                     taskFields: {
+                         id: 'TaskId',
+                         name: 'TaskName',
+                         startDate: 'StartDate',
+                         endDate: 'EndDate',
+                         duration: 'Duration',
+                         progress: 'Progress',
+                         dependency: 'Predecessor',
+                         child: 'Children'
+                     },
+                     projectStartDate: new Date('10/15/2017'),
+                     projectEndDate: new Date('12/30/2017'),
+                     editSettings: {
+                         allowTaskbarEditing: true,
+                         allowEditing: true
+                     }
+             }, done);
+         });
+         it('Update Predecessor with current parent', () => {
+             ganttObj_tree.updatePredecessor(Number(ganttObj_tree.flatData[2].ganttProperties.taskId), '1FS');
+             expect(ganttObj_tree.flatData[2].ganttProperties.predecessorsName).toBe('1FS');
+         });
+         it('Update Predecessor with independent parent', () => {
+             ganttObj_tree.updatePredecessor(Number(ganttObj_tree.flatData[2].ganttProperties.taskId), '6FS');
+             expect(ganttObj_tree.flatData[2].ganttProperties.predecessorsName).toBe('1FS');
+         });
+         it('Update Predecessor with some valid and invalid predecessor strings', () => {
+             ganttObj_tree.updatePredecessor(Number(ganttObj_tree.flatData[8].ganttProperties.taskId), '2FS,5FS,4FS,3FS');
+             expect(ganttObj_tree.flatData[2].ganttProperties.predecessorsName).toBe('1FS');
+         });
+         afterAll(() => {
+             destroyGantt(ganttObj_tree);
+         });
+         beforeEach((done: Function) => {
+             setTimeout(done, 2000);
+         });
+     });
 });

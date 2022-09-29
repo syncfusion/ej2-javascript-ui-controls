@@ -54,7 +54,7 @@ import { IconShapeModel } from './icon-model';
 import { IconShape } from './icon';
 import { measurePath, getContent, getTemplateContent } from './../utility/dom-util';
 import { Rect } from '../primitives/rect';
-import { getPolygonPath } from './../utility/path-util';
+import { getFreeHandPath, getPolygonPath } from './../utility/path-util';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { ChildContainerModel, UmlClassMethodModel, UmlClassAttributeModel, UmlClassifierShapeModel } from './node-model';
 import { UmlEnumerationModel, UmlInterfaceModel, UmlEnumerationMemberModel } from './node-model';
@@ -2543,9 +2543,16 @@ export class Node extends NodeBase implements IElement {
 
         switch (this.shape.type) {
         case 'Path':
+            if ((!isBlazor() && ((this as unknown as ConnectorModel).type === 'Freehand'))) {
+                const path: PathElement = new PathElement();
+                path.data = getFreeHandPath((this.shape as BasicShape).points) as string; 
+                content = path;
+            }else{
             const pathContent: PathElement = new PathElement();
             pathContent.data = (this.shape as Path).data;
-            content = pathContent; break;
+            content = pathContent;
+            }
+            break;
         case 'Image':
             const imageContent: ImageElement = new ImageElement();
             imageContent.source = (this.shape as Image).source;
@@ -2564,7 +2571,8 @@ export class Node extends NodeBase implements IElement {
             } else if ((!isBlazor() && (this.shape as BasicShape).shape === 'Polygon') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Polygon')) {
                 const path: PathElement = new PathElement();
                 path.data = getPolygonPath((this.shape as BasicShape).points) as string; content = path;
-            } else {
+            }
+            else {
                 const basicshape: PathElement = new PathElement();
                 const basicshapedata: string = getBasicShape((isBlazor()) ? (this.shape as DiagramShape).basicShape : (this.shape as BasicShape).shape);
                 basicshape.data = basicshapedata; content = basicshape;
@@ -3345,6 +3353,13 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      */
     @Property(null)
     public wrapper: Container;
+    /**
+     * Defines the size of the resize handler
+     *
+     * @default 14
+     */
+    @Property(14)
+    public handleSize: number;
 
     /**
      * Defines the collection of selected nodes
@@ -3570,3 +3585,4 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         return container;
     }
 }
+

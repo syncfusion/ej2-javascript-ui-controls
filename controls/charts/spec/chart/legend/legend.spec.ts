@@ -137,13 +137,16 @@ describe('Chart Legend', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
-        it('Trimmed text and mouse over and out', (done: Function) => {
+       /* it('Trimmed text and mouse over and out', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 legendElement = document.getElementById(legendId + '_text_0');
+                console.log(legendElement);
                 trigger.mousemoveEvent(legendElement, 0, 0, 387, 309.25);
                 let tooltip: Element = document.getElementById('container1_EJ2_Legend_Tooltip');
+                console.log(tooltip);
                 expect(tooltip.textContent).toBe('Series one');
+                console.log(tooltip.textContent);
                 expect(legendElement.textContent.split('...').length).toEqual(2);
                 legendElement = document.getElementById(legendId + '_text_2');
                 trigger.mousemoveEvent(legendElement, 0, 0, 387, 278.5);
@@ -161,7 +164,7 @@ describe('Chart Legend', () => {
             chartObj.series[1].name = 'Series two';
             chartObj.loaded = loaded;
             chartObj.refresh();
-        });
+        });*/
         it('legend highlight with patterns', (done: Function) => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
@@ -874,6 +877,31 @@ describe('Chart Legend', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Item Padding', function (done) {
+            loaded = function (args) {
+                chartObj.loaded = null;
+                legendElement = document.getElementById('container1_chart_legend_shape_marker_2');
+                expect(parseInt(legendElement.getAttribute('cx'), 10) == 324 || parseInt(legendElement.getAttribute('cx'), 10) == 303);
+                expect(parseInt(legendElement.getAttribute('cy'), 10) == 322 || parseInt(legendElement.getAttribute('cx'), 10) == 342.5);
+                done();
+            };
+            chartObj.legendSettings = { itemPadding: 20, position: 'Bottom', width: '370' };
+            for (let series of chartObj.series) {
+                series.type = 'Line';
+            }
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Legend Size Improvement', function (done) {
+            loaded = function (args) {
+                chartObj.loaded = null;
+                legendElement = document.getElementById('container1_chart_legend_shape_marker_1');
+                expect(legendElement.getAttribute('d') === 'M 222.5 322 L 237.5 322' || legendElement.getAttribute('d') === 'M 222.5 342.5 L 237.5 342.5');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
     });
     describe('Customer issue: Legend color is not working when use point color mapping', () => {
         let chartObj: Chart;
@@ -1112,7 +1140,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '294.5' || xValue === '300.5').toBe(true);
+                expect(xValue === '285.5' || xValue === '291.5');
                 expect(yValue === '425.25' || yValue === '425').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1129,7 +1157,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '446.5' || xValue === '445.5').toBe(true);
+                expect(xValue === '455.5' || xValue === '454.5').toBe(true);
                 expect(yValue === '425.25' || yValue === '425').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1160,7 +1188,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '294.5' || xValue === '300.5').toBe(true);
+                expect(xValue === '285.5' || xValue === '291.5').toBe(true);
                 expect(yValue === '69.75' || yValue === '65.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1177,7 +1205,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '446.5' || xValue === '445.5').toBe(true);
+                expect(xValue === '455.5' || xValue === '454.5').toBe(true);
                 expect(yValue === '69.75' || yValue === '65.5').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1194,7 +1222,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '745.5' || xValue === '747.5').toBe(true);
+                expect(xValue === '744' || xValue === '746').toBe(true);
                 expect(yValue === '221.25' || yValue === '219.25').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1212,7 +1240,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '745.5' || xValue === '747.5').toBe(true);
+                expect(xValue === '744' || xValue === '746').toBe(true);
                 expect(yValue === '221.25' || yValue === '219.25').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1229,7 +1257,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '745.5' || xValue === '747.5').toBe(true);
+                expect(xValue === '744' || xValue === '746').toBe(true);
                 expect(yValue === '221.25' || yValue === '219.25').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1246,7 +1274,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '51.5' || xValue === '49.5').toBe(true);
+                expect(xValue === '53' || xValue === '51').toBe(true);
                 expect(yValue === '221.25' || yValue === '219.25').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1264,7 +1292,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '51.5' || xValue === '49.5').toBe(true);
+                expect(xValue === '53' || xValue === '51').toBe(true);
                 expect(yValue === '221.25' || yValue === '219.25').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1281,7 +1309,7 @@ describe('Chart Legend', () => {
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
                 yValue = titleElement.getAttribute('y');
-                expect(xValue === '51.5' || xValue === '49.5').toBe(true);
+                expect(xValue === '53' || xValue === '51').toBe(true);
                 expect(yValue === '221.25' || yValue === '219.25').toBe(true);
                 let legendText: string = document.getElementById('container_chart_legend_text_0').textContent;
                 expect(legendText === 'Germany').toBe(true);
@@ -1297,7 +1325,7 @@ describe('Chart Legend', () => {
                 let legendText: Element = document.getElementById('container_chart_legend_text_0');
                 xValue = legendText.getAttribute('x');
                 yValue = legendText.getAttribute('y');
-                expect(xValue === '331.5' || xValue === '335.5').toBe(true);
+                expect(xValue === '323' || xValue === '326.5').toBe(true);
                 expect(yValue === '419.75' || yValue === '420').toBe(true);
                 done();
             };
@@ -1474,14 +1502,14 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 38 266.5 L 30 270.5 L 38 274.5 L 38 272.5 L 34 270.5 L38 268.5 Z' ||
-                    path === 'M 44 267.5 L 36 271.5 L 44 275.5 L 44 273.5 L 40 271.5 L44 269.5 Z').toBe(true);
+                expect(path === 'M 31 265.5 L 23 269.5 L 31 273.5 L 31 271.5 L 27 269.5 L31 267.5 Z' ||
+                    path === 'M 29 267.5 L 21 271.5 L 29 275.5 L 29 273.5 L 25 271.5 L29 269.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 262 266.5 L 270 270.5 L 262 274.5 L 262 272.5 L 266 270.5 L262 268.5 Z' ||
-                    path === 'M 256 267.5 L 264 271.5 L 256 275.5 L 256 273.5 L 260 271.5 L256 269.5 Z').toBe(true);
+                expect(path === 'M 269 265.5 L 277 269.5 L 269 273.5 L 269 271.5 L 273 269.5 L269 267.5 Z' ||
+                    path === 'M 271 267.5 L 279 271.5 L 271 275.5 L 271 273.5 L 275 271.5 L271 269.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup= document.getElementById('container_chart_legend_translate_g');
@@ -1500,14 +1528,14 @@ describe('Chart Legend', () => {
                 expect(yValue === '249' || yValue === '250').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 38 261.5 L 30 265.5 L 38 269.5 L 38 267.5 L 34 265.5 L38 263.5 Z' ||
-                    path === 'M 44 262.5 L 36 266.5 L 44 270.5 L 44 268.5 L 40 266.5 L44 264.5 Z').toBe(true);
+                expect(path === 'M 31 260.5 L 23 264.5 L 31 268.5 L 31 266.5 L 27 264.5 L31 262.5 Z' ||
+                    path === 'M 29 262.5 L 21 266.5 L 29 270.5 L 29 268.5 L 25 266.5 L29 264.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 262 261.5 L 270 265.5 L 262 269.5 L 262 267.5 L 266 265.5 L262 263.5 Z' ||
-                    path === 'M 256 262.5 L 264 266.5 L 256 270.5 L 256 268.5 L 260 266.5 L256 264.5 Z').toBe(true);
+                expect(path === 'M 269 260.5 L 277 264.5 L 269 268.5 L 269 266.5 L 273 264.5 L269 262.5 Z' ||
+                    path === 'M 271 262.5 L 279 266.5 L 271 270.5 L 271 268.5 L 275 266.5 L271 264.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1522,20 +1550,20 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
-                xValue = titleElement.getAttribute('x');
-                expect(xValue === '27.5' || xValue === '33.5').toBe(true);
+                  xValue = titleElement.getAttribute('x');
+                expect(xValue === '20.5' || xValue === '18.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
                 expect(yValue === '274.75' || yValue === '275').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 97.5 266.5 L 89.5 270.5 L 97.5 274.5 L 97.5 272.5 L 93.5 270.5 L97.5 268.5 Z' ||
-                    path === 'M 98.5 267.5 L 90.5 271.5 L 98.5 275.5 L 98.5 273.5 L 94.5 271.5 L98.5 269.5 Z').toBe(true);
+                expect(path === 'M 90.5 265.5 L 82.5 269.5 L 90.5 273.5 L 90.5 271.5 L 86.5 269.5 L90.5 267.5 Z' ||
+                    path === 'M 83.5 267.5 L 75.5 271.5 L 83.5 275.5 L 83.5 273.5 L 79.5 271.5 L83.5 269.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 260.5 266.5 L 268.5 270.5 L 260.5 274.5 L 260.5 272.5 L 264.5 270.5 L260.5 268.5 Z' ||
-                    path === 'M 254.5 267.5 L 262.5 271.5 L 254.5 275.5 L 254.5 273.5 L 258.5 271.5 L254.5 269.5 Z').toBe(true);
+                expect(path === 'M 267.5 265.5 L 275.5 269.5 L 267.5 273.5 L 267.5 271.5 L 271.5 269.5 L267.5 267.5 Z' ||
+                    path === 'M 269.5 267.5 L 277.5 271.5 L 269.5 275.5 L 269.5 273.5 L 273.5 271.5 L269.5 269.5 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1551,20 +1579,20 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '214.5' || xValue === '213.5').toBe(true);
+                expect(xValue === '221.5' || xValue === '228.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
                 expect(yValue === '274.75' || yValue === '275').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 39.5 266.5 L 31.5 270.5 L 39.5 274.5 L 39.5 272.5 L 35.5 270.5 L39.5 268.5 Z' ||
-                    path === 'M 45.5 267.5 L 37.5 271.5 L 45.5 275.5 L 45.5 273.5 L 41.5 271.5 L45.5 269.5 Z').toBe(true);
+                expect(path === 'M 32.5 265.5 L 24.5 269.5 L 32.5 273.5 L 32.5 271.5 L 28.5 269.5 L32.5 267.5 Z' ||
+                    path === 'M 30.5 267.5 L 22.5 271.5 L 30.5 275.5 L 30.5 273.5 L 26.5 271.5 L30.5 269.5 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 197.5 266.5 L 205.5 270.5 L 197.5 274.5 L 197.5 272.5 L 201.5 270.5 L197.5 268.5 Z' ||
-                    path === 'M 196.5 267.5 L 204.5 271.5 L 196.5 275.5 L 196.5 273.5 L 200.5 271.5 L196.5 269.5 Z').toBe(true);
-                opacity = forwardArrow.getAttribute('opacity');
+                expect(path === 'M 204.5 265.5 L 212.5 269.5 L 204.5 273.5 L 204.5 271.5 L 208.5 269.5 L204.5 267.5 Z' ||
+                    path === 'M 211.5 267.5 L 219.5 271.5 L 211.5 275.5 L 211.5 273.5 L 215.5 271.5 L211.5 269.5 Z').toBe(true);
+                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
                 expect(legendGroup.childElementCount === 6).toBe(true);
@@ -1578,14 +1606,12 @@ describe('Chart Legend', () => {
             chartObj.loaded = (args: Object): void => {
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 38 61 L 30 65 L 38 69 L 38 67 L 34 65 L38 63 Z' ||
-                    path === 'M 44 58 L 36 62 L 44 66 L 44 64 L 40 62 L44 60 Z').toBe(true);
+                expect(path === 'M 31 61 L 23 65 L 31 69 L 31 67 L 27 65 L31 63 Z' || path === 'M 29 58 L 21 62 L 29 66 L 29 64 L 25 62 L29 60 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 262 61 L 270 65 L 262 69 L 262 67 L 266 65 L262 63 Z' ||
-                    path === 'M 256 58 L 264 62 L 256 66 L 256 64 L 260 62 L256 60 Z').toBe(true);
+                expect(path === 'M 269 61 L 277 65 L 269 69 L 269 67 L 273 65 L269 63 Z' || path === 'M 271 58 L 279 62 L 271 66 L 271 64 L 275 62 L271 60 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1607,14 +1633,14 @@ describe('Chart Legend', () => {
                 expect(yValue === '65.5' || yValue === '61.5').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 38 78 L 30 82 L 38 86 L 38 84 L 34 82 L38 80 Z' ||
-                    path === 'M 44 74 L 36 78 L 44 82 L 44 80 L 40 78 L44 76 Z').toBe(true);
+                expect(path === 'M 31 79 L 23 83 L 31 87 L 31 85 L 27 83 L31 81 Z' ||
+                    path === 'M 29 74 L 21 78 L 29 82 L 29 80 L 25 78 L29 76 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 262 78 L 270 82 L 262 86 L 262 84 L 266 82 L262 80 Z' ||
-                    path === 'M 256 74 L 264 78 L 256 82 L 256 80 L 260 78 L256 76 Z').toBe(true);
+                expect(path === 'M 269 79 L 277 83 L 269 87 L 269 85 L 273 83 L269 81 Z' ||
+                    path === 'M 271 74 L 279 78 L 271 82 L 271 80 L 275 78 L271 76 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1631,19 +1657,19 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '27.5' || xValue === '33.5').toBe(true);
+                expect(xValue === '20.5' || xValue === '18.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
                 expect(yValue === '69.25' || yValue === '65.5').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 97.5 61 L 89.5 65 L 97.5 69 L 97.5 67 L 93.5 65 L97.5 63 Z' ||
-                    path === 'M 98.5 58 L 90.5 62 L 98.5 66 L 98.5 64 L 94.5 62 L98.5 60 Z').toBe(true);
+                expect(path === 'M 90.5 61 L 82.5 65 L 90.5 69 L 90.5 67 L 86.5 65 L90.5 63 Z' ||
+                       path === 'M 83.5 58 L 75.5 62 L 83.5 66 L 83.5 64 L 79.5 62 L83.5 60 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 260.5 61 L 268.5 65 L 260.5 69 L 260.5 67 L 264.5 65 L260.5 63 Z' ||
-                    path === 'M 254.5 58 L 262.5 62 L 254.5 66 L 254.5 64 L 258.5 62 L254.5 60 Z').toBe(true);
+                expect(path === 'M 267.5 61 L 275.5 65 L 267.5 69 L 267.5 67 L 271.5 65 L267.5 63 Z' ||
+                       path === 'M 269.5 58 L 277.5 62 L 269.5 66 L 269.5 64 L 273.5 62 L269.5 60 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1660,19 +1686,19 @@ describe('Chart Legend', () => {
                 titleElement = document.getElementById('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '214.5' || xValue === '213.5').toBe(true);
+                expect(xValue === '221.5' || xValue === '228.5').toBe(true);
                 yValue = titleElement.getAttribute('y');
                 expect(yValue === '69.25' || yValue === '65.5').toBe(true);
                 backArrow = document.getElementById('container_chart_legend_pageup');
                 path = backArrow.getAttribute('d');
-                expect(path === 'M 39.5 61 L 31.5 65 L 39.5 69 L 39.5 67 L 35.5 65 L39.5 63 Z' ||
-                    path === 'M 45.5 58 L 37.5 62 L 45.5 66 L 45.5 64 L 41.5 62 L45.5 60 Z').toBe(true);
+                expect(path === 'M 32.5 61 L 24.5 65 L 32.5 69 L 32.5 67 L 28.5 65 L32.5 63 Z' ||
+                       path === 'M 30.5 58 L 22.5 62 L 30.5 66 L 30.5 64 L 26.5 62 L30.5 60 Z').toBe(true);
                 opacity = backArrow.getAttribute('opacity');
                 expect(opacity === '0').toBe(true);
                 forwardArrow = document.getElementById('container_chart_legend_pagedown');
                 path = forwardArrow.getAttribute('d');
-                expect(path === 'M 197.5 61 L 205.5 65 L 197.5 69 L 197.5 67 L 201.5 65 L197.5 63 Z' ||
-                    path === 'M 196.5 58 L 204.5 62 L 196.5 66 L 196.5 64 L 200.5 62 L196.5 60 Z').toBe(true);
+                expect(path === 'M 204.5 61 L 212.5 65 L 204.5 69 L 204.5 67 L 208.5 65 L204.5 63 Z' ||
+                       path === 'M 211.5 58 L 219.5 62 L 211.5 66 L 211.5 64 L 215.5 62 L211.5 60 Z').toBe(true);
                 opacity = forwardArrow.getAttribute('opacity');
                 expect(opacity === '1').toBe(true);
                 let legendGroup = document.getElementById('container_chart_legend_translate_g');
@@ -1916,7 +1942,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '404' || posX == '402').toBe(true);
+                expect(posX == '396' || posX == '398').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1937,7 +1963,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX).toBe('454');
+                expect(posX).toBe('460');
                 done();
             };
             chart.loaded = loaded;
@@ -1949,7 +1975,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '825' || posX == '823').toBe(true);
+                expect(posX == '820' || posX == '822').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1962,7 +1988,7 @@ describe('Chart Legend', () => {
                 expect(element.getAttribute('text-anchor') == '').toBe(true);
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '444.5' || posX == '445.5').toBe(true);
+                expect(posX == '440' || posX == '438.5').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1978,7 +2004,7 @@ describe('Chart Legend', () => {
                 expect(element.getAttribute('text-anchor') == 'end').toBe(true);
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '499.5' || posX == '502.5').toBe(true);
+                expect(posX == '509' || posX == '505.5').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1989,7 +2015,7 @@ describe('Chart Legend', () => {
             loaded = (args: Object): void => {
                 element = document.getElementById('container_chart_legend_text_0');
                 posX = element.getAttribute('x');
-                expect(posX == '509.5' || posX == '512.5').toBe(true);
+                expect(posX == '522' || posX == '518.5').toBe(true);
                 done();
             };
             chart.loaded = loaded;

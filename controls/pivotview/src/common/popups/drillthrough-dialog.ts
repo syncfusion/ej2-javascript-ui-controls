@@ -320,14 +320,14 @@ export class DrillThroughDialog {
         if (eventArgs.rowHeaders !== '') {
             drillThroughBodyHeader.innerHTML = '<span class=' +
                 cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' + cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
-                this.parent.localeObj.getConstant('row') + '</span> :<span class=' +
+                this.parent.localeObj.getConstant('row') + '</span> : <span class=' +
                 cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + eventArgs.rowHeaders + '</span></span>';
         }
         if (eventArgs.columnHeaders !== '') {
             drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
                 cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
                 cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' + this.parent.localeObj.getConstant('column') +
-                '</span> :<span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' +
+                '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' +
                 eventArgs.columnHeaders + '</span></span>';
         }
         if (eventArgs.value !== '') {
@@ -337,7 +337,7 @@ export class DrillThroughDialog {
                 drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
                     cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
                     cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
-                    measure + '</span> :<span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + value + '</span></span>';
+                    measure + '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + value + '</span></span>';
             }
         }
         let toolbarItems: string[] = ['ColumnChooser'];

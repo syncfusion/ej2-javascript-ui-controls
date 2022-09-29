@@ -32,11 +32,12 @@ export class AreaSeries extends MultiColoredSeries {
         }
         let currentXValue: number;
         const isDropMode: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
-        const borderWidth: number = series.border ? series.border.width : 0;
-        const borderColor: string = series.border ? series.border.color : 'transparent';
+        const borderWidth: number = series.border.width ? series.border.width : 0;
+        const borderColor: string = series.border.color ? series.border.color : series.interior;
         const getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         const visiblePoints: Points[] = this.enableComplexProperty(series);
         let point: Points;
+        let emptyPointDirection:  string = '';
         for (let i: number = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
             currentXValue = point.xValue;
@@ -74,10 +75,11 @@ export class AreaSeries extends MultiColoredSeries {
             }
             direction = direction.concat(direction + ' ' + 'Z');
         }
+      
         this.appendLinePath(
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index, series.interior,
-                borderWidth, borderColor, series.opacity, series.dashArray,
+                0, 'transparent', series.opacity, series.dashArray,
                 ((series.points.length > 1 && direction !== '') ? (direction + this.getAreaPathDirection(
                     series.points[series.points.length - 1].xValue,
                     series.chart.chartAreaType === 'PolarRadar' ?
@@ -87,8 +89,25 @@ export class AreaSeries extends MultiColoredSeries {
             ),
             series, ''
         );
+
+        /**
+          * To draw border for the path directions of area
+          */ 
+        if (series.border.width != 0) {
+            emptyPointDirection = this.removeEmptyPointsBorder(direction);
+            this.appendLinePath(
+                new PathOption(
+                    series.chart.element.id + '_Series_border_' + series.index, 'transparent',
+                    borderWidth, borderColor, 1, series.dashArray,
+                    emptyPointDirection
+                ),
+                series, ''
+            );
+
+        }
         this.renderMarker(series);
     }
+    
     /**
      * To destroy the area series.
      *

@@ -31,6 +31,7 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         let previous: Points;
         let rendered: boolean;
         const segments: ChartSegmentModel[] = this.sortSegments(series, series.segments);
+        let emptyPointDirection:  string = '';
         series.visiblePoints.map((point: Points, i: number, seriesPoints: Points[]) => {
             point.symbolLocations = [];
             point.regions = [];
@@ -69,8 +70,12 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
                 (direction + this.getAreaPathDirection(previous.xValue, origin, series, isInverted, getPoint, null, 'L')) : '';
             this.generatePathOption(options, series, previous, direction, '');
         }
-        this.applySegmentAxis(series, options, segments);
-        this.renderMarker(series);
+        if (series.border.width != 0) {
+            emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
+                this.generateBorderPathOption(options, series, previous, emptyPointDirection, '');
+    }
+    this.applySegmentAxis(series, options, segments);
+    this.renderMarker(series);
     }
     /**
      * To Store the path directions of the area
@@ -80,10 +85,26 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
     ): void {
         options.push(new PathOption(
             series.chart.element.id + '_Series_' + series.index + id,
-            series.setPointColor(point, series.interior), series.border.width, series.border.color, series.opacity,
+            series.setPointColor(point, series.interior), 0, 'transparent', series.opacity,
             series.dashArray, direction
         ));
     }
+
+      /**
+       * To draw border for the path directions of area
+       */ 
+    private generateBorderPathOption(
+        options: PathOption[], series: Series, point: Points, emptyPointDirection: string, id: string
+    ): void {
+        options.push(new PathOption(
+            series.chart.element.id + '_Series_border_' + series.index + id,
+            'transparent', series.border.width, series.border.color ? series.border.color : series.interior, 1,
+            series.dashArray, emptyPointDirection
+        ));
+
+    }
+    
+    
 
     /**
      * To destroy the area series.

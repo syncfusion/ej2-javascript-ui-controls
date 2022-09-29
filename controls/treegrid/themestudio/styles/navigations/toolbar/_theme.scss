@@ -1,6 +1,7 @@
 @include export-module('toolbar-theme') {
+
   /*! toolbar theme */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-toolbar {
     -webkit-tap-highlight-color: $tbar-tab-highlight-color;
     background: $tbar-default-bg;
@@ -19,13 +20,11 @@
         border-width: $tbar-popup-vertical-rtl-border-width;
       }
 
-
       .e-toolbar-items .e-toolbar-item {
 
         &.e-separator {
           border-width: $tba-vertical-separator;
         }
-
       }
     }
 
@@ -158,9 +157,7 @@
               }
             }
           }
-
         }
-
       }
     }
 
@@ -446,7 +443,7 @@
         &::after {
           @include tbar-btn-animation-after;
         }
-     }
+      }
 
       &:hover {
         background: $tbar-hover-bg;
@@ -518,7 +515,7 @@
     .e-tbar-btn {
 
       &:active {
-        background:  $tbar-press-bg;
+        background: $tbar-press-bg;
         @if $tbar-skin == 'bootstrap5' {
           background: $tbar-active-bg;
         }

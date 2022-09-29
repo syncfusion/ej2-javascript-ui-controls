@@ -17,6 +17,14 @@ export const ICON_DISABLE: string = 'e-disable';
 /** @hidden */
 export const ICON_HIDDEN: string = 'e-hide';
 /** @hidden */
+export const FIRST_PAGER_ICON: string = 'e-icon-first';
+/** @hidden */
+export const LAST_PAGER_ICON: string = 'e-icon-last';
+/** @hidden */
+export const PREV_PAGER_ICON: string = 'e-icon-prev';
+/** @hidden */
+export const NEXT_PAGER_ICON: string = 'e-icon-next';
+/** @hidden */
 export const AXISFIELD_ICON_CLASS: string = 'e-dropdown-icon';
 /** @hidden */
 export const WRAPPER_CLASS: string = 'e-pivotfieldlist-container';
@@ -50,6 +58,10 @@ export const FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS: string = 'e-field-list-tree
 export const FIELD_LIST_SEARCH_MODE_CLASS: string = 'e-search-mode';
 /** @hidden */
 export const FIELD_HEADER_CLASS: string = 'e-field-header';
+/** @hidden */
+export const FIELD_TREE_PARENT: string = 'e-pivot-parent';
+/** @hidden */
+export const FIELD_TREE_CHILD: string = 'e-pivot-child';
 /** @hidden */
 export const FIELD_HEADER_CONTAINER_CLASS: string = 'e-field-header-container';
 /** @hidden */
@@ -232,6 +244,8 @@ export const SUB_MENU_CLASS: string = 'e-submenu';
 export const FOCUSED_CLASS: string = 'e-focused';
 /** @hidden */
 export const SELECTED_CLASS: string = 'e-selected';
+/** @hidden */
+export const SELECT_CLASS: string = 'e-select';
 /** @hidden */
 export const MENU_ITEM_CLASS: string = 'e-menu-item';
 /** @hidden */
@@ -687,3 +701,123 @@ export const FORMAT_FONT_COLOR_PICKER: string = 'e-format-font-color-picker';
 export const GROUP_PIVOT_ROW: string = 'e-group-pivot-rows';
 /** @hidden */
 export const TOOLBAR_MENU: string = 'e-pivot-toolbar-menu';
+/** @hidden */
+export const DISABLE_FIRST_PAGE: string = 'e-firstpagedisabled';
+/** @hidden */
+export const DISABLE_PREV_PAGE: string = 'e-prevpagedisabled';
+/** @hidden */
+export const DISABLE_NEXT_PAGE: string = 'e-nextpagedisabled';
+/** @hidden */
+export const DISABLE_LAST_PAGE: string = 'e-lastpagedisabled';
+/** @hidden */
+export const GRID_PAGER: string = 'e-pivot-pager';
+/** @hidden */
+export const GRID_PAGER_DIV: string = 'e-pivot-pager-maindiv';
+/** @hidden */
+export const PIVOT_ROW_PAGER_DIV: string = 'e-pivot-pager-row-maindiv';
+/** @hidden */
+export const PIVOT_COLUMN_PAGER_DIV: string = 'e-pivot-pager-column-maindiv';
+/** @hidden */
+export const PIVOT_ROW_PAGER_SETTINGS: string = 'e-pivot-row-pager-settings';
+/** @hidden */
+export const PIVOT_COLUMN_PAGER_SETTINGS: string = 'e-pivot-column-pager-settings';
+/** @hidden */
+export const PIVOT_PAGER_CONTAINER: string = 'e-pagercontainer';
+/** @hidden */
+export const PIVOT_V_SEPARATOR: string = 'e-pivotview-vseparator';
+/** @hidden */
+export const PIVOT_H_SEPARATOR: string = 'e-pivotview-hseparator';
+/** @hidden */
+export const PIVOT_TEXT_DIV: string = 'e-pivotview-text-div';
+/** @hidden */
+export const PIVOT_TEXT_DIV_1: string = 'e-pivotview-text-div-1';
+/** @hidden */
+export const PIVOT_ROW_SIZE: string = 'e-pivotview-row-size';
+/** @hidden */
+export const PIVOT_ROW_PAGER_NUMBER: string = 'e-pivotview-row-pagerNumber';
+/** @hidden */
+export const PIVOT_COLUMN_SIZE: string = 'e-pivotview-column-size';
+/** @hidden */
+export const PIVOT_COLUMN_PAGER_NUMBER: string = 'e-pivotview-column-pagerNumber';
+/** @hidden */
+export const PIVOT_ROW_PAGER_STRING: string = 'e-pivotview-row-pagerString';
+/** @hidden */
+export const PIVOT_COLUMN_PAGER_STRING: string = 'e-pivotview-column-pagerString';
+/** @hidden */
+export const PIVOT_ROW_OF_STRING: string = 'e-pivot-row-of-string';
+/** @hidden */
+export const PIVOT_COLUMN_OF_STRING: string = 'e-pivot-column-of-string';
+/** @hidden */
+export const PIVOT_ROW_DROPDOWN: string = 'e-pivot-pager-row-dropdown';
+/** @hidden */
+export const PIVOT_COLUMN_DROPDOWN: string = 'e-pivot-pager-column-dropdown';
+/** @hidden */
+export const PIVOT_ROW_SIZE_LIST: string = 'e-pivot-row-size-list';
+/** @hidden */
+export const PIVOT_COLUMN_SIZE_LIST: string = 'e-pivot-column-size-list';
+/** @hidden */
+export const INVERSE: string = 'e-inverse-view';
+/** @hidden */
+export const COMPACT_VIEW: string = 'e-compact-view';
+/** @hidden */
+export const PAGE_SIZE_DISABLE: string = 'e-page-size-disable';
+/** @hidden */
+export const PIVOT_COMPACT_PAGER_DIV: string = 'e-pivot-pager-compact-maindiv';
+/** @hidden */
+export const PIVOT_COMPACT_PAGER_NO_ROWSIZE: string = 'e-pivot-pager-row-maindiv-no-size';
+/** @hidden */
+export const PIVOT_COMPACT_PAGER_NO_COLUMNSIZE: string = 'e-pivot-pager-column-maindiv-no-size';
+/** @hidden */
+export const PIVOT_SINGLE_ROW_PAGER_DIV: string = 'e-pivot-pager-single-row-maindiv';
+/** @hidden */
+export const PIVOT_SINGLE_COLUMN_PAGER_DIV: string = 'e-pivot-pager-single-column-maindiv';
+/** @hidden */
+export const PIVOT_COMPACT_MOBILE_PAGER: string = 'e-pivot-pager-compact-mobile-maindiv';
+/** @hidden */
+export const PIVOT_MOBILE_PAGER: string = 'e-pivot-pager-mobile-maindiv';
+/** @hidden */
+export const PIVOT_ROW_OF_STRING_MAINDIV: string = 'e-pivot-row-of-string-maindiv';
+/** @hidden */
+export const PIVOT_COLUMN_OF_STRING_MAINDIV: string = 'e-pivot-column-of-string-maindiv';
+/** @hidden */
+export const PIVOT_PAGE_SIZE_LIST_MAINDIV: string = 'e-pager-dropdown';
+/** @hidden */
+export const PIVOT_FIRST_ICON_DEFAULT: string = 'e-first e-icons e-icon-first';
+/** @hidden */
+export const PIVOT_PREV_ICON_DEFAULT: string = 'e-prev e-icons e-icon-prev';
+/** @hidden */
+export const PIVOT_NEXT_ICON_DEFAULT: string = 'e-next e-icons e-icon-next';
+/** @hidden */
+export const PIVOT_LAST_ICON_DEFAULT: string = 'e-last e-icons e-icon-last';
+/** @hidden */
+export const PIVOT_FIRST_ICON_ENABLE: string = 'e-firstpage e-pager-default';
+/** @hidden */
+export const PIVOT_PREV_ICON_ENABLE: string = 'e-prevpage e-pager-default';
+/** @hidden */
+export const PIVOT_NEXT_ICON_ENABLE: string = 'e-nextpage e-pager-default';
+/** @hidden */
+export const PIVOT_LAST_ICON_ENABLE: string = 'e-lastpage e-pager-default';
+/** @hidden */
+export const GRID_PAGER_TOP: string = 'e-pivot-pager-top';
+/** @hidden */
+export const GRID_PAGER_BOTTOM: string = 'e-pivot-pager-bottom';
+/** @hidden */
+export const GRID_PAGER_SINGLE_DIV: string = 'e-pivot-pager-single-maindiv';
+/** @hidden */
+export const PIVOT_MOBILE_SINGLE_PAGER: string = 'e-pivot-pager-mobile-single-maindiv';
+/** @hidden */
+export const PIVOT_COMPACT_PAGER_SINGLE_DIV: string = 'e-pivot-pager-compact-single-maindiv';
+/** @hidden */
+export const PIVOT_COMPACT_MOBILE_SINGLE_PAGER: string = 'e-pivot-pager-compact-mobile-single-maindiv';
+/** @hidden */
+export const PIVOT_COMPACT_MOBILE_FULL_SINGLE_PAGER: string = 'e-pivot-pager-compact-mobile-full-single-maindiv';
+/** @hidden */
+export const PIVOT_PAGER_SINGLE_NO_SIZE: string = 'e-pivot-pager-single-maindiv-no-size';
+/** @hidden */
+export const PIVOT_PAGER_COMPACT_SINGLE_NO_SIZE: string = 'e-pivot-pager-single-compact-maindiv-no-size';
+/** @hidden */
+export const PIVOT_PAGER_NAV_CONTAINER: string = 'e-pivot-pager-nav-container';
+/** @hidden */
+export const PIVOT_PAGER_INFO_CONTAINER: string = 'e-pivot-pager-info-container';
+/** @hidden */
+export const PIVOT_CELL_CONTAINER: string = 'e-pivotcell-container';

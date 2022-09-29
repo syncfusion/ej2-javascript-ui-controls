@@ -1,4 +1,4 @@
-﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions } from '../common/index';
+﻿import { ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { extend, remove } from '@syncfusion/ej2-base';
@@ -18,6 +18,7 @@ export class Render {
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
+        this.instantiateRenderer();
     }
 
     public render(): void {
@@ -437,18 +438,19 @@ export class Render {
      * @returns {void}
      */
     public destroy(): void {
-        this.removeEventListener(); this.parent = null;
+        this.removeEventListener();
+        this.parent.serviceLocator.getService<RowRenderer>('row').destroy();
+        this.parent.serviceLocator.getService<CellRenderer>('cell').destroy();
+        this.parent = null;
     }
 
     private addEventListener(): void {
-        this.parent.on(initialLoad, this.instantiateRenderer, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler, this);
         this.parent.on(getUpdatedScrollPosition, this.updateTopLeftScrollPosition, this);
     }
 
     private removeEventListener(): void {
-        this.parent.off(initialLoad, this.instantiateRenderer);
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler);
         this.parent.off(getUpdatedScrollPosition, this.updateTopLeftScrollPosition);

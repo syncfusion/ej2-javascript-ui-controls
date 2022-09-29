@@ -525,10 +525,9 @@ export class DatePicker extends Calendar implements IInput {
 
     private createInput(): void {
         const ariaAttrs: object = {
-            'aria-live': 'assertive', 'aria-atomic': 'true',
-            'aria-haspopup': 'true', 'aria-activedescendant': 'null',
-            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
+            'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-expanded': 'false', 
+            'role': 'combobox', 'autocomplete': 'off', 'autocorrect': 'off', 
+            'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
             const l10nLocale: object = { placeholder: this.placeholder };
@@ -1715,9 +1714,8 @@ export class DatePicker extends Calendar implements IInput {
             super.destroy();
         }
         const ariaAttrs: object = {
-            'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-disabled': 'true',
-            'aria-haspopup': 'true', 'aria-activedescendant': 'null',
-            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
+            'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-disabled': 'true', 
+            'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         };
         if (this.inputElement) {
@@ -2029,10 +2027,15 @@ export class DatePicker extends Calendar implements IInput {
     private setAriaAttributes(): void {
         if (this.isCalendar()) {
             Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
-            attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
+            attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options'});
+            if(this.value)
+            {
+                attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
+            }
         } else {
             Input.addAttributes({ 'aria-expanded': 'false' }, this.inputElement);
-            attributes(this.inputElement, { 'aria-activedescendant': 'null' });
+            this.inputElement.removeAttribute('aria-owns');
+            this.inputElement.removeAttribute( 'aria-activedescendant');
         }
     }
     protected errorClass(): void {
@@ -2190,7 +2193,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 break;
             }
-            if (!this.isDynamicValueChanged) {
+            if (!this.isDynamicValueChanged && !this.isIconClicked) {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;

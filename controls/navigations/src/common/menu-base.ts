@@ -1354,7 +1354,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     tabindex: '-1'
                 };
                 if (this.isMenu && !(<obj>args.curData)[this.getField('separator', level)]) {
-                    (<obj>args.curData.htmlAttributes)['aria-label'] = (<obj>args.curData)[args.fields.text as string];
+                    (<obj>args.curData.htmlAttributes)['aria-label'] = (<obj>args.curData)[args.fields.text as string] ?
+                       (<obj>args.curData)[args.fields.text as string] : (<obj>args.curData)[args.fields.id as string];
                 }
                 if (args.curData[(<obj>args.fields)[fields.iconCss] as string] === '') {
                     args.curData[(<obj>args.fields)[fields.iconCss] as string] = null;

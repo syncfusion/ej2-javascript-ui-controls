@@ -1,0 +1,264 @@
+@include export-module('appbar-theme') {
+
+  /*! appbar component theme */
+  .e-appbar {
+    box-shadow: $appbar-bottom-shadow;
+
+    &.e-light {
+      background: $appbar-bg-color-alt1;
+      color: $appbar-color-alt1;
+      border-color: $appbar-border-color-alt1;
+
+      .e-appbar-separator {
+        border-left: 1px solid $appbar-color-alt1;
+      }
+
+      .e-btn,
+      .e-css.e-btn,
+      .e-dropdown-btn,
+      .e-dropdown-btn.e-btn {
+        &.e-inherit {
+          &:hover,
+          &:focus,
+          &:active,
+          &.e-active {
+            background: $appbar-hover-bg-color-alt1;
+          }
+        }
+      }
+
+      .e-menu-wrapper,
+      .e-menu-container {
+        &.e-inherit {
+          & .e-menu .e-menu-item.e-selected,
+          & .e-menu .e-menu-item.e-focused {
+            background: $appbar-hover-bg-color-alt1;
+          }
+        }
+      }
+    }
+
+    &.e-dark {
+      background: $appbar-bg-color-alt2;
+      color: $appbar-color-alt2;
+      border-color: $appbar-border-color-alt2;
+
+      .e-appbar-separator {
+        border-left: 1px solid $appbar-color-alt2;
+      }
+
+      .e-btn,
+      .e-css.e-btn,
+      .e-dropdown-btn,
+      .e-dropdown-btn.e-btn {
+        &.e-inherit {
+          &:hover,
+          &:focus,
+          &:active,
+          &.e-active {
+            background: $appbar-hover-bg-color-alt2;
+          }
+        }
+      }
+
+      .e-menu-wrapper,
+      .e-menu-container {
+        &.e-inherit {
+          & .e-menu .e-menu-item.e-selected,
+          & .e-menu .e-menu-item.e-focused {
+            background: $appbar-hover-bg-color-alt2;
+          }
+        }
+      }
+    }
+
+    &.e-primary {
+      background: $appbar-bg-color-primary;
+      color: $appbar-color-primary;
+      border-color: $appbar-border-color-primary;
+
+      .e-appbar-separator {
+        border-left: 1px solid $appbar-color-primary;
+      }
+    }
+
+    &.e-inherit {
+      background: inherit;
+      color: inherit;
+      border-color: inherit;
+      border: 1px solid;
+
+      .e-appbar-separator {
+        border-left: 1px solid;
+      }
+    }
+
+    &.e-horizontal-bottom {
+      box-shadow: $appbar-top-shadow;
+    }
+  }
+
+  .e-light {
+    &.e-inherit.e-dropdown-popup,
+    &.e-inherit.e-menu-container,
+    &.e-inherit.e-menu-wrapper,
+    &.e-inherit.e-menu-wrapper .e-ul,
+    &.e-inherit.e-menu-container .e-ul {
+      background: $appbar-bg-color-alt1;
+      color: $appbar-color-alt1;
+      border-color: $appbar-border-color-alt1;
+      box-shadow: none;
+    }
+
+    &.e-inherit.e-dropdown-popup {
+      & ul {
+        & .e-item {
+
+          &:hover,
+          &.e-focused {
+            background: $appbar-hover-bg-color-alt1;
+          }
+        }
+      }
+    }
+
+    &.e-menu-wrapper,
+    &.e-menu-container {
+      &.e-inherit {
+        & .e-ul .e-menu-item.e-focused,
+        & .e-ul .e-menu-item.e-selected {
+          background: $appbar-hover-bg-color-alt1;
+        }
+      }
+    }
+
+    &.e-inherit.e-input-group,
+    &.e-inherit.e-input-group.e-control-wrapper,
+    &.e-inherit.e-float-input,
+    &.e-inherit.e-float-input.e-input-group,
+    &.e-inherit.e-float-input.e-control-wrapper,
+    &.e-inherit.e-float-input.e-input-group.e-control-wrapper,
+    &.e-inherit.e-input-group:not(.e-disabled) .e-input-group-icon:hover,
+    &.e-inherit.e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:hover {
+      background: $appbar-bg-color-alt1;
+      color: $appbar-color-alt1;
+    }
+  }
+
+  .e-dark {
+    &.e-inherit.e-dropdown-popup,
+    &.e-inherit.e-menu-container,
+    &.e-inherit.e-menu-wrapper,
+    &.e-inherit.e-menu-wrapper .e-ul,
+    &.e-inherit.e-menu-container .e-ul {
+      background: $appbar-bg-color-alt2;
+      color: $appbar-color-alt2;
+      border-color: $appbar-border-color-alt2;
+      box-shadow: none;
+    }
+
+    &.e-inherit.e-dropdown-popup {
+      & ul {
+        & .e-item {
+
+          &:hover,
+          &.e-focused {
+            background: $appbar-hover-bg-color-alt2;
+          }
+        }
+      }
+    }
+
+    &.e-menu-wrapper,
+    &.e-menu-container {
+      &.e-inherit {
+        & .e-ul .e-menu-item.e-focused,
+        & .e-ul .e-menu-item.e-selected {
+          background: $appbar-hover-bg-color-alt2;
+        }
+      }
+    }
+
+    &.e-inherit.e-input-group,
+    &.e-inherit.e-input-group.e-control-wrapper,
+    &.e-inherit.e-float-input,
+    &.e-inherit.e-float-input.e-input-group,
+    &.e-inherit.e-float-input.e-control-wrapper,
+    &.e-inherit.e-float-input.e-input-group.e-control-wrapper,
+    &.e-inherit.e-input-group:not(.e-disabled) .e-input-group-icon:hover,
+    &.e-inherit.e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:hover {
+      background: $appbar-bg-color-alt2;
+      color: $appbar-color-alt2;
+    }
+  }
+
+  .e-primary {
+    &.e-inherit.e-dropdown-popup,
+    &.e-inherit.e-menu-container,
+    &.e-inherit.e-menu-wrapper,
+    &.e-inherit.e-menu-wrapper .e-ul,
+    &.e-inherit.e-menu-container .e-ul {
+      background: $appbar-bg-color-primary;
+      color: $appbar-color-primary;
+      border-color: $appbar-border-color-primary;
+      box-shadow: none;
+    }
+
+    &.e-inherit.e-input-group,
+    &.e-inherit.e-input-group.e-control-wrapper,
+    &.e-inherit.e-float-input,
+    &.e-inherit.e-float-input.e-input-group,
+    &.e-inherit.e-float-input.e-control-wrapper,
+    &.e-inherit.e-float-input.e-input-group.e-control-wrapper,
+    &.e-inherit.e-input-group:not(.e-disabled) .e-input-group-icon:hover,
+    &.e-inherit.e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:hover {
+      background: $appbar-bg-color-primary;
+      color: $appbar-color-primary;
+    }
+  }
+
+  .e-inherit.e-input-group,
+  .e-inherit.e-input-group.e-control-wrapper,
+  .e-inherit.e-float-input,
+  .e-inherit.e-float-input.e-input-group,
+  .e-inherit.e-float-input.e-control-wrapper,
+  .e-inherit.e-float-input.e-input-group.e-control-wrapper,
+  .e-inherit.e-input-group:not(.e-disabled) .e-input-group-icon:hover,
+  .e-inherit.e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:hover {
+    color: inherit;
+    background: rgba(transparent, .056);
+  }
+
+  .e-inherit.e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error),
+  .e-inherit.e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error),
+  .e-inherit.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error),
+  .e-inherit.e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error) {
+    box-shadow: none;
+  }
+
+  .e-inherit.e-input-group.e-control-wrapper .e-searchinput::placeholder {
+    color: inherit;
+    opacity: .8;
+  }
+
+  .e-inherit.e-input-group .e-input-group-icon,
+  .e-inherit.e-input-group.e-control-wrapper .e-input-group-icon {
+    border: none;
+    color: inherit;
+  }
+
+  .e-inherit.e-input-group .e-clear-icon,
+  .e-inherit.e-input-group.e-control-wrapper .e-clear-icon {
+    color: inherit;
+  }
+
+  .e-inherit.e-menu-container,
+  .e-inherit.e-menu-wrapper,
+  .e-inherit.e-menu-wrapper .e-ul,
+  .e-inherit.e-menu-container .e-ul {
+    background: inherit;
+    color: inherit;
+    border-color: inherit;
+    box-shadow: none;
+  }
+}

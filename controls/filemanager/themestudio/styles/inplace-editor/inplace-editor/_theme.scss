@@ -1,4 +1,5 @@
 @include export-module('inplaceeditor-theme') {
+
   /*! inplaceeditor theme */
 
   .e-inplaceeditor {
@@ -144,7 +145,6 @@
           }
         }
 
-
         @if $inplace-skin == 'bootstrap4' {
 
           &:focus {
@@ -167,7 +167,7 @@
 
           .e-btn-icon.e-icons {
 
-            @if $inplace-skin == 'bootstrap4' {
+            @if $inplace-skin == 'bootstrap4' or $inplace-skin =='bootstrap5' {
               color: $white;
             }
           }

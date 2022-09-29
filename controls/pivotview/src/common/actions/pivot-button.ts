@@ -138,7 +138,8 @@ export class PivotButton implements IAction {
                                     'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i].type : field[i].type),
                                     'data-caption': field[i].caption ? field[i].caption : field[i].name,
                                     'data-basefield': field[i].baseField,
-                                    'data-baseitem': field[i].baseItem
+                                    'data-baseitem': field[i].baseItem,
+                                    'role': 'button'
                                 }
                             });
                             let dropIndicatorElement: Element = createElement('span', {

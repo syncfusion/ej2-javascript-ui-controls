@@ -1032,7 +1032,7 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
         const laneIndex: number = (count !== undefined) ? count : shape.lanes.length;
         index += laneIndex;
         args = {
-            element: laneObj, cause: diagram.diagramActions, state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
+            element: laneObj, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
         };
         diagram.triggerEvent(DiagramEvent.collectionChange, args);
         if (!args.cancel) {
@@ -1063,7 +1063,7 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
                 shape.lanes.push(laneObj);
             }
             args = {
-                element: laneObj, cause: diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
+                element: laneObj, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
@@ -1787,7 +1787,7 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
             const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
             laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
             args = {
-                element: lane, cause: diagram.diagramActions, state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
+                element: lane, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             if (!args.cancel) {
@@ -1830,7 +1830,7 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                     grid.removeColumn(index);
                 }
                 args = {
-                    element: lane, cause: diagram.diagramActions, state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
+                    element: lane, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
                 };
                 diagram.triggerEvent(DiagramEvent.collectionChange, args);
                 swimLane.width = swimLane.wrapper.width = grid.width;

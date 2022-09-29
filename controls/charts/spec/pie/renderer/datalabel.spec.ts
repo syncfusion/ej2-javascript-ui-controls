@@ -31,6 +31,7 @@ describe('Accumulation Chart Control', () => {
     });
 describe('Data Label checking for the pie doughnut series', () => {
     let ele: HTMLElement;
+    let element: HTMLElement;
     let slice: HTMLElement;
     let loaded: EmitType<IAccLoadedEventArgs>;
     let id: string = 'ej2container'; let pieGroupId: string = id + 'SeriesGroup0';
@@ -567,6 +568,130 @@ describe('Data Label checking for the pie doughnut series', () => {
         { x: 'Insurance', y: 16000 }];
         accumulation.useGroupingSeparator = true;
         accumulation.series[0].dataLabel.template = '#template2';
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable Label Format n1 ', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            element = document.getElementById('ej2container_datalabel_Series_0_text_0');
+            expect(element.textContent).toEqual('18.0');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_1');
+            expect(element.textContent).toEqual('80.0');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_3');
+            expect(element.textContent).toEqual('11.0');
+            done();
+        };
+        accumulation.series = [
+            {
+                dataSource: [{ x: 'Labour', y: 18 }, { x: 'Legal', y: 80, text: 'feb: 10000' },
+                { x: 'Production', y: 15 }, { x: 'License', y: 11, text: '70000' },
+                { x: 'Facilities', y: 18 }, { x: 'Taxes', y: 14 },
+                { x: 'Insurance', y: 16 }],
+                dataLabel: {
+                    visible: true, format: 'n1',
+                    position: 'Inside',
+                    font: {
+                        fontWeight: '600',
+                        color: '#ffffff'
+                    },
+                },
+                xName: 'x',
+                yName: 'y', startAngle: 0,
+            }
+        ];
+        accumulation.useGroupingSeparator = true;
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable Label Format c1 ', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            element = document.getElementById('ej2container_datalabel_Series_0_text_0');
+            expect(element.textContent).toEqual('$18.0');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_1');
+            expect(element.textContent).toEqual('$80.0');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_3');
+            expect(element.textContent).toEqual('$11.0');
+            done();
+        };
+        accumulation.series = [
+            {
+                dataSource: [{ x: 'Labour', y: 18 }, { x: 'Legal', y: 80, text: 'feb: 10000' },
+                { x: 'Production', y: 15 }, { x: 'License', y: 11, text: '70000' },
+                { x: 'Facilities', y: 18 }, { x: 'Taxes', y: 14 },
+                { x: 'Insurance', y: 16 }],
+                dataLabel: {
+                    visible: true, format: 'c1',
+                    position: 'Inside',
+                    font: {
+                        fontWeight: '600',
+                        color: '#ffffff'
+                    },
+                },
+                xName: 'x',
+                yName: 'y', startAngle: 0,
+            }
+        ];
+        accumulation.useGroupingSeparator = true;
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable Label Format p1 ', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0_text_0');
+            expect(element.textContent).toEqual('1,800.0%');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_1');
+            expect(element.textContent).toEqual('8,000.0%');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_3');
+            expect(element.textContent).toEqual('1,100.0%');
+            done();
+        };
+        accumulation.series = [
+            {
+                dataSource: [{ x: 'Labour', y: 18 }, { x: 'Legal', y: 80, text: 'feb: 10000' },
+                { x: 'Production', y: 15 }, { x: 'License', y: 11, text: '70000' },
+                { x: 'Facilities', y: 18 }, { x: 'Taxes', y: 14 },
+                { x: 'Insurance', y: 16 }],
+                dataLabel: {
+                    visible: true, format: 'p1',
+                    position: 'Inside',
+                    font: {
+                        fontWeight: '600',
+                        color: '#ffffff'
+                    },
+                },
+                xName: 'x',
+                yName: 'y', startAngle: 0,
+            }
+        ];
+        accumulation.useGroupingSeparator = true;
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable custom Label Format like ${value} ', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => { 
+            element = document.getElementById('ej2container_datalabel_Series_0_text_0');
+            expect(element.textContent).toEqual('$18');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_1');
+            expect(element.textContent).toEqual('$80');
+            element = document.getElementById('ej2container_datalabel_Series_0_text_3');
+            expect(element.textContent).toEqual('$11');
+            done();
+        };
+        accumulation.series = [
+            {
+                dataSource: [{ x: 'Labour', y: 18 }, { x: 'Legal', y: 80, text: 'feb: 10000' },
+                { x: 'Production', y: 15 }, { x: 'License', y: 11, text: '70000' },
+                { x: 'Facilities', y: 18 }, { x: 'Taxes', y: 14 },
+                { x: 'Insurance', y: 16 }],
+                dataLabel: {
+                    visible: true, format: '${value}',
+                    position: 'Inside',
+                    font: {
+                        fontWeight: '600',
+                        color: '#ffffff'
+                    },
+                },
+                xName: 'x',
+                yName: 'y', startAngle: 0,
+            }
+        ];
+        accumulation.useGroupingSeparator = true;
         accumulation.refresh();
     });
 });

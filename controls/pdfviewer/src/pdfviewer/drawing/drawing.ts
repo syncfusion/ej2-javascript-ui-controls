@@ -934,7 +934,7 @@ export class Drawing {
         let adornerLayer: SVGElement = null;
         const adornerSvg: SVGSVGElement = this.getAdornerLayerSvg(diagramId, index);
         if (adornerSvg) {
-            adornerLayer = adornerSvg.getElementById(diagramId + '_SelectorElement') as SVGElement;
+            adornerLayer = adornerSvg.getElementById(diagramId + index + '_SelectorElement') as SVGElement;
         }
         return adornerLayer;
     }

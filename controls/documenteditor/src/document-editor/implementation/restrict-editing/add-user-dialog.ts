@@ -194,6 +194,17 @@ export class AddUserDialog {
      * @returns {void}
      */
     public destroy(): void {
+        if (this.textBoxInput) {
+            this.textBoxInput = undefined;
+        }
+        if (this.addButton) {
+            this.addButton.destroy();
+            this.addButton = undefined;
+        }
+        if (this.userList) {
+            this.userList.destroy();
+            this.userList = undefined;
+        }
         this.documentHelper = undefined;
     }
 }

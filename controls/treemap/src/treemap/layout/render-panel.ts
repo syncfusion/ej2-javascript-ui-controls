@@ -548,6 +548,7 @@ export class LayoutPanel {
                         }
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
+                    itemGroup.setAttribute('role','');
                     itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
                     maintainSelection(this.treemap, itemGroup, 'treeMapSelection');
                     this.layoutGroup.appendChild(itemGroup);
@@ -718,5 +719,19 @@ export class LayoutPanel {
             break;
         }
         return textValue;
+    }
+
+    /**
+     * 
+     * @returns {void}
+     * @private
+     */
+     public destroy(): void {
+        this.treemap = null;
+        this.currentRect = null;
+        this.layoutGroup = null;
+        this.renderer = null;
+        this.renderItems = [];
+        this.parentData = [];
     }
 }

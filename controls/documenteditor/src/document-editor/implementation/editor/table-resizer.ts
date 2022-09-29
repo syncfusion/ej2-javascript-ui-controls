@@ -953,5 +953,14 @@ export class TableResizer {
             rowFormat.gridAfterWidth = value;
         }
     }
+     
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.documentHelper = undefined;
+        this.owner = undefined;
+    }
 
 }

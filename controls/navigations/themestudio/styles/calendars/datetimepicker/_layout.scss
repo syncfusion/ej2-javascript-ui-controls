@@ -6,7 +6,7 @@
   }
 
   .e-datetime-wrapper {
-    // sass-lint:disable no-vendor-prefixes
+    /* stylelint-disable property-no-vendor-prefix */
     -webkit-tap-highlight-color: transparent;
 
     #{if(&, '&', '*')} .e-time-icon.e-icons::before {
@@ -38,7 +38,6 @@
         min-height: $datetime-normal-min-height;
         min-width: $datetime-normal-min-width;
       }
-
       outline: none;
     }
 
@@ -65,7 +64,7 @@
     top: 0;
     width: 100%;
     z-index: 999;
-	}
+  }
 
   #{&}.e-datetimepicker.e-popup {
     border-style: solid;

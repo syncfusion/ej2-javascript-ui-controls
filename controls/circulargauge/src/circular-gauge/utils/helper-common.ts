@@ -401,10 +401,14 @@ export function getRangePath(
     } else if ((endWidth === startWidth) && (axis.startAngle !== 0 || axis.endAngle !== 0)) {
         return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
     } else if ((degree > 260) || (!range.isLinearCircularGradient && axis.startAngle === 0 && axis.endAngle === 0)) {
-        return arcWidthPathCalculation(start, end, innerStart, innerEnd, radius, startRadius, endRadius, arcRadius, clockWise,
-                                       center, null, null, null, null,
-                                       startWidth, endWidth, degree, range, axis
-        );
+        if (range.roundedCornerRadius <= 0 && range.startWidth === range.endWidth) {
+            return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
+        } else {
+            return arcWidthPathCalculation(start, end, innerStart, innerEnd, radius, startRadius, endRadius, arcRadius, clockWise,
+                                        center, null, null, null, null,
+                                        startWidth, endWidth, degree, range, axis
+            );
+        }
     } else {
         if (range.position === 'Cross' || range.position === 'Outside') {
             return arcWidthPath(start, end, innerStart, innerEnd, radius, arcRadius, arcRadius, clockWise);

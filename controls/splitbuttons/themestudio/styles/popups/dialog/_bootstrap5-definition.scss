@@ -19,6 +19,7 @@ $dialog-header-content-padding: 12px 14px 12px 12px !default;
 $dialog-content-padding: 12px !default;
 $dialog-footer-content-padding: 12px !default;
 $dialog-footer-content-border-top: 1px solid $border-light !default;
+$dialog-alert-footer-content-border-top: none !default;
 $dialog-bigger-header-content-padding: 16px !default;
 $dialog-bigger-content-padding: 16px !default;
 $dialog-bigger-footer-content-padding: 16px !default;
@@ -44,6 +45,7 @@ $dialog-bigger-close-button-width: 20px !default;
 $dialog-resize-handler-width: 15px;
 $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
+
 //Layout Variables End
 
 //Theme Variables Start
@@ -73,6 +75,7 @@ $dialog-close-icon-normal-opacity: initial !default;
 $dialog-close-icon-active-opacity: initial !default;
 $dialog-overlay-bg-color: $overlay-bg-color !default;
 $dialog-overlay-opacity: 1 !default;
+
 //Theme Variables End
 
 $dialog-footer-btn-bg-color: $primary !default;

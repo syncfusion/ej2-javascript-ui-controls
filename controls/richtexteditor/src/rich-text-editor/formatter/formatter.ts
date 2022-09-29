@@ -42,6 +42,8 @@ export class Formatter {
             && args.item.command !== 'Links'
             && args.item.command !== 'Images'
             && args.item.command !== 'Files'
+            && args.item.command !== 'Audios'
+            && args.item.command !== 'Videos'
             && range
             && !(self.contentModule.getEditPanel().contains(this.getAncestorNode(range.commonAncestorContainer))
                 || self.contentModule.getEditPanel() === range.commonAncestorContainer
@@ -53,8 +55,8 @@ export class Formatter {
             if (args.item.command === 'Links') {
                 currentInsertContentLength = value.text.length === 0 ? value.url.length : value.text.length;
             }
-            if (args.item.command === 'Images' || args.item.command === 'Table' || args.item.command === 'Files') {
-                currentInsertContentLength = 1
+            if (args.item.command === 'Images' || args.item.command === 'Videos' || args.item.command === 'Table' || args.item.command === 'Files') {
+                currentInsertContentLength = 1;
             }
             const currentLength: number = self.getText().trim().length;
             const selectionLength: number = self.getSelection().length;
@@ -130,7 +132,7 @@ export class Formatter {
                             event, this.onSuccess.bind(this, self),
                             (actionBeginArgs.item as IDropDownItemModel).value,
                             actionBeginArgs.item.subCommand === 'Pre' && actionBeginArgs.selectType === 'dropDownSelect' ?
-                                { name:actionBeginArgs.selectType } : value,
+                                { name : actionBeginArgs.selectType } : value,
                             ('#' + self.getID() + ' iframe'),
                             self.enterKey
                         );
@@ -180,7 +182,7 @@ export class Formatter {
         }
         self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
             self.setPlaceHolder();
-            if ((callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links') && self.editorMode === 'HTML') {
+            if ((callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' || callbackArgs.requestType === 'Audios' || callbackArgs.requestType === 'Videos') && self.editorMode === 'HTML') {
                 const args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
                 if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
                     (callbackArgs.event as KeyboardEvent).type === 'keydown' &&
@@ -191,6 +193,9 @@ export class Formatter {
                     args: args.event, type: callbackArgs.requestType, isNotify: true,
                     elements: args.elements
                 } as IShowPopupArgs);
+            }
+            if (callbackArgs.requestType === 'VideosPlayPause') {
+                self.notify('editAreaClick', { args: event });
             }
             self.autoResize();
         });

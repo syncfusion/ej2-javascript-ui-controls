@@ -943,11 +943,19 @@ describe('Chart Control', () => {
                     series: [{
                         dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StackingArea100',
                         name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
+                        border: {
+                            color: 'red',
+                            width: 4,
+                        }
 
                     },
                     {
                         dataSource: data2, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StackingArea100',
                         name: 'ChartSeriesNameDiamond', fill: 'blue',
+                        border: {
+                            color: 'red',
+                            width: 4,
+                        }
 
                     },
                     ], width: '800',
@@ -967,6 +975,17 @@ describe('Chart Control', () => {
                 expect(svg.getAttribute('fill') == 'rgba(135,206,235,1)').toBe(true);
                 svg = document.getElementById('container_Series_1');
                 expect(svg.getAttribute('fill') == 'blue').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking with stroke for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesBorder = document.getElementById('container_Series_border_0');
+                expect(seriesBorder.getAttribute('stroke') == 'red').toBe(true);
+                svg = document.getElementById('container_Series_border_1');
+                expect(seriesBorder.getAttribute('stroke') == 'red').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

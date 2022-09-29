@@ -38,7 +38,7 @@ export class ExternalMessage implements IRender {
      * @hidden
      */
     public render(): void {
-        this.element = createElement('div', { className: 'e-pagerexternalmsg', attrs: { 'aria-label': 'Pager external message' } });
+        this.element = createElement('div', { className: 'e-pagerexternalmsg', attrs: { 'aria-label': this.pagerModule.getLocalizedLabel('ExternalMsg') } });
         this.pagerModule.element.appendChild(this.element);
         this.refresh();
     }

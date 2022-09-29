@@ -224,7 +224,7 @@ export class LayerPanel {
             );
         }
         if (panel.mapObject.markerModule) {
-            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
+            panel.mapObject.markerModule.markerRender(this.mapObject, panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
         }
         panel.translateLayerElements(panel.layerObject, layerIndex);
         panel.layerGroup.appendChild(panel.layerObject);
@@ -301,7 +301,7 @@ export class LayerPanel {
                             proxy.renderTileLayer(proxy, layer, layerIndex, bing);
                             this.mapObject.arrangeTemplate();
                             if (this.mapObject.zoomModule && (this.mapObject.previousScale !== this.mapObject.scale)) {
-                                this.mapObject.zoomModule.applyTransform(true);
+                                this.mapObject.zoomModule.applyTransform(this.mapObject, true);
                             }
                         };
                         ajax.send();
@@ -346,7 +346,7 @@ export class LayerPanel {
         proxy.renderTileLayer(proxy, layer, layerIndex, bing);
         this.mapObject.arrangeTemplate();
         if (this.mapObject.zoomModule && (this.mapObject.previousScale !== this.mapObject.scale)) {
-            this.mapObject.zoomModule.applyTransform(true);
+            this.mapObject.zoomModule.applyTransform(this.mapObject, true);
         }
     }
 
@@ -645,6 +645,7 @@ export class LayerPanel {
         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
             (currentShapeData['property'][properties]) : ''));
         pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + index + 3).toString());
+        pathEle.setAttribute('role', '');
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
             pathEle.setAttribute('style', 'outline:none');
         }
@@ -729,7 +730,7 @@ export class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(
+            this.mapObject.markerModule.markerRender(this.mapObject,
                 this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
                     : this.currentFactor),
                 null
@@ -1278,13 +1279,14 @@ export class LayerPanel {
                     } else {
                         animateElement = element ? element.children[0] as HTMLElement : null;
                     }
-                }                
+                }
                 let id: number = 0;
                 for (const tile of this.tiles) {
                     const imgElement: HTMLElement = createElement('img');
                     imgElement.setAttribute('height', '256px');
                     imgElement.setAttribute('width', '256px');
                     imgElement.setAttribute('src', tile.src);
+                    imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
                     const mapId: string = this.mapObject.element.id;
                     imgElement.onload = () => {
                         if (document.getElementById(mapId + '_tile_' + id) && type === 'Pan') {
@@ -1391,7 +1393,7 @@ export class LayerPanel {
             '&zoom=' + zoom + '&center=' + center + '&maptype=' + mapType + '&key=' + apikey;
         document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML
             = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
-            + eleHeight + 'px"><img src="' + staticMapString + '"></div>';
+            + eleHeight + 'px"><img src="' + staticMapString + '"' + 'alt="' + this.mapObject.getLocalizedLabel('ImageNotFound') + '"></div>';
     }
 
     /**
@@ -1452,5 +1454,27 @@ export class LayerPanel {
         this.mapObject.previousTileWidth = factorX;
         this.mapObject.previousTileHeight = factorY;
         return new Point(x, y);
+    }
+
+    /**
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.mapObject = null;
+        this.groupElements = [];
+        this.layerObject = null;
+        this.currentLayer = null;
+        this.rectBounds = null;
+        this.tiles = [];
+        this.clipRectElement = null;
+        this.tileSvgObject = null;
+        this.ajaxModule = null;
+        this.ajaxResponse = [];
+        this.layerGroup = null;
+        if (!isNullOrUndefined(this.bing)) {
+            this.bing.destroy();
+        }
+        this.bing = null;
     }
 }

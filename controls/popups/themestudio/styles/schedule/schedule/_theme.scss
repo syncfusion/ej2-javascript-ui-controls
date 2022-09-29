@@ -1,4 +1,5 @@
 @include export-module('schedule-theme') {
+
   /*! schedule component theme */
   .e-schedule {
     background-color: $schedule-header-bg-color;
@@ -56,7 +57,7 @@
         &.e-resource-cells {
           border-bottom-color: transparent;
         }
-       }
+      }
 
       .e-date-header-wrap table tbody td {
         background-color: $schedule-header-bg-color;
@@ -64,9 +65,7 @@
         border-style: $border-type;
         border-width: $schedule-vertical-work-cells-border;
         color: $schedule-header-font-color;
-        @if ($schedule-skin != 'FluentUI') {
-          text-align: left;
-        }
+        text-align: left;
 
         &.e-header-cells {
           border-bottom-width: 0;
@@ -175,7 +174,7 @@
 
       .e-previous-timeline {
         border-top: 1px dotted $schedule-active-border-color;
-       }
+      }
 
       &.e-by-date {
         .e-date-header-wrap table tbody td {
@@ -183,7 +182,7 @@
             border-bottom-width: 1px;
           }
         }
-       }
+      }
     }
 
     .e-month-view {
@@ -201,9 +200,7 @@
         border-style: $border-type;
         border-width: $schedule-month-work-cells-border;
         color: $schedule-header-font-color;
-        @if ($schedule-skin != 'FluentUI') {
-          text-align: left;
-        }
+        text-align: left;
 
         @if ($schedule-skin == 'tailwind') {
           font-size: 12px;
@@ -395,6 +392,10 @@
           border-right-width: 0;
         }
 
+        .e-date-header-wrap table tbody td {
+          text-align: right;
+        }
+
         .e-date-header-wrap table tbody td,
         .e-work-cells {
           border-width: $schedule-rtl-vertical-work-cells-border;
@@ -418,6 +419,7 @@
         }
 
         .e-date-header-wrap table td {
+          text-align: right;
           border-width: $schedule-rtl-month-work-cells-border;
         }
       }

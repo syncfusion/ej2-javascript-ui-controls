@@ -488,14 +488,16 @@ export class PDFExport {
         /** Event trigerring */
         let clonedValues: IPivotValues;
         let currentPivotValues: IPivotValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
-        if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
+        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings;
             this.engine.pageSettings = null;
+            (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true);
             this.parent.applyFormatting(this.engine.pivotValues);
             clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues);
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
+            (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = true;
         } else {
             clonedValues = currentPivotValues;
         }

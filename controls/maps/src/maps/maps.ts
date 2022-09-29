@@ -1006,7 +1006,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.dataLabelShape = [];
         }
         this.mapLayerPanel.measureLayerPanel();
-        this.element.appendChild(this.svgObject);
+        if (!isNullOrUndefined(this.svgObject)) {
+            this.element.appendChild(this.svgObject);
+        }
         const position: Point = this.getExtraPosition();
         for (let i: number = 0; i < this.layers.length; i++) {
             if (position.x !== 0 || position.y !== 0) {
@@ -1207,6 +1209,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'Maps Element');
+        this.element.setAttribute('role', '');
         this.element.setAttribute('tabindex', this.tabIndex.toString());
     }
 
@@ -1272,7 +1275,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
             if (this.zoomModule && (this.previousScale !== this.scale)) {
-                this.zoomModule.applyTransform(true);
+                this.zoomModule.applyTransform(this, true);
             }
         }
     }
@@ -1461,6 +1464,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 groupEle
             );
             element.setAttribute('aria-label', this.description || title.text);
+            element.setAttribute('role', '');
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = Math.abs((titleBounds.y + this.margin.bottom) - this.availableSize.height);
                 this.mapAreaRect = new Rect(this.margin.left, titleBounds.y + 10, width, height - 10);
@@ -2060,7 +2064,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.scale = zoomFactor;
                 this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
                 this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
-                this.zoomModule.applyTransform();
+                this.zoomModule.applyTransform(this);
             } else {
                 position = { x: size.width / 2, y: size.height / 2 };
                 this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
@@ -2140,7 +2144,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.layersCollection[layerIndex].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
             }
             const markerModule: Marker = new Marker(this);
-            markerModule.markerRender(layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+            markerModule.markerRender(this, layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
             this.arrangeTemplate();
         }
     }
@@ -2352,7 +2356,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             Zoom: 'Zoom',
             ZoomOut: 'Zoom out',
             Pan: 'Pan',
-            Reset: 'Reset'
+            Reset: 'Reset',
+            ImageNotFound: 'Image Not Found'
         };
     }
 
@@ -2361,6 +2366,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public destroy(): void {
         this.unWireEVents();
+        super.destroy();
         this.shapeSelectionItem = [];
         this.toggledShapeElementId = [];
         this.toggledLegendId = [];
@@ -2375,11 +2381,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.zoomLabelPositions = [];
         this.mouseDownEvent = { x: null, y: null };
         this.mouseClickEvent = { x: null, y: null };
+        this.formatFunction = null;
+        //TODO: Calling the below code throws spec issue.
+        //this.renderer = null;
+        this.availableSize = new Size(0, 0);
         if (document.getElementById('mapsmeasuretext')) {
             document.getElementById('mapsmeasuretext').remove();
         }
         this.removeSvg();
-        super.destroy();
     }
 
     /**
@@ -2703,7 +2712,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public print(id?: string[] | string | Element): void {
         if ((this.allowPrint) && (this.printModule)) {
-            this.printModule.print(id);
+            this.printModule.print(this, id);
         }
     }
     /**
@@ -2721,11 +2730,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
             return new Promise((resolve: any, reject: any) => {
-                resolve(this.imageExportModule.export(type, fileName, allowDownload));
+                resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
             });
         } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
             return new Promise((resolve: any, reject: any) => {
-                resolve(this.pdfExportModule.export(type, fileName, allowDownload, orientation));
+                resolve(this.pdfExportModule.export(this, type, fileName, allowDownload, orientation));
             });
         }
         return null;

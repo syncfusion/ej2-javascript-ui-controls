@@ -2,57 +2,26 @@
 
 ## [Unreleased]
 
-## 20.2.50 (2022-09-20)
+## 20.3.47 (2022-09-29)
 
 ### Diagram
 
-#### Bug fixes
-
-- `#I399417` - Now, fit to page is working properly when we call it multiple times.
-
-## 20.2.45 (2022-08-23)
-
-### Diagram
-
-#### Bug fixes
-
-- `#I396868` - Now bezier connector rendered properly while drag and drop from palette.
-- `#I397678` - Now, the connector is dropped properly inside the swimlane.
-- `#I397852` - Now, layers undefined exception will no longer thrown while save and load.
-- `#I397116` - Now, Bezier connector annotation rendered at the proper position.
-
-## 20.2.44 (2022-08-16)
-
-### Diagram
-
-#### Bug fixes
-
-- `#I395331` - The undefined exception will no longer thrown while draw a SVG node.
-
-## 20.2.40 (2022-07-26)
-
-### Diagram
-
-#### Bug fixes
-
-- `#I388692` - Now connectors are properly connected to the node after save and load.
-- `#I384554` - Now scroll settings offset are updated properly dynamically.
-
-## 20.2.39 (2022-07-19)
-
-- `FB36050` - Now, oldValue & newValue argument of property change event updated properly while change order for nodes.
-
-## 20.2.38 (2022-07-12)
-
-### Diagram
-
-#### Bug fixes
+#### Bug Fixes
 
 - `#I387297` - Now, the Expand & Collapse work properly for layout.
 - `#I389174` - The undefined exception will no longer thrown while drag and drop the node from treeview to diagram.
 - `#I384522` - Now, connector gets rendered properly in the complex hierarchical tree layout.
+- `FB36050` - Now, oldValue & newValue argument of property change event updated properly while change order for nodes.
 - `#I383401` - BPMN task type symbols are updated as per BPMN 2.0 standard.
 - `#FB35907` - Localization support for symbol palette search box placeholder has been added.
+- `#I388692` - Now connectors are properly connected to the node after save and load.
+- `#I384554` - Now scroll settings offset are updated properly dynamically.
+- `#I397678` - Now, the connector is dropped properly inside the swimlane.
+- `#I395331` - The undefined exception will no longer thrown while draw a SVG node.
+- `#I397116` - Now, Bezier connector annotation rendered at the proper position.
+- `#I396868` - Now bezier connector rendered properly while drag and drop from palette.
+- `#I397852` - Now, layers undefined exception will no longer thrown while save and load.
+- `#I399417` - Now, fit to page is working properly when we call it multiple times.
 
 ## 20.2.36 (2022-06-30)
 
@@ -62,9 +31,9 @@
 
 - `#I382500` - Now, the BPMN shape is changed properly at runtime.
 - `#I382496` - BPMN gateway sub type is working properly while changing it during runtime.
-- `#I383411` - Now, fill color is applied properly when changing the BPMN event at runtime.
+- `#I383411` - Now, fill color is applied properly when changing BPMN event at runtime.
 
-#### Features
+#### New Features
 
 - `#I362749` - Provided option to adjust the distance between the source node and the target node of the orthogonal connection has been added.
 - `#I347713` - Support to modify connector segments thumb icon shape and style has been added.

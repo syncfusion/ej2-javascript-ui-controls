@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-spreadsheet",
-	"version": "20.2.49",
+	"version": "20.3.9",
 	"description": "Feature-rich JavaScript Spreadsheet (Excel) control with built-in support for selection, editing, formatting, importing and exporting to Excel",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-spreadsheet.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-spreadsheet.es2015.js",
+	"es2015": "./dist/es6/ej2-spreadsheet.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-charts": "*",

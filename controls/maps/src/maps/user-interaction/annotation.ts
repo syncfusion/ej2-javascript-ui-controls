@@ -117,12 +117,11 @@ export class Annotations {
     /**
      * To destroy the annotation.
      *
-     * @param {Maps} map - Specifies the instance of the maps
      * @returns {void}
      * @private
      */
-    public destroy(map: Maps): void {
-        // Destroy method performed here
+    public destroy(): void {
+        this.map = null;
     }
 
 }

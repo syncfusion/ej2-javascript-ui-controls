@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { SpreadsheetModel, SheetModel, getCell, CellModel } from '../../../src/index';
-import { L10n } from '@syncfusion/ej2-base';
+import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet } from '../../../src/index';
+import { L10n, setCurrencyCode } from '@syncfusion/ej2-base';
 
 /**
  *  Spreadsheet Number Format spec
@@ -197,6 +197,34 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cell.value).toBe('2500');
                 expect(cell.format).toBe('$#,##0.00');
                 expect(cellEle.textContent).toBe('$2,500.00');
+                done();
+            });
+            it('Currency code change checking', (done: Function) => {
+                helper.invoke('numberFormat', ['$#,##0.00', 'B1']);
+                const cellEle: HTMLElement = helper.invoke('getCell', [0, 1]);
+                expect(cellEle.textContent).toBe('$10.00');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                setCurrencyCode('EUR');
+                spreadsheet.dataBind();
+                expect(cellEle.textContent).toBe('€10.00');
+                setCurrencyCode('USD');
+                spreadsheet.dataBind();
+                expect(cellEle.textContent).toBe('$10.00');
+                done();
+            });
+            it('Custom formatted cell value changed while clicking on column header (Aggregate calculation updating the cell model)', (done: Function) => {
+                helper.invoke('selectRange', ['E1:E2']);
+                helper.invoke('updateCell', [{ value: 'Amount' }, 'E1']);
+                helper.invoke('updateCell', [{ value: '20' }, 'E2']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('updateCell', [{ format: '($* #,##0);($* (#,##0);($* "-");(@_)' }, 'E1']);
+                helper.invoke('updateCell', [{ format: '($* #,##0);($* (#,##0);($* "-");(@_)' }, 'E2']);
+                const cellEle: HTMLElement = helper.invoke('getCell', [0, 4]);
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Amount');
+                expect(cellEle.textContent).toBe('(Amount ');
+                spreadsheet.notify(showAggregate, {});
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Amount');
+                expect(cellEle.textContent).toBe('(Amount ');
                 done();
             });
         });

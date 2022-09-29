@@ -333,7 +333,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
   private l10n: L10n;
   private refElement: HTMLElement;
   private initRenderClass: string;
-
+  public needsID: boolean;
+  
   /**
    * Initializes a new instance of the Toast class.
    *
@@ -342,6 +343,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
    */
   constructor(options?: ToastModel, element?: HTMLElement) {
     super(options, element);
+    this.needsID = true;
   }
 
   /**
@@ -764,6 +766,9 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     if (cssClass) {
       const split: string = cssClass.indexOf(',') !== -1 ? ',' : ' ';
       classList(this.toastEle, cssClass.split(split), []);
+      if (this.toastContainer) {
+        classList(this.toastContainer, cssClass.split(split), []);
+      }
     }
   }
 
@@ -1040,7 +1045,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     this.l10n.setLocale(this.locale);
     const closeIconTitle: string = this.l10n.getConstant('close');
     const closeBtn: HTEle = this.createElement(
-        'div', { className: CLOSEBTN + ' e-icons ', attrs: { tabindex: '0', 'aria-label': closeIconTitle } });
+        'div', { className: CLOSEBTN + ' e-icons ', attrs: { tabindex: '0', 'aria-label': closeIconTitle, 'role':'button'  } });
     this.toastEle.classList.add('e-toast-header-close-icon');
     this.toastEle.appendChild(closeBtn);
   }
@@ -1164,7 +1169,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       const btnDom: HTMLButtonElement = this.createElement('button') as HTMLButtonElement;
       btnDom.setAttribute('type', 'button');
       if (isNOU(actionBtn.model.cssClass) || actionBtn.model.cssClass.length === 0) {
-          actionBtn.model.cssClass = 'e-primary';
+          actionBtn.model.cssClass = 'e-primary' + ' ' + this.cssClass;
       }
       btnDom.classList.add('e-small');
       new Button(actionBtn.model, btnDom);

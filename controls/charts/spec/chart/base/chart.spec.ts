@@ -577,14 +577,14 @@ describe('Chart Control', () => {
         });
         it('checking before the legend name chage', () => {
             element = document.getElementById('seriesData_chart_legend_element');
-            expect(element.getAttribute('x') === '832' || element.getAttribute('x') === '833').toBe(true);
+            expect(element.getAttribute('x') === '829' || element.getAttribute('x') === '830').toBe(true);
             element = document.getElementById('seriesData_chart_legend_text_0');
             expect(element.textContent).toEqual('Gold');
         });
         it('checking with changing name', (done: Function) => {
             loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('seriesData_chart_legend_element');
-                expect(element.getAttribute('x') === '743' || element.getAttribute('x') === '752').toBe(true);
+                expect(element.getAttribute('x') === '740' || element.getAttribute('x') === '749').toBe(true);
                 element = document.getElementById('seriesData_chart_legend_text_0');
                 expect(element.textContent).toEqual('Olymbic gold medal');
                 done();

@@ -105,6 +105,14 @@ export interface ZoomSettingsModel {
     enablePinchZooming?: boolean;
 
     /**
+     * If set to true, chart can be rendered with toolbar at initial load.
+     *
+     * @default false
+     */
+
+    showToolbar?: boolean;
+
+    /**
      * If set to true, chart can be zoomed by using mouse wheel.
      *
      * @default false

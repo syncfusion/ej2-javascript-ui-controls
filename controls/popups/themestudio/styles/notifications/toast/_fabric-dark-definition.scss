@@ -51,6 +51,7 @@ $toast-icon-color: $neutral-light-font !default;
 $toast-close-icon-color: $neutral-light-font !default;
 $toast-title-color: $neutral-light-font !default;
 $toast-content-color: $neutral-light-font !default;
+
 // Toast Types theme definitions
 $toast-success-bg-color: $success-bg !default;
 $toast-success-color: $message-font !default;
@@ -70,7 +71,6 @@ $toast-info-hover-bg-color: #1d74c2 !default;
 $toast-info-hover-color: $toast-info-color !default;
 $toast-info-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
 
-
 $toast-warning-bg-color: $alert-bg !default;
 $toast-warning-color: $message-font !default;
 $toast-warning-title-color: $message-font !default;
@@ -80,7 +80,6 @@ $toast-warning-hover-bg-color: #b56f00 !default;
 $toast-warning-hover-color: $toast-warning-color !default;
 $toast-warning-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
 
-
 $toast-danger-bg-color: $error-bg !default;
 $toast-danger-color: $message-font !default;
 $toast-danger-title-color: $message-font !default;
@@ -89,4 +88,5 @@ $toast-danger-content-color: $message-font !default;
 $toast-danger-hover-bg-color: #c42818 !default;
 $toast-danger-hover-color: $toast-danger-color !default;
 $toast-danger-hover-box-shadow: 0 3px 6px 0 rgba($neutral-black, .26) !default;
+
 //enddefault

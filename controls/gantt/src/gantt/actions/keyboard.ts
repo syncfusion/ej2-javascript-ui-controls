@@ -265,10 +265,10 @@ export class FocusModule {
             if (ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectedRowIndex !== -1) {
                 const selectedItem: IGanttData = ganttObj.currentViewData[ganttObj.selectedRowIndex];
                 const focusedRowIndex: number = this.parent.ganttChartModule.focusedRowIndex;
-                const selectingRowIndex: number = focusedRowIndex > -1 ? focusedRowIndex : expandedRecords.indexOf(selectedItem);
+                const selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
                 const currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
                     expandedRecords[selectingRowIndex - 1];
-                ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
+                ganttObj.selectionModule.selectRow( ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
             } else if (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 const selectCellIndex: ISelectedCell[] = ganttObj.selectionModule.getSelectedRowCellIndexes();
                 const selectedCellItem: ISelectedCell = selectCellIndex[selectCellIndex.length - 1];

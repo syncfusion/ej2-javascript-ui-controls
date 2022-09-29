@@ -703,6 +703,9 @@ export class Pointer extends ChildProperty<Pointer> {
     public offset: number | string;
 
     /** @private */
+    public isPointerAnimation: boolean = true;
+
+    /** @private */
     public currentValue: number;
     /** @private */
     public previousValue: number;

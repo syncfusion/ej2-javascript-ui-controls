@@ -6,12 +6,12 @@
 import { PointModel } from '../primitives/point-model';
 import { Node, DiagramShape } from '../objects/node';
 import { Connector, BezierSegment, StraightSegment } from '../objects/connector';
-import { NodeModel, BasicShapeModel, SwimLaneModel } from '../objects/node-model';
-import { ConnectorModel, StraightSegmentModel } from '../objects/connector-model';
+import { NodeModel, BasicShapeModel, SwimLaneModel, PathModel } from '../objects/node-model';
+import { BezierSegmentModel, ConnectorModel, StraightSegmentModel } from '../objects/connector-model';
 import { Point } from '../primitives/point';
 import { BpmnSubEvent } from '../objects/node';
 import { PointPort } from '../objects/port';
-import { IElement, ISizeChangeEventArgs, IDraggingEventArgs, DiagramFixedUserHandle } from '../objects/interface/IElement';
+import { IElement, ISizeChangeEventArgs, IDraggingEventArgs, DiagramFixedUserHandle, IElementDrawEventArgs } from '../objects/interface/IElement';
 import { BlazorFixedUserHandleClickEventArgs, DiagramEventObject } from '../objects/interface/IElement';
 import { IEndChangeEventArgs, FixedUserHandleClickEventArgs } from '../objects/interface/IElement';
 import { IBlazorConnectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
@@ -19,14 +19,14 @@ import { IBlazorDropEventArgs } from '../objects/interface/IElement';
 import { IRotationEventArgs, IDoubleClickEventArgs, IClickEventArgs, IDropEventArgs } from '../objects/interface/IElement';
 import { CommandHandler } from './command-manager';
 import { IBlazorDraggingEventArgs } from '../objects/interface/IElement';
-import { rotatePoint, cloneObject } from '../utility/base-util';
+import { rotatePoint, cloneObject, randomId } from '../utility/base-util';
 import { Rect } from '../primitives/rect';
-import { getPolygonPath } from '../utility/path-util';
+import { getFreeHandPath, getPolygonPath } from '../utility/path-util';
 import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOutConnect, canMove } from '../utility/constraints-util';
 import { HistoryEntry } from '../diagram/history';
 import { Matrix, transformPointByMatrix, rotateMatrix, identityMatrix } from '../primitives/matrix';
 import { Snap } from './../objects/snapping';
-import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints } from './../enum/enum';
+import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints, State } from './../enum/enum';
 import { PointPortModel, PortModel } from './../objects/port-model';
 import { ITouches } from '../objects/interface/interfaces';
 import { SelectorModel } from '../objects/node-model';
@@ -38,10 +38,11 @@ import { contains, Actions } from './actions';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { Selector } from '../objects/node';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { getInOutConnectPorts, cloneBlazorObject, getDropEventArguements, getObjectType, checkPort } from '../utility/diagram-util';
-import { isBlazor } from '@syncfusion/ej2-base';
+import { getInOutConnectPorts, cloneBlazorObject, getDropEventArguements, getObjectType, checkPort, findDistance } from '../utility/diagram-util';
+import { isBlazor, remove } from '@syncfusion/ej2-base';
 import { DeepDiffMapper } from '../utility/diff-map';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../objects/fixed-user-handle-model';
+import { findAngle } from '../utility/connector';
 
 /**
  * Defines the interactive tools
@@ -321,6 +322,33 @@ export class ToolBase {
             return { x: 1, y: 0 };
         }
         return { x: 0.5, y: 0.5 };
+    }
+
+    //method to get node shape name
+    public getShapeType():string{
+        let shape:string;
+        if(this.commandHandler.diagram.drawingObject.shape.type === "Image" || "HTML" || "Native" ||"Path" )
+        {
+        shape = this.commandHandler.diagram.drawingObject.shape.type;
+        }
+        else
+        {
+        shape = (this.commandHandler.diagram.drawingObject.shape as BasicShapeModel).shape;
+        }
+        return shape;
+        }
+
+    //EJ2-52203-Method to trigger ElementDraw Event when we draw node or connector with the drawing Tool
+    public triggerElementDrawEvent(source:NodeModel|ConnectorModel,state:State,objectType:string,elementType:string,isMouseDownAction:boolean):void{
+        let arg : IElementDrawEventArgs = {
+            source: source , state:state,objectType:objectType,cancel:false,elementType:elementType
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.elementDraw,arg);
+        if(isMouseDownAction && arg.cancel){
+            {
+            this.commandHandler.diagram.resetTool();
+            }
+        }
     }
 }
 
@@ -1395,8 +1423,9 @@ export class ResizeTool extends ToolBase {
      * Sets/Gets the previous mouse position
      */
     public prevPosition: PointModel;
-
-    private corner: string;
+    
+    /** @private */  
+    public corner: string;
 
     /**   @private  */
     public initialOffset: PointModel;
@@ -1706,12 +1735,12 @@ export class NodeDrawingTool extends ToolBase {
     public drawingObject: Node | Connector;
     /** @private */
     public sourceObject: Node | Connector;
-
+    
     constructor(commandHandler: CommandHandler, sourceObject: Node | Connector) {
         super(commandHandler, true);
         this.sourceObject = sourceObject;
     }
-
+    
     /**
      * @param args
      * @private
@@ -1720,8 +1749,8 @@ export class NodeDrawingTool extends ToolBase {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setFocus();
-    }
-
+        this.triggerElementDrawEvent(args.source,"Start","Node",this.getShapeType(),true);
+}
     /**
      * @param args
      * @private
@@ -1736,6 +1765,7 @@ export class NodeDrawingTool extends ToolBase {
         if (!this.drawingObject) {
             this.drawingObject = this.commandHandler.drawObject(node as Node);
         }
+        this.triggerElementDrawEvent(this.drawingObject,"Progress","Node",this.getShapeType(),false);
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
             checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, rect);
@@ -1757,6 +1787,7 @@ export class NodeDrawingTool extends ToolBase {
         checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, rect);
         if (this.drawingObject && this.drawingObject instanceof Node) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
+            this.triggerElementDrawEvent(this.drawingObject,"Completed","Node",this.getShapeType(),false);
             this.drawingObject = null;
         }
         this.commandHandler.updateBlazorSelector();
@@ -1788,7 +1819,7 @@ export class ConnectorDrawingTool extends ConnectTool {
     public drawingObject: Node | Connector;
     /** @private */
     public sourceObject: Node | Connector;
-
+     
     constructor(commandHandler: CommandHandler, endPoint: string, sourceObject: Node | Connector) {
         super(commandHandler, endPoint);
         this.sourceObject = sourceObject;
@@ -1802,8 +1833,8 @@ export class ConnectorDrawingTool extends ConnectTool {
         super.mouseDown(args);
         this.inAction = true;
         this.commandHandler.setFocus();
+        this.triggerElementDrawEvent(args.source,"Start","Connector",(this.commandHandler.diagram.drawingObject as ConnectorModel).type,true);
     }
-
     /**
      * @param args
      * @private
@@ -1818,6 +1849,7 @@ export class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
             }
             args.source = this.drawingObject;
+            this.triggerElementDrawEvent(args.source,"Progress","Connector",(this.drawingObject as ConnectorModel).type,false);
             if (((args.target && args.target instanceof Node) || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 this.commandHandler.connect(this.endPoint, args);
@@ -1841,10 +1873,12 @@ export class ConnectorDrawingTool extends ConnectTool {
      * @private
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
+        
         this.commandHandler.enableServerDataBinding(false);
         this.checkPropertyValue();
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
+            this.triggerElementDrawEvent(this.drawingObject,"Completed","Connector",(this.drawingObject as ConnectorModel).type,false);
             this.drawingObject = null;
         }
         this.commandHandler.updateBlazorSelector();
@@ -1867,7 +1901,7 @@ export class ConnectorDrawingTool extends ConnectTool {
             this.mouseUp(args);
         }
     }
-
+   
 }
 
 export class TextDrawingTool extends ToolBase {
@@ -2468,5 +2502,256 @@ export class LabelRotateTool extends ToolBase {
      */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
+    }
+}
+
+/**
+ * EJ2-33302 - Freehand drawing support in diagram control.
+ */
+export class FreeHandTool extends ToolBase {
+     /** @private */
+     public drawingObject: Node | Connector;
+    public startPoint: PointModel;
+     constructor(commandHandler: CommandHandler) {
+         super(commandHandler, true);
+     }
+    /**
+     * mouseMove - Collect the points using current mouse position and convert it into pathData. 
+     * @param args
+     * @private
+     */
+    public mouseMove(args: MouseEventArgs): boolean {
+        super.mouseMove(args);
+        if (this.inAction) {
+            const obj: PathModel = (this.drawingObject.shape as PathModel);
+            if (this.drawingObject && this.currentPosition) {
+                let pt:PointModel = this.currentPosition as PointModel;
+                (obj as BasicShapeModel).points.push(pt);
+                (this.drawingObject.wrapper.children[0] as PathElement).data = getFreeHandPath(
+                    (this.drawingObject.shape as BasicShapeModel).points);
+                    (obj as PathModel).data = getFreeHandPath((obj as BasicShapeModel).points);
+                if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
+                    const region: Rect = Rect.toBounds((this.drawingObject.shape as BasicShapeModel).points);
+                    this.commandHandler.updateNodeDimension(this.drawingObject, region);
+                }
+            }
+        }
+        return true;
+    }
+     /**
+     * @param args
+     * @private
+     */
+       public mouseDown(args: MouseEventArgs): void {
+        super.mouseDown(args);
+        this.inAction = true;
+        if (!this.drawingObject) {
+            this.startPoint = { x: this.startPosition.x, y: this.startPosition.y };
+            const node: NodeModel = {
+                offsetX: this.currentPosition.x,
+                offsetY: this.currentPosition.y,
+                width: 5, height: 5,
+                style: { strokeColor: 'black', strokeWidth: 1, fill:'transparent'},
+                shape: {
+                    type: 'Path',
+                    points:
+                        [{ x: this.startPoint.x, y: this.startPoint.y }, { x: this.currentPosition.x, y: this.currentPosition.y }]
+                }
+            };
+            this.drawingObject = this.commandHandler.drawObject(node as Node);
+        } 
+    }
+     /**
+     * mouseUp - Remove the drawn object. Reduce and smoothen the collected points and create
+     * a bezier connector using the smoothened points.
+     * @param args
+     * @private
+     */
+      public mouseUp(args: MouseEventArgs): void 
+      {
+        this.checkPropertyValue();
+        super.mouseMove(args);
+        let tolerance:number = 10;
+        let smoothValue:number = 0.5;
+        if (this.inAction) 
+        {
+            this.inAction = false;
+            if (this.drawingObject) 
+            {
+                let obj :PathModel = (this.drawingObject.shape as PathModel);
+                let points = (obj as BasicShapeModel).points;
+                this.commandHandler.addObjectToDiagram(this.drawingObject);
+                let prevId:string = this.drawingObject.id;
+                let prevObj = this.commandHandler.diagram.nameTable[prevId];
+                this.commandHandler.diagram.remove(prevObj);
+                points = this.pointReduction(points,tolerance);
+                const newObj: ConnectorModel = {
+                    id:'newConnector'+ randomId(),type:'Bezier',
+                    sourcePoint : {x:points[0].x,y:points[0].y},targetPoint: {x:points[points.length-1].x,y:points[points.length-1].y},
+                    segments:[],targetDecorator:{shape:'None'}
+                };
+                this.drawingObject = this.commandHandler.drawObject(newObj as Connector);
+                this.drawingObject = this.bezierCurveSmoothness(points,smoothValue,this.drawingObject,obj);
+                this.commandHandler.updateConnectorPoints(this.drawingObject);
+                this.commandHandler.addObjectToDiagram(this.drawingObject);
+            }
+        }
+    this.endAction();
+}
+    /**
+     * Reduce the collected points based on tolerance value.
+     * @param points 
+     * @param tolerance 
+     * @returns points 
+     */
+    public pointReduction(points:PointModel[],tolerance:number)
+    {
+        if(points === null || points.length<3)
+        {
+            return points
+        }
+        let firstPoint:number = 0;
+        let lastPoint:number = points.length-1;
+        let pointIndex:number[]=[];
+        pointIndex.push(firstPoint);
+        pointIndex.push(lastPoint);
+       
+        while(points[firstPoint]===(points[lastPoint]))
+        {
+            lastPoint--;
+        }
+        this.reduction(points, firstPoint, lastPoint, tolerance, pointIndex);
+        let returnedPoints:PointModel[]=[];
+        pointIndex.sort(function(a, b){return a-b});
+        pointIndex.forEach(element => {
+        returnedPoints.push(points[element]);
+       });
+       return returnedPoints;
+    }
+
+    public reduction(points:PointModel[], firstPoint:number, lastPoint:number, tolerance:number, pointIndex:number[])
+    {
+        let maxDistance:number = 0;
+        let largestPointIndex:number = 0;
+        for(let i:number = firstPoint; i < lastPoint; i++)
+        {
+            let distance:number = this.perpendicularDistance(points[firstPoint] as Point,points[lastPoint] as Point,points[i] as Point);
+            if (distance > maxDistance)
+                {
+                    maxDistance = distance;
+                    largestPointIndex = i;
+                }
+        }
+        if (maxDistance > tolerance && largestPointIndex !== 0)
+        {
+            pointIndex.push(largestPointIndex);
+            this.reduction(points, firstPoint, largestPointIndex, tolerance, pointIndex);
+            this.reduction(points, largestPointIndex, lastPoint, tolerance,  pointIndex);
+        }
+    }
+    /**
+     * Calculate the perpendicular distance of each point with first and last points
+     * @param point1 
+     * @param point2 
+     * @param point3 
+     * @returns 
+     */
+    public perpendicularDistance(point1:Point, point2:Point, point3:Point):number
+    {
+        let area:number = Math.abs(.5 * ((point1.x * point2.y - point2.x * point1.y) +
+                (point2.x * point3.y - point3.x * point2.y) + (point3.x * point1.y - point1.x * point3.y)));
+        let base = Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2));
+        let height = area / base * 2;
+        return height;
+    }
+    /**
+     * Smoothen the bezier curve based on the points and smoothValue.
+     * @param points 
+     * @param smoothValue 
+     * @param drawingObject 
+     * @param obj 
+     * @returns drawingObject
+     */
+   private bezierCurveSmoothness(points:PointModel[],smoothValue:number,drawingObject:Connector | Node,obj:PathModel): Node | Connector
+    {
+        if(points.length < 3)
+        {
+            return drawingObject
+        };
+        for(let i:number = 0; i<points.length - 1 ; i++)
+        {
+            let pointx1:number = points[i].x;
+            let pointy1:number = points[i].y;
+            let pointx2:number = points[i + 1].x;
+            let pointy2:number = points[i + 1].y;
+            let pointx0:number;
+            let pointy0:number;
+            if (i === 0)
+            {
+                var previousPoint = points[i];
+                pointx0 = previousPoint.x;
+                pointy0 = previousPoint.y;
+            }
+            else
+            {
+                pointx0 = points[i - 1].x;
+                pointy0 = points[i - 1].y;
+            }
+            let pointx3,pointy3:number;
+            if (i === points.length - 2)
+            {
+                var nextPoint = points[i + 1];
+                pointx3 = nextPoint.x;
+                pointy3 = nextPoint.y;
+            }
+            else
+            {
+                pointx3 = points[i + 2].x;
+                pointy3 = points[i + 2].y;
+            }
+            let xc1:number = (pointx0 + pointx1) / 2.0;
+            let yc1:number = (pointy0 + pointy1) / 2.0;
+            let xc2:number = (pointx1 + pointx2) / 2.0;
+            let yc2:number = (pointy1 + pointy2) / 2.0;
+            let xc3:number = (pointx2 + pointx3) / 2.0;
+            let yc3:number = (pointy2 + pointy3) / 2.0;
+            let point0:PointModel={}; let point1:PointModel={}; let point2:PointModel={};let point3:PointModel={};
+            point0.x = pointx0; point0.y = pointy0;
+            point1.x = pointx1; point1.y = pointy1;
+            point2.x = pointx2; point2.y = pointy2;
+            point3.x = pointx3; point3.y = pointy3;
+            let len1:number = Point.findLength(point0,point1);
+            let len2:number = Point.findLength(point1,point2);
+            let len3:number = Point.findLength(point2,point3);
+            let k1:number = len1 / (len1 + len2);
+            let k2:number = len2 / (len2 + len3);
+            let xm1:number = xc1 + (xc2 - xc1) * k1;
+            let ym1:number = yc1 + (yc2 - yc1) * k1;
+            let xm2:number = xc2 + (xc3 - xc2) * k2;
+            let ym2:number = yc2 + (yc3 - yc2) * k2;
+            let Controlpointx1:number = xm1 + (xc2 - xm1) * smoothValue + pointx1 - xm1;
+            let Controlpointy1:number = ym1 + (yc2 - ym1) * smoothValue + pointy1 - ym1;
+            let Controlpointx2:number = xm2 + (xc2 - xm2) * smoothValue + pointx2 - xm2;
+            let Controlpointy2:number = ym2 + (yc2 - ym2) * smoothValue + pointy2 - ym2;
+
+            let segment = new BezierSegment(obj, 'segments', { type: 'Bezier' }, true);
+            let cnPt1:PointModel = {x:Controlpointx1,y:Controlpointy1};
+            let cnPt2:PointModel = {x:Controlpointx2,y:Controlpointy2};
+            let segSourcePoint:PointModel = {x:pointx1,y:pointy1};
+            let segTargetPoint:PointModel = {x:pointx2,y:pointy2};
+
+            segment.type = 'Bezier';
+            (drawingObject as Connector).segments[i] = segment;
+            if(i=== 0){
+                cnPt1 = {x:pointx1,y:pointy1}
+            };
+            if(i === points.length-2){
+                cnPt2 = {x:pointx2,y:pointy2}
+            };
+            ((drawingObject as Connector).segments[i] as BezierSegment).vector1 = {angle:findAngle(segSourcePoint,cnPt1),distance:Point.findLength(segSourcePoint,cnPt1)};
+            ((drawingObject as Connector).segments[i] as BezierSegment).vector2 = {angle:findAngle(segTargetPoint,cnPt2),distance:Point.findLength(segTargetPoint,cnPt2)};
+            ((drawingObject as Connector).segments[i] as BezierSegment).point = segTargetPoint;
+        }
+        return drawingObject;   
     }
 }

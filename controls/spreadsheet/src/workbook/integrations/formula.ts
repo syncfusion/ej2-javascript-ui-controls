@@ -107,15 +107,18 @@ export class WorkbookFormula {
         this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
     }
 
-    private clearFormulaDependentCells(args: { [key: string]: string | boolean }): void {
+    private clearFormulaDependentCells(args: { cellRef?: string, isOpen?: boolean }): void {
         if (args.isOpen as boolean) {
             this.calculateInstance.getDependentCells().clear();
             this.calculateInstance.getFormulaInfoTable().clear();
             return;
         }
-        let cellRef: string = args.cellRef as string;
-        cellRef = cellRef.split(':')[0];
-        cellRef = '!' + this.parent.activeSheetIndex + '!' + cellRef;
+        let cellRef: string = args.cellRef.split(':')[0];
+        const sheetId: string = this.parent.getActiveSheet().id.toString();
+        const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
+        if (family.isSheetMember && !isNullOrUndefined(family.parentObjectToToken)) {
+            cellRef = family.parentObjectToToken.get(sheetId) + cellRef;
+        }
         this.calculateInstance.clearFormulaDependentCells(cellRef);
     }
 
@@ -264,14 +267,21 @@ export class WorkbookFormula {
         const dependentCell: Map<string, string[]> = this.calculateInstance.getDependentCells();
         let fInfo: FormulaInfo; let formulaVal: string; let rowId: number; let colId: number; let token: string;
         const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
+        let prevSheetName: string; let sheetNameIdx: number;
         dependentCell.forEach((dependentCellRefs: string[], cellRef: string) => {
             dependentCellRefs.forEach((dependentCellRef: string): void => {
                 fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCellRef);
                 if (!isNullOrUndefined(fInfo)) {
                     formulaVal = fInfo.formulaText;
-                    if (formulaVal.toUpperCase().indexOf(delSheetName.toUpperCase()) > -1) {
-                        formulaVal = formulaVal.toUpperCase().split(delSheetName.toUpperCase() +
-                            this.calculateInstance.sheetToken).join(this.referenceError());
+                    prevSheetName = delSheetName.toUpperCase();
+                    formulaVal = formulaVal.toUpperCase();
+                    sheetNameIdx = formulaVal.indexOf(prevSheetName);
+                    if (sheetNameIdx > -1) {
+                        if (formulaVal[sheetNameIdx - 1] === "'" && formulaVal[sheetNameIdx + prevSheetName.length] === "'") {
+                            prevSheetName = `'${prevSheetName}'`;
+                        }
+                        prevSheetName += this.calculateInstance.sheetToken;
+                        formulaVal = formulaVal.split(prevSheetName).join(this.referenceError());
                         rowId = this.calculateInstance.rowIndex(dependentCellRef);
                         colId = this.calculateInstance.colIndex(dependentCellRef);
                         token = dependentCellRef.slice(0, dependentCellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
@@ -714,7 +724,7 @@ export class WorkbookFormula {
             calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i])(range));
             if (cell.format) {
                 const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: calcValue, value: calcValue,
-                    format: cell.format, cell: { value: calcValue, format: cell.format }, onLoad: true };
+                    format: cell.format, cell: { value: calcValue, format: cell.format }, onLoad: true, skipRowFill: true };
                 this.parent.notify(getFormattedCellObject, eventArgs);
                 calcValue = eventArgs.formattedText as string;
             }

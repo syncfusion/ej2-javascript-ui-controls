@@ -1,8 +1,8 @@
-//default 
+//default
 $vscroll-skin: 'bootstrap' !default;
 $vscroll-nav-nrml-height: 40px !default;
-$vscroll-hover-font: $hover-font-color  !default;
-$vscroll-active-font-color: $active-font-color  !default;
+$vscroll-hover-font: $hover-font-color !default;
+$vscroll-active-font-color: $active-font-color !default;
 $vscroll-border-size: $border-size !default;
 $vscroll-border-type: solid !default;
 
@@ -38,7 +38,7 @@ $vscroll-focus-border: 0 !default;
 $vscroll-active-border: 0 !default;
 $vscroll-hover-border: 0 !default;
 $vscroll-hover-border-color: transparent !default;
-$vscroll-active-box-shadow: inset 0 3px 5px rgba(0 , 0 , 0 , .125) !default;
+$vscroll-active-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125) !default;
 
 @mixin vscroll-btn-animation {
   content: '';
@@ -47,4 +47,5 @@ $vscroll-active-box-shadow: inset 0 3px 5px rgba(0 , 0 , 0 , .125) !default;
 @mixin vscroll-btn-animation-after {
   content: '';
 }
+
 //enddefault

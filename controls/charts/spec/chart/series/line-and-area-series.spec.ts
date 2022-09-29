@@ -57,6 +57,8 @@ describe('Chart Control Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: HTMLElement;
+        let markerColor: string;
+        let fillcolor: string;
         let x: number; let y: number;
         let trigger: MouseEvents = new MouseEvents();
         element = createElement('div', { id: 'container' });
@@ -283,8 +285,19 @@ describe('Chart Control Series', () => {
             chartObj.tooltip.enable = false;
             chartObj.refresh();
         });
+        it('checking filled enable color change', function (done) {
+            loaded = function (args) {
+                markerColor = document.getElementById('container_Series_0_Point_3_Symbol').getAttribute('fill');
+                fillcolor = chartObj.series[0].fill;
+                expect(markerColor == fillcolor).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.isFilled = true;
+            chartObj.series[0].marker.fill=null;
+            chartObj.refresh();
+        });
     });
-
     /**
      * Default Line Series
      */
@@ -951,10 +964,10 @@ describe('Chart Control Series', () => {
         it('with fill and stroke', (done: Function) => {
             loaded = (args: Object): void => {
                 let seriesElements = document.getElementById('container_Series_0');
-                expect(seriesElements.getAttribute('stroke') == 'green').toBe(true);
+                expect(seriesElements.getAttribute('stroke') == 'transparent').toBe(true);
                 expect(seriesElements.getAttribute('stroke') != 'red').toBe(true);
                 expect(seriesElements.getAttribute('stroke-width') != '10').toBe(true);
-                expect(seriesElements.getAttribute('stroke-width') == '4').toBe(true);
+                expect(seriesElements.getAttribute('stroke-width') == '0').toBe(true);
                 expect(seriesElements.getAttribute('opacity') == '0.6').toBe(true);
                 done();
             };
@@ -969,7 +982,37 @@ describe('Chart Control Series', () => {
             chartObj.series[0].opacity = 0.6;
             chartObj.refresh();
         });
-
+        it('with  stroke while applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElements = document.getElementById('container_Series_border_0');
+                expect(seriesElements.getAttribute('stroke') == 'green').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = data;
+            chartObj.series[0].dashArray = null;
+            chartObj.series[0].border.color = 'green';
+            chartObj.primaryXAxis.valueType = 'Category';
+            chartObj.series[0].border.width = 4;
+            chartObj.series[0].opacity = 0.6;
+            chartObj.refresh();
+        });
+        it('with fill while applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesElements = document.getElementById('container_Series_border_0');
+                expect(seriesElements.getAttribute('fill') == 'transparent').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = data;
+            chartObj.series[0].dashArray = null;
+            chartObj.series[0].border.color = 'green';
+            chartObj.series[0].fill = 'red';
+            chartObj.primaryXAxis.valueType = 'Category';
+            chartObj.series[0].border.width = 4;
+            chartObj.series[0].opacity = 0.6;
+            chartObj.refresh();
+        });
         it('Checking with null Points', (done: Function) => {
             loaded = (args: Object): void => {                
                 let path = document.getElementById('container_Series_0');
@@ -1341,10 +1384,9 @@ describe('Chart Control Series', () => {
             loaded = (args: Object): void => {
                 let hiddenShape: HTMLElement = document.getElementById('container_Series_1_Point_1_Text_0');
                 expect(hiddenShape != null).toBe(true);
-                let elementY: number = +document.getElementById('container_Series_1_Point_1_Text_0').getAttribute('y');
-                let elementHeight: number = +document.getElementById('container_Series_1_Point_1_Symbol').getAttribute('height');
+                let elementY: number = +document.getElementById('container_Series_1_Point_2_Text_0').getAttribute('y');
+                let elementHeight: number = +document.getElementById('container_Series_1_Point_2_Symbol').getAttribute('height');
                 let symbolLocation = (<Points>(<Series>chartObj.series[1]).points[2]).symbolLocations[0].y;
-                expect(elementY > (symbolLocation + elementHeight)).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1456,8 +1498,8 @@ describe('Chart Control Series', () => {
                 expect(elementY < (symbolLocation - elementHeight - elementHeight)).toBe(true); done();
             };
             chartObj.loaded = loaded;
-            chartObj.series[0].marker.dataLabel.position = 'Top';
-            chartObj.series[0].marker.dataLabel.alignment = 'Near';
+            chartObj.series[1].marker.dataLabel.position = 'Top';
+            chartObj.series[1].marker.dataLabel.alignment = 'Near';
             chartObj.refresh();
         });
 

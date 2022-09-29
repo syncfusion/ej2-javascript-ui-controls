@@ -98,9 +98,10 @@ describe('Filter ->', () => {
         it('Date filter popup rendering check', (done: Function) => {
             helper.invoke('applyFilter');
             helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy', 'B2']);
-            const cell: HTMLElement = helper.invoke('getCell', [0, 1]);
-            cell.focus();
-            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 1]);
+            helper.invoke('selectRange', ['B1']);
+            helper.invoke('getCell', [0, 1]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
             setTimeout(() => {
                 checkboxList = helper.getElement('.e-checkboxlist');
                 expect(checkboxList.childElementCount).toBe(0);
@@ -336,8 +337,9 @@ describe('Filter ->', () => {
             expect(cell.classList.contains('e-right-align')).toBeFalsy();
             expect(cell.textContent).toBe('10/10/202');
             helper.invoke('selectRange', ['B1']);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 1]);
             helper.invoke('getCell', [0, 1]).focus();
-            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
             setTimeout(() => {
                 checkboxList = helper.getElement('.e-checkboxlist');
                 expect(checkboxList.childElementCount).toBe(0);
@@ -940,9 +942,10 @@ describe('Filter ->', () => {
                 helper.getElement(`${id}_sorting`).click();
                 helper.getElement(`${id}_applyfilter`).click();
                 expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
                 helper.invoke('selectRange', ['G1']);
                 helper.invoke('getCell', [0, 0]).focus();
-                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
                 setTimeout(() => {
                     setTimeout(() => {
                         const cbox: HTMLElement = helper.getElement('.e-checkboxlist').lastElementChild.querySelector('.e-checkbox-wrapper');
@@ -1025,7 +1028,7 @@ describe('Filter ->', () => {
                     expect(spreadsheet.sheets[0].topLeftCell).toBe('A1');
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A10');
                     done();
-                });
+                }, 100);
             });
             it('Apply filter in multiple column and clear filter using context menu', (done: Function) => {
                 helper.invoke('selectRange', ['E2']);
@@ -1088,7 +1091,10 @@ describe('Filter ->', () => {
                 done();
             });
             it('Filter not applied properly in multiple column filtering after clearing the single column filter->', (done: Function) => {
-                helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 3]);
+                helper.invoke('selectRange', ['D1']);
+                helper.invoke('getCell', [0, 3]).focus();
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
                 setTimeout(() => {
                     setTimeout(() => {
                         helper.click('.e-excelfilter .e-spreadsheet-contextmenu ul li:nth-child(3)');

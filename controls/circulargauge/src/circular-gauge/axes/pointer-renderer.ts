@@ -6,6 +6,7 @@ import { linear, getCompleteArc } from '../utils/helper-pointer-renderer';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { animationComplete } from '../model/constants';
 import { GaugeShape } from '../utils/enum';
+import { FontModel } from '../model/base-model';
 
 /**
  * Specifies the Axis rendering for circular gauge
@@ -59,8 +60,9 @@ export class PointerRenderer {
                 this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointerIndex, childElement, gauge);
                 this.setPointerValue(axis, pointer, pointer.currentValue);
                 pointerElement.appendChild(childElement);
-                if (animate || pointer.animation.enable) {
-                    this.doPointerAnimation(pointer, axis);
+                if ((animate || pointer.animation.enable) && (!this.gauge.isPropertyChange || pointer.isPointerAnimation)) {
+                    pointer.previousValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.previousValue;
+                    this.doPointerAnimation(childElement, pointer, axis);
                 }
             });
             element.appendChild(pointerElement);
@@ -269,6 +271,7 @@ export class PointerRenderer {
         if (isNullOrUndefined(pointer.currentRadius)) {
             this.calculatePointerRadius(axis, pointer);
         }
+        
         pointer.pathElement.map((element: Element) => {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value && !checkMinValue) {
@@ -285,13 +288,7 @@ export class PointerRenderer {
                 }
             } else {
                 if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
-                    const textangle: number = getAngleFromValue(pointer.value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
-                    const textlocation: GaugeLocation = getLocationFromAngle((pointer.markerShape === 'Text') ? textangle : 0, pointer.currentRadius, this.gauge.midPoint);
-                    element.setAttribute(
-                        'transform', 'rotate(' + (textangle + 90) + ',' + textlocation.x + ',' + textlocation.y + ')'
-                    );
-                    element.setAttribute('x', String(textlocation.x));
-                    element.setAttribute('y', String(textlocation.y));
+                    this.calculateTextElement(axis, pointer, value, element);
                 } else {
                     element.setAttribute(
                         'transform', 'rotate(' + getAngleFromValue(
@@ -304,6 +301,26 @@ export class PointerRenderer {
             element.setAttribute('aria-label', pointer.description || 'Pointer:' + value.toString());
         });
     }
+
+    /**
+     * Method to set the text value of the circular gauge.
+     *
+     * @param {Axis} axis - Specifies the axis.
+     * @param {Pointer} pointer - Specifies the pointer.
+     * @param {number} value - Specifies the value.
+     * @param {Element} Specifies the text element.
+     * @returns {void}
+     * @private
+     */
+     public calculateTextElement(axis: Axis, pointer: Pointer, value: number, element: Element): void {
+        const textangle: number = getAngleFromValue(value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
+        const textlocation: GaugeLocation = getLocationFromAngle( textangle, pointer.currentRadius, this.gauge.midPoint);
+        element.setAttribute(
+            'transform', 'rotate(' + (textangle + 90) + ',' + textlocation.x + ',' + textlocation.y + ')'
+        );
+        element.setAttribute('x', String(textlocation.x));
+        element.setAttribute('y', String(textlocation.y));
+     }
 
     /**
      * Method to render the marker pointer of the ciruclar gauge.
@@ -336,13 +353,24 @@ export class PointerRenderer {
             gauge.midPoint
         );
         if (pointer.markerShape === 'Text') {
+            let style: FontModel = {
+                size: pointer.textStyle.size,
+                color: pointer.textStyle.color,
+                fontFamily: pointer.textStyle.fontFamily,
+                fontStyle: pointer.textStyle.fontStyle,
+                fontWeight: pointer.textStyle.fontWeight,
+                opacity: pointer.textStyle.opacity
+            };
+            style.color = style.color || this.gauge.themeStyle.pointerColor;
             const textOption: TextOption =
                 new TextOption(
                     gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, location.x, location.y, 'middle',
                     pointer.text, 'rotate(' + (angle + 90) + ',' +
                     (location.x) + ',' + location.y + ')',
                     'auto');
-            textElement(textOption, pointer.textStyle, pointer.textStyle.color, parentElement, 'pointer-events : auto; ');
+            const textObject: Element = textElement(textOption, style, style.color, parentElement, 'pointer-events : auto; ');
+            textObject['style']['visibility'] = (pointer.animation.enable && (!this.gauge.isPropertyChange || pointer.isPointerAnimation) && this.gauge.animatePointer) ? 'hidden' : 'visible';
+            pointer.pathElement.push(textObject);
         } else {
             pointer.pathElement.push(appendPath(
                 calculateShapes(
@@ -395,10 +423,10 @@ export class PointerRenderer {
      * @param {Axis} axis - Specifies the axis.
      * @returns {void}
      */
-    private doPointerAnimation(pointer: Pointer, axis: Axis): void {
+    private doPointerAnimation(pointerElement: Element, pointer: Pointer, axis: Axis): void {
         const startValue: number = !isNullOrUndefined(pointer.previousValue) ? pointer.previousValue : axis.visibleRange.min;
         const endValue: number = pointer.currentValue;
-        if (pointer.animation.enable && startValue !== endValue && this.gauge.animatePointer) {
+        if (pointer.animation.enable && startValue !== endValue && this.gauge.animatePointer) {            
             pointer.pathElement.map((element: Element) => {
                 if (pointer.type === 'RangeBar') {
                     this.performRangeBarAnimation(
@@ -406,13 +434,55 @@ export class PointerRenderer {
                         pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)
                     );
                 } else {
-                    this.performNeedleAnimation(
-                        element as HTMLElement, startValue, endValue, axis, pointer,
-                        pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)
-                    );
+                    if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
+                        this.performTextAnimation(pointerElement as HTMLElement, startValue, endValue, axis, pointer);
+                    }
+                    else {
+                        this.performNeedleAnimation(
+                            element as HTMLElement, startValue, endValue, axis, pointer,
+                            pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)
+                        );
+                    }
                 }
             });
         }
+    }
+
+    /**
+     * @private
+     */
+    public performTextAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
+        const isClockWise: boolean = axis.direction === 'ClockWise';
+        let textangle: number;
+        let textlocation: GaugeLocation;
+        let pointerValue: number = 0;
+        let timeStamp: number;
+        start = typeof(start) === 'string' ? parseInt(start, 10) : start;
+        end = typeof(end) === 'string' ? parseInt(end, 10) : end;
+        element = !isNullOrUndefined(element.children[0]) ? element.children[0] as HTMLElement : element;
+        let val: number = Math.abs(start - end);
+        new Animation({}).animate(element, {
+            duration: pointer.animation.duration,
+            progress: (args: AnimationOptions): void => {
+                if (args.timeStamp > args.delay) {
+                    timeStamp = (args.timeStamp / pointer.animation.duration);
+                    pointerValue = end > start ? start + (timeStamp * val) : start - (timeStamp * val);
+                    textangle = getAngleFromValue(pointerValue, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
+                    textlocation = getLocationFromAngle(textangle, pointer.currentRadius, this.gauge.midPoint);
+                    element.setAttribute(
+                        'transform', 'rotate(' + (textangle + 90) + ',' + textlocation.x + ',' + textlocation.y + ')'
+                    );
+                    element.setAttribute('x', String(textlocation.x));
+                    element.setAttribute('y', String(textlocation.y));
+                    element['style']['visibility'] = 'visible';
+                }
+            },
+            end: (model: AnimationOptions) => {
+                this.setPointerValue(axis, pointer, end);
+                pointer.isPointerAnimation = false;
+                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+            }
+        });
     }
 
     /**
@@ -433,6 +503,8 @@ export class PointerRenderer {
         innerRadius?: number
     ): void {
         const isClockWise: boolean = axis.direction === 'ClockWise';
+        start = typeof(start) === 'string' ? parseInt(start, 10) : start;
+        end = typeof(end) === 'string' ? parseInt(end, 10) : end;
         const startAngle: number = getAngleFromValue(
             start, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, isClockWise
@@ -459,6 +531,7 @@ export class PointerRenderer {
             },
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);
+                pointer.isPointerAnimation = false;
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
                     this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
                 }
@@ -482,6 +555,8 @@ export class PointerRenderer {
     public performRangeBarAnimation(
         element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer, radius: number, innerRadius?: number): void {
         const isClockWise: boolean = axis.direction === 'ClockWise';
+        start = typeof(start) === 'string' ? parseInt(start, 10) : start;
+        end = typeof(end) === 'string' ? parseInt(end, 10) : end;
         const startAngle: number = getAngleFromValue(
             start, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, isClockWise
@@ -494,7 +569,7 @@ export class PointerRenderer {
             end, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, isClockWise
         );
-        const roundRadius: number = pointer.roundedCornerRadius;
+        const roundRadius: number = typeof(pointer.roundedCornerRadius) === 'string' ? parseInt(pointer.roundedCornerRadius, 10) : pointer.roundedCornerRadius;
         let sweepAngle: number;
         let endAngle: number;
         let oldStart: number;
@@ -550,8 +625,17 @@ export class PointerRenderer {
             },
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);
+                pointer.isPointerAnimation = false;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
             }
         });
+    }
+    /**
+     *
+     * @returns {void}
+     * @private
+     */
+     public destroy(): void {
+        this.gauge = null;
     }
 }

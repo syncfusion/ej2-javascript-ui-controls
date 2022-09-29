@@ -100,7 +100,7 @@
     border-color: $ddl-list-border-color;
     @at-root {
       #{if(&, '&', '*')} .e-list-item {
-        // sass-lint:disable no-vendor-prefixes
+        /* stylelint-disable property-no-vendor-prefix */
         -webkit-tap-highlight-color: $ddl-list-tap-color;
         background-color: $ddl-list-bg-color;
         border-bottom: $ddl-list-bottom-border;
@@ -133,7 +133,7 @@
         background-color: $ddl-list-active-bg-color;
         border-color: $ddl-list-active-border-color;
         color: $ddl-list-active-font-color;
-       }
+      }
 
       #{if(&, '&', '*')} .e-list-item.e-hover {
         background-color: $ddl-list-hover-bg-color;
@@ -251,7 +251,7 @@
 
   // Bigger small size
 
-  .e-bigger.e-small  .e-dropdownbase,
+  .e-bigger.e-small .e-dropdownbase,
   .e-dropdownbase.e-small.e-bigger {
     @at-root {
       #{if(&, '&', '*')} .e-list-item {

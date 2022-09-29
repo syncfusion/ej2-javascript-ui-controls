@@ -1,4 +1,4 @@
-//default 
+//default
 $tab-skin: 'material' !default;
 $tab-big-vertical-scroll-nav-top-bottom: 23px !default;
 $tab-vscroll-big-padding: 24px 0 !default;
@@ -193,7 +193,6 @@ $tab-bg-nrml-active-item-wrap-margin-bottom: 0 !default;
 $tab-alt-big-active-item-padding: 0 !default;
 $tab-alt-nrml-active-item-padding: 0 !default;
 
-
 $tab-active-text-container-margin: 0 !default;
 $tab-big-text-container-margin-right: 22px !default;
 $tab-nrml-text-container-margin-right: 20px !default;
@@ -378,7 +377,6 @@ $tab-pop-down-icon-transform: rotate(0deg) !default;
 $tab-alt-wrap-hover-close-icon-focus-or-active-color: $primary-font !default;
 $tab-content-font-color: rgba($grey-dark-font, .7) !default;
 
-
 //enddefault
 //dimensions
 $hscroll-alt-ribble-animation-border-frame: rgba(0, 0, 0, .12) !default;
@@ -387,6 +385,7 @@ $hscroll-alt-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(0, 0, 0, .12) !
 $tbar-alt-ribble-animation-border-frame: rgba(0, 0, 0, .12) !default;
 $tbar-alt-ribble-animation-shadow-frame: 0 0 0 0 $tbar-alt-ribble-animation-border-frame !default;
 $tbar-alt-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(0, 0, 0, .12) !default;
+
 @mixin tbar-alt-btn-animation-after {
   animation: tbar-alt-popup-shadow 1s ease-out 0ms;
 }

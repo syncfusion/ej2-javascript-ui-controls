@@ -1,4 +1,5 @@
 @include export-module('tooltip-layout') {
+
   /*! tooltip popup container layout */
   .e-tooltip-popup-container {
     position: relative;
@@ -132,7 +133,7 @@
         vertical-align: middle;
       }
 
-      @if($skin-name == 'bootstrap5') {
+      @if ($skin-name == 'bootstrap5') {
         font-size: 11px;
         left: calc(50% - 6px);
       }

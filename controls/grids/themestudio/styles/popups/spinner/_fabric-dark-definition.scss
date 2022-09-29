@@ -1,4 +1,4 @@
-//default 
+//default
 $skin-name: 'fabric';
 $theme: 'Fabric';
 $spin-overlay-background: rgba($neutral-black, .4);
@@ -42,7 +42,7 @@ $spin-tailwind-stroke-color: $theme-light;
   animation: material-spinner-rotate .75s linear infinite;
 }
 
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @keyframes material-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -55,7 +55,6 @@ $spin-tailwind-stroke-color: $theme-light;
   }
 }
 
-// sass-lint:disable no-vendor-prefixes
 @keyframes fabric-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -67,4 +66,5 @@ $spin-tailwind-stroke-color: $theme-light;
     transform: rotate(360deg);
   }
 }
+
 //enddefault

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress, Spreadsheet, getCell } from "../../../src/index";
+import { SheetModel, getRangeAddress, Spreadsheet, getCell, goto } from "../../../src/index";
 import { L10n } from '@syncfusion/ej2-base';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
@@ -127,16 +127,8 @@ describe('Cell Format ->', () => {
             expect(helper.getInstance().sheets[0].rows[9].cells[0].style.borderTop).toBe('1px solid #000000');
             done();
         });
-    });
 
-    describe('Set Row Height Method->', () => {
-        beforeEach((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-        });
-        afterEach(() => {
-            helper.invoke('destroy');
-        });
-        it('setRowHeight->', (done: Function) => {
+        it('setRowHeight Method->', (done: Function) => {
             let spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.setRowHeight(40, 2);
             expect(helper.invoke('getRow', [2]).style.height).toBe('40px');
@@ -181,15 +173,7 @@ describe('Cell Format ->', () => {
             expect(helper.getInstance().sheets[0].rows[11].cells[7].textContent).toBeUndefined();
             done();
         });
-    });
 
-    describe('', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
         it('Merged cell with small Row Height ->', (done: Function) => {
             helper.invoke('setRowHeight', [12, 0]);
             helper.invoke('merge', ['A1:B1']);
@@ -325,232 +309,115 @@ describe('Cell Format ->', () => {
                 });
             });
         });
-        describe('EJ2-49588 ->',() => {
-            beforeEach((done: Function) =>{
-                helper.initializeSpreadsheet({ cellStyle: { fontSize: '14pt' , fontWeight: 'bold' , fontFamily: 'Georgia'}, 
-                sheets: [{ rows: [{ index: 3, cells:[{ index: 3, value: 'Style' }] }], selectedRange: 'D4' }, { selectedRange: 'D4' }], activeSheetIndex: 1 }, done);
+        describe('EJ2-49588, EJ2-46530, EJ2-51216, EJ2-52952, EJ2-53948, EJ2-53048, EJ2-54306, EJ2-56161, EJ2-51575, EJ2-50222 ->',() => {
+            beforeAll((done: Function) =>{
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 3, cells:[{ index: 3, value: 'Style' }] }], selectedRange: 'D4' }, 
+                { rows: [{ index: 3, cells: [{ index: 3, style: { fontSize: '14pt', fontFamily: 'Georgia', fontWeight: 'bold' } }] }], selectedRange: 'D4' },
+                { columns:[{ width: 200 }, { width: 150 }, { width: 350}], rows: [{ cells: [{ value: 'CASOS DE PRUEBAS GENERALES PARA M�DULO' }] }, 
+                { cells: [{ }] },
+                { cells: [{ value: 'GENERAL'}] },
+                { cells: [{ value: 'CASOS DE PRUEBAS'}, { value: 'PRUEBAS A REALIZAR'}, { value: 'RESULTADO ESPERADO'}] },
+                { cells: [{ value: 'Interface: Men� principal'}, { value: ''}, {wrap: true, value: ''}] },
+                { cells: [{ value: 'Interface: Men� principal'}, { wrap: true, value: ''}, { value: ''}] },
+                { cells: [{ value: 'Interface: �rea de Trabajo (Visor)'}, { wrap: true, value: ''}, { value: ''}] },
+                { cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },{ cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },
+                { cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },{ cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },
+                { cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },{ cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },
+                ] }], activeSheetIndex: 1,
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.merge("Sheet3!A1:C1"); 
+                    spreadsheet.merge("Sheet3!A2:C2"); 
+                    spreadsheet.merge("Sheet3!A3:C3");
+                    spreadsheet.merge("Sheet3!A5:A6");
+                    spreadsheet.merge("Sheet3!A7:A25");
+                    spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!A1:C1');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!A2:C2');
+                    spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!A3:C3');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!A4:C4');
+                    spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!A5:A6');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!B5:C6');
+                    spreadsheet.cellFormat({ border: '2px solid #000000'}, 'Sheet3!A7:A25');spreadsheet.cellFormat({ border: '2px solid #000000'},'Sheet3!B7:C25');
+                } }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Styling a cell is also styling copied cells in different sheets', (done: Function) => {
+            it('EJ2-49588 - Styling a cell is also styling copied cells in different sheets', (done: Function) => {
                 helper.invoke('copy', ['Sheet1!D4']).then(function () {
                     helper.invoke('paste', ['D4']);
-                    setTimeout(function () {
-                        helper.invoke('cellFormat', [{ fontWeight: 'bold' }, 'Sheet1!D4']);
-                        helper.invoke('cellFormat', [{ fontStyle: 'italic' }, 'Sheet1!D4']);
-                        helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'Sheet1!D4']);
-                        var td = helper.invoke('getCell', [3, 3]);
-                        expect(td.style.fontWeight).toBe('bold');
-                        expect(td.style.fontStyle).not.toBe('italic');
-                        expect(td.style.textDecoration).not.toBe('underline line-through');
-                        done();
-                    });
+                    helper.invoke('cellFormat', [{ fontWeight: 'bold' }, 'Sheet1!D4']);
+                    helper.invoke('cellFormat', [{ fontStyle: 'italic' }, 'Sheet1!D4']);
+                    helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'Sheet1!D4']);
+                    var td = helper.invoke('getCell', [3, 3]);
+                    expect(td.style.fontWeight).not.toBe('bold');
+                    expect(td.style.fontStyle).not.toBe('italic');
+                    expect(td.style.textDecoration).not.toBe('underline line-through');
+                    done();
                 });
             });
-        });
-        describe('EJ2-46530->', function () {
-            beforeEach(function (done) {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'A1:A2' }]
-                }, done);
-            });
-            afterEach(function () {
-                helper.invoke('destroy');
-            });
-            it('fix the alignment issue with wrap and merge with resized row', function (done) {
+            it('EJ2-46530 - fix the alignment issue with wrap and merge with resized row', function (done) {
+                helper.invoke('selectRange', ['A1:A2']);
                 helper.getElement('#' + helper.id + '_merge').click();
-                helper.edit('A1', 'text test word one two three');
+                helper.invoke('updateCell', [{ value: 'text test word one two three' }, 'A1']);
                 helper.getElement('#' + helper.id + '_wrap').click();
                 helper.getElement('#' + helper.id + '_vertical_align').click();
                 helper.getElement('#' + helper.id + '_vertical_align-popup .e-item:nth-child(2)').click();
                 expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('text test word one two three');
                 done();
             });
-        });
-        describe('EJ2-50222->', () => {
-            beforeEach((done: Function) => {
-                model = {
-                    sheets: [{ columns:[{ width: 200 }, { width: 150 }, { width: 350}], 
-                    rows: [{ cells: [{ value: 'CASOS DE PRUEBAS GENERALES PARA M�DULO' }] }, 
-                    { cells: [{ }] },
-                    { cells: [{ value: 'GENERAL'}] },
-                    { cells: [{ value: 'CASOS DE PRUEBAS'}, { value: 'PRUEBAS A REALIZAR'}, { value: 'RESULTADO ESPERADO'}] },
-                    { cells: [{ value: 'Interface: Men� principal'}, { value: ''}, {wrap: true, value: ''}] },
-                    { cells: [{ value: 'Interface: Men� principal'}, { wrap: true, value: ''}, { value: ''}] },
-                    { cells: [{ value: 'Interface: �rea de Trabajo (Visor)'}, { wrap: true, value: ''}, { value: ''}] },
-                    { cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },{ cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },
-                    { cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },{ cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },
-                    { cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },{ cells: [{ value: ''}, { wrap: true, value: ''}, { value: ''}] },
-                    ] }],
-                    created: (): void => {
-                        const spreadsheet: Spreadsheet = helper.getInstance();
-                        spreadsheet.merge("A1:C1"); 
-                        spreadsheet.merge("A2:C2"); 
-                        spreadsheet.merge("A3:C3");
-                        spreadsheet.merge("A5:A6");
-                        spreadsheet.merge("A7:A25");
-                        spreadsheet.cellFormat({ border: '2px solid #000000'}, 'A1:C1');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'A2:C2');
-                        spreadsheet.cellFormat({ border: '2px solid #000000'}, 'A3:C3');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'A4:C4');
-                        spreadsheet.cellFormat({ border: '2px solid #000000'}, 'A5:A6');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'B5:C6');
-                        spreadsheet.cellFormat({ border: '2px solid #000000'}, 'A7:A25');spreadsheet.cellFormat({ border: '2px solid #000000'}, 'B7:C25');
-                    }
-                }
-                helper.initializeSpreadsheet(model, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('cell border issue while applying Merge and wrap text', (done: Function) => {
-                expect(helper.invoke('getCell', [5, 0]).style.borderRight).toBe('2px solid rgb(0, 0, 0)');
-                expect(helper.invoke('getCell', [5, 1]).style.borderLeft).toBe('2px solid rgb(0, 0, 0)');
-                done();
-            });
-        });
-        describe('EJ2-51216->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Underline and strikethrough not working after performing row resize action->', (done: Function) => {
-                helper.edit('B2', 'one two three four five six seven eight nine ten eleven twelve thirtneen fourteen fifteen');
+            it('EJ2-51216 - Underline and strikethrough not working after performing row resize action->', (done: Function) => {
+                helper.invoke('selectRange', ['B10']);
+                helper.invoke('updateCell', [{ value: 'one two three four five six seven eight nine ten eleven twelve thirtneen fourteen fifteen' }, 'B10']);
                 helper.getElement('#' + helper.id + '_wrap').click();
-                helper.invoke('selectRange', ['B2']);
                 helper.getElement('#' + helper.id + '_underline').click();
                 helper.getElement('#' + helper.id + '_line-through').click();
-                helper.invoke('setRowHeight', [130, 1]);
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.textDecoration).toBe('underline line-through');
+                helper.invoke('setRowHeight', [130, 9]);
+                expect(helper.getInstance().sheets[1].rows[9].cells[1].style.textDecoration).toBe('underline line-through');
                 done();
             });
-        });
-        describe('EJ2-51575', () => {
-            beforeEach((done: Function) => {
-                model = {
-                    sheets: [{ rows: [{ cells: [{style: { textAlign: 'center' }, value: 'Table' }] }, 
-                    { cells: [{ value: 'EMP ID' }, { value: 'Name'}, { value: 'Salary'}] },
-                    { cells: [{ value: '1' }, { value: 'A'}, { value: '1000'}] },
-                    { cells: [{ value: '2' }, { value: 'B'}, { value: '1000'}] },
-                    { cells: [{ value: '3' }, { value: 'C'}, { value: '1000'}] }] }],
-                    created: (): void => {
-                        const spreadsheet: Spreadsheet = helper.getInstance();
-                        spreadsheet.merge("A1:C1"); 
-                    }
-                }
-                helper.initializeSpreadsheet(model, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Undo button doesnot work as expected in spreadsheet control', (done: Function) => {
-                helper.invoke('selectRange', ['A1:C5']);
+            it('EJ2-52952 - Borders are not getting applied properly for merged cells after applying border style and color->', (done: Function) => {
+                helper.invoke('merge', ['C1:D2']);
+                helper.invoke('setBorder', [{ border: '3px solid #1e88e5' }, 'C1:D2', 'Outer']);
+                expect(helper.getInstance().sheets[1].rows[0].cells[2].style.borderTop).toBe('3px solid #1e88e5');
+                expect(helper.getInstance().sheets[1].rows[0].cells[2].style.borderLeft).toBe('3px solid #1e88e5');
+                helper.invoke('selectRange', ['C1']);
                 helper.getElement('#' + helper.id + '_borders').click();
                 helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
-                helper.invoke('selectRange', ['A1:C5']);
-                helper.click('_fill_color_picker .e-dropdown-btn');
-                helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#33ffffff"]');
-                helper.getElement('#' + helper.id + '_underline').click();
-                helper.getElement('#' + helper.id + '_line-through').click();
-                expect(helper.getInstance().sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline line-through');
-                expect(helper.getInstance().sheets[0].rows[4].cells[2].style.textDecoration).toBe('underline line-through');
-                expect(helper.invoke('getCell', [0, 0]).style.backgroundColor).toBe('rgb(51, 255, 255)');
-                expect(helper.invoke('getCell', [4, 2]).style.backgroundColor).toBe('rgb(51, 255, 255)');
-                helper.getElement('#' + helper.id + '_undo').click();
-                helper.getElement('#' + helper.id + '_undo').click();
-                helper.getElement('#' + helper.id + '_undo').click();
-                expect(helper.getInstance().sheets[0].rows[0].cells[0].style.textDecoration).toBeNull;
-                expect(helper.getInstance().sheets[0].rows[4].cells[2].style.textDecoration).toBeNull;
-                expect(helper.invoke('getCell', [0, 0]).style.backgroundColor).toBeNull;
-                expect(helper.invoke('getCell', [4, 2]).style.backgroundColor).toBeNull;
+                expect(helper.getInstance().sheets[1].rows[0].cells[2].style.borderRight).toBe('1px solid #000000');
+                expect(helper.getInstance().sheets[1].rows[0].cells[2].style.borderBottom).toBe('1px solid #000000');
                 done();
             });
-        });
-        describe('EJ2-52952->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'B2:D4' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Borders are not getting applied properly for merged cells after applying border style and color->', (done: Function) => {
-                helper.invoke('merge', ['B2:D4']);
-                helper.invoke('setBorder', [{ border: '3px solid #1e88e5' }, 'B2:D4', 'Outer']);
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.borderTop).toBe('3px solid #1e88e5');
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.borderLeft).toBe('3px solid #1e88e5');
-                helper.getElement('#' + helper.id + '_borders').click();
-                helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.borderRight).toBe('1px solid #000000');
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.borderBottom).toBe('1px solid #000000');
-                done();
-            });
-        });
-        describe('EJ2-53948->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'B2:B5'}]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Unable to apply bottom border to a merged cell->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_merge').click();
+            it('EJ2-53948 - Unable to apply bottom border to a merged cell->', (done: Function) => {
+                helper.invoke('merge', ['F1:F4']);
+                helper.invoke('selectRange', ['F1']);
                 helper.getElement('#' + helper.id + '_borders').click();
                 helper.getElement('.e-menu-item[aria-label="Bottom Borders"]').click();
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.borderBottom).toBe('1px solid #000000');
+                expect(helper.getInstance().sheets[1].rows[0].cells[5].style.borderBottom).toBe('1px solid #000000');
                 done();
             });
-        });
-        describe('EJ2-53048->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'A1:B1'}]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('undo redo for merged cell with border does not work->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_merge').click();
-                helper.invoke('selectRange', ['A1:B3']);
+            it('EJ2-53048 - undo redo for merged cell with border does not work->', (done: Function) => {
+                helper.invoke('merge', ['H1:I1']);
+                helper.invoke('selectRange', ['H1:I2']);
                 helper.click('_fill_color_picker .e-dropdown-btn');
                 helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#ffff00ff"]');
                 helper.getElement('#' + helper.id + '_borders').click();
                 helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
-                helper.getElement('#' + helper.id + '_copy').click();
-                helper.invoke('copy', ['A1:B3']).then(() => {
-                    helper.invoke('paste', ['A6']);
-                    helper.getElement('#' + helper.id + '_undo').click();
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [6, 1]).style.backgroundColor).toBeNull;
-                        expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBeNull;
-                        done();
-                    });
+                helper.invoke('copy', ['H1:I2']).then(() => {
+                    helper.invoke('paste', ['K1']);
+                    helper.click('#spreadsheet_undo');
+                    expect(helper.invoke('getCell', [0, 10]).style.backgroundColor).toBeNull;
+                    expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toBeNull;
+                    done();
                 });
             });
-        });
-        describe('EJ2-54306->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] , selectedRange: 'A2:E5'}]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Toggle Button state not refreshed in ribbon while clearing format for a cell using clear format option->', (done: Function) => {
+            it('EJ2-54306 - Toggle Button state not refreshed in ribbon while clearing format for a cell using clear format option->', (done: Function) => {
+                helper.invoke('selectRange', ['K1']);
+                helper.invoke('updateCell', [{ value: 'text' }, 'K1']);
                 helper.getElement('#' + helper.id + '_bold').click();
                 helper.getElement('#' + helper.id + '_italic').click();
                 helper.getElement('#' + helper.id + '_line-through').click();
                 helper.getElement('#' + helper.id + '_underline').click();
-                expect(helper.getInstance().sheets[0].rows[1].cells[0].style.fontWeight).toBe('bold');
-                expect(helper.getInstance().sheets[0].rows[1].cells[0].style.fontStyle).toBe('italic');
-                expect(helper.getInstance().sheets[0].rows[1].cells[0].style.textDecoration).toBe('underline line-through');
+                expect(helper.getInstance().sheets[1].rows[0].cells[10].style.fontWeight).toBe('bold');
+                expect(helper.getInstance().sheets[1].rows[0].cells[10].style.fontStyle).toBe('italic');
+                expect(helper.getInstance().sheets[1].rows[0].cells[10].style.textDecoration).toBe('underline line-through');
                 helper.getElement('#' + helper.id + '_clear').click();
                 helper.click('#' + helper.id + '_clear-popup ul li:nth-child(2)');
                 expect(helper.getElement('#' + helper.id + '_bold').classList).not.toContain('e-active');
@@ -559,33 +426,51 @@ describe('Cell Format ->', () => {
                 expect(helper.getElement('#' + helper.id + '_underline').classList).not.toContain('e-active');
                 done();
             });
-        });
-        describe('EJ2-56161->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'A1:A2' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('While copy paste the merge cell with bottom border, the border is missing in pasted cell->', (done: Function) => {
-                helper.getElement('#' + helper.id + '_merge').click();
-                helper.invoke('selectRange', ['A1:B2']);
+            it('EJ2-56161 - While copy paste the merge cell with bottom border, the border is missing in pasted cell->', (done: Function) => {
+                helper.invoke('merge', ['L1:L2']);
+                helper.invoke('selectRange', ['L1:M2']);
                 helper.getElement('#' + helper.id + '_borders').click();
                 helper.getElement('.e-menu-item[aria-label="Bottom Borders"]').click();
-                expect(helper.getInstance().sheets[0].rows[0].cells[0].style.borderBottom).toBe('1px solid #000000');
-                expect(helper.getInstance().sheets[0].rows[1].cells[1].style.borderBottom).toBe('1px solid #000000');    
-                helper.invoke('copy', ['A1:B2']).then(() => {
-                    helper.invoke('paste', ['D1']);
-                    setTimeout(function () {
-                        expect(helper.getInstance().sheets[0].rows[0].cells[3].style.borderBottom).toBe('1px solid #000000');
-                        expect(helper.getInstance().sheets[0].rows[1].cells[4].style.borderBottom).toBe('1px solid #000000');
-                        done();
-                    });
+                expect(helper.getInstance().sheets[1].rows[0].cells[11].style.borderBottom).toBe('1px solid #000000');
+                expect(helper.getInstance().sheets[1].rows[1].cells[12].style.borderBottom).toBe('1px solid #000000');    
+                helper.invoke('copy', ['L1:M2']).then(() => {
+                    helper.invoke('paste', ['L4']);
+                    expect(helper.getInstance().sheets[1].rows[3].cells[11].style.borderBottom).toBe('1px solid #000000');
+                    expect(helper.getInstance().sheets[1].rows[4].cells[12].style.borderBottom).toBe('1px solid #000000');
+                    done();
                 });
             });
-        }); 
+            it('EJ2-51575 - Undo button doesnot work as expected in spreadsheet control', (done: Function) => {
+                helper.invoke('merge', ['O1:Q1']);
+                helper.invoke('selectRange', ['O1:Q2']);
+                helper.getElement('#' + helper.id + '_borders').click();
+                helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
+                helper.click('_fill_color_picker .e-dropdown-btn');
+                helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#33ffffff"]');
+                helper.getElement('#' + helper.id + '_underline').click();
+                helper.getElement('#' + helper.id + '_line-through').click();
+                expect(helper.getInstance().sheets[1].rows[0].cells[14].style.textDecoration).toBe('underline line-through');
+                expect(helper.getInstance().sheets[1].rows[1].cells[14].style.textDecoration).toBe('underline line-through');
+                expect(helper.invoke('getCell', [0, 14]).style.backgroundColor).toBe('rgb(51, 255, 255)');
+                expect(helper.invoke('getCell', [1, 14]).style.backgroundColor).toBe('rgb(51, 255, 255)');
+                helper.getElement('#' + helper.id + '_undo').click();
+                helper.getElement('#' + helper.id + '_undo').click();
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(helper.getInstance().sheets[1].rows[0].cells[14].style.textDecoration).toBeNull;
+                expect(helper.getInstance().sheets[1].rows[1].cells[14].style.textDecoration).toBeNull;
+                expect(helper.invoke('getCell', [0, 14]).style.backgroundColor).toBeNull;
+                expect(helper.invoke('getCell', [1, 14]).style.backgroundColor).toBeNull;
+                done();
+            });
+            it('EJ2-50222 - cell border issue while applying Merge and wrap text', (done: Function) => {
+                helper.invoke('goTo', ['Sheet3!A1']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [4, 0]).style.borderRight).toBe('2px solid rgb(0, 0, 0)');
+                    expect(helper.invoke('getCell', [4, 0]).style.borderLeft).toBe('2px solid rgb(0, 0, 0)');
+                    done();
+                });
+            });
+        });
         describe('EJ2-59778 ->', () => {
             let sheets: SheetModel[];
             L10n.load({

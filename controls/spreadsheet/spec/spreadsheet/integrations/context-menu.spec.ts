@@ -247,7 +247,7 @@ describe('Spreadsheet context menu module ->', () => {
         });
     });
     describe('CR-Issues->', () => {
-        describe('EJ2-51327, EJ2-62989 ->', () => {
+        describe('EJ2-51327, EJ2-55488, EJ2-55491, EJ2-62989', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }]
@@ -256,68 +256,39 @@ describe('Spreadsheet context menu module ->', () => {
             afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Hide Column option need to remove when there is no row selected', (done: Function) => {
+            it('EJ2-51327 - Hide Column option need to remove when there is no row selected', (done: Function) => {
                 helper.invoke('selectRange', ['B1']);
-                let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
-                let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
-                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 1, [8], false, true);
                 setTimeout(() => {
-                    helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                    helper.invoke('selectRange', ['A1:C1']);
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
                     setTimeout(() => {
-                        helper.invoke('selectRange', ['A1:C1']);
-                        let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
-                        let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
-                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
-                        setTimeout(() => {
-                            expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
-                            done();
-                        });
+                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                        expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
+                        done();
                     });
                 });
             });
-            it('Hide Row option need to remove when there is no row selected', (done: Function) => {
+            it('EJ2-51327 - Hide Row option need to remove when there is no row selected', (done: Function) => {
                 helper.invoke('selectRange', ['A2']);
-                let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
-                let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
-                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(1, 0, [8], true);
                 setTimeout(() => {
-                    helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').click();
+                    helper.invoke('selectRange', ['A1:A3']);
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
                     setTimeout(() => {
-                        helper.invoke('selectRange', ['A1:A3']);
-                        let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
-                        let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
-                        helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
-                        setTimeout(() => {
-                            expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
-                            done();
-                        });
+                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                        expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(9);
+                        done();
                     });
                 });
             });
-            it('removeContextMenuItems method throws script error when the removed item is not available in the list', (done: Function) => {
-                helper.getInstance().contextMenuBeforeOpen = (args: any) => {
-                    helper.invoke('removeContextMenuItems', [['Insert Column'], false]);
-                }
-                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
-                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
-                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-                setTimeout(() => {
-                    expect(helper.getElement('#' + helper.id + '_contextmenu')).not.toBeUndefined();
-                    helper.getInstance().contextMenuBeforeOpen = null;
-                    done();
-                });
-            });
-        });
-        describe('EJ2-55488->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to disable the paste action when the select-all is performed ->', (done: Function) => {
+            it('EJ2-55488 - Need to disable the paste action when the select-all is performed ->', (done: Function) => {
                 const selectAl:  HTMLElement = helper.getElement('#' + helper.id + '_select_all');
                 helper.triggerMouseAction(
                     'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
@@ -336,32 +307,26 @@ describe('Spreadsheet context menu module ->', () => {
                     });
                 });
             });
-        });
-        describe('EJ2-55491->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Need to fix the performance issue with column insert with select-all action->', (done: Function) => {
-                const selectAl:  HTMLElement = helper.getElement('#' + helper.id + '_select_all');
-                helper.triggerMouseAction(
-                    'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
-                selectAl);
-                helper.triggerMouseAction(
-                    'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
-                    selectAl);
+            it('EJ2-55491 - Need to fix the performance issue with column insert with select-all action->', (done: Function) => {
+                let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[2];
+                let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
                 setTimeout(() => {
-                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
-                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
-                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
-                    setTimeout(() => {
-                        expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
-                        done();
-                    });
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                    done();
+                });
+            });
+            it('removeContextMenuItems method throws script error when the removed item is not available in the list', (done: Function) => {
+                helper.getInstance().contextMenuBeforeOpen = (args: any) => {
+                    helper.invoke('removeContextMenuItems', [['Insert Column'], false]);
+                }
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_contextmenu')).not.toBeUndefined();
+                    helper.getInstance().contextMenuBeforeOpen = null;
+                    done();
                 });
             });
         });

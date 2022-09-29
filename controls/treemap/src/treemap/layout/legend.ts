@@ -941,16 +941,26 @@ export class TreeMapLegend {
 
     /**
      * To destroy the legend.
-     *
-     * @param {TreeMap} treemap - Specifies treemap instance
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(treemap: TreeMap): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.legendRenderingCollections = [];
+        this.legendCollections = [];
+        this.outOfRangeLegend = null;
+        this.totalPages = [];
+        this.translate = null;
+        this.legendBorderRect = null;
+        this.legendGroup = null;
+        this.legendNames = [];
+        this.defsElement = null;
+        this.legendLinearGradient = null;
+        this.legendInteractiveGradient = [];
+        this.legendItemRect = null;
         this.removeEventListener();
+        //TODO: The removeInteractivePointer method (calling method) is called in a timer in the mouseUpHandler method. Because of this handling, adding the below code results in a spec failure.
+        //this.treemap = null;
     }
     // eslint-disable-next-line valid-jsdoc
     /**

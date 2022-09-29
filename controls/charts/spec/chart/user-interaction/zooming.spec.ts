@@ -1750,6 +1750,59 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('checking of initial loading of toolbar', () => {
+        let elem: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis', valueType: 'DateTime' },
+                    primaryYAxis: { title: 'PrimaryYAxis', labelFormat: 'n1', rangePadding: 'None' },
+                    series: [{
+                        type: 'Column',
+                        dataSource: datetimeData, xName: 'x', yName: 'y', animation: { enable: false },
+                        name: 'ChartSeriesNameGold', fill: '#A569BD',
+                        marker: {
+                            visible: true, width: 10, height: 10, dataLabel: { visible: false, fill: '' }
+                        }
+                    }, {
+                        type: 'Column', width: 4,
+                        dataSource: datetimeData, xName: 'x', yName: 'y', animation: { enable: false },
+                        name: 'ChartSeriesNameGold', fill: '#F5B041',
+                        marker: {
+                            visible: true, width: 10, height: 10, dataLabel: { visible: false, fill: '' }
+                        }
+                    }],
+                    title: 'Chart TS Title',
+                    legendSettings: { visible: true },
+                    width: '600',
+                    zoomSettings: { enablePinchZooming: true, enableSelectionZooming: true, showToolbar:true }
+                });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('checking the enable of zoomIn and zoomOut while zoom icon selection', (done: Function) => {
+            let zoomElement: Element = document.getElementById('container_Zooming_Zoom')
+            trigger.clickEvent(zoomElement);
+            let zoomInElement: string = document.getElementById('container_Zooming_ZoomIn_1').getAttribute('opacity');
+            expect(zoomInElement == '1').toBe(true);
+            let zoomOutElement: string = document.getElementById('container_Zooming_ZoomOut_1').getAttribute('opacity');
+            expect(zoomOutElement == '1').toBe(true);
+            done();
+        });
+        it('checking the toolbar initial loading', (done: Function) => {
+            let zoomInElement: string = document.getElementById('container_Zooming_ZoomIn').getAttribute('opacity');
+            expect(zoomInElement == "0.2").toBe(true);
+            let panElement: string = document.getElementById('container_Zooming_Pan').getAttribute('opacity');
+            expect(panElement == "0.2").toBe(true);
+            let resetElement: string = document.getElementById('container_Zooming_Reset').getAttribute('opacity');
+            expect(resetElement == "0.2").toBe(true);
+            done();
+        });
+    });
 
         /**
      * Cheacking point drag and drop with zooming

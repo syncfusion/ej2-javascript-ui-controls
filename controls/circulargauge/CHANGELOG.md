@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 20.3.47 (2022-09-29)
+
+### Circular Gauge
+
+#### New Features
+
+- The animation of pointers has been improved. When the pointer value is dynamically updated, the animation will be performed.
+
 ## 19.3.53 (2021-11-12)
 
 ### CircularGauge

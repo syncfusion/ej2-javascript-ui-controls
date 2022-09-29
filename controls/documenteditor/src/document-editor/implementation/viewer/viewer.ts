@@ -45,7 +45,6 @@ import { TrackChangesPane } from '../track-changes/track-changes-pane';
  * @private
  */
 export class DocumentHelper {
-    
     /**
      * @private
      */
@@ -540,7 +539,6 @@ export class DocumentHelper {
      * @private
      */
     public isFootnoteWidget: boolean = false;
-    
     /**
      * Gets visible bounds.
      *
@@ -2033,7 +2031,7 @@ export class DocumentHelper {
     public onMouseUpInternal = (event: MouseEvent): void => {
         if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
             return;
-        } 
+        }
         event.preventDefault();
         this.isListTextSelected = false;
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
@@ -2126,7 +2124,6 @@ export class DocumentHelper {
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
                 this.selection.caret.style.display = 'none';
             }
-            
             this.isMouseDown = false;
             this.isFootnoteWidget = false;
             this.isSelectionChangedOnMouseMoved = false;
@@ -2134,7 +2131,6 @@ export class DocumentHelper {
             this.useTouchSelectionMark = true;
             this.isControlPressed = false;
             this.updateFocus();
-            
             if (this.isListTextSelected) {
                 this.selection.hideCaret();
             }
@@ -2545,10 +2541,10 @@ export class DocumentHelper {
      * @private
      */
     public linkPageToHeaderFooter(currentPage: Page): void {
-        if (currentPage.headerWidget.page === currentPage) {
+        if (currentPage.headerWidget && currentPage.headerWidget.page === currentPage) {
             currentPage.headerWidget.page = undefined;
         }
-        if (currentPage.footerWidget.page === currentPage) {
+        if (currentPage.footerWidget && currentPage.footerWidget.page === currentPage) {
             currentPage.footerWidget.page = undefined;
         }
         // if (currentPage.headerWidgetIn && currentPage.footerWidgetIn
@@ -3004,7 +3000,7 @@ export class DocumentHelper {
                     isInShape = true;
                 }
             } else {
-                for (let i: number = blockContainer.floatingElements.length - 1; i >= 0 ; i--) {
+                for (let i: number = blockContainer.floatingElements.length - 1; i >= 0; i--) {
                     if (blockContainer.floatingElements[i] instanceof TableWidget
                         || (!isNullOrUndefined(isBehind) && isBehind ? (blockContainer.floatingElements[i] as ShapeBase).textWrappingStyle !== 'Behind' : (blockContainer.floatingElements[i] as ShapeBase).textWrappingStyle === 'Behind')) {
                         continue;
@@ -3314,6 +3310,11 @@ export class DocumentHelper {
         this.footnoteCollection = undefined;
         this.endnoteCollection = [];
         this.endnoteCollection = undefined;
+
+        if (this.restrictEditingPane) {
+            this.restrictEditingPane.destroy();
+            this.restrictEditingPane = undefined;
+        }
         
         if (this.layout) {
             this.layout.destroy();
@@ -3594,7 +3595,7 @@ export class DocumentHelper {
             previousBlockX = this.getParagraphLeftPosition(previousBlock);
         }
         if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget) {
-            nextBlockX = this.getParagraphLeftPosition(nextBlock)
+            nextBlockX = this.getParagraphLeftPosition(nextBlock);
         }
         if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
             isSamePreviousBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);

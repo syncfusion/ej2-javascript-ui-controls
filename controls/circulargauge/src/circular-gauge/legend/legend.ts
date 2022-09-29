@@ -1009,15 +1009,23 @@ export class Legend {
     /**
      * To destroy the legend.
      *
-     * @param {CircularGauge} circulargauge - Specifies the instance of the gauge
      * @returns {void}
      * @private
      */
-    public destroy(circulargauge: CircularGauge): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.legendCollection = [];
+        this.legendRenderingCollections = [];
+        this.legendRegions = [];
+        this.titleRect = null;
+        this.pageXCollections = [];
+        this.clipRect = null;
+        this.legendTranslateGroup = null;
+        this.legend = null;
+        this.pagingRegions = [];
+        this.toggledIndexes = [];
+        this.legendBounds = null;
         this.removeEventListener();
+        this.gauge = null;
     }
 }
 /**

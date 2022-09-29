@@ -1000,7 +1000,6 @@ describe('Gantt-Timeline', () => {
             }
             ganttObj.refresh();
         });
-
         it('Checking bottom tier weekStartDay after zooming action', () => {
             ganttObj.timelineSettings.weekStartDay=1;
             ganttObj.zoomIn();

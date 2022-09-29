@@ -2084,7 +2084,7 @@ describe('Edit module', () => {
       gridObj.getCellFromIndex(0,1).querySelector(".e-treegridexpand").dispatchEvent(event);
       gridObj.selectRow(2);
       expect(gridObj.getRows()[2].getElementsByClassName('e-active').length >= 0).toBe(true);
-      expect(gridObj.grid.editModule.formObj !== undefined).toBe(true);
+      expect(gridObj.grid.editModule.formObj === undefined).toBe(true);
     });
     afterAll(() => {
       destroy(gridObj);
@@ -3167,4 +3167,3 @@ describe('Add rows - Add rows as child', () => {
     destroy(gridObj);
   });
 });
-

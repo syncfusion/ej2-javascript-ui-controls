@@ -1,6 +1,7 @@
 @include export-module('accordion-theme') {
+
   /*! accordion theme */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-accordion {
     -webkit-tap-highlight-color: $acrdn-tab-highlight-color;
     background: $acrdn-default-bg-color;
@@ -422,7 +423,7 @@
 
       &.e-selected {
         @if $acrdn-skin == 'bootstrap' {
-          border:  $acrdn-border-size solid $acrdn-default-border;
+          border: $acrdn-border-size solid $acrdn-default-border;
         }
         @else {
           &.e-select {
@@ -457,7 +458,7 @@
 
         + .e-selected {
           @if $acrdn-skin == 'bootstrap' {
-            border:  $acrdn-border-size solid $acrdn-default-border;
+            border: $acrdn-border-size solid $acrdn-default-border;
           }
           @if $acrdn-skin == 'material' {
             border-top: $acrdn-selected-border-size solid  transparent;
@@ -499,7 +500,7 @@
           @if $acrdn-skin == 'bootstrap' {
             background: $acrdn-selected-header-color;
             border: 0;
-            border-bottom:  $acrdn-border-size solid $acrdn-default-border;
+            border-bottom: $acrdn-border-size solid $acrdn-default-border;
             border-radius: 0;
           }
 

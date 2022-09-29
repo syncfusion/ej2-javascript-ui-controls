@@ -39,6 +39,7 @@ export interface IRenderer {
     rowHeightChanged(args: { rowIdx: number, isHideShow?: boolean }): void;
     colWidthChanged(args: { colIdx: number, isHideShow?: boolean }): void;
     toggleGridlines(): void;
+    destroy(): void;
 }
 
 /** @hidden */
@@ -171,6 +172,7 @@ export interface OpenOptions {
 /** @hidden */
 export interface OpenArgs extends OpenOptions {
     guid?: string;
+    orginalFile?: File;
 }
 
 /**

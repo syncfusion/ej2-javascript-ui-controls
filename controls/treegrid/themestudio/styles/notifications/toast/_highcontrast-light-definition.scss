@@ -55,7 +55,7 @@ $toast-content-color: $content-font !default;
 
 // Toast Types theme definitions
 
-$toast-border: 1px solid $border-default  !default;
+$toast-border: 1px solid $border-default !default;
 $toast-hover-border-color: $hover-border !default;
 $toast-success-bg-color: #7fde7d !default;
 $toast-success-color: $bg-base-0 !default;
@@ -68,7 +68,6 @@ $toast-success-hover-color: $toast-success-color !default;
 $toast-success-hover-border-color: $border-fg !default;
 $toast-success-hover-box-shadow: none !default;
 
-
 $toast-info-bg-color: #47a0ff !default;
 $toast-info-color: $bg-base-0 !default;
 $toast-info-title-color: $toast-info-color !default;
@@ -79,7 +78,6 @@ $toast-info-hover-bg-color: #308df0 !default;
 $toast-info-hover-color: $toast-info-color !default;
 $toast-info-hover-border-color: $border-fg !default;
 $toast-info-hover-box-shadow: none !default;
-
 
 $toast-warning-bg-color: #ffb63e !default;
 $toast-warning-color: $bg-base-0 !default;
@@ -92,7 +90,6 @@ $toast-warning-hover-color: $toast-warning-color !default;
 $toast-warning-hover-border-color: $border-fg !default;
 $toast-warning-hover-box-shadow: none !default;
 
-
 $toast-danger-bg-color: #ff6161 !default;
 $toast-danger-color: $bg-base-0 !default;
 $toast-danger-title-color: $toast-danger-color !default;
@@ -103,4 +100,5 @@ $toast-danger-hover-bg-color: #ed4848 !default;
 $toast-danger-hover-color: $toast-danger-color !default;
 $toast-danger-hover-border-color: $border-fg !default;
 $toast-danger-hover-box-shadow: none !default;
+
 //enddefault

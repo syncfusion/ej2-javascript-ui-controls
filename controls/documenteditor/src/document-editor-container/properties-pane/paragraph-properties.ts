@@ -19,6 +19,8 @@ export class Paragraph {
     private justify: HTMLElement;
     private increaseIndent: HTMLElement;
     private decreaseIndent: HTMLElement;
+    private showHiddenMarks: HTMLElement;
+    private showHiddenMarksBtn: Button;
     private leftAlignmentBtn: Button;
     private rightAlignmentBtn: Button;
     private centerAlignmentBtn: Button;
@@ -118,7 +120,11 @@ export class Paragraph {
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
 
         const listDropDown: HTMLElement = this.createDivElement(element + '_listDropDiv', listDiv);
-        listDropDown.className = 'de-split-button';
+        classList(listDropDown,['de-split-button', 'e-de-ctnr-segment-list'],[]);
+        if (isRtl) {
+            classList(listDropDown, ['e-de-ctnr-segment-list-rtl'], []);
+        }
+
         const bulletButton: HTMLElement = createElement('button', { id: element + '_bullet', attrs: { type: 'button' } });
         listDropDown.appendChild(bulletButton);
         const numberingList: HTMLElement = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
@@ -132,6 +138,7 @@ export class Paragraph {
         this.createBulletListDropButton(bulletIconCss, bulletButton);
         this.createNumberListDropButton(numberIconCss, numberingList);
         this.borders = this.createButtonTemplate(element + '_borders', 'e-de-ctnr-borders e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', 'Borders');
+        this.showHiddenMarks = this.createButtonTemplate(element + '_paraMark', 'e-de-e-paragraph-mark e-icons', paraDiv, 'e-de-ctnr-group-btn', '37', 'ShowHiddenMarks Tooltip');
     }
     private createSeparator(parentDiv: HTMLElement): void {
         const separator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
@@ -177,6 +184,9 @@ export class Paragraph {
             break;
         case 'Borders':
             this.bordersBtn = btn;
+            break;
+        case 'ShowHiddenMarks Tooltip':
+            this.showHiddenMarksBtn = btn;
             break;
         default:
             this.centerAlignmentBtn = btn;
@@ -551,6 +561,10 @@ export class Paragraph {
         this.increaseIndent.addEventListener('click', (): void => {
             this.increaseIndentAction();
         });
+        this.showHiddenMarks.addEventListener('click', (): void => {
+            this.container.documentEditorSettings.showHiddenMarks = !this.container.documentEditorSettings.showHiddenMarks;
+            this.toggleHiddenMarks();
+        });
         this.decreaseIndent.addEventListener('click', (): void => {
             this.decreaseIndentAction();
         });
@@ -570,6 +584,16 @@ export class Paragraph {
         this.decreaseIndent.click = undefined;
         this.lineSpacing.select = undefined;
         this.style.select = undefined;
+    }
+    /**
+     * @private
+     */
+    public toggleHiddenMarks(): void {
+        if(this.container.documentEditorSettings.showHiddenMarks) {
+            classList(this.showHiddenMarks, ['e-btn-toggle'], []);
+        } else {
+            classList(this.showHiddenMarks, [], ['e-btn-toggle']);
+        }
     }
     private leftAlignmentAction(): void {
         if (this.isRetrieving) {
@@ -859,7 +883,6 @@ export class Paragraph {
             } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Justify') {
                 classList(this.justify, ['e-btn-toggle'], []);
             }
-            //#endregion
         }
         this.setLineSpacing();
         this.isRetrieving = false;
@@ -909,6 +932,10 @@ export class Paragraph {
         if (this.bordersBtn) {
             this.bordersBtn.destroy();
             this.bordersBtn = undefined;
+        }
+        if (this.showHiddenMarksBtn) {
+            this.showHiddenMarksBtn.destroy();
+            this.showHiddenMarksBtn = undefined;
         }
     }
 }

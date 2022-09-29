@@ -1,5 +1,5 @@
 /*! Toolbar's bootstrap5 theme wise override definitions and variables */
-// sass-lint:disable-all
+/* stylelint-disable */
 $tbar-skin: 'bootstrap5' !default;
 
 //font definitions
@@ -41,14 +41,14 @@ $tbar-item-bgr-padding-bigger: 1.5px 0 !default;
 $tbar-item-nrml-padding-small: 1px 0 !default;
 
 // dimension definitions
-$tbar-btn-bgr-line-height: 24px !default;
-$tbar-btn-nrml-line-height: 22px !default;
+$tbar-btn-bgr-line-height: calc(100% - 11px) !default;
+$tbar-btn-nrml-line-height: calc(100% - 10px) !default;
 $tbar-btn-nrml-minheight: 32px !default;
 $tbar-btn-bgr-minheight: 38px !default;
 $tbar-btn-nrml-minwidth: 32px !default;
 $tbar-btn-bgr-minwidth: 38px !default;
-$tbar-btn-bgr-height: calc(100% - 11px) !default;
-$tbar-btn-nrml-height: calc(100% - 10px) !default;
+$tbar-btn-bgr-height: $tbar-btn-bgr-line-height !default;
+$tbar-btn-nrml-height: $tbar-btn-nrml-line-height !default;
 $tbar-nrml-size: 38px !default;
 $tbar-bgr-size: 46px !default;
 $tbar-nrml-items-size: 38px !default;

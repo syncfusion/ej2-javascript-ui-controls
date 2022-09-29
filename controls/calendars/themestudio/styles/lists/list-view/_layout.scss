@@ -1,5 +1,5 @@
 @include export-module('listview-layout') {
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-bigger #{&}.e-listview,
   #{&}.e-listview.e-bigger {
     @if ($skin-name == 'bootstrap4') {
@@ -270,8 +270,8 @@
     @else {
       & .e-text-content.e-checkbox .e-list-text {
         width: calc(100% - 40px);
-        }
       }
+    }
     @if ($skin-name == 'FluentUI') {
       &.e-list-template {
         .e-list-wrapper {

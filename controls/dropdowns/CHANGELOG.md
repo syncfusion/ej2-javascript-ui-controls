@@ -2,49 +2,33 @@
 
 ## [Unreleased]
 
-## 20.2.44 (2022-08-16)
+## 20.3.47 (2022-09-29)
 
-### MultiSelect
+### Mention
 
-#### New Features
+- The `@Mention` component can be used to display a pop-up suggestion list whenever the designated mention key character is entered into a text box, rich text editor, or other editable element.
 
-- Provided event details in open and close event arguments in the multiselect component.
+**Key features**:
 
-### AutoComplete
+- **Data binding**: Binds the list of items from local and remote data sources such as JSON, OData, WCF, and RESTful web services.
 
-#### New Features
+- **Grouping**: Groups the logically related items under a single or specific category.
 
-- Provided event details in open and close event arguments in the autocomplete component.
+- **Filtering**: Filters the list items based on a character typed in the component.
 
-### ComboBox
+- **Sorting**: Sorts the list items in alphabetical order (either ascending or descending).
 
-#### New Features
+- **Highlight search**: Highlights the typed text in the suggestion list.
 
-- Provided event details in open and close event arguments in the combobox component.
+- **Templates**: Customize the list item, display value, no records, and spinner loading content.
 
-### DropDownList
-
-#### New Features
-
-- Provided event details in open and close event arguments in the dropdownlist component.
-
-## 20.2.43 (2022-08-08)
+- **Accessibility**: Built-in accessibility support that helps to access all the Mention component features using the keyboard, on-screen readers, or other assistive technology devices.
 
 ### ListBox
 
 #### Bug Fixes
 
-- `#I384240` - Issue with "`RemoveItems` not working properly after adding items with specific index" has been resolved.
-
-## 20.2.40 (2022-07-26)
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#F175828` - Now, `customSelection` event is trigger when we render the component with `itemTemplate` and `allowFiltering`.
-
-## 20.2.39 (2022-07-19)
+- `#I406600` - Issue with "While using drag and drop the multiple item of listbox drop event argument only one item instead all selected item" has been resolved.
 
 ### ListBox
 
@@ -52,7 +36,11 @@
 
 - `#I386103` - Issue with "Datasource not update properly after clearing the filtering in the dual listbox" has been resolved.
 
-## 20.2.36 (2022-06-30)
+### ListBox
+
+#### Bug Fixes
+
+- `#I384240` - Issue with "`RemoveItems` not working properly after adding items with specific index" has been resolved.
 
 ### ListBox
 

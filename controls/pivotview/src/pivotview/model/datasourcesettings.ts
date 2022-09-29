@@ -200,6 +200,13 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      */
     @Property(false)
     public expandAll: boolean;
+    /**
+    * Allows you to create group folder for fields in pivot field list.
+    * Allows user to set the group (i.e., folder) name for selected fields that used to be displayed in the field list tree.
+    * > It is applicable only for relational data source.
+    */
+    @Property()
+    public groupName: string;
 }
 
 /**

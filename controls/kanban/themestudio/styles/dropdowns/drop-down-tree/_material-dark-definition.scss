@@ -1,4 +1,4 @@
-// sass-lint:disable-all
+/* stylelint-disable */
 $ddt-skin-name: 'material-dark' !default;
 $ddt-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 0px rgba(0, 0, 0, 0.14), 0 3px 14px 0px rgba(0, 0, 0, 0.12) !default;
 $ddt-close-icon-min-height: 22px !default;
@@ -64,7 +64,7 @@ $ddt-remains-padding: 0 0 0 16px !default;
 $ddt-rtl-remains-padding: 0 16px 0 0 !default;
 $ddt-chip-font-size: 13px !default;
 $ddt-overflow-count-padding-top: 6px !default;
-$ddt-delim-padding : 6px 0 0 0!default;
+$ddt-delim-padding : 6px 0 0 0 !default;
 $ddt-delim-bigger-padding: 11px 0 0 0 !default;
 $ddt-remains-count-padding-top: 6px !default;
 $ddt-outline-padding: 10px 12px !default;

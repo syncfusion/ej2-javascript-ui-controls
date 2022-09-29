@@ -76,15 +76,13 @@ describe('Undo redo ->', () => {
             helper.click('#spreadsheet_sorting');
             helper.click('#spreadsheet_sorting-popup .e-item');
             setTimeout(() => {
-               setTimeout(() => {
-                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Casual Shoes');
-                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Item Name');
-                    helper.click('#spreadsheet_undo');
-                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
-                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
-                    done();
-               });
-            });
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Casual Shoes');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Item Name');
+                helper.click('#spreadsheet_undo');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+                done();
+            }, 10);
         });
 
         it('Redo after Strikethrough and Underline ->', (done: Function) => {
@@ -277,9 +275,10 @@ describe('Undo redo ->', () => {
             helper.getElement('#' + helper.id + '_sorting').click();
             helper.getElement('#' + helper.id + '_applyfilter').click();
             expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
             helper.invoke('selectRange', ['A1']);
             helper.invoke('getCell', [0, 0]).focus();
-            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
             setTimeout(() => {
                 setTimeout(() => {
                     const sortAsc: HTMLElement = helper.getElement('.e-excelfilter .e-filter-sortasc');
@@ -296,7 +295,7 @@ describe('Undo redo ->', () => {
                         expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
                         expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
                         done();
-                    }, 10);
+                    }, 20);
                 });
             });
         });
@@ -313,9 +312,10 @@ describe('Undo redo ->', () => {
         });
 
         it('Undo after apply both sorting using Filter icon ->', (done: Function) => {
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
             helper.invoke('selectRange', ['A1']);
             helper.invoke('getCell', [0, 0]).focus();
-            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
             setTimeout(() => {
                 setTimeout(() => {
                     const sortAsc: HTMLElement = helper.getElement('.e-excelfilter .e-filter-sortdesc');
@@ -332,7 +332,7 @@ describe('Undo redo ->', () => {
                         expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
                         expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Cricket Shoes');
                         done();
-                    }, 10);
+                    }, 20);
                 });
             });
         });

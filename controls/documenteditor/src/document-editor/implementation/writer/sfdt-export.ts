@@ -168,7 +168,7 @@ export class SfdtExport {
             let isSameCell: boolean = selectionStartCell instanceof TableCellWidget && selectionEndCell instanceof TableCellWidget
                 && selectionEndCell.equals(selectionEndCell);
             if (isSameCell || isNullOrUndefined(endCell)) {
-                this.startLine = line;
+                this.startLine  = line;
                 this.endLine = endLine;
                 this.endOffset = endOffset;
             } else {

@@ -137,7 +137,7 @@ describe('Pie Series checking', () => {
             let legend: Element = getElement(id + '_chart_legend_g');
             let width: number = legend.getBoundingClientRect().width;
             let height: number = legend.getBoundingClientRect().height;
-            expect(width == 45 || width == 44).toBe(true);
+            expect(width == 48 || width == 47).toBe(true);
             expect(height == 258 || height == 248).toBe(true);
             done();
         };

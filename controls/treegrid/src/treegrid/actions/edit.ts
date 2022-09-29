@@ -331,6 +331,9 @@ export class Edit {
                 args.cancel = true;
             }
         }
+        if (this.parent.enableVirtualization) {
+            this.parent.grid.contentModule['editedRowIndex'] = this.parent.grid.editModule.editModule['index'];
+        }
     // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
     //   this.isAdd = false;
     // }
@@ -444,6 +447,9 @@ export class Edit {
             } else {
                 this.parent.grid.isEdit = true;
             }
+        }
+        if (this.parent.enableVirtualization) {
+            this.parent.grid.contentModule['virtualData'] = {};
         }
     }
 
@@ -689,7 +695,12 @@ export class Edit {
                 if (isVirtualization) {
                     this.prevAriaRowIndex = '-1';
                 }
-                focussedElement.focus();
+                if (!this.parent.enableVirtualization || this.parent.enableVirtualization && !Object.keys(this.parent.grid.contentModule['emptyRowData']).length) {
+                    focussedElement.focus();
+                }
+                if (this.parent.enableVirtualization && !Object.keys(this.parent.grid.contentModule['emptyRowData']).length) {
+                    this.parent.grid.contentModule['createEmptyRowdata']();
+                }
             }
         }
         if (this.parent.editSettings.mode === 'Batch' && !isNullOrUndefined(this.addRowIndex) && this.addRowIndex !== -1 && this['isAddedRowByMethod'] && !this.isAddedRowByContextMenu) {
@@ -801,6 +812,9 @@ export class Edit {
             }
             if (this.isAddedRowByMethod && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                 this.addRowRecord = this.parent.flatData[this.parent.grid.selectedRowIndex];
+                if (this.parent.enableVirtualization && this.isAddedRowByContextMenu) {
+                    this.addRowRecord = this.parent.getCurrentViewRecords()[this.addRowIndex];
+                }
             } else {
                 this.addRowRecord = this.parent.getSelectedRecords()[0];
             }
@@ -837,15 +851,19 @@ export class Edit {
             let position: string = null;
             value.taskData = isNullOrUndefined(value.taskData) ? extend({}, args.data) : value.taskData;
             let currentData: ITreeData[];
-            if (this.parent.editSettings.mode === 'Batch' && this['isAddedRowByMethod'] && !isNullOrUndefined(this.addRowIndex)) {
+
+            if (this.parent.enableVirtualization && args.index !== 0) {
+                currentData = this.parent.flatData;
+            }
+            else if (this.parent.editSettings.mode === 'Batch' && this['isAddedRowByMethod'] && !isNullOrUndefined(this.addRowIndex)) {
                 currentData = this.batchEditModule['batchRecords'];
             }
             else {
                 currentData = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
             }
             if (this.parent.enableVirtualization && args.index !== 0) {
-                this.addRowIndex = this.parent.grid.getCurrentViewRecords().indexOf( this.addRowRecord);
-                this.selectedIndex = parseInt(this.parent.getRows()[this.addRowIndex].getAttribute('data-rowindex'), 10);
+                this.addRowIndex = this.parent.flatData.indexOf( this.addRowRecord);
+                this.selectedIndex = this.addRowIndex;
             }
             let index: number =  this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
@@ -856,7 +874,8 @@ export class Edit {
             const rows: HTMLTableRowElement[] = this.parent.getRows();
             const firstAriaIndex: number = rows.length ? currentData.indexOf(currentData[0]) : 0;
             const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('data-rowindex') : 0;
-            const withinRange: boolean = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
+            const withinRange: boolean = this.parent.enableVirtualization && args.index !== 0 ? true :
+                this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
             if (currentData.length) {
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];
                 parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];

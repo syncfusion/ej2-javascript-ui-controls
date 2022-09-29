@@ -39,7 +39,7 @@ export class ContextMenu {
         const indent: HTMLElement = select('#' + this.parent.element.id + '_gridcontrol_cmenu_Indent', args.element);
         const outdent: HTMLElement = select('#' + this.parent.element.id + '_gridcontrol_cmenu_Outdent', args.element);
         if (addRow) {
-            if (this.parent.grid.editSettings.allowAdding === false) {
+            if (this.parent.grid.editSettings.allowAdding === false || this.parent.grid.isEdit) {
                 addRow.style.display = 'none';
             } else {
                 addRow.style.display = 'block';
@@ -63,7 +63,7 @@ export class ContextMenu {
                 else if (args['name'] !== 'rowDeselected' || (!isNullOrUndefined(selectedrow) && tObj.grid.isCheckBoxSelection)) {
                     const selectedItem: ITreeData = tObj.getCurrentViewRecords()[selectedrow.rowIndex];
                     if (!isNullOrUndefined(selectedItem)) {
-                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level)|| this.parent.editSettings.mode === 'Batch'
+                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level) || this.parent.editSettings.mode === 'Batch'
                         || this.parent.editSettings.mode === 'Cell') {
                             indent.style.display = 'none';
                         } else {

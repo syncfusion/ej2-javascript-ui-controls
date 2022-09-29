@@ -1,4 +1,3 @@
-
 $grid-font-size: 13px !default;
 $grid-icon-color: $default-icon-color !default;
 $grid-command-icon-color: $default-icon-color !default;
@@ -140,7 +139,7 @@ $grid-header-border-width: 0 !default;
 $grid-headercell-line-height: 36px !default;
 $grid-header-padding: 8px !default;
 $grid-header-first-last-cell-padding: 10px !default;
-$grid-headercelldiv-margin: 0 !default;
+$grid-headercelldiv-margin: 0 0 0 -5px !default;
 $grid-headercelldiv-right-align-padding: 0 !default;
 $grid-headercelldiv-padding: 0 20px 0 5px !default;
 $grid-rtl-headercelldiv-padding: 1px 0 !default;
@@ -451,7 +450,7 @@ $grid-border-bottom-width: 1px !default;
 $grid-dragcell-border-style: solid !default;
 $grid-dragcell-border-color: $neutral-light !default;
 $grid-drap-drop-icon-color: $neutral-light-font !default;
-$grid-clone-dropitemscount-bg-color: $theme-primary  !default;
+$grid-clone-dropitemscount-bg-color: $theme-primary !default;
 $grid-clone-dropitemscount-color: $content-font-color !default;
 $grid-clone-row-border-color: $neutral-light !default;
 $grid-dropitemscount-color: $neutral-primary !default;
@@ -491,7 +490,7 @@ $grid-rtl-textwrap-column-menu-margin: -21px -13px -23px -3px !default;
 $grid-filter-checkbox-width: 0 !default;
 $grid-filter-checkbox-white-space: nowrap !default;
 
-// group animator 
+// group animator
 $grid-group-animator-bigger-cell-margin: 20px 0 20px 0 !default;
 $grid-group-animator-bigger-drop-height: 54px !default;
 $grid-animator-bigger-area-margin: 22px !default;
@@ -554,7 +553,7 @@ $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -10px 0 0 !default;
 $grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
-$grid-rowcell-color: rgba($grid-content-font-color,  $grid-conent-font-opacity) !default;
+$grid-rowcell-color: rgba($grid-content-font-color, $grid-conent-font-opacity) !default;
 $grid-reorderarrow-margin-top: -4.5px !default;
 $grid-reorderdownarrow-margin-top: 4px !default;
 $grid-reorder-arrow-top-margin: 0 !default;

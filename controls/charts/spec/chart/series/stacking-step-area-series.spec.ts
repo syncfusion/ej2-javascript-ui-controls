@@ -56,7 +56,9 @@ describe('Chart Control', () => {
                 primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
                 series: [{
                     dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StackingStepArea',
-                    name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{ visible: true, dataLabel:{visible:false}}
+                    name: 'ChartSeriesNameGold', fill: 'skyblue',
+                      marker:{ visible: true, dataLabel:{visible:false}},
+                   
                 }], 
                 width: '800',
                 title: 'Chart TS Title', legendSettings: { visible: false, }
@@ -121,7 +123,6 @@ describe('Chart Control', () => {
         chartObj.loaded = loaded;
         chartObj.series[0].marker.dataLabel.position = 'Middle';
         chartObj.refresh();
-
         });
         it('Checking dataLabel positions Top', (done: Function) => {
             loaded = (args: Object): void => {
@@ -351,6 +352,7 @@ describe('Chart Control', () => {
             chartObj.refresh(); 
 
         });
+        
         it('Checking with multiple series', (done: Function) => {
              loaded = (args: Object): void => {
                  svg = document.getElementById('container_Series_0');
@@ -516,6 +518,27 @@ describe('Chart Control', () => {
             chartObj.series[0].animation.enable = false;
             chartObj.refresh();
 
+        });
+         it('Checking with stroke for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                 let seriesBorder: HTMLElement = document.getElementById('container_Series_border_0');
+                 expect(seriesBorder.getAttribute('stroke') === 'blue').toBe(true);
+                 done();
+             };
+             chartObj.loaded = loaded;
+            chartObj.series[0].border.color = 'blue';
+            chartObj.series[0].border.width = 4;
+            chartObj.refresh();
+         });
+         it(' checking with fill for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesBorder = document.getElementById('container_Series_border_0');
+                expect(seriesBorder.getAttribute('fill') === 'transparent').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].fill = 'red';
+            chartObj.refresh();
         });
     });
     describe('Stacking Step Area Series Inversed axis', () => {

@@ -73,6 +73,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#ffffff',
             tooltipFillColor: '#FFFFFF',
             tooltipFontColor: '#000000',
+            tooltipTextOpacity: 1,
             labelColor: '#DADADA',
             lineColor: '#C8C8C8',
             majorTickColor: '#C8C8C8',
@@ -81,7 +82,9 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#9A9A9A',
             needleColor: '#9A9A9A',
             needleTailColor: '#9A9A9A',
+            fontSize: '15px',
             labelFontFamily: 'Segoe UI',
+            fontFamily: 'Segoe UI',
             titleFontWeight: 'Normal'
         };
         break;
@@ -91,6 +94,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#FFFFFF',
             tooltipFillColor: '#ffffff',
             tooltipFontColor: '#000000',
+            tooltipTextOpacity: 1,
             labelColor: '#FFFFFF',
             lineColor: '#FFFFFF',
             majorTickColor: '#FFFFFF',
@@ -99,7 +103,9 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#FFFFFF',
             needleColor: '#FFFFFF',
             needleTailColor: '#FFFFFF',
+            fontSize: '15px',
             labelFontFamily: 'Segoe UI',
+            fontFamily: 'Segoe UI',
             titleFontWeight: 'Normal'
         };
         break;
@@ -263,6 +269,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             titleFontColor: '#424242',
             tooltipFillColor: '#363F4C',
             tooltipFontColor: '#ffffff',
+            tooltipTextOpacity: 1,
             labelColor: '#212121',
             lineColor: '#E0E0E0',
             majorTickColor: '#9E9E9E',
@@ -271,7 +278,9 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             capColor: '#757575',
             needleColor: '#757575',
             needleTailColor: '#757575',
+            fontSize: '15px',
             labelFontFamily: 'Segoe UI',
+            fontFamily: 'Segoe UI',
             titleFontWeight: 'Normal'
         };
         break;

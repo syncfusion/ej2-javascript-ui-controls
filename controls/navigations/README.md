@@ -27,6 +27,13 @@ Following list of components are available in the package
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=accordion#/material/accordion/default.html)
   * [Product Page](https://www.syncfusion.com/products/javascript/accordion)
 
+* AppBar - The AppBar displays information and actions related to the current application screen. It is used to show branding, screen titles, navigation, and actions.
+
+  * [Getting Started](https://ej2.syncfusion.com/documentation/appbar/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=appbar)
+  * [API References](https://ej2.syncfusion.com/documentation/appbar/api-appbar.html?utm_source=npm&utm_campaign=appbar)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=appbar#/material/appbar/default.html)
+  * [Product Page](https://www.syncfusion.com/products/javascript/appbar)
+
 * Breadcrumb - Graphical user interface that helps to identify or highlight the current location within a hierarchical structure of websites. The aim is to make the user aware of their current position in a hierarchy of website links.
 
   * [Getting Started](https://ej2.syncfusion.com/documentation/breadcrumb/getting-started?lang=typescript&utm_source=npm&utm_campaign=breadcrumb)
@@ -109,6 +116,13 @@ Sidebar component is used in the following samples.
 2. **Expand Mode** - Supports to define single or multiple expand mode for Accordion panels.
 3. **RTL Support** - Supports right-to-left alignment.
 4. **Accessibility** - Provides built-in compliance with the WAI-ARIA specifications and it is achieved through attributes. By default, it allows to interact with Accordion by using keyboard shortcuts.
+
+### AppBar
+
+1. **Modes** - `Regular`, `Prominent`, and `Dense` modes that define the AppBar height.
+2. **Content arrangement** - Spacer and separator options can be used to align the content based on the UI requirement with minimal effort.
+3. **Color** - `Primary`, `Light`, `Dark`, and `Inherit` options to customize the AppBar color.
+4. **Position** - AppBars can be placed at the top or bottom of the screen. It can also be sticky.
 
 ### Breadcrumb
 

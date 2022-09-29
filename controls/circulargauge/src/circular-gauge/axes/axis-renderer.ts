@@ -779,4 +779,14 @@ export class AxisRenderer {
             range.rangeColor = range.color ? range.color : rangeColors[index % rangeColors.length];
         });
     }
+
+    /**
+     *
+     * @returns {void}
+     * @private
+     */
+     public destroy(): void {
+        this.gauge = null;
+        this.majorValues = [];
+    }
 }

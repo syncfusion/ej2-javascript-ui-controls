@@ -11,7 +11,7 @@ import { TextAttributes } from '@syncfusion/ej2-svg-base';
 import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
 import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
-import { Series, Points } from '../../chart/series/chart-series';
+import { Series, Points, DataLabelSettings, MarkerSettings } from '../../chart/series/chart-series';
 import { Axis } from '../../chart/axis/axis';
 import { Chart } from '../../chart/chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
@@ -26,6 +26,7 @@ import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { RangeColorSettingModel } from '../../chart/chart-model';
 import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
 import {Alignment} from './enum';
+import { DataLabel } from '../../stock-chart';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -1383,7 +1384,7 @@ export function checkBounds(start: number, size: number, min: number, max: numbe
 }
 /** @private */
 export function getLabelText(currentPoint: Points, series: Series, chart: Chart): string[] {
-    const labelFormat: string = series.yAxis.labelFormat;
+    let labelFormat: string = series.marker.dataLabel.format ? series.marker.dataLabel.format : series.yAxis.labelFormat;
     const text: string[] = [];
     const customLabelFormat: boolean = labelFormat.match('{value}') !== null;
     switch (series.seriesType) {
@@ -1546,8 +1547,8 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
     case 'Line':
     case 'StackingLine':
     case 'StackingLine100':
-        dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' +
-                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly);
+        dir = 'M' + ' ' + (lx + (-width * (3/4))) + ' ' + (ly) + ' ' +
+                'L' + ' ' + (lx + (width * (3/4))) + ' ' + (ly);
         merge(options, { 'd': dir });
         break;
     case 'StepLine':

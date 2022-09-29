@@ -10,9 +10,8 @@ import { ToolbarItems, ToolbarItem, ResponsiveToolbarAction } from '../base/enum
 import { SearchBox } from '../services/focus-strategy';
 
 /**
- * The `Toolbar` module is used to handle ToolBar actions.
  *
- * @hidden
+ * The `Toolbar` module is used to handle ToolBar actions.
  */
 export class Toolbar {
     //internal variables
@@ -85,7 +84,7 @@ export class Toolbar {
                 };
             }
         }
-        if (this.parent.enableAdaptiveUI && this.parent.toolbar.indexOf('Search') > -1) {
+        if (this.parent.enableAdaptiveUI && this.parent.toolbar && this.parent.toolbar.indexOf('Search') > -1) {
             (this.predefinedItems as { responsiveBack: ItemModel }).responsiveBack = {
                 id: this.gridID + '_' + 'responsiveback', cssClass: 'e-gridresponsiveicons e-icons',
                 suffixIcon: 'e-' + 'resback-icon', visible: false
@@ -361,7 +360,7 @@ export class Toolbar {
                 items.push(this.getItem(item as ItemModel));
             }
         }
-        if (this.parent.enableAdaptiveUI && this.parent.toolbar.indexOf('Search') > -1) {
+        if (this.parent.enableAdaptiveUI && this.parent.toolbar && this.parent.toolbar.indexOf('Search') > -1) {
             items.push(this.getItemObject('responsiveBack'));
         }
         return items;

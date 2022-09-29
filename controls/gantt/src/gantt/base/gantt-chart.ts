@@ -209,7 +209,7 @@ export class GanttChart {
     public renderTimelineContainer(): void {
         this.chartTimelineContainer =
             createElement('div', { className: cls.timelineHeaderContainer });
-        this.chartTimelineContainer.setAttribute("role", "TimelineHeader");    
+        this.chartTimelineContainer.setAttribute("role", "presentation");    
         this.chartElement.appendChild(this.chartTimelineContainer);
     }
 
@@ -337,13 +337,11 @@ export class GanttChart {
     }
 
     private ganttChartMouseClick(e: PointerEvent): void {
-        if (this.parent.editSettings.allowTaskbarEditing) {
-            if (this.parent.autoFocusTasks) {
+        if (this.parent.autoFocusTasks) {
                 this.scrollToTarget(e); /** Scroll to task */
             }
             this.parent.notify('chartMouseClick', e);
         }
-    }
 
     private ganttChartMouseUp(e: PointerEvent): void {
         if (this.parent.editSettings.allowTaskbarEditing) {
@@ -686,6 +684,11 @@ export class GanttChart {
         this.parent.updatedConnectorLineCollection = [];
         this.parent.predecessorModule.createConnectorLinesCollection();
         this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+        if (this.parent.enableCriticalPath && this.parent.criticalPathModule) {
+            let criticalModule: CriticalPath = this.parent.criticalPathModule;
+            criticalModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true,
+                                                 criticalModule.predecessorCollectionTaskIds);
+        }
     }
 
     /**
@@ -1037,8 +1040,8 @@ export class GanttChart {
                     this.parent.treeGrid.grid.notify('key-pressed', e);
                 }
             }
-          if (!(this.parent.editModule && this.parent.editModule.cellEditModule 
-            && !isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn))) {
+            if (!(this.parent.editModule && this.parent.editModule.cellEditModule 
+                && !isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn))) {
                 if (nextElement) {
                     if ($target.classList.contains('e-rowcell')) {
                         this.manageFocus($target as HTMLElement, 'remove', false);

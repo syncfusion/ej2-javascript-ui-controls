@@ -77,6 +77,7 @@ export class Double {
             return true;
         }
     }
+
     public getActualRange(axis: Axis, size: Size): void {
         this.initializeDoubleRange(axis);
         if ((!axis.startFromZero) && (this.isColumn > 0)) {

@@ -168,18 +168,18 @@ export class VirtualScroll {
             if (this.direction === 'vertical') {
                 let rowValues: number = this.parent.dataType === 'pivot' ?
                     (this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1) : 1;
-                let exactSize: number = (this.parent.pageSettings.rowSize * rowValues * this.parent.gridSettings.rowHeight);
+                let exactSize: number = (this.parent.pageSettings.rowPageSize * rowValues * this.parent.gridSettings.rowHeight);
                 let section: number = Math.ceil(top / exactSize);
                 if ((this.parent.scrollPosObject.vertical === section ||
-                    engine.pageSettings.rowSize >= engine.rowCount)) {
+                    engine.pageSettings.rowPageSize >= engine.rowCount)) {
                     // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.actionObj.actionName = events.verticalScroll;
-                this.parent.actionBeginMethod();  
+                this.parent.actionBeginMethod();                
                 this.parent.showWaitingPopup();
                 this.parent.scrollPosObject.vertical = section;
-                this.parent.pageSettings.rowCurrentPage = engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
+                this.parent.pageSettings.currentRowPage = engine.pageSettings.currentRowPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
                 this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
                     if (this.parent.dataType === 'pivot') {
@@ -195,16 +195,16 @@ export class VirtualScroll {
                         rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
                     }
                     this.enginePopulatedEventMethod(engine);
-                }); 
-                    let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
-                    let pos: number = exactSize * exactPage -
-                        (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
-                    this.parent.scrollPosObject.verticalSection = pos;
+                });  
+                let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowPageSize * rowValues));
+                let pos: number = exactSize * exactPage -
+                    (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
+                this.parent.scrollPosObject.verticalSection = pos;
             } else {
                 let colValues: number =
                     this.parent.dataType === 'pivot' ?
                         (this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1) : 1;
-                let exactSize: number = (this.parent.pageSettings.columnSize *
+                let exactSize: number = (this.parent.pageSettings.columnPageSize *
                     colValues * this.parent.gridSettings.columnWidth);
                 let section: number = Math.ceil(left / exactSize);
                 if (this.parent.scrollPosObject.horizontal === section) {
@@ -212,11 +212,11 @@ export class VirtualScroll {
                     return;
                 }
                 this.parent.actionObj.actionName = events.horizontalScroll;
-                this.parent.actionBeginMethod();
+                this.parent.actionBeginMethod();                
                 this.parent.showWaitingPopup();
                 let pivot: PivotView = this.parent;
                 pivot.scrollPosObject.horizontal = section;
-                this.parent.pageSettings.columnCurrentPage = engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
+                this.parent.pageSettings.currentColumnPage = engine.pageSettings.currentColumnPage = section > 1 ? section : 1;
                 let colStartPos: number = 0;
                 this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
                     if (pivot.dataType === 'pivot') {
@@ -232,7 +232,7 @@ export class VirtualScroll {
                     }
                     this.enginePopulatedEventMethod(engine);
                 });  
-                let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
+                let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnPageSize * colValues));
                 let pos: number = exactSize * exactPage - (engine.colFirstLvl *
                     colValues * pivot.gridSettings.columnWidth);
                 pivot.scrollPosObject.horizontalSection = pos;
@@ -243,7 +243,7 @@ export class VirtualScroll {
             }
         }
     }
-
+     
     private enginePopulatedEventMethod(engine: PivotEngine | OlapEngine, control?: PivotView): void {
         let pivot: PivotView = control ? control : this.parent;
         let eventArgs: EnginePopulatedEventArgs = {
@@ -254,7 +254,7 @@ export class VirtualScroll {
             this.parent.pivotValues = engine.pivotValues;
         });
     }
-    
+
     private setPageXY(): Function { /* eslint-disable-line */
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {

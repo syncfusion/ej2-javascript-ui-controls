@@ -1,4 +1,5 @@
 @include export-module('field-list-icons') {
+  
   /*! field-list component icons */
   .e-pivotfieldlist {
     .e-select-table::before {
@@ -15,13 +16,13 @@
       content: '\e823';
     }
 
-    .e-colorpicker-wrapper .e-format-back-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before,
-    .e-colorpicker-container .e-format-back-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before {
+    .e-colorpicker-wrapper .e-format-back-color + .e-split-btn-wrapper .e-split-btn .e-selected-color::before,
+    .e-colorpicker-container .e-format-back-color + .e-split-btn-wrapper .e-split-btn .e-selected-color::before {
       content: '\e35c';
     }
 
-    .e-colorpicker-wrapper .e-format-font-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before,
-    .e-colorpicker-container .e-format-font-color+.e-split-btn-wrapper .e-split-btn .e-selected-color::before {
+    .e-colorpicker-wrapper .e-format-font-color + .e-split-btn-wrapper .e-split-btn .e-selected-color::before,
+    .e-colorpicker-container .e-format-font-color + .e-split-btn-wrapper .e-split-btn .e-selected-color::before {
       content: '\e35f';
     }
   }
@@ -58,7 +59,7 @@
       content: '\e22f';
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-measureGroupCDB-icon::before {
       content: '\ea76' !important;
     }
@@ -158,7 +159,7 @@
     .e-sort-descend::before {
         content: '\e665' !important;
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
   }
 
   .e-pivotfieldlist-wrapper,
@@ -220,7 +221,7 @@
       content: '\e83d';
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-measureGroupCDB-icon::before {
       content: '\ea76' !important;
     }
@@ -325,7 +326,7 @@
       content: '\e993' !important;
     }
 
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-pivot-calc-outer-div .e-pivot-accord .e-edited.e-icons::before {
       content: '\e7a3';

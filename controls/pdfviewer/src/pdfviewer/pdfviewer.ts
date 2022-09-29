@@ -5449,7 +5449,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     protected preRender(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         if(Browser.isDevice){
-            this.touchPadding = 20;
+            //EJ2-63562 - Reduced the touchPadding of mobile devices to 16 to improve selection of fields without affecting resizing ability.
+            this.touchPadding = 16;
         }
     }
 

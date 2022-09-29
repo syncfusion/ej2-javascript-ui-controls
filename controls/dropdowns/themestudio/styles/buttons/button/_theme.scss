@@ -1,7 +1,8 @@
 @import 'mixin.scss';
 @include export-module('button-theme') {
+
   /*! button theme */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-btn,
   .e-css.e-btn {
     -webkit-tap-highlight-color: transparent;
@@ -26,7 +27,7 @@
 
       &:focus:not(:focus-visible) { //mouse click
         @if $skin-name == 'FluentUI' {
-          outline: none !important; // sass-lint:disable-line no-important
+          outline: none !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
@@ -90,7 +91,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -128,7 +129,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -145,8 +146,8 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+            @if $skin-name == 'FluentUI'{
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -164,7 +165,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -178,11 +179,11 @@
         &.e-warning {
           &:focus {
             outline: $btn-focus-outline-round;
-           }
+          }
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -200,7 +201,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -225,12 +226,12 @@
         }
 
         &:focus {
-          @include  primary-focus;
+          @include primary-focus;
         }
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -284,7 +285,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -326,7 +327,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -368,7 +369,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -410,7 +411,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -477,7 +478,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -535,7 +536,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -595,7 +596,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -657,7 +658,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -719,7 +720,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -781,7 +782,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -835,7 +836,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -876,7 +877,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -924,7 +925,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -972,7 +973,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -1020,7 +1021,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -1068,7 +1069,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -1105,11 +1106,37 @@
         }
 
         &:focus:not(:focus-visible) {
-          outline: none !important; // sass-lint:disable-line no-important
+          outline: none !important; /* stylelint-disable-line declaration-no-important */
         }
 
         &:disabled {
           @include link-disabled;
+        }
+      }
+
+      &.e-inherit {
+        color: inherit;
+        background: inherit;
+        border-color: transparent;
+        box-shadow: none;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &.e-active {
+          background: rgba(transparent, .056);
+          border-color: transparent;
+          box-shadow: none;
+          color: inherit;
+          outline: none;
+        }
+
+        &:disabled {
+          background: inherit;
+          color: inherit;
+          border-color: transparent;
+          box-shadow: none;
+          opacity: .5;
         }
       }
     }

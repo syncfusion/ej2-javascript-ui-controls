@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { getCell, getRowHeight, SheetModel, Spreadsheet } from '../../../src/index';
+import { getCell, getRowHeight, SheetModel, Spreadsheet, getRowsHeight } from '../../../src/index';
 
 describe('Wrap ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -57,6 +57,22 @@ describe('Wrap ->', () => {
         //     expect(td.parentElement.style.height).toBe('56px');
         //     done();
         // });
+
+        it('Merged cell selection update on row height changed due to wrap action', (done: Function) => {
+            helper.invoke('merge', ['A4:E5']);
+            setTimeout((): void => {
+                helper.invoke('updateCell', [{ value: 'Large cell data' }, 'B3']);
+                helper.invoke('updateCell', [{ value: 'Large cell data checking' }, 'B6']);
+                const activeCell: HTMLElement = helper.getElementFromSpreadsheet('.e-active-cell');
+                const mergedCellRowHeight: string = activeCell.style.height;
+                helper.invoke('wrap', ['B3']);
+                helper.invoke('wrap', ['B6']);
+                setTimeout((): void => {
+                    expect(activeCell.style.height).toBe(mergedCellRowHeight);
+                    done();
+                });
+            });
+        });
     });
     describe('CR-Issues ->', () => {
         describe('I316931, I31444 ->', () => {
@@ -161,96 +177,93 @@ describe('Wrap ->', () => {
                 done();
             });
         });
-        describe('EJ2-50347', () => {
-            beforeEach((done: Function) => {
+        describe('EJ2-50347, EJ2-53337, EJ2-52631, EJ2-50915', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2:B2' }]
+                    sheets: [{ ranges: [{ dataSource: defaultData }], 
+                    rows: [{ index: 11, cells: [{ }]},
+                    { cells: [{ value: 'OrderID' }, { value: 'RequiredStartDate' }, { value: 'RequiredStartTime' }, { value: 'RequiredFinishDate' }, { value: 'RequiredFinishTime' },{ value: 'planningNotes' }] },
+                    { cells: [{ value: '10250' }, { value: '15/02/1998' }, { value: '2/20/2020' }, { value: '25/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] },
+                    { cells: [{ value: '10251' }, { value: '16/02/1998' }, { value: '10/10/2010' }, { value: '30/02/1998' }, { value: '1:10:00 PM' },{ value: '' }] },
+                    { cells: [{ value: '10252' }, { value: '17/02/1998' }, { value: '10/10/2010' }, { value: '20/02/1998' }, { value: '1:10:00 PM' },{ value: '' }] },
+                    { cells: [{ value: '10253' }, { value: '18/02/1998' }, { value: '10/10/2010' }, { value: '23/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] },
+                    { cells: [{ value: '10254' }, { value: '19/02/1998' }, { value: '10/10/2010' }, { value: '24/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] }] }, { } ], activeSheetIndex: 0
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Underline and Strikethrough options are removed if we perform wrap text option', (done: Function) => {
-                helper.getElement('#' + helper.id + '_merge').click();
-                helper.setAnimationToNone('.e-dialog');
-                helper.click('.e-dialog .e-footer-content button:nth-child(1)');
-                setTimeout(() => {
-                    helper.edit('A2', 'Wrapping on merge cell increases row height');
-                    helper.getElement('#' + helper.id + '_line-through').click();
-                    helper.getElement('#' + helper.id + '_underline').click();
-                    setTimeout(() => {
-                    helper.getElement('#' + helper.id + '_wrap').click();
-                    expect(helper.invoke('getCell', [1, 0]).querySelector('.e-wrap-content').textContent).toBe('Wrapping on merge cell increases row height');
-                    expect(helper.getInstance().sheets[0].rows[1].cells[0].style.textDecoration).toBe('underline line-through');
-                    done();
-                    });
-                });
-            });
-        });
-        describe('EJ2-50915->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Sheet is loading for long when switch the sheet', (done: Function) => {
-                helper.click('.e-add-sheet-tab');
-                expect(helper.getInstance().activeSheetIndex).toBe(1);
-                expect(helper.getInstance().sheets.length).toBe(2);
-                setTimeout(() => {
-                    helper.edit('D5', ('123456789'));
-                    helper.edit('D6', ('4353563773'));
-                    helper.edit('D7', ('2612'));
-                    helper.invoke('selectRange', ['D5:D7']);
-                    setTimeout(() => {
-                        helper.getElement('#' + helper.id + '_number_format').click();
-                        helper.getElement('#' + helper.id + '_number_format-popup .e-item:nth-child(11)').click();
-                        setTimeout(() => {
-                            helper.getElement('#' + helper.id + '_wrap').click();
-                            setTimeout(() => {
-                                helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[0].click();
-                                setTimeout(() => {
-                                    helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
-                                    setTimeout(() => {
-                                        expect(helper.getInstance().sheets[1].selectedRange).toBe('D5:D7');
-                                        expect(helper.getInstance().sheets[1].rows[4].cells[3].wrap).toBeTruthy();
-                                        expect(helper.getInstance().sheets[1].rows[5].cells[3].wrap).toBeTruthy();
-                                        expect(helper.getInstance().sheets[1].rows[6].cells[3].wrap).toBeTruthy();
-                                        done();
-                                    }, 10);
-                                }, 10);
-                            }, 10);
-                        }, 10);
-                    });
-                });
-            });
-        });
-        describe('EJ2-53337->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ selectedRange: 'B2' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('selection issue with wrap applied cell in Spreadsheet->', (done: Function) => {
-                helper.edit('B2', ('selection issue with wrap applied cell in Spreadsheet'));
+            it('EJ2-50347 - Underline and Strikethrough options are removed if we perform wrap text option', (done: Function) => {
+                helper.invoke('merge', ['A2:B2']);
+                helper.invoke('selectRange', ['A2']);
+                helper.invoke('updateCell', [{ value: 'Wrapping on merge cell increases row height' }, 'A2']);
+                helper.getElement('#' + helper.id + '_line-through').click();
+                helper.getElement('#' + helper.id + '_underline').click();
                 helper.getElement('#' + helper.id + '_wrap').click();
-                expect(helper.getInstance().sheets[0].rows[1].height).toBe(147);
-                setTimeout(function () {
-                    helper.invoke('setColWidth', [44, 1]);
-                    expect(helper.invoke('getCell', [1, 1]).querySelector('.e-wrap-content').textContent).toBe('selection issue with wrap applied cell in Spreadsheet');
-                    expect(helper.getInstance().sheets[0].rows[1].height).toBe(147);
-                    expect(helper.getInstance().sheets[0].columns[1].width).toBe(44);
-                    helper.triggerKeyNativeEvent(13);
-                    setTimeout(function () {
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('B3:B3');
+                expect(helper.invoke('getCell', [1, 0]).querySelector('.e-wrap-content').textContent).toBe('Wrapping on merge cell increases row height');
+                expect(helper.getInstance().sheets[0].rows[1].cells[0].style.textDecoration).toBe('underline line-through');
+                done();
+            });
+            it('EJ2-53337 - selection issue with wrap applied cell in Spreadsheet->', (done: Function) => {
+                helper.invoke('selectRange', ['D3']);
+                helper.invoke('updateCell', [{ value: 'selection issue with wrap applied cell in Spreadsheet' }, 'D3']);
+                helper.getElement('#' + helper.id + '_wrap').click();
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(147);
+                helper.invoke('setColWidth', [44, 3]);
+                expect(helper.invoke('getCell', [2, 3]).querySelector('.e-wrap-content').textContent).toBe('selection issue with wrap applied cell in Spreadsheet');
+                expect(helper.getInstance().sheets[0].rows[2].height).toBe(147);
+                expect(helper.getInstance().sheets[0].columns[3].width).toBe(44);
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('D4:D4');
+                    done();
+                });
+            });
+            it('EJ2-52631 - Issue with cell selection while reducing row height and apply wrap->', (done: Function) => {
+                helper.invoke('setRowHeight', [50, 13]);
+                helper.invoke('selectRange', ['F14']);
+                helper.getElement('#' + helper.id + '_wrap').click();
+                expect(helper.invoke('getRow', [13]).style.height).toBe('50px');
+                expect(helper.invoke('getCell', [13, 5]).classList).toContain('e-alt-unwrap');
+                expect(helper.invoke('getCell', [13, 5]).textContent).toBe('kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n');
+                done();
+            });
+            it('EJ2-50915 - Sheet is loading for long when switch the sheet', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'Wrapping on merge cell increases row height' }, 'Sheet2!D5']);
+                helper.invoke('updateCell', [{ value: 'Wrapping on merge cell increases row height' }, 'Sheet2!D6']);
+                helper.invoke('updateCell', [{ value: 'Wrapping on merge cell increases row height' }, 'Sheet2!D7']);
+                helper.invoke('selectRange', ['Sheet2!D5:D7']);
+                helper.invoke('numberFormat', ['@', 'Sheet2!D5:D7']);
+                helper.getInstance().wrap('Sheet2!D5:D7');
+                helper.invoke('goTo', ['Sheet2!D5:D7']);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[1].selectedRange).toBe('D5:D7');
+                    expect(helper.getInstance().sheets[1].rows[4].cells[3].wrap).toBeTruthy();
+                    expect(helper.getInstance().sheets[1].rows[5].cells[3].wrap).toBeTruthy();
+                    expect(helper.getInstance().sheets[1].rows[6].cells[3].wrap).toBeTruthy();
+                    done();
+                });
+            });
+        });
+        describe('EJ2-52429->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], topLeftCell: 'A20' }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Improvement for resize with wrap cells.->', (done: Function) => {
+                helper.invoke('setRowHeight', [5, 21]);
+                helper.invoke('goTo', ['A200']);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['A20']);
+                    setTimeout(() => {
+                        expect(helper.invoke('getRow', [21]).style.height).toBe('5px');
+                        expect(helper.getInstance().sheets[0].rows[21].height).toBe(5);
                         done();
-                    }, 100);
+                    }, 10);
                 });
             });
         });
@@ -276,38 +289,11 @@ describe('Wrap ->', () => {
                 helper.invoke('destroy');
             });
             it('When use \n in cell value, it throws script error->', (done: Function) => {
-                helper.invoke('goTo', ['E1']);
-                setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].rows[0].cells[4].wrap).toBeTruthy();
-                    expect(helper.invoke('getCell', [0,4]).classList).toContain('e-wraptext');
-                    expect(getRowHeight(helper.getInstance().sheets[0], 0)).toBe(38);
-                    expect(helper.invoke('getCell', [0, 4]).textContent).toBe('TPP Adjusted \n Balance');
-                    done();
-                });
-            });
-        });
-        describe('EJ2-52429->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Improvement for resize with wrap cells.->', (done: Function) => {
-                helper.invoke('goTo', ['A22']);
-                setTimeout(() => {
-                    helper.invoke('setRowHeight', [5, 21]);
-                    helper.invoke('goTo', ['A200']);
-                    setTimeout(() => {
-                        helper.invoke('goTo', ['A22']);
-                        setTimeout(() => {
-                            expect(helper.invoke('getRow', [21]).style.height).toBe('5px');
-                            done();
-                        });
-                    });
-                });
+                expect(helper.getInstance().sheets[0].rows[0].cells[4].wrap).toBeTruthy();
+                expect(helper.invoke('getCell', [0,4]).classList).toContain('e-wraptext');
+                expect(getRowHeight(helper.getInstance().sheets[0], 0)).toBe(38);
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('TPP Adjusted \n Balance');
+                done();
             });
         });
         describe('EJ2-52631->', () => {
@@ -329,32 +315,6 @@ describe('Wrap ->', () => {
                 let selectionEle: HTMLElement = helper.getElements('.e-selection')[0];
                 expect(cellEle.style.height).toEqual(selectionEle.style.height);
                 done();
-            });
-        });
-        describe('EJ2-52631->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{ cells: [{ value: 'OrderID' }, { value: 'RequiredStartDate' }, { value: 'RequiredStartTime' }, { value: 'RequiredFinishDate' }, { value: 'RequiredFinishTime' },{ value: 'planningNotes' }] },
-                    { cells: [{ value: '10250' }, { value: '15/02/1998' }, { value: '2/20/2020' }, { value: '25/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] },
-                    { cells: [{ value: '10251' }, { value: '16/02/1998' }, { value: '10/10/2010' }, { value: '30/02/1998' }, { value: '1:10:00 PM' },{ value: '' }] },
-                    { cells: [{ value: '10252' }, { value: '17/02/1998' }, { value: '10/10/2010' }, { value: '20/02/1998' }, { value: '1:10:00 PM' },{ value: '' }] },
-                    { cells: [{ value: '10253' }, { value: '18/02/1998' }, { value: '10/10/2010' }, { value: '23/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] },
-                    { cells: [{ value: '10254' }, { value: '19/02/1998' }, { value: '10/10/2010' }, { value: '24/02/1998' }, { value: '1:10:00 PM' },{ value: 'kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n' }] }] }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Issue with cell selection while reducing row height and apply wrap->', (done: Function) => {
-                helper.invoke('setRowHeight', [50, 1]);
-                helper.invoke('selectRange', ['F2']);
-                helper.getElement('#' + helper.id + '_wrap').click();
-                setTimeout(() => {
-                    expect(helper.invoke('getRow', [1]).style.height).toBe('50px');
-                    expect(helper.invoke('getCell', [1, 5]).classList).toContain('e-alt-unwrap');
-                    expect(helper.invoke('getCell', [1, 5]).textContent).toBe('kiran \n jayanth \n murali \n chiru \n sanketh \n pavan \n');
-                    done();
-                });
             });
         });
     });

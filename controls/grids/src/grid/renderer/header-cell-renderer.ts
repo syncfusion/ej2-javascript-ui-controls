@@ -21,7 +21,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
     private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons', attrs: {'aria-hidden': 'true'} });
     private gui: Element = this.parent.createElement('div');
-    private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox', 'aria-label': 'checkbox' } });
+    private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox', 'aria-label': this.localizer.getConstant('CheckBoxLabel') } });
     /**
      * Function to return the wrapper for the TH content.
      *
@@ -66,6 +66,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
     /* tslint:disable-next-line:max-func-body-length */
     private prepareHeader(cell: Cell<Column>, node: Element, fltrMenuEle: Element): Element {
         const column: Column = cell.column; const ariaAttr: IAriaOptions<boolean> = {};
+        let elementDesc: string = '';
         //Prepare innerHtml
         const innerDIV: HTMLDivElement = <HTMLDivElement>this.getGui();
         let hValueAccer: string;
@@ -103,6 +104,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             attributes(fltrMenuEle, {
                 'e-mappinguid': 'e-flmenu-' + column.uid
             });
+            elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('FilterDescription') : this.localizer.getConstant('FilterDescription');
             node.classList.add('e-fltr-icon');
             const matchFlColumns: Object[] = [];
             if (this.parent.filterSettings.columns.length && this.parent.filterSettings.columns.length !== matchFlColumns.length) {
@@ -129,11 +131,16 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             setStyleAndAttributes(node as HTMLElement, column.customAttributes);
         }
 
-        if (column.allowSorting) {
+        if (this.parent.allowSorting && column.allowSorting) {
             ariaAttr.sort = 'none';
+            elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('SortDescription') : this.localizer.getConstant('SortDescription');
         }
         if ((this.parent.allowGrouping && column.allowGrouping) || this.parent.allowReordering && column.allowReordering) {
             ariaAttr.grabbed = false;
+            elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('GroupDescription') : this.localizer.getConstant('GroupDescription');
+        }
+        if (this.parent.showColumnMenu) {
+            elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('ColumnMenuDescription') : this.localizer.getConstant('ColumnMenuDescription');
         }
         node = this.extendPrepareHeader(column, node);
         let result: Element[];
@@ -176,6 +183,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             if (column.type !== 'checkbox') {
                 node.classList.add('e-ellipsistooltip');
             }
+        }
+        if (elementDesc) {
+            node.setAttribute('aria-description', elementDesc);
         }
         node.setAttribute('aria-rowspan', (!isNullOrUndefined(cell.rowSpan) ? cell.rowSpan : 1).toString());
         node.setAttribute('aria-colspan', '1');

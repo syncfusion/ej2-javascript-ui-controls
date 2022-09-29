@@ -564,7 +564,7 @@ export class DOMNode {
                 const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
                 markerStart.appendChild(start);
             } else {
-                if (start.nodeType != 3 && start.nodeName != '#text') {
+                if (start.nodeType !== 3 && start.nodeName !== '#text') {
                     const marker: string = this.marker(markerClassName.startSelection, '');
                     append([this.parseHTMLFragment(marker)], start);
                 } else {

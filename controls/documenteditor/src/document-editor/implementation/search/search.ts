@@ -3,7 +3,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentEditor } from '../../document-editor';
-import { LineWidget, ElementBox, TextElementBox, FieldElementBox, Page, HeaderFooterWidget, BlockContainer, BodyWidget } from '../viewer/page';
+import { LineWidget, ElementBox, TextElementBox, FieldElementBox, Page, HeaderFooterWidget, BodyWidget } from '../viewer/page';
 import { LayoutViewer, DocumentHelper } from '../index';
 import { ElementInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from './text-search';
@@ -595,10 +595,12 @@ export class Search {
             if (type.indexOf('Header')) {
                 headerFooterString = '<span class="e-de-header-footer-list">' + 'Header' + ': ' + '</span>';
             } else if (type.indexOf('Footer')) {
-                headerFooterString = '<span class="e-de-header-footer-list">' + 'Footer' + ': ' + '</span>';
-            }
-            
             listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
+            headerFooterString = '<span class="e-de-header-footer-list">' + 'Footer' + ': ' + '</span>';
+            }
+
+            listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
+            
             this.addSearchResultItems(listElement);
         }
     }

@@ -106,8 +106,7 @@ export class Crud {
         if (this.parent.resizeModule && this.parent.resizeModule.actionObj && this.parent.resizeModule.actionObj.element) {
             this.parent.resizeModule.actionObj.element.style.display = 'none';
         }
-        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.activeViewOptions.group.allowGroupEdit
-            && !this.parent.rowAutoHeight && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
+        if (this.parent.isSpecificResourceEvents()) {
             if (args.requestType === 'eventCreated' || args.requestType === 'eventRemoved') {
                 this.crudObj.isCrudAction = true;
                 this.crudObj.sourceEvent = [];

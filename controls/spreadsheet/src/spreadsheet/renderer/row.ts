@@ -5,7 +5,7 @@ import { attributes } from '@syncfusion/ej2-base';
 import { getCellAddress, getCellIndexes, skipHiddenIdx } from '../../workbook/common/index';
 
 /**
- * Sheet module is used for creating row element
+ * RowRenderer module is used for creating row element
  *
  * @hidden
  */
@@ -84,6 +84,15 @@ export class RowRenderer implements IRowRenderer {
             updateCells();
         }
         return row;
+    }
+
+    /**
+     * Clears the internal properties of RowRenderer module.
+     *
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.parent = null; this.element = null;
     }
 }
  

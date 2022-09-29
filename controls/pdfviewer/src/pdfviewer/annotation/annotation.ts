@@ -155,6 +155,8 @@ export class Annotation {
     private isUndoRedoAction: boolean = false;
     private isUndoAction: boolean = false;
     private annotationSelected: boolean = true;
+    private isAnnotDeletionApiCall: boolean = false;
+    private removedDocumentAnnotationCollection: any = [];
     /**
      * @private
      */
@@ -309,9 +311,11 @@ export class Annotation {
     }
     public deleteAnnotationById(annotationId: string | object): void {
         if (annotationId) {
+            this.isAnnotDeletionApiCall = true;
             this.annotationSelected = false;
             this.selectAnnotation(annotationId);
             this.deleteAnnotation();
+            this.isAnnotDeletionApiCall = false;
         }
     }
     private clearAnnotationMode(): void {
@@ -439,13 +443,7 @@ export class Annotation {
                         }
                     }
                 }
-                if (removeDiv) {
-                    if (removeDiv.parentElement.childElementCount === 1) {
-                        this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
-                    } else {
-                        removeDiv.remove();
-                    }
-                }
+                this.removeCommentPanelDiv(removeDiv);
                 const selectedAnnot: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
                 const annotationId: string = selectedAnnot.annotName;
                 const annotType: AnnotationType = this.getAnnotationType(selectedAnnot.shapeAnnotationType, selectedAnnot.measureType);
@@ -513,12 +511,11 @@ export class Annotation {
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.pdfViewerBase.tool = null;
                 this.pdfViewer.tool = null;
-                let isFormField = selectedAnnot.annotName === 'SignatureField' || selectedAnnot.annotName === 'SignatureText';
-                if ((!isFormField && (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature' || selectedAnnot.shapeAnnotationType === 'SignatureText' || selectedAnnot.shapeAnnotationType === 'SignatureImage'))) {
+                if (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature' || selectedAnnot.shapeAnnotationType === 'SignatureText' || selectedAnnot.shapeAnnotationType === 'SignatureImage' || selectedAnnot.shapeAnnotationType === 'Path') {
                     // eslint-disable-next-line max-len
                     const bounds: object = { left: selectedAnnot.bounds.x, top: selectedAnnot.bounds.y, width: selectedAnnot.bounds.width, height: selectedAnnot.bounds.height };
                     // eslint-disable-next-line max-len
-                    this.pdfViewer.fireSignatureRemove(pageNumber, selectedAnnot.signatureName, selectedAnnot.shapeAnnotationType  as AnnotationType, bounds);
+                    this.pdfViewer.fireSignatureRemove(pageNumber,selectedAnnot.id,selectedAnnot.shapeAnnotationType  as AnnotationType , bounds);
                 } else if (this.pdfViewer.annotationModule) {
                     // eslint-disable-next-line max-len
                     this.pdfViewer.fireAnnotationRemove(pageNumber, annotationId, annotType, selectedAnnot.bounds);
@@ -831,7 +828,7 @@ export class Annotation {
         let collections: any = this.pdfViewer.annotationCollection;
         if (collections && annotation) {
             for (let i: number = 0; i < collections.length; i++) {
-                if (collections[i].annotationId === annotation.annotName) {
+                if (collections[i].annotationId === annotation.annotName || collections[i].annotationId === annotation.annotationId) {
                     this.removedAnnotationCollection.push(collections[i]);
                     this.pdfViewer.annotationCollection.splice(i, 1);
                     break;
@@ -900,7 +897,7 @@ export class Annotation {
             id = annotationId;
         }
         if (annotation) {
-            const pageIndex: number = annotation.pageNumber;
+            let pageIndex: number = isNullOrUndefined(annotation.pageNumber) ? annotation.pageIndex : annotation.pageNumber;
             let isRender: boolean = false;
             isRender = this.findRenderPageList(pageIndex);
             const currentSelector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
@@ -910,10 +907,12 @@ export class Annotation {
                     if (annotation.rect || annotation.bounds) {
                         // eslint-disable-next-line max-len
                         const scrollValue: number = this.pdfViewerBase.pageSize[pageIndex].top * this.pdfViewerBase.getZoomFactor() + (this.getAnnotationTop(annotation)) * this.pdfViewerBase.getZoomFactor();
-                        const scroll: string = (scrollValue - 20).toString();
-                        // eslint-disable-next-line radix
-                        this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
-                        this.pdfViewerBase.viewerContainer.scrollLeft = this.getAnnotationLeft(annotation) * this.pdfViewerBase.getZoomFactor();
+                        if (!this.isAnnotDeletionApiCall) {
+                            const scroll: string = (scrollValue - 20).toString();
+                            // eslint-disable-next-line radix
+                            this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
+                            this.pdfViewerBase.viewerContainer.scrollLeft = this.getAnnotationLeft(annotation) * this.pdfViewerBase.getZoomFactor();    
+                        }
                     } else {
                         if (this.pdfViewer.navigation) {
                             this.pdfViewer.navigation.goToPage(pageIndex + 1);
@@ -929,10 +928,12 @@ export class Annotation {
                             scrollValue = this.pdfViewerBase.pageSize[pageIndex].top * this.pdfViewerBase.getZoomFactor() + (annotation.bounds.y) * this.pdfViewerBase.getZoomFactor();
                             scrollLeft = annotation.bounds.x * this.pdfViewerBase.getZoomFactor();
                         }
-                        const scroll: string = (scrollValue - 20).toString();
-                        // eslint-disable-next-line radix
-                        this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
-                        this.pdfViewerBase.viewerContainer.scrollLeft = scrollLeft;
+                        if (!this.isAnnotDeletionApiCall) {
+                            const scroll: string = (scrollValue - 20).toString();
+                            // eslint-disable-next-line radix
+                            this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);
+                            this.pdfViewerBase.viewerContainer.scrollLeft = scrollLeft;    
+                        }
                     } else {
                         if (this.pdfViewer.navigation) {
                             this.pdfViewer.navigation.goToPage(pageIndex + 1);
@@ -994,15 +995,88 @@ export class Annotation {
                             }
                         }
                     }
-                } else {
+                } 
+                else if (annotation.uniqueKey || (annotation.shapeAnnotationType === "textMarkup" && annotation.annotationAddMode === "Imported Annotation")) {
                     this.selectAnnotationId = id;
                     this.isAnnotationSelected = true;
                     this.annotationPageIndex = pageIndex;
+                    this.selectAnnotationFromCodeBehind();
                 }
+            }
+            if (!isRender && !annotation.uniqueKey) {
+                let collections: any = this.updateCollectionForNonRenderedPages(annotation, id, pageIndex);
+                collections.pageIndex = pageIndex;
+                this.pdfViewer.annotation.addAction(pageIndex, null, collections, 'Delete', '', collections, collections);
+                this.undoCommentsElement.push(collections);
+                let removeDiv: any = document.getElementById(annotation.annotationId);
+                this.removeCommentPanelDiv(removeDiv);
             }
         }
     }
+      // To update the collections for the non-rendered pages.
+    private updateCollectionForNonRenderedPages(annotation: any, id: any, pageIndex: number): any{
+        let collections: any;
+        let annotationCollection: any = this.pdfViewer.annotationCollection;
+        if (annotationCollection.length) {
+            let collectionDetails: any = annotationCollection.filter(function (annotCollection: any) {
+                return annotCollection.annotationId === id;
+            })
+            collections = collectionDetails[0];
+            this.updateAnnotationCollection(collectionDetails[0]);
+        }
+        let annotationType: any = this.getTypeOfAnnotation(annotation);
+        let collection: any = this.pdfViewerBase.documentAnnotationCollections[pageIndex];                    
+        if (collection[annotationType].length) {
+            for (let x = 0; x < collection[annotationType].length; x++) {
+                if (collection[annotationType][x].AnnotName === annotation.annotationId) {
+                    let type: any = collection[annotationType][x];
+                    this.removedDocumentAnnotationCollection.push(type);
+                    collection[annotationType].splice(x, 1);
+                    break;
+                }
+            } 
+        }
+        return collections;
+    }
 
+    // To get the annotation type to update the document Annotation collections
+    private getTypeOfAnnotation(annotation: any): any {
+        let annotationType;
+        if (annotation.id.toLowerCase() === "shape") {
+            annotationType = "shapeAnnotation"
+        }
+        else if (annotation.id.toLowerCase() === "measure") {
+            annotationType = "measureShapeAnnotation";
+        }
+        else if (annotation.id.toLowerCase() === "freetext") {
+            annotationType = "freeTextAnnotation";
+        }
+        else if (annotation.shapeAnnotationType.toLowerCase() === "textmarkup") {
+            annotationType = "textMarkupAnnotation";
+        }
+        else if (annotation.shapeAnnotationType.toLowerCase() === "stamp") {
+            annotationType = "stampAnnotations";
+        }
+        else if (annotation.shapeAnnotationType.toLowerCase() === "ink") {
+            annotationType = "signatureInkAnnotation";
+        }
+        else if (annotation.shapeAnnotationType.toLowerCase() === "sticky") {
+            annotationType = "stickyNotesAnnotation";
+        }                    
+        return annotationType;
+    } 
+
+    // To remove the commnet panel div
+    private removeCommentPanelDiv(removeDiv: any): void {
+        if (removeDiv) {
+            if (removeDiv.parentElement.childElementCount === 1) {
+                this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+            }
+            else {
+                removeDiv.remove();
+            }
+        }
+    }
     /**
      * Clear the annotation selection.
      *
@@ -1531,12 +1605,16 @@ export class Annotation {
                         } else if (shapeType === 'Ink') {
                             this.inkAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
                         }
-                        const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
-                        if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
-                            this.pdfViewer.nodePropertyChange(addedAnnot, {});
+                        if (!actionObject.annotation.annotationId) {
+                            const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
+                            if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
+                                this.pdfViewer.nodePropertyChange(addedAnnot, {});
+                            }       
                         }
-
-                        let formFieldObj: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];
+                        let formFieldObj: PdfAnnotationBase;
+                        if (actionObject.annotation.id) {
+                            formFieldObj = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];
+                        }
                         if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField')) {
                             formFieldObj.wrapper.children.push(actionObject.annotation.wrapper.children[0]);
                             if (actionObject.annotation.shapeAnnotationType === "SignatureText")
@@ -1577,6 +1655,15 @@ export class Annotation {
                         this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
                         // eslint-disable-next-line max-len
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(actionObject.annotation.pageIndex, shapeType);
+                        if (actionObject.annotation.annotationId) {
+                            let removedAnnotationCollection: any = this.removedAnnotationCollection[this.removedAnnotationCollection.length - 1];
+                            let annotationType: any = this.getTypeOfAnnotation(removedAnnotationCollection);
+                            this.pdfViewer.annotationCollection.push(removedAnnotationCollection);
+                            this.removedAnnotationCollection.splice(this.removedAnnotationCollection.length - 1);
+                            let pageNumber: number = actionObject.annotation.pageNumber >= 0 ? actionObject.annotation.pageNumber : actionObject.annotation.pageIndex;
+                            this.pdfViewerBase.documentAnnotationCollections[pageNumber][annotationType].push(this.removedDocumentAnnotationCollection[this.removedDocumentAnnotationCollection.length - 1]);
+                            this.removedDocumentAnnotationCollection.splice(this.removedDocumentAnnotationCollection.length - 1);
+                        }
                     }
                     break;
                 case 'stampOpacity':
@@ -1868,8 +1955,10 @@ export class Annotation {
                             // eslint-disable-next-line max-len
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
                         }
-
-                        let formFieldObj: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];
+                        let formFieldObj: PdfAnnotationBase;
+                        if (actionObject.annotation.id) {
+                            formFieldObj = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];
+                        }
                         if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField')) {
                             formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(actionObject.annotation.wrapper.children[0]), 1);
                             if (actionObject.annotation.shapeAnnotationType === "SignatureText")
@@ -1897,13 +1986,12 @@ export class Annotation {
                         this.pdfViewer.remove(actionObject.annotation);
                         this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
                         // eslint-disable-next-line
-                        let removeDiv: any = document.getElementById(actionObject.annotation.annotName);
-                        if (removeDiv) {
-                            if (removeDiv.parentElement.childElementCount === 1) {
-                                this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
-                            } else {
-                                removeDiv.remove();
-                            }
+                        let id: any = actionObject.annotation.annotName ? actionObject.annotation.annotName : actionObject.annotation.annotationId;
+                        let removeDiv: any = document.getElementById(id);
+                        this.removeCommentPanelDiv(removeDiv);
+                        if (actionObject.annotation.annotationId) {
+                            let collections: any = this.updateCollectionForNonRenderedPages(actionObject.annotation, id, actionObject.annotation.pageIndex);
+                            this.undoCommentsElement.push(collections);
                         }
                     }
                     break;

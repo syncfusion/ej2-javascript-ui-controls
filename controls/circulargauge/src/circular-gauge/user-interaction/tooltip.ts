@@ -23,7 +23,6 @@ export class GaugeTooltip {
     private currentRange: Range;
     private currentAnnotation: Annotation;
     private borderStyle: BorderModel;
-    private textStyle: FontModel;
     private svgTooltip: Tooltip;
     private tooltipId: string;
     private gaugeId: string;
@@ -44,11 +43,6 @@ export class GaugeTooltip {
         this.gauge = gauge;
         this.tooltipId = this.gauge.element.id + '_CircularGauge_Tooltip';
         this.tooltip = <TooltipSettings>gauge.tooltip;
-        this.textStyle = {
-            color: this.tooltip.textStyle.color, opacity: this.tooltip.textStyle.opacity,
-            fontFamily: this.tooltip.textStyle.fontFamily, fontStyle: this.tooltip.textStyle.fontStyle,
-            fontWeight: this.tooltip.textStyle.fontWeight, size: this.tooltip.textStyle.size
-        };
         this.borderStyle = this.tooltip.border;
         this.addEventListener();
     }
@@ -133,12 +127,15 @@ export class GaugeTooltip {
                     this.tooltipRect = rect;
                 }
                 if (!tooltipArgs.cancel && !samePointerEle) {
-                    this.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                    this.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                    this.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
-                                                            tooltipArgs.tooltip.textStyle.opacity;
+                    let pointerTextStyle: FontModel = {
+                        color: tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor,
+                        opacity: tooltipArgs.tooltip.textStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity,
+                        fontFamily: tooltipArgs.tooltip.textStyle.fontFamily || this.gauge.themeStyle.fontFamily,
+                        fontStyle: tooltipArgs.tooltip.textStyle.fontStyle,
+                        fontWeight: tooltipArgs.tooltip.textStyle.fontWeight, size: tooltipArgs.tooltip.textStyle.size
+                    };
                     this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, tooltipArgs, template, this.arrowInverted, this.tooltipRect,
-                                                            this.gauge, tooltipArgs.tooltip.fill, this.textStyle,
+                                                            this.gauge, tooltipArgs.tooltip.fill, pointerTextStyle,
                                                             tooltipArgs.tooltip.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
@@ -225,11 +222,11 @@ export class GaugeTooltip {
                 }
                 if (!rangeTooltipArgs.cancel) {
                     rangeTooltipTextStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
-                    this.gauge.themeStyle.tooltipFontColor;
-                    rangeTooltipTextStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
-                    rangeTooltipTextStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
-                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
+                        this.gauge.themeStyle.tooltipFontColor;
+                    rangeTooltipTextStyle.fontFamily = rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily
+                        || this.gauge.themeStyle.fontFamily;
+                    rangeTooltipTextStyle.opacity = rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity ||
+                        this.gauge.themeStyle.tooltipTextOpacity;
                     this.svgTooltip = this.svgTooltipCreate (this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted,
                                                              this.tooltipRect, this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill,
                                                              rangeTooltipTextStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
@@ -289,16 +286,18 @@ export class GaugeTooltip {
                 this.tooltipRect = new Rect(rect.x, rect.y, rect.width, rect.height);
                 if (!annotationTooltipArgs.cancel && ( this.gauge.tooltip.annotationSettings.format !== null ||
                     this.gauge.tooltip.annotationSettings.template !== null)) {
-                    annotationTooltipArgs.tooltip.annotationSettings.textStyle.color = annotationTooltipArgs.tooltip.textStyle.color ||
-                    this.gauge.themeStyle.tooltipFontColor;
-                    annotationTooltipArgs.tooltip.annotationSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
-                    annotationTooltipArgs.tooltip.textStyle.fontFamily;
-                    annotationTooltipArgs.tooltip.annotationSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
-                    annotationTooltipArgs.tooltip.textStyle.opacity;
+                    let annotationTextStyle: FontModel = {
+                        color: annotationTooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor,
+                        fontFamily: annotationTooltipArgs.tooltip.textStyle.fontFamily || this.gauge.themeStyle.fontFamily,
+                        fontWeight: annotationTooltipArgs.tooltip.textStyle.fontWeight,
+                        opacity: annotationTooltipArgs.tooltip.textStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity,
+                        fontStyle:  annotationTooltipArgs.tooltip.textStyle.fontStyle,
+                        size:  annotationTooltipArgs.tooltip.textStyle.size
+                    };
                     this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, annotationTooltipArgs,
                                                             annotationTemplate, this.arrowInverted, this.tooltipRect,
                                                             this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill,
-                                                            annotationTooltipArgs.tooltip.annotationSettings.textStyle,
+                                                            annotationTextStyle,
                                                             annotationTooltipArgs.tooltip.annotationSettings.border);
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(this.tooltipEle);
@@ -314,7 +313,11 @@ export class GaugeTooltip {
             const isTooltipRemoved: boolean = this.removeTooltip();
             if (isTooltipRemoved) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.gauge as any).clearTemplate();
+               if (((this.gauge as any).isVue || (this.gauge as any).isVue3)) {
+                  (this.gauge as any).clearTemplate([this.tooltipEle.children[0].id],[0]);
+               } else {
+                   (this.gauge as any).clearTemplate();
+               }
             }
         }
         const gaugeElement: HTMLElement = document.getElementById(this.gaugeId);
@@ -532,13 +535,23 @@ export class GaugeTooltip {
     }
     /**
      * To destroy the tooltip.
-     *
-     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     *     
      * @returns {void}
      * @private
      */
-    public destroy(gauge: CircularGauge): void {
-        // Destroy method performed here
+    public destroy(): void {
+        this.tooltipEle = null;
+        this.currentAxis = null;
+        this.tooltip = null;
+        this.currentPointer = null;
+        this.currentRange = null;
+        this.currentAnnotation = null;
+        this.borderStyle = null;
+        this.svgTooltip = null;
+        this.tooltipRect = null;
+        this.pointerEle = null;
+        this.annotationTargetElement = null;
         this.removeEventListener();
+        this.gauge = null;
     }
 }

@@ -77,12 +77,16 @@ export class Scroll implements IAction {
             height = parseInt(height, 10) - Scroll.getScrollBarWidth();
         }
         if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
-            const tbody: HTMLElement = (this.parent.getHeaderContent().querySelector( literals.tbody) as HTMLElement);
+            const tbody: HTMLElement = (this.parent.getHeaderContent()
+                .querySelector( literals.tbody + ':not(.e-masked-tbody)') as HTMLElement);
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
             if (tbody && mHdrHeight) {
                 const add: number = tbody.getElementsByClassName(literals.addedRow).length;
                 const height: number = add * this.parent.getRowHeight();
                 mHdrHeight -= height;
+            } else if (!this.parent.isInitialLoad && this.parent.loadingIndicator.indicatorType === 'Shimmer'
+                && this.parent.getHeaderContent().querySelector('.e-masked-table')) {
+                height = parseInt(height as string, 10) - (this.parent.frozenRows * this.parent.getRowHeight());
             }
             content.style.height = formatUnit((height as number) - mHdrHeight);
         } else {

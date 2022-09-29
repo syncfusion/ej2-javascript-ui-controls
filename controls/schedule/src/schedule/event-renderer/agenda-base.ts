@@ -53,7 +53,6 @@ export class AgendaBase extends ViewBase {
                         'tabindex': '0',
                         'aria-disabled': this.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-pressed': 'false',
-                        'aria-grabbed': 'true',
                         'aria-label': this.parent.getAnnouncementString(listData[li])
                     }
                 });
@@ -257,9 +256,9 @@ export class AgendaBase extends ViewBase {
     }
 
     private createResourceTableRow(tContent: TdData[][], tBody: Element): void {
-        const tr: Element = createElement('tr', { attrs: { role: 'row' } });
+        const tr: Element = createElement('tr');
         let ntr: Element;
-        const td: Element = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
+        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
         let tempData: AgendaSlotData;
         let rowSpan: number = 0;
         let level: string;
@@ -353,11 +352,10 @@ export class AgendaBase extends ViewBase {
 
     public createTableRowElement(date: Date, type: string): Element {
         const daysCount: number = util.getDaysCount(this.parent.selectedDate.getTime(), date.getTime());
-        const tr: Element = createElement('tr', { attrs: { 'role': 'row', 'data-row-index': daysCount.toString() } });
+        const tr: Element = createElement('tr', { attrs: { 'data-row-index': daysCount.toString() } });
         const td: Element = createElement('td', {
             attrs: {
                 'class': (type === 'monthHeader') ? cls.MONTH_HEADER_CLASS : cls.AGENDA_CELLS_CLASS,
-                'role': 'gridcell',
                 'aria-selected': 'false',
                 'data-column-index': daysCount.toString(),
                 'data-date': date.getTime().toString()

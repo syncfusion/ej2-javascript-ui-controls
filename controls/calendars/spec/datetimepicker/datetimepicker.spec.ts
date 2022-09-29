@@ -165,10 +165,7 @@ describe('DateTimepicker', () => {
         });
         it('wrapper DOM testing', () => {
             expect(datetimepicker.inputWrapper.container.tagName === "SPAN").toBe(true);
-        });
-        it('wrapper ARIA-HASPOPUP attribute testing', () => {
-            expect(datetimepicker.element.getAttribute('aria-haspopup')).toEqual('true');
-        });
+        });     
         it('wrapper ARIA expanded attribute testing', () => {
             expect(datetimepicker.element.getAttribute('aria-expanded')).toEqual('false');
         });
@@ -1448,7 +1445,6 @@ describe('document layout testing', () => {
         }, 450);
     });
     it('wrapper ARIA-ACTIVEDESCENDANT testing', (done) => {
-        expect(datetimepicker.inputElement.getAttribute('aria-activedescendant')).toEqual('null');
         if (!datetimepicker.isDatePopupOpen() && !datetimepicker.isTimePopupOpen()) {
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
         }

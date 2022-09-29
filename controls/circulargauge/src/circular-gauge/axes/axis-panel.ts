@@ -406,7 +406,7 @@ export class AxisLayoutPanel {
             renderer.drawAxisLabels(axis, index, element, gauge);
             this.pointerRenderer.drawPointers(axis, index, element, gauge, animate);
             if (gauge.annotationsModule) {
-                gauge.annotationsModule.renderAnnotation(axis, index);
+                gauge.annotationsModule.renderAnnotation(axis, index, gauge);
             }
             axesElements.appendChild(element);
         });
@@ -437,5 +437,18 @@ export class AxisLayoutPanel {
             axis.maxLabelSize.height = label.size.height > axis.maxLabelSize.height ?
                 label.size.height : axis.maxLabelSize.height;
         }
+    }
+
+    public destroy(): void {
+        this.gauge = null;
+        this.farSizes = [];
+        if (!isNullOrUndefined(this.axisRenderer)) {
+            this.axisRenderer.destroy();
+        }
+        this.axisRenderer = null;
+        if (!isNullOrUndefined(this.pointerRenderer)) {
+            this.pointerRenderer.destroy();
+        }
+        this.pointerRenderer = null;
     }
 }

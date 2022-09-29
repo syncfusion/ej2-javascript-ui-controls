@@ -211,13 +211,17 @@ export class TreeMapHighlight {
     }
     /**
      * To destroy the hightlight.
-     *
-     * @param {TreeMap} treeMap - Specifies the instance of the treemap.
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(treeMap: TreeMap): void {
+    public destroy(): void {
+        this.shapeElement = null;
+        this.shapeHighlightCollection = [];
+        this.legendHighlightCollection = [];
+        this.currentElement = [];
         this.removeEventListener();
+        this.treemap = null;
     }
 }
 /**
@@ -524,7 +528,11 @@ export class TreeMapSelection {
      * @returns {void}
      * @private
      */
-    public destroy(treeMap: TreeMap): void {
+    public destroy(): void {
+        this.shapeElement = null;
+        this.shapeSelectionCollection = [];
+        this.legendSelectionCollection = [];
         this.removeEventListener();
+        this.treemap = null;
     }
 }

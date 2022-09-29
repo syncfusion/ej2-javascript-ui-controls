@@ -309,13 +309,8 @@ describe('open find pane and testing the repalce ,undo and redo functionality', 
         console.log('open find pane and testing the repalce functionality');
         editor.openBlank();
         editor.editor.insertText('hello world');
-        let optionsPane = editor.optionsPaneModule;
-        optionsPane.showHideOptionsPane(true);
-        (optionsPane as any).searchInput.value = 'world';
-        let replaceelementbox: any = (optionsPane as any).replaceWith;
-        replaceelementbox.value = 'hello';
-        optionsPane.onReplaceButtonClick();
-        expect(optionsPane.onReplaceButtonClick()).not.toThrowError;
+        editor.searchModule.findAll('world');
+        expect(editor.search.searchResults.replace('hello')).not.toThrowError;
     });
     it('Check the redo functionality', () => {
         console.log('Check the redo functionality');

@@ -373,6 +373,19 @@ export class Revision {
 
     /**
      * @private
+     *
+     */
+    public destroy(): void {
+        this.author = undefined;
+        this.revisionType = undefined;
+        this.revisionID = undefined;
+        this.date = undefined;
+        this.range = [];
+        this.range = undefined;
+        this.owner = undefined;
+    }
+    /**
+     * @private
      * @returns {Revision} - Returns revision
      */
     public clone(): Revision {

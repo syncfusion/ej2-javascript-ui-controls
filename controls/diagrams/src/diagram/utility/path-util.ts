@@ -189,6 +189,32 @@ export function getPolygonPath(collection: PointModel[]): string {
     path += 'Z';
     return path;
 }
+/**
+ * getFreeHandPath method \
+ *
+ * @returns {string} getFreeHandPath method .\
+ * @param { PointModel[] } collection - provide the data  value.
+ * @private
+ */
+ export function getFreeHandPath(collection:any): string {
+    var k:number;
+    for(k=0;k<collection.length;k++)
+    {
+        collection[k].x = Math.round(collection[k].x)
+        collection[k].y = Math.round(collection[k].y)
+    }
+    let path: string = '';
+    let seg: PointModel;
+    path = 'M' + collection[0].x + ' ' + collection[0].y;
+    let i: number;
+    for (i = 1; i < collection.length; i++) {
+        seg = collection[i];
+        path += 'L' + seg.x + ' ' + seg.y;
+    }
+    return path;
+}
+
+
 /* eslint-disable */
 /**
  * pathSegmentCollection method \

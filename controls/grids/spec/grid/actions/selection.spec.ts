@@ -2733,10 +2733,10 @@ describe('Grid Touch Selection', () => {
         });
 
         it('check selected records and select checkbox action', () => {
-            let args2: any = { action: 'downArrow', preventDefault: preventDefault };
+	    let args2: any = { action: 'downArrow', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args2);
             expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
-            let args3: any = { action: 'space', preventDefault: preventDefault };
+	    let args3: any = { action: 'space', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args3);
             expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
             let args1: any = { action: 'leftArrow', preventDefault: preventDefault };
@@ -2768,7 +2768,7 @@ describe('Grid Touch Selection', () => {
         });
     });
 
-    describe('EJ2-62837 virtualization enabled Grid checkboxOnly keyboard Selection Issue =>', () =>{
+    describe('virtualization enabled Grid checkboxOnly keyboard Selection Issue =>', () =>{
         let gridObj: Grid;
         let preventDefault: Function = new Function();
         beforeAll((done) => {

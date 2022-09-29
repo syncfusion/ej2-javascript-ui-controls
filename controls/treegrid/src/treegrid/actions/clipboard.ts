@@ -4,7 +4,7 @@
 import { TreeGrid } from '../base/treegrid';
 import * as events from '../base/constant';
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { BeforeCopyEventArgs, Clipboard as GridClipboard } from '@syncfusion/ej2-grids';
+import { BeforeCopyEventArgs, Clipboard as GridClipboard, ServiceLocator } from '@syncfusion/ej2-grids';
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
  *
@@ -14,9 +14,11 @@ export class TreeClipboard extends GridClipboard {
     private treeGridParent: TreeGrid;
     private treeCopyContent: string = '';
     private copiedUniqueIdCollection: string[] = [];
-    constructor(parent?: TreeGrid) {
-        super(parent.grid);
+    protected serviceLocator: ServiceLocator;
+    constructor(parent?: TreeGrid, serviceLocator?: ServiceLocator) {
+        super(parent.grid, serviceLocator);
         this.treeGridParent = parent;
+        this.serviceLocator = serviceLocator;
     }
     protected setCopyData(withHeader?: boolean): void {
         const copyContent: string = 'copyContent';

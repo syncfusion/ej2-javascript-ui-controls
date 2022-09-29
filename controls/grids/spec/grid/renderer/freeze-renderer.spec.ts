@@ -8,7 +8,7 @@ import { data, employeeData } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Edit } from '../../../src/grid/actions/edit';
-import { createGrid, destroy } from '../base/specutil.spec';
+import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 import { getScrollBarWidth } from '../../../src/grid/base/util';
 
@@ -755,5 +755,155 @@ describe('Freeze render module', () => {
         afterAll(function () {
             destroy(gridObj);
         });
+    });
+
+    describe('Frozen Grid Mask Row', () => {
+        let gridObj: Grid;
+        let frozenLeftHeaderElement: Element;
+        let movableHeaderElement: Element;
+        let frozenRightHeaderElement: Element;
+        let frozenLeftContentElement: Element;
+        let movableContentElement: Element;
+        let frozenRightContentElement: Element;
+        let frozenLeftFooterElement: Element;
+        let movableFooterElement: Element;
+        let frozenRightFooterElement: Element;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 10),
+                    loadingIndicator: { indicatorType: 'Shimmer' },
+                    frozenRows: 3,
+                    columns: [
+                        { field: 'OrderID', freeze: 'Left'},
+                        { field: 'CustomerID', freeze: 'Left'},
+                        { field: 'EmployeeID'},
+                        { field: 'ShipCity' },
+                        { field: 'ShipName'},
+                        { field: 'ShipCountry'},
+                        { field: 'Freight', freeze: 'Right'},
+                        { field: 'ShipRegion', freeze: 'Right'},
+                    ],
+                    aggregates: [
+                        {
+                            columns: [{
+                                type: 'Max',
+                                field: 'OrderID',
+                                footerTemplate: 'Max: ${Max}'
+                            }]
+                        },
+                        {
+                            columns: [{
+                                type: 'Max',
+                                field: 'EmployeeID',
+                                footerTemplate: 'Max: ${Max}'
+                            }]
+                        },
+                        {
+                            columns: [{
+                                type: 'Max',
+                                field: 'Freight',
+                                footerTemplate: 'Max: ${Max}'
+                            }]
+                        }
+                    ],
+                }, done);
+        });
+        it('Show Mask Row', () => {
+            gridObj.showMaskRow();
+
+            frozenLeftHeaderElement = gridObj.getHeaderContent().querySelector('.e-frozen-left-header');
+            movableHeaderElement = gridObj.getHeaderContent().querySelector('.e-movableheader');
+            frozenRightHeaderElement = gridObj.getHeaderContent().querySelector('.e-frozen-right-header');
+
+            frozenLeftContentElement = gridObj.getContent().querySelector('.e-frozen-left-content');
+            movableContentElement = gridObj.getContent().querySelector('.e-movablecontent');
+            frozenRightContentElement = gridObj.getContent().querySelector('.e-frozen-right-content');
+
+            frozenLeftFooterElement = gridObj.getFooterContent().querySelector('.e-frozen-left-footercontent');
+            movableFooterElement = gridObj.getFooterContent().querySelector('.e-movablefootercontent');
+            frozenRightFooterElement = gridObj.getFooterContent().querySelector('.e-frozen-right-footercontent');
+
+            expect(frozenLeftHeaderElement.querySelector('.e-masked-table')).toBeTruthy();
+            expect(movableHeaderElement.querySelector('.e-masked-table')).toBeTruthy();
+            expect(frozenRightHeaderElement.querySelector('.e-masked-table')).toBeTruthy();
+
+            expect(frozenLeftContentElement.querySelector('.e-masked-table')).toBeTruthy();
+            expect(movableContentElement.querySelector('.e-masked-table')).toBeTruthy();
+            expect(frozenRightContentElement.querySelector('.e-masked-table')).toBeTruthy();
+
+            expect(frozenLeftFooterElement.querySelector('.e-masked-table')).toBeTruthy();
+            expect(movableFooterElement.querySelector('.e-masked-table')).toBeTruthy();
+            expect(frozenRightFooterElement.querySelector('.e-masked-table')).toBeTruthy();
+        });
+        it('Refresh Mask Row', () => {
+            (gridObj as any).refreshMaskRow();
+
+            expect(frozenLeftHeaderElement.querySelector('.e-masked-table').clientWidth).toBe(frozenLeftHeaderElement.querySelector('.e-table:not(.e-masked-table)').clientWidth);
+            expect(movableHeaderElement.querySelector('.e-masked-table').clientWidth).toBe(movableHeaderElement.querySelector('.e-table:not(.e-masked-table)').clientWidth);
+            expect(frozenRightHeaderElement.querySelector('.e-masked-table').clientWidth).toBe(frozenRightHeaderElement.querySelector('.e-table:not(.e-masked-table)').clientWidth);
+
+            expect(frozenLeftContentElement.querySelector('.e-masked-table').clientWidth).toBe(frozenLeftContentElement.querySelector('.e-table:not(.e-masked-table)').clientWidth);
+            expect(movableContentElement.querySelector('.e-masked-table').clientWidth).toBe(movableContentElement.querySelector('.e-table:not(.e-masked-table)').clientWidth);
+            expect(frozenRightContentElement.querySelector('.e-masked-table').clientWidth).toBe(frozenRightContentElement.querySelector('.e-table:not(.e-masked-table)').clientWidth);
+        });
+        it('Remove Mask Row', () => {
+            gridObj.removeMaskRow();
+
+            expect(frozenLeftHeaderElement.querySelector('.e-masked-table')).toBeFalsy();
+            expect(movableHeaderElement.querySelector('.e-masked-table')).toBeFalsy();
+            expect(frozenRightHeaderElement.querySelector('.e-masked-table')).toBeFalsy();
+
+            expect(frozenLeftContentElement.querySelector('.e-masked-table')).toBeFalsy();
+            expect(movableContentElement.querySelector('.e-masked-table')).toBeFalsy();
+            expect(frozenRightContentElement.querySelector('.e-masked-table')).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = frozenLeftHeaderElement = movableHeaderElement = frozenRightHeaderElement = null;
+            frozenLeftContentElement = movableContentElement = frozenRightContentElement = null;
+            frozenLeftFooterElement = movableFooterElement = frozenRightFooterElement = null;
+        });
+    });
+});
+
+describe('EJ2-63013 - Filtering was not working properly with the combination of FrozenColumn and RowDrag and Drop feature => ', () => {
+    let gridObj: Grid;
+    let filterColumn: Function = (gridObj: Grid, colName: string, value: string, keyCode?: number) => {
+        let filterElement: any = gridObj.element.querySelector('[id=\'' + colName + '_filterBarcell\']');
+        filterElement.value = value;
+        filterElement.focus();
+        (gridObj.filterModule as any).keyUpHandler(getKeyUpObj(keyCode ? keyCode : 13, filterElement));
+    };
+    let orderIDElement: any;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowFiltering: true,
+                allowPaging: false,
+                allowRowDragAndDrop: true,
+                frozenColumns: 1,
+                columns: [{ field: 'OrderID', type: 'number', visible: true },
+                { field: 'CustomerID', type: 'string' },
+                { field: 'Freight', format: 'C2', type: 'number' },
+                ],
+            }, done);
+    });
+
+    it('Entering values and pressing enter key in Filter Bar ', (done: Function) => {
+        gridObj.dataBind();
+        orderIDElement = gridObj.element.querySelector('#OrderID_filterBarcell');
+        filterColumn(gridObj, 'OrderID', 10248);
+        setTimeout(done, 200);
+    });
+
+    it('Check the filtered records', () => {
+        expect(gridObj.currentViewData.length).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = orderIDElement = null;
     });
 });

@@ -25,7 +25,7 @@
         }
 
         & .e-hscroll {
-          display: inline-block !important; // sass-lint:disable-line no-important
+          display: inline-block !important; /* stylelint-disable-line declaration-no-important */
           width: calc(100% - 28px);
         }
 
@@ -123,8 +123,6 @@
       & .e-tab-header .e-toolbar-item.e-active .e-text-wrap::before {
         display: none;
       }
-
-
 
       @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         & .e-tab .e-tab-header:not(.e-vertical) {

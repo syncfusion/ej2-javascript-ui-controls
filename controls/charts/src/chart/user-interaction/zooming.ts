@@ -681,7 +681,12 @@ export class Zoom {
         if (showToolkit) {
             this.showZoomingToolkit(chart);
             this.isZoomed = true;
-        } else {
+        }
+        else if (chart.zoomSettings.showToolbar) {
+            this.isZoomed = showToolkit;
+            this.showZoomingToolkit(chart);
+        }
+        else {
             this.toolkit.removeTooltip();
             this.isPanning = false;
             this.isZoomed = false;

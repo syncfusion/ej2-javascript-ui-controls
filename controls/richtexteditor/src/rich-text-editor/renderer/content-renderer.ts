@@ -78,8 +78,8 @@ export class ContentRender implements IRenderer {
      * @returns {string} - specifies the string element.
      */
     public getText(): string {
-        let textString :string = (this.getEditPanel()as HTMLElement).innerText;
-        return textString==='\n' ? '' : textString  ;
+        const textString : string = (this.getEditPanel() as HTMLElement).innerText;
+        return textString === '\n' ? '' : textString;
     }
 
     /**

@@ -116,6 +116,7 @@ $ddl-multiselect-filled-float-input-chip-clear-icon-size: 12px !default;
 $ddl-multiselect-filled-chip-clear-icon-size: 14px !default;
 $multiselect-disable-font-color: $content-text-color-disabled !default;
 $ddl-bigger-chip-close-font: 12px !default;
+
 // Small size
 $ddl-select-all-height-small: 26px !default;
 $ddl-small-chip-height: 20px !default;
@@ -218,7 +219,7 @@ $ddl-small-clear-icon-width: 12px !default;
     width: $ddl-chip-hooker-square;
   }
 
-  .e-multi-select-wrapper .e-searcher input[type='text'] {
+  .e-multi-select-wrapper .e-searcher input[type = 'text'] {
     color: $content-text-color;
     height: 100%;
   }

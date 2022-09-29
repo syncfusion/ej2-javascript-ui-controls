@@ -152,8 +152,7 @@ export class ConnectorLineEdit {
                     this.parent.connectorLineModule.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
                     parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
                     childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
-                    if ((parentGanttRecord && parentGanttRecord.expanded === true) ||
-                        (childGanttRecord && childGanttRecord.expanded === true)) {
+                    if (parentGanttRecord || childGanttRecord) {
                         connectorObj =
                             this.parent.predecessorModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
                         if (!isNullOrUndefined(connectorObj)) {
@@ -192,13 +191,36 @@ export class ConnectorLineEdit {
     private idFromPredecessor(pre: string): string[] {
         const preArray: string[] = pre.split(',');
         const preIdArray: string[] = [];
+        let values: string[];
+        let offsetValue: string;
+        let match: string[] = [];
         for (let j: number = 0; j < preArray.length; j++) {
             const strArray: string[] = [];
-            for (let i: number = 0; i < preArray[j].length; i++) {
-                if (!isNullOrUndefined(preArray[j].charAt(i)) && parseInt(preArray[j].charAt(i), 10).toString() !== 'NaN') {
-                    strArray.push(preArray[j].charAt(i));
+            values = preArray[j].split('+');
+            offsetValue = '+';
+            if (preArray[j].indexOf('-') >= 0) {
+                values = preArray[j].split('-');
+                offsetValue = '-';
+            }
+            if(!isNullOrUndefined(values[0])) {
+                const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
+                if (ids.indexOf(values[0]) === -1) {
+                    if (values[0].indexOf(" ") != -1) {
+                        match = values[0].split(" ");
+                        if (match.length === 1) {
+                            match = values[0].match(/(\d+|[A-z]+)/g);
+                        }
+                        strArray.push(match[0]);
+                    } else {
+                        if (values[0].length === 1 || values[0].length === 2) {
+                            strArray.push(values[0]);
+                        }
+                        else {
+                            strArray.push(values[0].slice(0, -2));
+                        }
+                    }
                 } else {
-                    break;
+                    strArray.push(values[0])
                 }
             }
             preIdArray.push((strArray.join('')));
@@ -251,6 +273,78 @@ export class ConnectorLineEdit {
         return true;
 
     }
+    // Get the root parent of the record
+    public getRootParent(rec: IGanttData) {
+        let parentRec: IGanttData = rec;
+        if (rec.parentItem) {
+            parentRec = this.parent.flatData.filter((item: IGanttData) => {
+                return item.uniqueID == rec.parentUniqueID;
+            })[0];
+            if (parentRec.parentItem) {
+                parentRec = this.getRootParent(parentRec);
+            }
+            return parentRec;
+        }
+        return parentRec;
+    }
+    // To check whether the predecessor drawn is valid for parent task
+    public validateParentPredecessor(fromRecord: IGanttData, toRecord: IGanttData) {
+        if (toRecord.hasChildRecords && !fromRecord.hasChildRecords) {
+            if (fromRecord.parentUniqueID === toRecord.uniqueID) {
+                return false
+            }
+            else {
+                do {
+                    if (fromRecord.parentItem) {
+                        fromRecord = this.parent.flatData[this.parent.ids.indexOf(fromRecord.parentItem.taskId)];
+                        if (fromRecord.uniqueID === toRecord.uniqueID) {
+                            return false
+                        }
+                    }
+                }
+                while (fromRecord.parentItem)
+            }
+        }
+        else if (!toRecord.hasChildRecords && fromRecord.hasChildRecords) {
+            if (toRecord.parentUniqueID === fromRecord.uniqueID) {
+                return false
+            }
+            else {
+                do {
+                    if (toRecord.parentItem) {
+                        toRecord = this.parent.flatData[this.parent.ids.indexOf(toRecord.parentItem.taskId)];
+                        if (toRecord.uniqueID === fromRecord.uniqueID) {
+                            return false
+                        }
+                    }
+                }
+                while (toRecord.parentItem)
+            }
+        }
+        else if (toRecord.hasChildRecords && fromRecord.hasChildRecords) {
+            if (toRecord.parentItem && fromRecord.parentItem) {
+                if (fromRecord.parentUniqueID === toRecord.uniqueID || fromRecord.uniqueID === toRecord.parentUniqueID) {
+                    return false
+                }
+
+            }
+            else {
+                if (!toRecord.parentItem && fromRecord.parentItem) {
+                    let fromRootParent: IGanttData = this.parent.connectorLineEditModule.getRootParent(fromRecord);
+                    if (fromRootParent.uniqueID === toRecord.uniqueID) {
+                        return false
+                    }
+                }
+                else if (toRecord.parentItem && !fromRecord.parentItem) {
+                    let toRootParent: IGanttData = this.parent.connectorLineEditModule.getRootParent(toRecord);
+                    if (toRootParent.uniqueID === fromRecord.uniqueID) {
+                        return false
+                    }
+                }
+            }
+        }
+        return true
+    }
     /**
      * To validate predecessor relations
      *
@@ -260,7 +354,7 @@ export class ConnectorLineEdit {
      * @private
      */
     public validatePredecessorRelation(ganttRecord: IGanttData, predecessorString: string): boolean {
-        const flag: boolean = true;
+        let flag: boolean = true;
         const recordId: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
             : ganttRecord.ganttProperties.rowUniqueID;
         let predecessorIdArray: string[];
@@ -268,10 +362,12 @@ export class ConnectorLineEdit {
         if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
             predecessorIdArray = this.idFromPredecessor(predecessorString);
             for (let count: number = 0; count < predecessorIdArray.length; count++) {
-                //Check edited item has parent item in predecessor collection
-                const checkParent: boolean = this.checkParentRelation(ganttRecord, predecessorIdArray);
-                if (!checkParent) {
-                    return false;
+                if (parseInt(predecessorIdArray[predecessorIdArray.length - 1]) !== ganttRecord[this.parent.taskFields.id]) {
+                    let num: number = this.parent.ids.indexOf(predecessorIdArray[predecessorIdArray.length - 1]);
+                    let fromRecord: IGanttData = this.parent.currentViewData[num];
+                    if (fromRecord && ganttRecord) {
+                       flag = this.validateParentPredecessor(fromRecord, ganttRecord);
+                    }
                 }
                 // Check if predecessor exist more then one
                 const tempIdArray: string[] = predecessorIdArray.slice(0);

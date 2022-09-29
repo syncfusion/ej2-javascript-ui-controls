@@ -1,4 +1,4 @@
-//default 
+//default
 $acrdn-skin: 'material' !default;
 $acrdn-icon-font-size: $font-size !default;
 $acrdn-header-font-bgr-size: 16px !default;
@@ -17,6 +17,7 @@ $acrdn-nrml-header-lineheight: 35px !default;
 $acrdn-bgr-header-lineheight: 47px !default;
 $acrdn-nrml-header-paddingpix: 16px !default;
 $acrdn-bgr-header-paddingpix: 16px !default;
+
 // Header, Nested header and RTL mode Padding
 $acrdn-nest-nrml-header-padding: 0 40px 0 32px !default;
 $acrdn-nest-bgr-header-padding: 0 46px 0 32px !default;
@@ -76,4 +77,5 @@ $acrdn-header-active-bg: none !default;
 
 $acrdn-border-type: solid !default;
 $acrdn-border-size: $border-size !default;
+
 //enddefault

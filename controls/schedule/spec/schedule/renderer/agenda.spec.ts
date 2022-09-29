@@ -192,11 +192,9 @@ describe('Agenda View', () => {
 
         it('Checking list elements', () => {
             const agendaEle: Element = schObj.element.querySelector('.e-content-wrap tr');
-            expect(agendaEle.getAttribute('role')).toEqual('row');
             expect(agendaEle.childElementCount).toEqual(2);
             const agendaDate: HTMLElement = agendaEle.children[0] as HTMLElement;
             expect(agendaDate.className).toEqual('e-agenda-cells');
-            expect(agendaDate.getAttribute('role')).toEqual('gridcell');
             expect(agendaDate.childElementCount).toEqual(1);
             expect(agendaDate.children[0].classList[0]).toEqual('e-day-date-header');
             expect(agendaDate.children[0].childElementCount).toEqual(2);
@@ -204,7 +202,6 @@ describe('Agenda View', () => {
             expect(agendaDate.children[0].children[1].className).toEqual('e-m-day');
             const agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
             expect(agendaListApp.className).toEqual('e-agenda-cells e-day-border');
-            expect(agendaListApp.getAttribute('role')).toEqual('gridcell');
             expect(agendaListApp.childElementCount).toEqual(1);
             expect(agendaListApp.children[0].className).toEqual('e-agenda-parent e-ul e-agenda-view');
             expect(agendaListApp.children[0].childElementCount).toBeGreaterThanOrEqual(1);
@@ -396,11 +393,9 @@ describe('Agenda View', () => {
 
         it('Checking date template', () => {
             const agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            expect(agendaEle.getAttribute('role')).toEqual('row');
             expect(agendaEle.childElementCount).toEqual(2);
             const agendaDate: HTMLElement = agendaEle.children[0] as HTMLElement;
             expect(agendaDate.className).toEqual('e-agenda-cells');
-            expect(agendaDate.getAttribute('role')).toEqual('gridcell');
             expect(agendaDate.childElementCount).toEqual(1);
             expect(agendaDate.children[0].classList[0]).toEqual('e-day-date-header');
             expect(agendaDate.children[0].childElementCount).toEqual(1);
@@ -409,11 +404,9 @@ describe('Agenda View', () => {
         it('Checking appointment template', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const agendaEle: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-                expect(agendaEle.getAttribute('role')).toEqual('row');
                 expect(agendaEle.childElementCount).toEqual(2);
                 const agendaListApp: HTMLElement = agendaEle.children[1] as HTMLElement;
                 expect(agendaListApp.className).toEqual('e-agenda-cells e-day-border');
-                expect(agendaListApp.getAttribute('role')).toEqual('gridcell');
                 expect(agendaListApp.childElementCount).toEqual(1);
                 expect(agendaListApp.children[0].className).toEqual('e-agenda-parent e-ul e-agenda-view');
                 expect(agendaListApp.children[0].childElementCount).toBeGreaterThanOrEqual(1);
@@ -617,14 +610,12 @@ describe('Agenda View', () => {
 
         it('Checking resource rendering with EmptyAgendaDays as true', () => {
             const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(4);
             const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('7');
             const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('4');
             const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
-            expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 
@@ -638,7 +629,6 @@ describe('Agenda View', () => {
         it('Checking resource rendering with EmptyAgendaDays as false', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-                expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
                 const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('14');
@@ -669,7 +659,6 @@ describe('Agenda View', () => {
         it('Checking resource rendering with empty agenda collection', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-                expect(row1.getAttribute('role')).toEqual('row');
                 const emptyDiv: HTMLElement = row1.children[0].children[0] as HTMLElement;
                 expect(emptyDiv.className).toEqual('e-empty-event');
                 done();
@@ -710,14 +699,12 @@ describe('Agenda View', () => {
 
         it('Checking resource rendering with EmptyAgendaDays as true', () => {
             const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(3);
             const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('3');
             const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('1');
             const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
-            expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 
@@ -731,7 +718,6 @@ describe('Agenda View', () => {
         it('Checking resource rendering with EmptyAgendaDays as false', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[3];
-                expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(3);
                 const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('3');
@@ -786,14 +772,12 @@ describe('Agenda View', () => {
 
         it('Checking resource rendering with EmptyAgendaDays as true', () => {
             const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-            expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(4);
             const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('3');
             const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('2');
             const row2: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[1];
-            expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 
@@ -807,7 +791,6 @@ describe('Agenda View', () => {
         it('Checking resource rendering with EmptyAgendaDays as false', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[3];
-                expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
                 const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('3');
@@ -866,7 +849,6 @@ describe('Agenda View', () => {
                 expect(schObj.element.querySelector('.e-agenda-view')).toBeTruthy();
                 expect(schObj.getCurrentViewEvents().length).toEqual(11);
                 const row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
-                expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
                 const parElem1: HTMLElement = row1.children[0] as HTMLElement;
                 expect(parElem1.getAttribute('rowspan')).toEqual('7');

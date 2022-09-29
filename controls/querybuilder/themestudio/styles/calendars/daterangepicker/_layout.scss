@@ -592,7 +592,7 @@
 }
 
 
-@media screen and (orientation: landscape) {
+@media screen and(orientation: landscape) {
     .e-daterangepick-mob-popup-wrap {
 
         #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
@@ -678,13 +678,6 @@
     }
 }
 
-.e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
-  width: calc(100% - 80px);
-}
-
-.e-outline.e-float-input.e-static-clear.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
-  width: calc(100% - 110px);
-}
 
 
 

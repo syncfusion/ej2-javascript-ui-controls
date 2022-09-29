@@ -366,6 +366,7 @@ export class Kanban extends Component<HTMLElement> {
       */
      @Event()
      public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
+     protected needsID: boolean;
 
     /**
      * Constructor for creating the Kanban widget
@@ -375,6 +376,7 @@ export class Kanban extends Component<HTMLElement> {
      */
     constructor(options?: KanbanModel, element?: string | HTMLElement) {
         super(options, element);
+        this.needsID = true;
     }
 
     /**

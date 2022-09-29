@@ -982,6 +982,146 @@ describe('TreeGrid Virtual Scroll', () => {
     });
   });
 
+  describe('EJ2-62266 - Frozen columns with Row and Column virutalization', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                enableColumnVirtualization: true,
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                frozenColumns: 2,
+                allowSorting: true,
+                toolbar: ['Search'],
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD5', headerText: 'TMD', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD6', headerText: 'GP', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD7', headerText: 'GS', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD8', headerText: 'Minutes', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD9', headerText: 'Points', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD10', headerText: 'OREB', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD11', headerText: 'DREB', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD12', headerText: 'REB', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD13', headerText: 'Assists', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD14', headerText: 'Steals', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD15', headerText: 'Blocks', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD16', headerText: 'Turnovers', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD17', headerText: 'PF', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD18', headerText: 'FGA', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD19', headerText: 'FGM', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD20', headerText: 'FTA', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD21', headerText: 'FTM', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD22', headerText: 'Three Attempted', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD23', headerText: 'Three Made', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD24', headerText: 'Post GP', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD25', headerText: 'Post GS', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD26', headerText: 'Post Minutes', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD27', headerText: 'Post Points', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD28', headerText: 'Post OREB', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD29', headerText: 'Post DREB', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD30', headerText: 'Post REB', width: 130, textAlign: 'Right' }
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Frozen rows with virtualization render check', () => {
+        expect(gridObj.getRows()[gridObj.frozenRows].closest('div').classList.contains("e-frozencontent")).toBe(true);
+        expect(gridObj.getMovableDataRows()[gridObj.frozenColumns].closest('div').classList.contains("e-virtualtable")).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-62266 - Frozen columns with virutalization', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                frozenColumns: 2,
+                allowSorting: true,
+                toolbar: ['Search'],
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD5', headerText: 'TMD', width: 120, textAlign: 'Right' },
+                   
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Frozen rows with virtualization render check', () => {
+        expect(gridObj.getRows()[gridObj.frozenRows].closest('div').classList.contains("e-frozencontent")).toBe(true);
+        expect(gridObj.getMovableDataRows()[gridObj.frozenColumns].closest('div').classList.contains("e-movablecontent")).toBe(true);
+    });
+
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-62266 - Freeze direction with virutalization', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                allowSorting: true,
+                toolbar: ['Search'],
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, freeze: 'Left', textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', freeze: 'Left', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, freeze: 'Right',  textAlign: 'Right' },                   
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Ensure frozen method', (done: Function) => {
+        expect(gridObj.getFrozenLeftColumnsCount()).toBe(2);
+        expect(gridObj.getMovableColumnsCount()).toBe(2);
+        expect(gridObj.getFrozenRightColumnsCount()).toBe(1);
+        expect(gridObj.getFrozenLeftColumns().length).toBe(gridObj.getFrozenLeftColumnsCount());
+        expect(gridObj.getMovableColumns().length).toBe(gridObj.getMovableColumnsCount());
+        expect(gridObj.getFrozenRightColumns().length).toBe(gridObj.getFrozenRightColumnsCount());
+        done();
+     });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   describe('EJ2-62928 - Script error throws when we filter the record using filter menu.', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -1016,5 +1156,93 @@ describe('TreeGrid Virtual Scroll', () => {
     afterAll(() => {
       destroy(gridObj);
     });
+	  
+    describe('scrolling and adding records', () => {
+        let gridObj: TreeGrid;
+	beforeAll((done: Function) => {
+	    gridObj = createGrid(
+	        {
+		        dataSource: virtualData.slice(0,1000),
+		        childMapping: 'Crew',
+			enableVirtualization: true,
+			treeColumnIndex: 1,
+			height: 400,
+			editSettings: {
+				allowAdding: true,
+				allowEditing: true,
+				allowDeleting: true,
+				mode: 'Row',
+				newRowPosition: 'Child'
+			},
+			toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+			columns: [
+				{ field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+				{ field: 'FIELD1', headerText: 'Player Name', width: 140 },
+				{ field: 'FIELD2', headerText: 'Year', width: 120, allowEditing: false, textAlign: 'Right' },
+				{ field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+				{ field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+			]
+			},
+			done
+		);
+		});
+
+		it('scrolling and adding records', () => {
+			gridObj.getContent().firstElementChild.scrollTop = 20000;
+			gridObj.selectRow(gridObj.getCurrentViewRecords()[3]['TaskID']);
+			gridObj.addRecord({ TaskID: 10000, FIELD1: 'TEST1' }, gridObj.getCurrentViewRecords()[3]['TaskID'], 'Child');
+			expect((gridObj.flatData as ITreeData)['length'] === 1001).toBe(true);
+		});
+
+		afterAll(() => {
+			destroy(gridObj);
+	});
+	});
   });
+
+  describe('EJ2-63548 - Indent/Outdent action check after edited the row with virtualization ', () => {
+    let TreeGridObj: TreeGrid;
+    let actionComplete: () => void;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: editVirtualData,
+          childMapping: 'Crew',
+          enableVirtualization: true,
+          height: 400,
+          toolbar: [ 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+          columns: [
+          { field: 'TaskID', headerText: 'ID', isPrimaryKey: true, width: 140 },
+          { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+          { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+          { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+          { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+          { field: 'FIELD5', headerText: 'LGID', width: 120, textAlign: 'Right' },
+          ],
+        treeColumnIndex: 1
+        },done);
+    });
+  
+    it('Indent/Outdent icon updated check after edited the row', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType == 'outdented') {
+          expect(args.data[0].parentItem == undefined).toBe(true);
+          done();
+        }
+      }
+      rows = TreeGridObj.grid.getRows();
+      TreeGridObj.selectRow(1);
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_edit' } });
+      (select('#' + TreeGridObj.grid.element.id + 'FIELD1', TreeGridObj.grid.element) as any).value = 'updated';
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_update' } });
+      TreeGridObj.outdent(TreeGridObj.getCurrentViewRecords()[1]);
+      TreeGridObj.actionComplete = actionComplete;
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
+
 });

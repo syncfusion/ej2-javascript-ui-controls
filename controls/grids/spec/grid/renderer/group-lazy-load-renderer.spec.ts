@@ -7,11 +7,20 @@ import { LazyLoadGroup } from '../../../src/grid/actions/lazy-load-group';
 import { Page } from '../../../src/grid/actions/page';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
-import { createGrid, destroy } from '../base/specutil.spec';
+import { createGrid, destroy, getKeyUpObj, getClickObj } from '../base/specutil.spec';
 import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { filterData } from '../base/datasource.spec';
+import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { SortSettingsModel } from '../../../src/grid/base/grid-model';
+import { Column } from '../../../src/grid/models/column';
+import { Sort } from '../../../src/grid/actions/sort';
+import { Filter } from '../../../src/grid/actions/filter';
+import { Edit } from '../../../src/grid/actions/edit';
+import { NotifyArgs, RowSelectEventArgs } from '../../../src/grid/base/interface';
+import { select } from '@syncfusion/ej2-base';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 
-Grid.Inject(Page, Group, LazyLoadGroup, Reorder, ColumnChooser, Aggregate);
+Grid.Inject(Page, Group, LazyLoadGroup, Reorder, ColumnChooser, Aggregate, InfiniteScroll, Sort, Filter, Toolbar, Edit);
 
 let lazyLoadData: Object[] = [];
 function createLazyLoadData(): void {
@@ -66,6 +75,31 @@ function createLazyLoadData(): void {
 }
 
 createLazyLoadData();
+
+let filterColumn: Function = (gridObj: Grid, colName: string, value: string, keyCode?: number) => {
+    let filterElement: any = gridObj.element.querySelector('[id=\'' + colName + '_filterBarcell\']');
+    filterElement.value = value;
+    filterElement.focus();
+    (gridObj.filterModule as any).keyUpHandler(getKeyUpObj(keyCode ? keyCode : 13, filterElement));
+};
+
+let checkFilterObj: Function = (obj: any, field?: string,
+    operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+    let isEqual: boolean = true;
+    if (field) {
+        isEqual = isEqual && obj.field === field;
+    }
+    if (operator) {
+        isEqual = isEqual && obj.operator === operator;
+    }
+    if (value) {
+        isEqual = isEqual && obj.value === value;
+    }
+    if (matchCase) {
+        isEqual = isEqual && obj.matchCase === matchCase;
+    }
+    return isEqual;
+};
 
 describe('LazyLoadGroup module', () => {
     describe('Grouping test', () => {
@@ -455,6 +489,282 @@ describe('LazyLoadGroup module', () => {
             expect(gridObj.getContent().querySelectorAll('.e-groupcaption')[0].innerHTML).toBe('Order ID: 10248   Max: $32.38');
         });
     
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // Lazy Load Grouping with Infinite Scroll Support
+    describe('Lazy Load Group with Infinite scroll => ', () => {
+        let gridObj: Grid;
+        let actionComplete: any;
+        let rowindex = 0;
+        let sortSettings: SortSettingsModel;
+        let cols: any
+        let data1: number;
+        let dataLength = lazyLoadData.length;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: lazyLoadData,
+                    enableInfiniteScrolling: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    editSettings: {allowAdding: true, allowDeleting: true, allowEditing: true},
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
+                    groupSettings: { enableLazyLoading: true, columns: ['ProductName', 'CustomerName'] },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true, validationRules: {required: true}, },
+                        { field: 'ProductName', headerText: 'Product Name', width: 160 },
+                        { field: 'ProductID', headerText: 'Product ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('check initial render', function () {
+            let pageSize: number = gridObj.pageSettings.pageSize;
+            let initialBlocks: number = gridObj.infiniteScrollSettings.initialBlocks;
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(captionRows.length).toBe(pageSize * initialBlocks);
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 5500;
+            setTimeout(done, 200);
+        });
+        it('check current page, data append and expand level1 group', () => {
+            let pageSize: number = gridObj.pageSettings.pageSize;
+            let currentPage: number = gridObj.pageSettings.currentPage;
+            let initialBlocks: number = gridObj.infiniteScrollSettings.initialBlocks;
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(currentPage).toBe(initialBlocks + 1);
+            expect(captionRows.length).toBe(currentPage * pageSize);
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[33]);
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 5500;
+            setTimeout(done, 200);
+        });
+
+        it('check datas after scroll and expand', function () {
+            let pageSize: number = gridObj.pageSettings.pageSize;
+            let initialBlocks: number = gridObj.infiniteScrollSettings.initialBlocks;
+            let currentPage: number = gridObj.pageSettings.currentPage;
+            let totalTr: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            let level1CaptionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContent().querySelectorAll('.e-indentcell');
+            let captionRowsCount: number = totalTr.length - level1CaptionRows.length;
+            expect(currentPage).toBe(initialBlocks + 2);
+            expect(captionRowsCount).toBe(pageSize * currentPage);
+        });
+
+        it('scroll to expanded caption row top', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 1000;
+            setTimeout(done, 200);
+        });
+
+        it('expand level2 group', function () {
+            let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
+            expect(dataRows.length).toBe(0);
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[33]);
+        });
+        
+        it('check data row, select and start edit', function () {
+            let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
+            rowindex = parseInt(dataRows[0].getAttribute("data-rowindex"), 10);
+            expect(dataRows.length).toBeGreaterThan(0);
+            gridObj.selectRow(rowindex);
+            gridObj.startEdit();
+        });
+
+        it('Check edit state, edit and save', function(){
+            expect((gridObj.editModule as any).editModule.editRowIndex).toBe(rowindex);
+            expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
+            expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+            expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+            expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+            let cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+            expect(cells.length).toBe(gridObj.columns.length);
+            //primary key check
+            expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(1);
+            //focus check
+            expect(document.activeElement.id).toBe(gridObj.element.id + (gridObj.columns[2] as Column).field);
+            //toolbar status check
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+            expect(gridObj.isEdit).toBeTruthy();
+            rowindex = (select('#' + gridObj.element.id + (gridObj.columns[2] as Column).field, gridObj.element) as any).value;
+            expect((select('#' + gridObj.element.id + (gridObj.columns[3] as Column).field, gridObj.element) as any).value).toBe(gridObj.dataSource[rowindex][(gridObj.columns[3] as Column).field]);
+            (select('#' + gridObj.element.id + (gridObj.columns[3] as Column).field, gridObj.element) as any).value = 'updated';
+            gridObj.endEdit();
+        });
+
+        it('filter updated data', function(done: Function){
+            expect(gridObj.dataSource[rowindex][(gridObj.columns[3] as Column).field]).toBe('updated');
+            let actionComplete = (args?: Object): void => {
+                expect(checkFilterObj(gridObj.filterSettings.columns)).toBeTruthy();
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                expect(gridObj.pageSettings.currentPage).toBe(1);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.dataBind();
+            filterColumn(gridObj, 'CustomerID', 'updated');
+        });
+
+        it('clear filter', (done: Function) => {
+            let totalTr: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
+            expect(totalTr.length).toBe(1);
+            expect(dataRows.length).toBe(0);
+            let actionComplete = (args?: Object): void => {
+                expect(gridObj.filterSettings.columns.length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering();
+        });
+
+        it('check rows after clear filter', function () {
+            let pageSize: number = gridObj.pageSettings.pageSize;
+            let initialBlocks: number = gridObj.infiniteScrollSettings.initialBlocks;
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(captionRows.length).toBe(pageSize * initialBlocks);
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 5500;
+            setTimeout(done, 200);
+        });
+
+        it('Sort orderID asc action', (done: Function) => {
+            let pageSize: number = gridObj.pageSettings.pageSize;
+            let currentPage: number = gridObj.pageSettings.currentPage;
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(captionRows.length).toBe(pageSize * currentPage);
+            expect(gridObj.pageSettings.currentPage).not.toBe(1);
+            let actionComplete = function (args: any) {
+                expect(cols[0].querySelectorAll('.e-ascending').length).toBe(1);
+                expect(sortSettings.columns[2].field).toBe('OrderID');
+                expect(sortSettings.columns[2].direction).toBe('Ascending');
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                expect(gridObj.pageSettings.currentPage).toBe(1);
+                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(3);
+                done();
+            }
+            gridObj.actionComplete = actionComplete;
+            sortSettings = gridObj.sortSettings;
+            cols = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            (gridObj as any).mouseClickHandler(getClickObj(cols[0]));
+        });
+
+        it('start add', function (done: Function) {
+            let actionBegin = function (args: NotifyArgs) {
+                if (args.requestType === 'add') {
+                    expect(gridObj.isEdit).toBeFalsy();
+                    gridObj.actionBegin = null;
+                }
+            }
+            let actionComplete = function (args: NotifyArgs) {
+                if (args.requestType === 'add') {
+                    expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                    let cells = gridObj.element.querySelector('.e-addedrow').querySelectorAll('.e-rowcell');
+                    expect(cells.length).toBe(gridObj.columns.length);
+                    //primary key check
+                    expect(cells[0].querySelectorAll('input.e-disabled').length).toBe(0);
+                    //focus check
+                    expect(document.activeElement.id).toBe(gridObj.element.id + (gridObj.columns[0] as Column).field);
+                    //toolbar status check
+                    expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(4);
+                    expect(gridObj.isEdit).toBeTruthy();
+                    expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                    data1 = gridObj.dataSource[4999][(gridObj.columns[0] as Column).field];
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 15000;
+            setTimeout(done, 200);
+        });
+
+        it('Save add', function(done: Function){
+            let actionComplete = function(args: NotifyArgs) {
+                if (args.requestType === 'save') {
+                    expect(gridObj.dataSource[0][(gridObj.columns[0] as Column).field]).toBe(data1 + 1);
+                    expect(gridObj.dataSource[0][(gridObj.columns[3] as Column).field]).toBe('updated');
+                    expect((gridObj.dataSource as any).length).toBe(dataLength + 1);
+                    expect(gridObj.isEdit).toBeFalsy();
+                    expect(gridObj.dataSource[4999][(gridObj.columns[0] as Column).field]).not.toBe(data1);
+                    expect(gridObj.dataSource[4999][(gridObj.columns[0] as Column).field]).toBe(data1 - 1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            expect(gridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
+            (select('#' + gridObj.element.id + (gridObj.columns[0] as Column).field, gridObj.element) as any).value = data1 + 1;
+            (select('#' + gridObj.element.id + (gridObj.columns[3] as Column).field, gridObj.element) as any).value = 'updated';
+            let beforeDataBound = function(args: any) {
+                expect(args.result.records.length).toBe(dataLength + 1);
+                expect(args.result.records[args.result.records.length - 1][(gridObj.columns[0] as Column).field]).toBe(data1 + 1);
+                gridObj.beforeDataBound = null;
+            };
+            gridObj.beforeDataBound = beforeDataBound;
+            gridObj.actionComplete = actionComplete;
+            (gridObj.editModule as any).editModule.endEdit();
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 900;
+            setTimeout(done, 200);
+        });
+
+        it('expand 1st level group', () => {
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[33]);
+        });
+
+        it('expand 2nd level group', () => {
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[33]);
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 1000;
+            setTimeout(done, 200);
+        });
+
+        it('check data row, select and delete', function (done: Function) {
+            let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
+            rowindex = parseInt(dataRows[0].getAttribute("data-rowindex"), 10);
+            expect(dataRows.length).toBeGreaterThan(0);
+            gridObj.selectRow(rowindex);
+            rowindex = gridObj.selectionModule['data'][(gridObj.columns[2] as Column).field];
+            let actionComplete = function(args: any): any {
+                if (args.requestType === 'delete') {
+                    expect(gridObj.dataSource['length']).toBe(dataLength);
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

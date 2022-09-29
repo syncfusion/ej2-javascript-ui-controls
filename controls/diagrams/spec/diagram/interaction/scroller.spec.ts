@@ -495,7 +495,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-    
+
     describe('FitToPage not working when we call it multiple times ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

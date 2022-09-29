@@ -89,7 +89,7 @@ describe('Map layer testing', () => {
         afterAll(() => {
             tooltip.destroy();
             tooltip.mapsTooltipModule = new MapsTooltip(tooltip);
-            tooltip.mapsTooltipModule.destroy(tooltip);
+            tooltip.mapsTooltipModule.destroy();
             remove(ele);
         });
         it('tooltip checking', (done: Function) => {
@@ -730,7 +730,7 @@ describe('Map layer testing', () => {
         afterAll(() => {
             tooltips.destroy();
             tooltips.mapsTooltipModule = new MapsTooltip(tooltips);
-            tooltips.mapsTooltipModule.destroy(tooltips);
+            tooltips.mapsTooltipModule.destroy();
             remove(ele);
         });
         it('tooltip format and usergroup checking for layer', (done: Function) => {

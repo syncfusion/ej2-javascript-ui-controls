@@ -1062,7 +1062,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!isNOU(newCnt)) {
             this.prevActiveEle = newCnt.id;
         }
-        if (this.initRender || value === false || this.animation === {} || isNOU(this.animation)) {
+        const isPrevent: boolean = isNOU(this.animation) || this.animation.next === {} || this.animation.previous === {}
+            || isNOU(this.animation.next.effect) || isNOU(this.animation.previous.effect)
+            || this.animation.previous.effect == 'None' || this.animation.next.effect == 'None';
+        if (this.initRender || value === false || this.animation === {} || isPrevent) {
             if (oldCnt && oldCnt !== newCnt) {
                 oldCnt.classList.remove(CLS_ACTIVE);
             }
@@ -1683,19 +1686,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setActiveBorder();
                 break;
         }
-    }
-    /**
-     * Refresh the active tab border
-     *
-     * @returns {void}
-     * @private
-     */
-    public refreshActiveTabBorder(): void {
-        const activeEle: Element = select('.' + CLS_TB_ITEM + '.' + CLS_TB_POPUP + '.' + CLS_ACTIVE, this.element);
-        if (!isNOU(activeEle) && this.reorderActiveTab) {
-            this.select(this.getEleIndex(<HTEle>activeEle));
-        }
-        this.refreshActiveBorder();
     }
     private refreshItemVisibility(target: HTEle): void {
         const scrCnt: HTEle = <HTEle>select('.' + this.scrCntClass, this.tbItems);
@@ -2484,7 +2474,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
     }
-
+    /**
+     * To refresh the active tab contents.
+     * 
+     * @returns {void}
+     */
     public refreshActiveTab(): void {
         if ((this as any).isReact) {
             this.clearTemplate();
@@ -2592,5 +2586,17 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }
+    }
+    /**
+     * To refresh the active tab indicator.
+     *
+     * @returns {void}
+     */
+     public refreshActiveTabBorder(): void {
+        const activeEle: Element = select('.' + CLS_TB_ITEM + '.' + CLS_TB_POPUP + '.' + CLS_ACTIVE, this.element);
+        if (!isNOU(activeEle) && this.reorderActiveTab) {
+            this.select(this.getEleIndex(<HTEle>activeEle));
+        }
+        this.refreshActiveBorder();
     }
 }

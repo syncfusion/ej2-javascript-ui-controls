@@ -18,6 +18,10 @@ Toolbar,
     TextToolbar,
 /** Defines RenderType as ImageToolbar */
     ImageToolbar,
+/** Defines RenderType as AudioToolbar */
+    AudioToolbar,
+/** Defines RenderType as AudioToolbar */
+    VideoToolbar,
 /** Defines RenderType as InlineToolbar */
     InlineToolbar,
 /** Defines RenderType as TableToolbar */
@@ -53,6 +57,10 @@ export enum DialogType {
     InsertLink = 'InsertLink',
 /** Defines ToolbarType as MultiRow */
     InsertImage = 'InsertImage',
+/** Defines DialogType as Audio*/
+    InsertAudio = 'InsertAudio',
+/** Defines DialogType as Video*/
+    InsertVideo = 'InsertVideo',
 /** Defines ToolbarType as Scrollable */
     InsertTable = 'InsertTable'
 /* eslint-enable */

@@ -1,4 +1,5 @@
 $inplace-skin: 'tailwind' !default;
+
 //Layout Variable Start
 $editor-big-value-text-font-size: $text-base !default;
 $editor-nrml-value-text-font-size: $text-sm !default;
@@ -43,6 +44,7 @@ $editor-rtl-big-btn-save-margin: 0 0 0 4px !default;
 $editor-rtl-nrml-btn-save-margin: 0 0 0 4px !default;
 $editor-rtl-big-btn-cancel-margin: 0 4px 0 0 !default;
 $editor-rtl-nrml-btn-cancel-margin: 0 4px 0 0 !default;
+
 //Layout Variable End
 
 //Theme Variable Start
@@ -66,4 +68,5 @@ $editor-tip-title-color: $content-text-color-alt2 !default;
 $editable-overlay-icon-height: inherit !default;
 $editable-overlay-icon: 0 !default;
 $editor-btn-icon-color: $icon-color !default;
+
 //Theme Variable End

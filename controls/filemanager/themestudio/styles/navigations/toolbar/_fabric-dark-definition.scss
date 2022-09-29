@@ -1,4 +1,4 @@
-//default 
+//default
 $tbar-skin: 'fabric' !default;
 $tbar-btn-bgr-line-height: 35px !default;
 $tbar-zero-value: 0 !default;
@@ -158,4 +158,5 @@ $tbar-item-nrml-padding-small: 1px 0 !default;
 @mixin tbar-btn-animation-after {
   content: '';
 }
+
 //enddefault

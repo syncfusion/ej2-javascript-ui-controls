@@ -905,6 +905,7 @@ export class Toolbar {
             this.afterToolbarCreation();
             this.updateTotalPage();
             this.toolbarElement.addEventListener('keydown', this.onToolbarKeydown);
+            this.toolbarElement.setAttribute('aria-label', 'Toolbar');
         } else {
             this.createToolbarItemsForMobile();
             this.afterToolbarCreationInMobile();
@@ -1013,7 +1014,9 @@ export class Toolbar {
         this.commentItem = this.addClassToolbarItem('_comment', 'e-pv-comment', this.pdfViewer.localeObj.getConstant('Add Comments'));
         // eslint-disable-next-line max-len
         this.textSearchItem = this.addClassToolbarItem('_search', 'e-pv-text-search', this.pdfViewer.localeObj.getConstant('Text Search'));
+        this.textSearchItem.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Search text'));
         this.annotationItem = this.addClassToolbarItem('_annotation', 'e-pv-annotation', this.pdfViewer.localeObj.getConstant('Annotation'));
+        this.annotationItem.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Annotation Edit text'));
         this.formDesignerItem = this.addClassToolbarItem('_formdesigner', 'e-pv-formdesigner', this.pdfViewer.localeObj.getConstant('FormDesigner'));
         // eslint-disable-next-line max-len
         this.printItem = this.addClassToolbarItem('_print', 'e-pv-print-document', this.pdfViewer.localeObj.getConstant('Print'));
@@ -1027,7 +1030,7 @@ export class Toolbar {
         this.createTooltip(this.currentPageBoxElement, this.pdfViewer.localeObj.getConstant('Page Number'));
         this.currentPageBoxElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Page Number'));
         this.submitItem = this.pdfViewerBase.getElement('_submitForm');
-        this.addPropertiesToolItemContainer(this.submitItem.parentElement, 'e-pv-submit', '_submitForm');
+        this.addPropertiesToolItemContainer(this.submitItem.parentElement, 'e-pv-submit', '_submitFormContainer');
         this.createTooltip(this.submitItem, this.pdfViewer.localeObj.getConstant('SubmitForm'));
         // eslint-disable-next-line max-len
         this.addPropertiesToolItemContainer(this.currentPageBoxElement.parentElement.parentElement, 'e-pv-current-page-container', '_currentPageInputContainer');

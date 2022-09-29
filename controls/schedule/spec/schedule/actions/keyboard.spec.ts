@@ -3744,7 +3744,6 @@ describe('Keyboard interaction', () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 expect((eventElementList[1].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
-                expect(eventElementList[1].getAttribute('aria-grabbed')).toEqual('true');
                 done();
             };
             keyModule.keyActionHandler({ action: 'home' });

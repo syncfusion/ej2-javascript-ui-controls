@@ -147,7 +147,7 @@ export class NavigationPane {
         const isblazor: boolean = isBlazor();
         if (!isblazor) {
             // eslint-disable-next-line max-len
-            this.sideBarToolbar = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbar', className: 'e-pv-sidebar-toolbar', attrs: { 'role': 'toolbar', 'aria-orientation': 'vertical', 'tabindex': '-1' } });
+            this.sideBarToolbar = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbar', className: 'e-pv-sidebar-toolbar', attrs: { 'role': 'toolbar', 'aria-orientation': 'vertical', 'tabindex': '-1', 'aria-label': 'Sidebar Toolbar'} });
             // eslint-disable-next-line max-len
             this.sideBarToolbarSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbarSplitter', className: 'e-pv-sidebar-toolbar-splitter' });
             // eslint-disable-next-line max-len
@@ -354,7 +354,7 @@ export class NavigationPane {
 
     private createCommentPanelResizeIcon(): void {
         // eslint-disable-next-line max-len
-        this.commentPanelResizeIcon = createElement('div', { id: this.pdfViewer.element.id + '_resize', className: 'e-pv-resize-icon e-pv-icon' });
+        this.commentPanelResizeIcon = createElement('div', { id: this.pdfViewer.element.id + '_commentPanel_resize', className: 'e-pv-resize-icon e-pv-icon' });
         this.setCommentPanelResizeIconTop();
         this.commentPanelResizeIcon.style.position = 'absolute';
         this.commentPanelResizer.appendChild(this.commentPanelResizeIcon);

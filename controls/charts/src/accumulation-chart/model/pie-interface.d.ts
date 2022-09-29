@@ -39,6 +39,18 @@ export interface IAccTextRenderEventArgs extends IChartEventArgs {
     /** Defines the current font */
     font: FontModel;
 }
+export interface IAccLegendClickEventArgs extends IChartEventArgs {
+    /** Defines the chart when legendClick */
+    chart: AccumulationChart;
+    /** Defines the current legend shape */
+    legendShape: LegendShape;
+    /** Defines the current series */
+    series: AccumulationSeries;
+    /** Defines the list of points mapped to a legend */
+    point: AccPoints;
+    /** Defines the current legend text */
+    legendText: string;
+}
 /**
  * Accumulation Chart TooltipRender event arguments.
  */

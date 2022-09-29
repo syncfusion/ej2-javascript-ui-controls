@@ -3,6 +3,7 @@
  */
 @import "base/bootstrap-dark.scss";
 @import "accordion/bootstrap-dark.scss";
+@import "appbar/bootstrap-dark.scss";
 @import "drop-down-list/bootstrap-dark.scss";
 @import "input/bootstrap-dark.scss";
 @import "popup/bootstrap-dark.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/bootstrap-dark.scss";
 @import "radio-button/bootstrap-dark.scss";
 @import "switch/bootstrap-dark.scss";
+@import "floating-action-button/bootstrap-dark.scss";
+@import "speed-dial/bootstrap-dark.scss";
 @import "list-view/bootstrap-dark.scss";
 @import "sortable/bootstrap-dark.scss";
 @import "daterangepicker/bootstrap-dark.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/bootstrap-dark.scss";
 @import "splitter/bootstrap-dark.scss";
 @import "excel-filter/bootstrap-dark.scss";
+@import "skeleton/bootstrap-dark.scss";
 @import "grid/bootstrap-dark.scss";
 @import "file-manager/bootstrap-dark.scss";
 @import "treegrid/bootstrap-dark.scss";
@@ -63,8 +67,10 @@
 @import "progress-button/bootstrap-dark.scss";
 @import "rich-text-editor/bootstrap-dark.scss";
 @import "gantt/bootstrap-dark.scss";
+@import "image-editor/bootstrap-dark.scss";
 @import "inplace-editor/bootstrap-dark.scss";
 @import "kanban/bootstrap-dark.scss";
+@import "message/bootstrap-dark.scss";
 @import "toast/bootstrap-dark.scss";
 @import "pdfviewer/bootstrap-dark.scss";
 @import "timepicker/bootstrap-dark.scss";

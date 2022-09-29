@@ -689,7 +689,7 @@ export class Toolbar {
     }
 
     private onRefresh(): void {
-        if( !this.parent.inlineMode.enable){
+        if (!this.parent.inlineMode.enable){
             this.refreshToolbarOverflow();
         }
         this.parent.setContentHeight('', true);

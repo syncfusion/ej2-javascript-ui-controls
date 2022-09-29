@@ -1488,7 +1488,7 @@ describe('Drag module', () => {
             expect(ele.classList.contains('e-selection')).toEqual(true);
         });
     });
-
+    
     describe('EJ2-62190 - Drag and Drop is not working in Kanban when enabling ShowAddButton ', () => {
         let kanbanObj: Kanban;
         let key: string;

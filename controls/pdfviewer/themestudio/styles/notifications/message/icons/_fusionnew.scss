@@ -1,0 +1,32 @@
+@include export-module('message-fusion-icons') {
+  .e-message {
+    .e-msg-icon::before,
+    .e-msg-close-icon::before {
+      font-family: 'e-icons';
+    }
+
+    .e-msg-icon::before {
+      content: '\e800';
+    }
+
+    .e-msg-close-icon::before {
+      content: '\e7e7';
+    }
+
+    &.e-success .e-msg-icon::before {
+      content: '\e72b';
+    }
+
+    &.e-error .e-msg-icon::before {
+      content: '\e878';
+    }
+
+    &.e-info .e-msg-icon::before {
+      content: '\e800';
+    }
+
+    &.e-warning .e-msg-icon::before {
+      content: '\e88b';
+    }
+  }
+}

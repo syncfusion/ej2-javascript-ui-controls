@@ -114,7 +114,11 @@ export class ContextMenu {
         }
         switch (this.item) {
         case 'TaskInformation':
-            this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
+            if(isNaN(Number(this.rowData.ganttProperties.rowUniqueID))) {
+                this.parent.openEditDialog(this.rowData.ganttProperties.rowUniqueID);
+            } else {
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
+            }
             break;
         case 'Above':
         case 'Below':

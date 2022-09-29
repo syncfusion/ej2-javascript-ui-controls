@@ -5,7 +5,7 @@ $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
 $resize-hanlder-bottom-rtl: 2px;
 
-//default 
+//default
 $dialog-bg-color: $grey-800 !default;
 $dialog-icon-color: $grey-dark-font !default;
 $dialog-active-icon-color: $grey-dark-font !default;
@@ -14,6 +14,7 @@ $dialog-close-button-right: 8px !default;
 $dialog-header-border: none !default;
 $dialog-border: none !default;
 $dialog-footer-content-border-top: none !default;
+$dialog-alert-footer-content-border-top: none !default;
 $dialog-close-icon-normal-opacity: initial !default;
 $dialog-close-icon-active-opacity: initial !default;
 $dialog-close-icon-content: '\e7fc' !default;
@@ -80,4 +81,5 @@ $dialog-hover-focus-btn-bg-color: rgba($grey-white, .18) !default;
 $dialog-active-btn-bg-color: rgba($grey-white, .18) !default;
 $dialog-headericon-bottom: 0 !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+
 //enddefault

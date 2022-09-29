@@ -93,7 +93,7 @@
 
   .e-de-ctnr-numbering::before {
     content: '\eb9c';
-   }
+  }
 
   .e-de-ctnr-bullets::before {
     content: '\eb92';
@@ -392,6 +392,11 @@
 
   .e-de-endnote::before {
     content: '\e436';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-paragraph-mark::before{
+    content: '\e353';
     font-family: 'e-icons';
   }
 }

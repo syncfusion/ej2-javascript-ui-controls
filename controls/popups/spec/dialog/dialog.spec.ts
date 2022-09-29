@@ -3787,35 +3787,73 @@ describe('EJ2-49019 - Dialog z-index changes every time when closed and opened',
         expect((dialog.element as HTMLElement).style.zIndex).toBe('1000');
     });
 });
-describe('EJ2-61615 - Dragging working properly when dynamically set the dialog header', function () {
-    let dialog: Dialog;
-    beforeEach((): void => {
-        dialog = undefined;
-        let ele: HTMLElement = createElement('div', { id: 'dialog' });
-        let openBtn: HTMLElement = createElement('button',{id: 'openBtn'});
-        document.body.appendChild(ele);
-        document.body.appendChild(openBtn);
-    });
-    afterEach((): void => {
-        destroyDialog(dialog);
-    });
-    it('Dragging dynamically set the dialog header', () => {
-        dialog = new Dialog({
-            header: '',
-            content: "Are you sure you want to permanently delete all of these items?",
+
+describe('EJ2-62519-Provide the width and height property to the dialog utility', () => {
+
+    let dialogObj: Dialog;
+    beforeAll(() => {
+        dialogObj = DialogUtility.alert({
+            title: 'dialog Header!',
             showCloseIcon: false,
-            buttons: [{ buttonModel: { isPrimary: true, content: 'Yes' }, click: onclick }, { buttonModel: { content: 'No' } }],
-            target: document.body,
-            height: '200px',
-            width: '300px',
-            allowDragging: true,
-            animationSettings: { effect: 'Zoom' }
+            isModal: true,
+            content: "dialog content Updated!!!",
+            okButton: { text: 'Okbtn' },
+            width:150,
+            height:150
         });
-        dialog.appendTo('#dialog');
-        document.getElementById("openBtn").click();
-        dialog.header='Drag Me!!!';
-        dialog.dataBind();
-        dialog.show();
-        expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
+    });
+    it('check height and width of alert utility dialog', () => {
+        expect((document.getElementsByClassName('e-alert-dialog')[0]as HTMLElement).style.height).toBe('150px');
+        expect((document.getElementsByClassName('e-alert-dialog')[0]as HTMLElement).style.width).toBe('150px');
+    });
+    afterAll(() => {
+        destroyDialog(dialogObj);
     });
 });
+
+describe('EJ2-62519-Provide the width and height property to the dialog utility', () => {
+
+    let dialogObj: Dialog;
+    beforeAll(() => {
+        dialogObj = DialogUtility.confirm({
+            title: 'dialog Header!',
+            showCloseIcon: false,
+            isModal: true,
+            content: "dialog content Updated!!!",
+            okButton: { text: 'Okbtn' },
+            width:150,
+            height:150
+        });
+    });
+    it('check height and width of confirm utility dialog  ', () => {
+        expect((document.getElementsByClassName('e-confirm-dialog')[0]as HTMLElement).style.height).toBe('150px');
+        expect((document.getElementsByClassName('e-confirm-dialog')[0]as HTMLElement).style.width).toBe('150px');
+    });
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
+}); 
+
+describe('EJ2-62999-In Dailog unique Id is not generated automatically when we do not set the Id property', () => {
+    let dialogObj: Dialog;
+    const divElement: HTMLElement = createElement('div', {
+        className: 'defaultDailog' });
+        beforeEach((done: Function) => {
+            document.body.appendChild(divElement);
+            dialogObj = new Dialog({
+                isModal: true,
+                target: document.body
+            });
+            const target: HTMLElement = document.querySelector('.defaultDailog');
+            dialogObj.appendTo(target);
+            done();
+        });
+        afterEach((done: Function) => {
+            dialogObj.destroy();
+            detach(divElement);
+            done();
+        });
+        it(' check the id genarated or not ', () => {
+            expect(dialogObj.element.hasAttribute('id')).toBe(true);
+        });
+}); 

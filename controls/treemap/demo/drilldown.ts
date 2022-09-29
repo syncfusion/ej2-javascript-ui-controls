@@ -9,19 +9,19 @@ TreeMap.Inject(TreeMapTooltip);
 
 let prevTime: Date; let curTime: Date;
 let treemap: TreeMap = new TreeMap({
-   /* drillStart: (args: IDrillStartEventArgs) => {
-        if (args.item[Object.keys(args.item)[0]].length === 1) {
-            args.treemap.levels[2].showHeader = true;
-        } else {
-            args.treemap.levels[2].showHeader = false;
-        }
-    },
-    tooltipRendering: (args: ITreeMapTooltipRenderEventArgs) => {
-        //tslint:disable-next-line
-        if (args.item['groupIndex'] !== 2 ) {
-            args.cancel = true;
-        }
-    },*/
+    /* drillStart: (args: IDrillStartEventArgs) => {
+         if (args.item[Object.keys(args.item)[0]].length === 1) {
+             args.treemap.levels[2].showHeader = true;
+         } else {
+             args.treemap.levels[2].showHeader = false;
+         }
+     },
+     tooltipRendering: (args: ITreeMapTooltipRenderEventArgs) => {
+         //tslint:disable-next-line
+         if (args.item['groupIndex'] !== 2 ) {
+             args.cancel = true;
+         }
+     },*/
     //load: treemapload,
     palette: ['#9999ff', '#CCFF99', '#FFFF99', '#FF9999', '#FF99FF', '#FFCC66'],
     titleSettings: {
@@ -44,11 +44,15 @@ let treemap: TreeMap = new TreeMap({
         border: { color: 'black', width: 0.5 }
     },
     levels: [
-        { groupPath: 'Continent', fill: '#336699', border: { color: 'black', width: 0.5 } },
-        { groupPath: 'States', fill: '#336699', border: { color: 'black', width: 0.5 } },
-        { groupPath: 'Region', showHeader: false, fill: '#336699', border: { color: 'black', width: 0.5 } },
+        { groupPath: 'Continent', border: { color: 'black', width: 0.5 } },
+        { groupPath: 'States', border: { color: 'black', width: 0.5 } },
+        { groupPath: 'Region', showHeader: false, border: { color: 'black', width: 0.5 } },
     ]
 });
 treemap.appendTo('#container');
-
-
+document.getElementById("fill").onclick = () => {
+    treemap.levels[0].fill = "#336699"
+    treemap.levels[1].fill = "#336699"
+    treemap.levels[2].fill = "#336699"
+    treemap.refresh();
+}

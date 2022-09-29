@@ -1178,7 +1178,10 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             markerCluster.remove();
         }
         if (zoomCheck) {
-            document.getElementById(maps.element.id + '_Layer_Collections').appendChild(layerElement);
+            let layerGroupElement: HTMLElement = document.getElementById(maps.element.id + '_Layer_Collections');
+            if (!isNullOrUndefined(layerGroupElement)) {
+                layerGroupElement.appendChild(layerElement);
+            }
         }
     });
 }
@@ -1196,15 +1199,16 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
     const markerIndex: number = sameMarkerData[0].markerIndex;
     const dataIndex: number = sameMarkerData[0].dataIndex;
     const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
+    const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
     const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
-    const clusterEle: Element = getElement(clusterId);
+    const clusterEle: Element = maps.layers[layerIndex].markerClusterSettings.shape === 'Balloon' ? getElement(clusterId + '_Group') : getElement(clusterId);
     const clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
     clusterEleLabel.setAttribute('visibility', 'visible');
     let markerEle: Element;
     const markerDataLength: number = sameMarkerData[0].data.length;
     for (let i: number = 0; i < markerDataLength; i++) {
-        markerEle = getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle = marker.shape === 'Balloon' ? getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index'] + '_Group') : getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
         markerEle['style']['visibility'] = 'hidden';
     }
     removeElement(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine');
@@ -1227,13 +1231,13 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     const getElementFunction: any = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     const getQueryConnect: string = isDom ? '' : '#';
     const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
+    const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
     const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
-    const clusterEle: Element = getElementFunction(getQueryConnect + '' + clusterId);
+    const clusterEle: Element = maps.layers[layerIndex].markerClusterSettings.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + clusterId + '_Group') : getElementFunction(getQueryConnect + '' + clusterId);
     const clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'hidden');
     clusterEleLabel.setAttribute('visibility', 'hidden');
-    const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
-    let markerEle: Element = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
+    let markerEle: Element = marker.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
     const height: number = markerEle.parentElement.id.indexOf('Template_Group') > -1 ? markerEle.getBoundingClientRect().height : marker.height;
     const width: number = markerEle.parentElement.id.indexOf('Template_Group') > -1 ? markerEle.getBoundingClientRect().width : marker.width;
     const centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
@@ -1270,7 +1274,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
         const x1: number = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
         const y1: number = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
         path += start + 'L ' + (x1) + ' ' + y1 + ' ';
-        markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle = marker.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index'] + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
         if (markerEle.parentElement.id.indexOf('Template_Group') > -1) {
             markerEle['style']['transform'] = '';
             markerEle['style']['left'] = maps.isTileMap ? x1 - (width / 2) + 'px' : (x1 - (width / 2) - 10) + 'px';
@@ -1290,7 +1294,11 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
     const groupEle: Element = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine' });
     groupEle.appendChild(maps.renderer.drawPath(options));
-    markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
+    if (marker.shape === 'Balloon') {
+        markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0_Group'));
+    } else {
+        markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
+    }
 }
 
 /**
@@ -1320,6 +1328,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
         dashArray: markerSettings.dashArray, borderOpacity: isNullOrUndefined(eventArgs.border.opacity) ? markerSettings.opacity :
             eventArgs.border.opacity
     };
+    removeElement(markerID);
     const ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
     const x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
     const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
@@ -1710,7 +1719,7 @@ export function drawBalloon(maps: Maps, options: PathOption, size: Size, locatio
     const y: number = size.height / 30;
     balloon.setAttribute('transform', 'translate(' + location.x + ', ' + location.y + ') scale(' + x + ', ' + y + ')');
     if (type === 'Marker') {
-        const g: Element = maps.renderer.createGroup({ id: options.id });
+        const g: Element = maps.renderer.createGroup({ id: options.id + '_Group' });
         appendShape(balloon, g);
         pathElement = appendShape(g, element);
     }
@@ -2131,6 +2140,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                     mapHeight = size.height;
                 }
                 scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                scaleFactor = scaleFactor > 1.05 ? 1 : scaleFactor;
                 mapWidth *= scaleFactor;
                 mapHeight *= scaleFactor;
                 const widthDiff: number = min['x'] !== 0 && mapObject.translateType === 'layers' ? availSize.width - size.width : 0;
@@ -2173,6 +2183,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                     } else {
                         if (!isNullOrUndefined(mapObject.previousProjection) && (mapObject.mapScaleValue === 1 || mapObject.mapScaleValue <= 1.05) && !mapObject.zoomModule.isDragZoom) {
                             scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                            scaleFactor = scaleFactor > 1.05 ? 1: scaleFactor;
                             mapWidth *= scaleFactor;
                             x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
                             mapHeight *= scaleFactor;
@@ -3238,8 +3249,7 @@ export function animate(element: Element, delay: number, duration: number, proce
             window.cancelAnimationFrame(clearAnimation);
             end.call(this, { element: element });
             if (element.id.indexOf('Marker') > -1) {
-                console.log(element);
-                let markerElement: Element = getElementByID(element.id.split('_')[0] + '_Markers_Group');
+                let markerElement: Element = getElementByID(element.id.split('_Layer')[0] + '_Markers_Group');
                 markerElement.setAttribute('style', markerStyle);
             }
         }

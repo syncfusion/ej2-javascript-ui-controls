@@ -5,6 +5,7 @@ import { createElement, EmitType, debounce } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { MultiColoredLineSeries, ILoadedEventArgs, DateTime, Category } from '../../../src/index';
 import { MultiColoredAreaSeries, Legend, Series, Points, Chart, getElement } from '../../../src/index';
+import { seriesData1 } from '../base/data.spec';
 Chart.Inject(DateTime, Category, MultiColoredLineSeries, MultiColoredAreaSeries, Legend);
 
 export interface series1 {
@@ -36,7 +37,6 @@ function getData(interiors: string[], values?: any, isEmpty?: boolean): Object[]
     }
     return series1;
 }
-
 describe('Chart Control Multi Colored Series', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -370,7 +370,8 @@ describe('Chart Control Multi Colored Series', () => {
                         width: 3,
                         xName: 'XValue', yName: 'YValue', name: 'India',
                         fill: '#E94649', type: 'MultiColoredArea',
-                        marker: { visible: true, width: 10, height: 10 }
+                        marker: { visible: true, width: 10, height: 10 },
+                        
                     }],
                     width: '800',
                     title: 'Chart TS Title', loaded: loaded,
@@ -434,6 +435,32 @@ describe('Chart Control Multi Colored Series', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Checking with stroke while applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                  element = getElement('containerSeriesGroup0');
+                  expect(element.childElementCount).toBe(7);
+                 let svg: HTMLElement = document.getElementById('container_Series_border_0_Segment_1');
+                 expect(svg.getAttribute('stroke-width')).toBe('4');
+                 done();
+             };
+            chartObj.loaded = loaded;
+            chartObj.series[0].border.color = 'blue';
+            chartObj.series[0].border.width = 4;
+            chartObj.refresh();
+         });
+         it('Checking with fill while applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                  element = getElement('containerSeriesGroup0');
+                  expect(element.childElementCount).toBe(7);
+                 let svg: HTMLElement = document.getElementById('container_Series_border_0_Segment_1');
+                 expect(svg.getAttribute('fill')).not.toBe('blue');
+                 done();
+             };
+             chartObj.loaded = loaded;
+             chartObj.series[0].fill = "blue";
+             chartObj.refresh();
+         });
+        
     });
 
     /**
@@ -645,7 +672,7 @@ describe('Chart Control Multi Colored Series', () => {
                         width: 3,
                         xName: 'XValue', yName: 'YValue', name: 'India',
                         fill: '#E94649', type: 'MultiColoredArea',
-                        marker: { visible: true, width: 10, height: 10 }
+                        marker: { visible: true, width: 10, height: 10 },
                     }],
                     width: '800',
                     title: 'Chart TS Title', loaded: loaded,
@@ -685,6 +712,7 @@ describe('Chart Control Multi Colored Series', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        
     });
 
 
@@ -785,6 +813,7 @@ describe('Chart Control Multi Colored Series', () => {
     /**
      * Multi Colored Line Segments
      */
+  
     describe('Line series Segments - Empty poinys', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;

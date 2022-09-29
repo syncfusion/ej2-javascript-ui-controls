@@ -1,4 +1,5 @@
 @include export-module('pager-highcontrast-icons') {
+
   /*! component icons */
 
   #{&}.e-pager,
@@ -18,20 +19,24 @@
 
     .e-icon-next::before {
       content: '\e830';
-    }&.e-rtl {
+    }
+    &.e-rtl {
       & .e-icon-last.e-lastpage::before,
       & .e-icon-last.e-lastpage:hover,
       & .e-icon-last.e-lastpagedisabled::before {
         content: '\e999';
-     }& .e-icon-first.e-firstpage::before,
+      }
+      & .e-icon-first.e-firstpage::before,
       & .e-icon-first.e-firstpage:hover,
       & .e-icon-first.e-firstpagedisabled::before {
         content: '\e938';
-     }& .e-icon-prev.e-prevpage::before,
+      }
+      & .e-icon-prev.e-prevpage::before,
       & .e-icon-prev.e-prevpage:hover,
       & .e-icon-prev.e-prevpagedisabled::before {
         content: '\e830';
-     }& .e-icon-next.e-nextpage::before,
+      }
+      & .e-icon-next.e-nextpage::before,
       & .e-icon-next.e-nextpage:hover,
       & .e-icon-next.e-nextpagedisabled::before {
         content: '\e829';

@@ -19,7 +19,7 @@
     }
 
     &.e-spin-left {
-      // sass-lint:disable no-vendor-prefixes
+      /* stylelint-disable property-no-vendor-prefix */
       .e-spinner-inner {
         -webkit-transform: translateX(0%) translateY(-50%);
         left: 0;
@@ -29,7 +29,6 @@
     }
 
     &.e-spin-right {
-      // sass-lint:disable no-vendor-prefixes
       .e-spinner-inner {
         -webkit-transform: translateX(-100%) translateY(-50%);
         left: 100%;
@@ -39,7 +38,6 @@
     }
 
     &.e-spin-center {
-      // sass-lint:disable no-vendor-prefixes
       .e-spinner-inner {
         -webkit-transform: translateX(-50%) translateY(-50%);
         left: 50%;
@@ -55,7 +53,6 @@
       display: inline-flex;
     }
 
-    // sass-lint:disable no-vendor-prefixes
     .e-spinner-inner {
       -webkit-transform: translateX(-50%) translateY(-50%);
       left: 50%;

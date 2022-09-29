@@ -126,13 +126,22 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public mode: LegendMode;
 
     /**
-     * Option to customize the padding between legend items.
+     * Option to customize the padding around the legend items.
      *
      * @default 8
      */
 
     @Property(8)
     public padding: number;
+
+    /**
+     * Option to customize the padding between legend items.
+     *
+     * @default 20
+     */
+
+     @Property(20)
+     public itemPadding: number;
 
     /**
      * Legend in chart can be aligned as follows:
@@ -193,10 +202,10 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Padding between the legend shape and text.
      *
-     * @default 5
+     * @default 8
      */
 
-    @Property(5)
+    @Property(8)
     public shapePadding: number;
 
     /**
@@ -226,6 +235,15 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     @Property(true)
     public toggleVisibility: boolean;
 
+    /**
+    * If set to true, the series get highlighted, while hovering the legend.
+    *
+    * @default false
+    */
+
+    @Property(false)
+    public enableHighlight: boolean;
+      
     /**
      * Description for legends.
      *
@@ -692,6 +710,7 @@ export class BaseLegend {
         let requireLegendBounds: Rect = new Rect(0, 0, 0, 0);
         const firstLegend: number = this.findFirstLegendPosition(this.legendCollections);
         const padding: number = legend.padding;
+        const itemPadding: number = this.isBulletChartControl ? legend.padding : legend.itemPadding;
         const isPaging: boolean = legend.enablePages;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
         const upArrowHeight: number = this.isPaging && !legend.enablePages && this.isVertical ? this.pageButtonSize : 0;
@@ -752,7 +771,7 @@ export class BaseLegend {
             );
             const anchor: string = (chart as Chart).isRtlEnabled || (chart as Chart).enableRtl ? 'end' : 'start';
             const textOptions: TextOption = new TextOption('', start.x, start.y, anchor);
-            const textPadding: number = legend.shapePadding + padding + legend.shapeWidth;
+            const textPadding: number = legend.shapePadding + itemPadding + legend.shapeWidth;
             //  initialization for totalPages legend click totalpage again calculate
             this.totalPages = this.totalPages = (this.isAccChartControl || this.isChartControl || this.isBulletChartControl || this.isStockChartControl) ? this.totalPages : 0;
             this.pageXCollections = [];
@@ -790,8 +809,7 @@ export class BaseLegend {
                         id: this.legendID + this.generateId(legendOption, '_g_', legendIndex)});
                     if  (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute("tabindex", i === 0 ? "0" : "");
-                        legendSeriesGroup.setAttribute('aria-label', legend.description ||
-                        this.accessbilityText);
+                        legendSeriesGroup.setAttribute('aria-label', legend.description || ('Show ' + legendOption.text));
                     }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, requireLegendBounds, count, firstLegend);
 
@@ -801,10 +819,9 @@ export class BaseLegend {
 
                     if (legendSeriesGroup) {
                         (legendSeriesGroup as HTMLElement).style.cssText =
-                            'cursor: ' + ((!legend.toggleVisibility && ((chart as Chart).selectionMode === 'None' ||
+                            "pointer-events: bounding-box; cursor: " + ((!legend.toggleVisibility && ((chart as Chart).selectionMode === 'None' ||
                                 (chart as Chart).highlightMode === 'None' ||
-                                (chart as AccumulationChart).selectionMode === 'None') || this.isBulletChartControl) ? 'auto' : 'pointer')
-                        ;
+                                (chart as AccumulationChart).selectionMode === 'None') || this.isBulletChartControl) ? "auto" : "pointer")
                     }
                     if (legendTranslateGroup) {
                         legendTranslateGroup.appendChild(legendSeriesGroup);
@@ -1226,9 +1243,6 @@ export class BaseLegend {
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,
                     null, this.currentPageNumber &&  isCanvas ?
                         new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null);
-        if (element) {
-            element.setAttribute('aria-label', legend.description || this.accessbilityText);
-        }
         if (isCanvas) {
             const textSize: Size = measureText(legendOption.text, legend.textStyle);
             this.legendRegions[i].rect.y = textOptions.y < this.legendRegions[i].rect.y ? textOptions.y : this.legendRegions[i].rect.y;

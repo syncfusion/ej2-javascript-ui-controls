@@ -160,7 +160,7 @@
         content: '\e754';
       }
     }
-}
+  }
 
   .e-spreadsheet-contextmenu.e-contextmenu-wrapper {
     & .e-delete {
@@ -300,9 +300,9 @@
     & .e-dragfill-icon {
       &::before {
         content: '\e877';
-        }
       }
     }
+  }
 
   .e-chart-ddb,
   .e-chart-type-ddb {
@@ -379,7 +379,7 @@
         &::before {
           content: '\e86a';
         }
-     }
+      }
 
       & .e-stackedcolumn {
         &::before {
@@ -475,7 +475,7 @@
         }
       }
     }
-}
+  }
 
   .e-addchart-ddb {
     & .e-addchart-icon {
@@ -643,7 +643,7 @@
         content: '\e85b';
       }
     }
-}
+  }
 
   .e-switch-row-column-icon {
     &::before {
@@ -661,7 +661,7 @@
 
   .e-cf-menu .e-ul .e-menu-item .e-menu-icon {
     font-size: 16px;
-    }
+  }
 
   .e-cf-menu {
     & .e-hlcellrules {
@@ -709,13 +709,13 @@
     & .e-lessthan {
       &::before {
         content: '\e7d7';
-       }
+      }
     }
 
     & .e-between {
       &::before {
         content: '\e73b';
-       }
+      }
     }
 
     & .e-equalto {
@@ -763,7 +763,7 @@
     & .e-aboveaverage {
       &::before {
         content: '\e808';
-     }
+      }
     }
 
     & .e-belowaverage {
@@ -990,7 +990,7 @@
     & .e-password-protect-icon {
       &::before {
         content: '\e788';
-        }
+      }
     }
   }
 }

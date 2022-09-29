@@ -55,7 +55,7 @@ function dateanddatetimerender(args: {
 
 // eslint-disable-next-line
 function datePickerClose(args: PopupEventArgs): void {
-    if ((args.event as KeyboardEventArgs).action === 'escape') {
+    if (args.event && (args.event as KeyboardEventArgs).action === 'escape') {
         (this as DatePickerEditCell).edit.editCellDialogClose = true;
     }
 }

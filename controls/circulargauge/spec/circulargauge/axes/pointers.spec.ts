@@ -1072,6 +1072,24 @@ describe('Circular-Gauge Control', () => {
             }; 
             gauge.setPointerValue(0, 0, 80);
         });
+        it('Checking without animation for changing the pointer value and Text', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                expect(svg.textContent === 'Marker').toBe(true);
+                done();
+            }; 
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerShape = 'Text';
+            gauge.axes[0].pointers[0].text = 'Marker';
+        });
+        it('Checking animation for changing the pointer value and Text', (done: Function) => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
+                expect(svg.textContent === 'Marker').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].value = 50;
+        });
     });
 
     describe('Gauge axis pointer - with multiple pointer and multiple ranges', () => {

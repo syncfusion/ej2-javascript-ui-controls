@@ -400,7 +400,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      *  minFileSize: 0,
      *  maxFileSize: 30000000,
      *  allowedExtensions: '',
-     *  autoClose: false
+     *  autoClose: false,
+     *  directoryUpload: false
      * }
      */
     @Complex<UploadSettingsModel>({}, UploadSettings)
@@ -936,6 +937,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             minFileSize: this.uploadSettings.minFileSize,
             maxFileSize: this.uploadSettings.maxFileSize,
             allowedExtensions: this.uploadSettings.allowedExtensions,
+            directoryUpload: this.uploadSettings.directoryUpload,
             fileListRendering: this.onFileListRender.bind(this)
         });
         this.uploadObj.appendTo('#' + this.element.id + CLS.UPLOAD_ID);
@@ -950,6 +952,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.uploadObj.minFileSize = this.uploadSettings.minFileSize;
         this.uploadObj.maxFileSize = this.uploadSettings.maxFileSize;
         this.uploadObj.allowedExtensions = this.uploadSettings.allowedExtensions;
+        this.uploadObj.directoryUpload = this.uploadSettings.directoryUpload;
         this.uploadObj.dataBind();
     }
 
@@ -1003,7 +1006,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             }
         }
         const data: string = JSON.stringify(getValue(this.pathId[this.pathId.length - 1], this.feParent));
-        args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }];
+        args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }, {'filename': args.fileData.name}];
         const uploadUrl: string = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
         // eslint-disable-next-line
         const ajaxSettings: Object = {

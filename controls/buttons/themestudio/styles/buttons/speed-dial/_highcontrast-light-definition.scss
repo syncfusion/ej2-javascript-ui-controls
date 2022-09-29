@@ -1,0 +1,66 @@
+$sd-offset: 16px !default;
+$sd-ul-margin: 0 !default;
+$sd-li-text-padding: 0 5px !default;
+
+//Distance between vertical menu and button => Ul bottom padding + li bottom margin
+//Distance between vertical menu item =>  li bottom margin + li top margin
+//Horizontal padding for vertical menu => ((fab wdith - li icon width)/2) - 1 px (for icon border)
+$sd-horz-ul-padding: 5px 4px !default;
+$sd-vert-ul-padding: 4px 5px !default;
+$sd-horz-li-margin: 0 4px !default;
+$sd-vert-li-margin: 4px 0 !default;
+$sd-li-text-margin: 0 11px !default;
+$sd-li-text-height: 26px !default;
+$sd-li-icon-height: 28px !default;
+$sd-li-icon-width: 28px !default;
+
+$sd-small-horz-ul-padding: 4px 4px !default;
+$sd-small-vert-ul-padding: 4px 4px !default;
+$sd-small-horz-li-margin: 0 4px !default;
+$sd-small-vert-li-margin: 4px 0 !default;
+$sd-small-li-text-margin: 0 8px !default;
+$sd-small-li-text-height: 24px !default;
+$sd-small-li-icon-height: 26px !default;
+$sd-small-li-icon-width: 26px !default;
+
+$sd-bigger-horz-ul-padding: 7px 4px !default;
+$sd-bigger-vert-ul-padding: 4px 7px !default;
+$sd-bigger-horz-li-margin: 0 4px !default;
+$sd-bigger-vert-li-margin: 4px 0 !default;
+$sd-bigger-li-text-margin: 0 8px !default;
+$sd-bigger-li-text-height: 32px !default;
+$sd-bigger-li-icon-height: 40px !default;
+$sd-bigger-li-icon-width: 40px !default;
+
+$sd-bigger-small-horz-ul-padding: 7px 4px !default;
+$sd-bigger-small-vert-ul-padding: 4px 7px !default;
+$sd-bigger-small-horz-li-margin: 0 4px !default;
+$sd-bigger-small-vert-li-margin: 4px 0 !default;
+$sd-bigger-small-li-text-margin: 0 12px !default;
+$sd-bigger-small-li-text-height: 30px !default;
+$sd-bigger-small-li-icon-height: 32px !default;
+$sd-bigger-small-li-icon-width: 32px !default;
+
+$sd-overlay-bg: rgba(107, 114, 128, .5) !default;
+$sd-li-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 6px 10px rgba(0, 0, 0, .14), 0 1px 18px rgba(0, 0, 0, .12) !default;
+
+$sd-li-bg: $bg-base-0 !default;
+$sd-li-border-color: $border-fg !default;
+$sd-font-color: $content-font !default;
+
+$sd-disabled-li-bg: $bg-base-0 !default;
+$sd-disabled-li-border-color: $disable !default;
+$sd-disabled-font-color: $disable !default;
+
+$sd-focus-li-bg: $bg-base-0 !default;
+$sd-focus-li-border-color: $border-fg !default;
+$sd-focus-font-color: $content-font !default;
+$sd-focus-box-shadow: inset 0 0 0 3px #000000, inset 0 0 0 4px #ffffff !default;
+
+$sd-hover-li-bg: $hover-bg !default;
+$sd-hover-li-border-color: $hover-border !default;
+$sd-hover-font-color: $hover-font !default;
+
+$sd-active-li-bg: $selection-bg !default;
+$sd-active-li-border-color: $selection-border !default;
+$sd-active-font-color: $selection-font !default;

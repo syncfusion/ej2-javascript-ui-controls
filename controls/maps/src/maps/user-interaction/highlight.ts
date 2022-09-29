@@ -222,14 +222,12 @@ export class Highlight {
     /**
      * To destroy the highlight.
      *
-     * @param {Maps} maps - Specifies the maps instance
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.highlightSettings = null;
         this.removeEventListener();
+        this.maps = null;
     }
 }

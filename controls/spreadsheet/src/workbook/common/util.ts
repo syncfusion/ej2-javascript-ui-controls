@@ -1,6 +1,6 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel } from './../index';
 import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs } from './index';
-import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel } from './index';
+import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -289,16 +289,22 @@ export function isValidCellReference(value: string): boolean {
  * @param {number[]} prevIndexes - copied indexes
  * @param {SheetModel} sheet - sheet model
  * @param {CellModel} prevCell - copied or prev cell
+ * @param {Workbook} context - Represents workbook instance
+ * @param {boolean} isSort - Represents sort action
  * @returns {string} - retruns updated formula
  * @hidden
  */
-export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], sheet: SheetModel, prevCell?: CellModel): string {
+export function getUpdatedFormula(
+    currIndexes: number[], prevIndexes: number[], sheet: SheetModel, prevCell?: CellModel, context?: Workbook, isSort?: boolean): string {
     let cIdxValue: string; let cell: CellModel;
     if (prevIndexes) {
         cell = prevCell || getCell(prevIndexes[0], prevIndexes[1], sheet, false, true);
         cIdxValue = cell.formula ? cell.formula.toUpperCase() : '';
     }
     if (cIdxValue) {
+        if (isSort) {
+            context.notify(clearFormulaDependentCells, { cellRef: getCellAddress(prevIndexes[0], prevIndexes[1]) });
+        }
         if (cIdxValue.indexOf('=') === 0) {
             cIdxValue = cIdxValue.slice(1);
         }
@@ -316,9 +322,12 @@ export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], 
                 const range: number[] = getRangeIndexes(splitArray[j]);
                 const newRange: number[] = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
                     currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
-                if (newRange[0] < 0 || newRange[1] < 0 || newRange[2] < 0 || newRange[3] < 0) {
+                if (newRange[1] < 0 || newRange[2] < 0 || newRange[3] < 0 || (!isSort && newRange[0] < 0)) {
                     newRef = '#REF!';
                 } else {
+                    if (isSort && newRange[0] < 0) {
+                        newRange[0] = newRange[2];
+                    }
                     newRef = getCellAddress(newRange[0], newRange[1]);
                     if (splitArray[j].includes(':')) {
                         newRef += (':' + getCellAddress(newRange[2], newRange[3]));
@@ -577,4 +586,82 @@ export function updateCFModel(curCF: ConditionalFormat[], cfRule: ConditionalFor
             }
         }
     }
+}
+
+/** @hidden */
+export function checkRange(indexes: number[][], range: string): boolean {
+    const ranges: string[] = range.trim().split(',');
+    let left: boolean; let right: boolean; let top: boolean; let bottom; let cfIdx: number[];
+    const checkRange: (idx: number[]) => boolean = (idx: number[]): boolean => {
+        for (let i: number = 0; i < ranges.length; i++) {
+            cfIdx = getRangeIndexes(ranges[i].includes(':') ? ranges[i] : `${ranges[i]}:${ranges[i]}`);
+            if (idx[0] <= cfIdx[0] && idx[1] <= cfIdx[1] && idx[2] >= cfIdx[2] && idx[3] >= cfIdx[3]) {
+                return true;
+            } else {
+                top = idx[0] >= cfIdx[0] && idx[0] <= cfIdx[2];
+                bottom = idx[2] >= cfIdx[0] && idx[2] <= cfIdx[2];
+                left = idx[1] >= cfIdx[1] && idx[1] <= cfIdx[3];
+                right = idx[3] >= cfIdx[1] && idx[3] <= cfIdx[3];
+                if (top && bottom) {
+                    if (left || right || (idx[1] < cfIdx[1] && idx[3] > cfIdx[3])) {
+                        if (idx[0] - cfIdx[0] > 0) {
+                            return true;
+                        }
+                        if (cfIdx[2] - idx[2] > 0) {
+                            return true;
+                        }
+                    }
+                    if (left && idx[1] !== cfIdx[1]) {
+                        return true;
+                    }
+                    if (right && idx[3] !== cfIdx[3]) {
+                        return true;
+                    }
+                } else if (left && right) {
+                    if (top || bottom || (idx[0] < cfIdx[0] && idx[2] > cfIdx[2])) {
+                        if (idx[1] - cfIdx[1] > 0) {
+                            return true;
+                        }
+                        if (cfIdx[3] - idx[3] > 0) {
+                            return true;
+                        }
+                    }
+                    if (top) {
+                        if (idx[0] !== cfIdx[0]) {
+                            return true;
+                        }
+                    } else if (bottom && idx[2] !== cfIdx[2]) {
+                        return true;
+                    }
+                } else if (top || bottom) {
+                    if (left) {
+                        if (idx[1] !== cfIdx[1]) {
+                            return true;
+                        }
+                        if (idx[0] - cfIdx[0] > 0) {
+                            return true;
+                        } else if (cfIdx[2] - idx[2] > 0) {
+                            return true;
+                        }
+                    } else if (right) {
+                        if (idx[3] !== cfIdx[3]) {
+                            return true;
+                        }
+                        if (idx[0] - cfIdx[0] > 0) {
+                            return true;
+                        } else if (cfIdx[2] - idx[2] > 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    };
+    for (let j: number = 0; j < indexes.length; j++) {
+        if (checkRange(indexes[j])) {
+            return true;
+        }
+    }
+    return false;
 }

@@ -596,7 +596,7 @@ describe('Range navigator', () => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_Series_0');
                 expect(element.getAttribute('fill')).toBe('#00bdae');
-                expect(element.getAttribute('stroke-width')).toBe('2');
+                expect(element.getAttribute('stroke-width')).toBe('0');
                 done();
             };
             range.intervalType = 'Auto';

@@ -249,7 +249,6 @@ export class TextSearch {
         if (isNullOrUndefined(section) || section.childWidgets.length === 0) {
             return;
         }
-
         this.findInlineText(section, pattern, findOption, isFirstMatch, results, selectionEnd);
         
         let headerFootersColletion: HeaderFooters[] = this.documentHelper.headersFooters;

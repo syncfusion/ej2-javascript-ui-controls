@@ -29,7 +29,7 @@
           }
         }
 
-        @if($skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind') {
+        @if ($skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind') {
           .e-left-resize-gripper::before,
           .e-right-resize-gripper::before {
             content: '\e888';
@@ -71,8 +71,7 @@
           background-color: $connector-point-hover-color;
           border-color: $connector-point-border-color;
           outline: 2px solid $connector-point-hover-outerline-color;
-      }
-
+        }
       }
 
       .e-tab .e-content {
@@ -82,23 +81,27 @@
       .e-gantt-tree-grid-pane {
         .e-columnheader {
           .e-headercell {
-            height: $gantt-bigger-treegrid-header-border-height !important; // sass-lint:disable-line no-important
+            height: $gantt-bigger-treegrid-header-border-height !important; /* stylelint-disable-line declaration-no-important */
           }
         }
       }
 
       .e-dialog {
         .e-dlg-header-content {
-          padding: $gantt-bigger-dialog-header-padding; // sass-lint:disable-line no-important
+          padding: $gantt-bigger-dialog-header-padding; /* stylelint-disable-line declaration-no-important */
 
           .e-btn.e-dlg-closeicon-btn {
             left: $gantt-bigger-dialog-close-button-left;
           }
         }
-
-        @if($skin-name == 'tailwind') {
+        @if ($skin-name == 'FluentUI' or $skin-name == 'fluent-dark') {
+          .e-dlg-content {
+            margin-bottom: 0;
+          }
+        }
+        @if ($skin-name == 'tailwind') {
           .e-dlg-header-content {
-            height: 68px !important; // sass-lint:disable-line no-important 
+            height: 68px !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -120,7 +123,7 @@
         }
       }
 
-      .e-filter-popup {
+      .e-filter-popup.e-popup {
         width: $gantt-bigger-filter-dialog-width;
       }
 
@@ -149,11 +152,12 @@
     }
 
     .e-gantt-dialog {
-      border-radius: 6px;
-      width: $gantt-bigger-dialog-width;
-
+      .e-dialog {
+        border-radius: 6px;
+        width: $gantt-bigger-dialog-width;
+      }
       .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
-        padding: 0 16px !important; // sass-lint:disable-line no-important
+        padding: 0 16px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-edit-form-column:nth-child(odd) {
@@ -177,11 +181,11 @@
       }
 
       .e-dlg-header-content {
-        border-bottom: 0 !important; // sass-lint:disable-line no-important
+        border-bottom: 0 !important; /* stylelint-disable-line declaration-no-important */
       }
 
       > .e-dlg-content {
-        border-radius: 0 !important; // sass-lint:disable-line no-important
+        border-radius: 0 !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-dlg-header-content {
@@ -190,7 +194,7 @@
 
         .e-btn.e-dlg-closeicon-btn {
           border-radius: 50%;
-          height: auto !important; // sass-lint:disable-line no-important
+          height: auto !important; /* stylelint-disable-line declaration-no-important */
           width: auto;
         }
       }
@@ -201,32 +205,32 @@
         }
       }
 
-      @if($skin-name == 'bootstrap4') {
+      @if ($skin-name == 'bootstrap4') {
         .e-icon-dlg-close {
           color: $gantt-bigger-dialog-icon-color;
         }
       }
 
       .e-control-wrapper .e-input-group-icon.e-date-icon {
-        font-size: 16px !important; // sass-lint:disable-line no-important
+        font-size: 16px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-control-wrapper .e-input-group-icon.e-date-icon {
         min-height: $gantt-bigger-dialog-input-icon;
-        min-width: 35.82px !important; // sass-lint:disable-line no-important
+        min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-btn.e-flat {
         line-height: 24px;
-        padding: 6px 16px 6px 15px !important; // sass-lint:disable-line no-important
+        padding: 6px 16px 6px 15px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-btn.e-primary {
-        padding: 6px 21px 6px 23px !important; // sass-lint:disable-line no-important
+        padding: 6px 21px 6px 23px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-datetime-wrapper .e-time-icon.e-icons::before {
-        font-size: 16px !important; // sass-lint:disable-line no-important
+        font-size: 16px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text {
@@ -242,19 +246,19 @@
       .e-float-input.e-control-wrapper input {
         height: $gantt-bigger-dialog-input-field-height;
 
-        @if($skin-name == 'material') {
-          padding: 5px 0 11px !important; // sass-lint:disable-line no-important
+        @if ($skin-name == 'material') {
+          padding: 5px 0 11px !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
       .e-numeric.e-control-wrapper.e-input-group .e-input-group-icon {
         min-height: $gantt-bigger-dialog-input-icon;
-        min-width: 35.82px !important; // sass-lint:disable-line no-important
+        min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-control-wrapper .e-input-group-icon.e-time-icon {
         min-height: $gantt-bigger-dialog-input-icon;
-        min-width: 35.82px !important; // sass-lint:disable-line no-important
+        min-width: 35.82px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-input-group.e-control-wrapper {
@@ -262,28 +266,41 @@
       }
 
       .e-input-group-icon.e-date-icon {
-        min-width: 36px !important; // sass-lint:disable-line no-important
+        min-width: 36px !important; /* stylelint-disable-line declaration-no-important */
       }
 
-      @if($skin-name == 'material') {
+      @if ($skin-name == 'material') {
         .e-datetime-wrapper .e-input-group-icon.e-time-icon {
-          margin: 5px 0 6px !important; // sass-lint:disable-line no-important
+          margin: 5px 0 6px !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-input-group.e-control-wrapper .e-input-group-icon {
-          margin-right: 0 !important; // sass-lint:disable-line no-important 
+          margin-right: 0 !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
-      @if($skin-name == 'tailwind') {
+      @if ($skin-name == 'tailwind') {
         .e-input-group.e-control-wrapper .e-input-group-icon {
-          padding: 7px 0 !important; // sass-lint:disable-line no-important 
+          padding: 7px 0 !important; /* stylelint-disable-line declaration-no-important */
         }
       }
     }
 
     .e-predecessor-tooltip {
-      background-color: $gantt-bigger-tooltip-button-color;
+      .e-arrow-tip-outer.e-tip-bottom {
+        border-top: 8px solid $gantt-bigger-tooltip-button-color;
+        @if ($skin-name == 'FluentUI')
+        {
+          border-top: 12.5px solid $gantt-bigger-tooltip-button-color;
+        }
+        @else if ($skin-name == 'highcontrast'){
+          border-top: 7px solid $gantt-bigger-tooltip-button-color;
+        }
+      }
+
+      .e-arrow-tip-inner.e-tip-bottom {
+        color: $gantt-bigger-tooltip-button-color;
+      }
 
       .e-left-btn:disabled {
         color: $gantt-bigger-tooltip-disabled-button-color;
@@ -294,7 +311,7 @@
       }
 
       .e-tip-content {
-        padding: 3px !important; // sass-lint:disable-line no-important 
+        padding: 3px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:first-of-type {
@@ -322,6 +339,15 @@
       .e-dlg-content {
         background-color: $gantt-bigger-tooltip-dialog-color;
         padding: $gantt-bigger-predecessor-dialog-padding;
+        font-size: $gantt-bigger-predecessor-dialog-font-size;
+        font-weight: $gantt-bigger-predecessor-dialog-font-weight;
+        line-height: $gantt-bigger-predecessor-dialog-line-height;
+        @if ($skin-name == 'FluentUI') {
+          margin-bottom: 0;
+        }
+        @if ($skin-name == 'bootstrap-dark' or $skin-name == 'fabric-dark' or $theme-name == 'material-dark') {
+          color: $gantt-bigger-tooltip-button-color;
+        }
       }
     }
   }
@@ -416,7 +442,7 @@
       }
 
       .e-pane {
-        overflow: hidden !important; // sass-lint:disable-line no-important
+        overflow: hidden !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -437,11 +463,11 @@
         border-width: 0;
       }
 
-      .e-grid.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-gridhover tr[role='row']:hover .e-detailrowcollapse:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-gridhover tr[role='row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-rtl .e-gridhover tr[role='row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
-      .e-grid.e-gridhover tr[role='row']:hover .e-detailrowexpand:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+      .e-grid.e-gridhover tr[role = 'row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-gridhover tr[role = 'row']:hover .e-detailrowcollapse:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-gridhover tr[role = 'row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-rtl .e-gridhover tr[role = 'row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell),
+      .e-grid.e-gridhover tr[role = 'row']:hover .e-detailrowexpand:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: transparent;
       }
 
@@ -452,22 +478,22 @@
       }
 
       .e-headercontent {
-        border-right-width: 0 !important; // sass-lint:disable-line no-important
+        border-right-width: 0 !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-gridheader {
         border-top-style: none;
         border-top-width: 0;
-        padding-right: 0 !important; // sass-lint:disable-line no-important
+        padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-columnheader,
       .e-headercell {
-        height: $gantt-treegrid-header-border-height !important; // sass-lint:disable-line no-important
+        height: $gantt-treegrid-header-border-height !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-gridcontent .e-content {
-        overflow-x: scroll !important; // sass-lint:disable-line no-important
+        overflow-x: scroll !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-gridcontent .e-content.e-gantt-scroll-padding {
@@ -485,7 +511,6 @@
         line-height: 10px;
         vertical-align: middle;
       }
-
     }
 
     .e-gantt-chart {
@@ -498,7 +523,7 @@
         border-right: 0 solid;
 
         .e-content {
-          -webkit-overflow-scrolling: touch; // sass-lint:disable-line no-vendor-prefixes
+          -webkit-overflow-scrolling: touch; /* stylelint-disable-line property-no-vendor-prefix */
           overflow-x: scroll;
           overflow-y: auto;
           position: relative;
@@ -521,13 +546,11 @@
           height: 100%;
           position: absolute;
         }
-
       }
-
 
       .e-timeline-header-container {
         border-bottom-style: solid;
-        border-right-width: 0;
+        border-right: 1px solid;
         overflow: hidden;
         position: relative;
         z-index: 6;
@@ -535,7 +558,6 @@
 
       .e-timeline-header-table-container > thead > tr > th {
         border-left: 0;
-        padding: 0 3px;
       }
 
       .e-timeline-header-table-container {
@@ -557,7 +579,7 @@
 
       .e-timeline-header-table-body > tr {
         display: inline-flex;
-       }
+      }
 
       .e-timeline-top-header-cell,
       .e-timeline-single-header-cell {
@@ -586,10 +608,9 @@
         }
 
         .e-gantt-top-cell-text {
-          padding-left: 8px;
+          padding-left: 11px;
           text-align: left;
         }
-
       }
 
       .e-gantt-grid-lines {
@@ -706,7 +727,7 @@
       .e-indicator-span {
         display: inline-block;
         font-size: 13px;
-        font-weight: 400;
+        font-weight: normal;
         overflow: hidden;
         position: absolute;
         text-overflow: ellipsis;
@@ -739,7 +760,7 @@
           border-color: $gantt-active-background-color;
         }
         @else {
-          border-color:  inherit;
+          border-color: inherit;
         }
         border-top-style: dotted;
         border-top-width: 2px;
@@ -1077,9 +1098,7 @@
         outline: 1px solid;
         outline-offset: 2px;
       }
-
     }
-
   }
 
   .e-gantt-dialog .e-tab .e-tab-header {
@@ -1093,7 +1112,6 @@
       border-style: solid;
       border-width: $gantt-tab-header-border-width;
     }
-
   }
 
   .e-gantt-dialog .e-tab .e-tab-header:not(.e-vertical)::before {
@@ -1129,7 +1147,6 @@
       .e-gridheader {
         border-top-width: 0;
       }
-
     }
 
     .e-edit-form-row {
@@ -1167,7 +1184,7 @@
 
     .e-richtexteditor {
       border-bottom-width: $gantt-richtext-border-bottom;
-      height: $gantt-dialog-rte-height !important; // sass-lint:disable-line no-important
+      height: $gantt-dialog-rte-height !important; /* stylelint-disable-line declaration-no-important */
       overflow: hidden;
     }
 
@@ -1178,17 +1195,18 @@
     .e-richtexteditor .e-rte-content {
       border-bottom-width: $gantt-richtext-content-border-bottom;
       height: $gantt-dialog-rte-content-height;
+      overflow: hidden;
     }
 
     > .e-dlg-content {
-      padding: 0 !important; // sass-lint:disable-line no-important
+      padding: 0 !important; /* stylelint-disable-line declaration-no-important */
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         height: 291px;
       }
     }
 
     .e-dlg-header-content {
-      border-bottom: 0 !important; // sass-lint:disable-line no-important
+      border-bottom: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
 
     .e-dlg-header-content {
@@ -1197,10 +1215,9 @@
 
       .e-btn.e-dlg-closeicon-btn {
         border-radius: 50%;
-        height: auto !important; // sass-lint:disable-line no-important
-        width: auto !important; // sass-lint:disable-line no-important
+        height: auto !important; /* stylelint-disable-line declaration-no-important */
+        width: auto !important; /* stylelint-disable-line declaration-no-important */
       }
-
     }
   }
 
@@ -1209,9 +1226,9 @@
   }
 
   .e-ganttpopup {
-    -moz-user-select: none; // sass-lint:disable-line no-vendor-prefixes
-    -ms-user-select: none; // sass-lint:disable-line no-vendor-prefixes
-    -webkit-user-select: none; // sass-lint:disable-line no-vendor-prefixes
+    -moz-user-select: none; /* stylelint-disable-line property-no-vendor-prefix */
+    -ms-user-select: none; /* stylelint-disable-line property-no-vendor-prefix */
+    -webkit-user-select: none; /* stylelint-disable-line property-no-vendor-prefix */
     font-weight: normal;
     position: absolute;
     user-select: none;
@@ -1229,7 +1246,7 @@
       height: 26px;
       padding: 4px;
       width: 26px;
-     }
+    }
 
     .e-content {
       border-radius: 4px;
@@ -1359,6 +1376,71 @@
   }
 
   .e-predecessor-tooltip {
+    background-color: $gantt-bigger-tooltip-button-color !important; /* stylelint-disable-line declaration-no-important */
+    border-color: $gantt-bigger-tooltip-button-color !important; /* stylelint-disable-line declaration-no-important */
     visibility: hidden;
+
+    .e-arrow-tip-outer.e-tip-bottom {
+      border-top: 8px solid $gantt-bigger-tooltip-button-color;
+      @if ($skin-name == 'FluentUI')
+      {
+        border-top: 12.5px solid $gantt-bigger-tooltip-button-color;
+      }
+      @else if ($skin-name == 'highcontrast'){
+        border-top: 7px solid $gantt-bigger-tooltip-button-color;
+      }
+    }
+
+    .e-arrow-tip-inner.e-tip-bottom {
+      color: $gantt-bigger-tooltip-button-color;
+    }
+
+    .e-left-btn:disabled {
+      color: $gantt-bigger-tooltip-disabled-button-color;
+    }
+
+    .e-right-btn:disabled {
+      color: $gantt-bigger-tooltip-disabled-button-color;
+    }
+
+    .e-tip-content {
+      padding: 3px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:first-of-type {
+      background-color: $gantt-bigger-tooltip-button-color;
+      border-color: $gantt-bigger-tooltip-button-color;
+      color: $gantt-bigger-tooltip-button-text-color;
+      font-size: 12px;
+      line-height: 18px;
+      padding: 0 8px 0 0;
+    }
+
+    .e-btn-group:not(.e-rtl):not(.e-vertical) .e-btn:last-of-type {
+      background-color: $gantt-bigger-tooltip-button-color;
+      border-color: $gantt-bigger-tooltip-button-color;
+      color: $gantt-bigger-tooltip-button-text-color;
+      font-size: 12px;
+      line-height: 18px;
+      padding: 0 0 0 8px;
+    }
+  }
+
+  .e-predecessor-dialog {
+    background-color: $gantt-bigger-tooltip-dialog-color;
+
+    .e-dlg-content {
+      background-color: $gantt-bigger-tooltip-dialog-color;
+      padding: $gantt-bigger-predecessor-dialog-padding;
+      font-size: $gantt-bigger-predecessor-dialog-font-size;
+      font-weight: $gantt-bigger-predecessor-dialog-font-weight;
+      line-height: $gantt-bigger-predecessor-dialog-line-height;
+      @if ($skin-name == 'FluentUI') {
+        margin-bottom: 0;
+      }
+      @if ($skin-name == 'bootstrap-dark' or $skin-name == 'fabric-dark' or $theme-name == 'material-dark') {
+        color: $gantt-bigger-tooltip-button-color;
+      }
+    }
   }
 }

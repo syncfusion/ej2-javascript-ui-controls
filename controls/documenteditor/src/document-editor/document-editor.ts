@@ -37,7 +37,7 @@ import { TrackChangesPane } from './implementation/track-changes/track-changes-p
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
-import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent } from './base/constants';
+import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -97,6 +97,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(32767)
     public maximumRows: number;
+
+    /**
+     * Gets or sets a value indicating whether to show the hidden characters like spaces, tab, paragraph marks, and breaks.
+     * @default false
+     * @aspType bool
+     * @returns {boolean} - `false` hide the hidden characters like spaces, tab, paragraph marks, and breaks. Otherwise `true`.
+     */
+    @Property(false)
+    public showHiddenMarks: boolean;
 }
 
 /**
@@ -314,7 +323,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property('Pages')
     public layoutType: LayoutType;
-    
+
     /**
      * Gets or sets the current user.
      *
@@ -1218,16 +1227,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.viewer.updateScrollBars();
                 break;
             case 'documentEditorSettings':
-                if(!isNullOrUndefined(model.documentEditorSettings.enableOptimizedTextMeasuring)) {
+                if (!isNullOrUndefined(model.documentEditorSettings.enableOptimizedTextMeasuring)) {
                     //Clears previously cached height information.
                     this.documentHelper.heightInfoCollection = {}
-                    if(model.documentEditorSettings.enableOptimizedTextMeasuring) {
+                    if (model.documentEditorSettings.enableOptimizedTextMeasuring) {
                         this.textMeasureHelper = this.optimizedModule;
                     } else {
                         this.textMeasureHelper = this.regularModule;
                     }
+                    this.viewer.updateScrollBars();
                 }
-                this.viewer.updateScrollBars();
+                if (!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks)) {
+                    this.viewer.updateScrollBars();
+                }
                 break;
             case 'height':
                 this.element.style.height = formatUnit(this.height);
@@ -2231,6 +2243,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Information': 'Information',
         'Yes': 'Yes',
         'No': 'No',
+        'Page Break': 'Page Break',
+        'Section Break Next Page': 'Section Break (Next Page)',
         'Unsupported format': 'The file format you have selected isn\'t supported. Please choose valid format.'
     };
     /* eslint-enable */
@@ -2727,6 +2741,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             break;
         }
     }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public toggleShowHiddenMarksInternal(): void {
+        this.documentEditorSettings.showHiddenMarks = !this.documentEditorSettings.showHiddenMarks;
+        this.notify(internalDocumentEditorSettingsChange, this.documentEditorSettings);
+    }  
     /**
      * Shows the options pane.
      *

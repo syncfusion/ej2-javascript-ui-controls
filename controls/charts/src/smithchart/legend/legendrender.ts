@@ -319,7 +319,7 @@ export class SmithchartLegend {
                 legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
                 legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
                 let element: Element = renderTextElement(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
-                element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + options.text + ' series');
+                legendGroup.setAttribute('aria-label', legend.description || ('Show ' + options.text));
                 legendGroup.appendChild(element);
                 this.legendItemGroup.appendChild(legendGroup);
             }

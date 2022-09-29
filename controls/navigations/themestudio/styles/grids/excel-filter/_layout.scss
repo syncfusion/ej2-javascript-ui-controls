@@ -1,4 +1,5 @@
 @include export-module('excel-filter-layout') {
+
   /*! Excel-Filter layout */
   .sf-grid .e-excelfilter {
     .e-dlg-content {
@@ -14,7 +15,7 @@
     .e-contextmenu-container.e-sfcontextmenu .e-ul .e-menu-item .e-menu-icon {
       height: 26px;
       line-height: 26px;
-  }
+    }
 
     .e-contextmenu-container.e-sfcontextmenu .e-ul .e-menu-item:not(.e-separator) {
       height: 26px;
@@ -38,7 +39,6 @@
       position: relative;
       width: 100%;
     }
-
   }
 
   .sf-grid-dlg.e-xlflmenu .e-xlfl-radiodiv {
@@ -231,25 +231,25 @@
 
     &.e-dialog .e-dlg-content {
       padding-left: $grid-bigger-checkbox-content-padding-left;
-      }
+    }
 
     .e-ftrchk,
     .e-searchbox {
       padding-left: $grid-bigger-checkbox-padding-topbottom;
-      }
+    }
 
     &.e-rtl {
       .e-dlg-content {
         padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
         padding-right: $grid-bigger-checkbox-content-padding-left;
-          }
+      }
 
       .e-ftrchk,
       .e-searchbox {
         padding-left: 0;
         padding-right: $grid-bigger-checkbox-padding-topbottom;
-              }
-          }
+      }
+    }
   }
 
   #{&}.e-excelfilter {
@@ -266,7 +266,7 @@
     }
 
     .e-chk-hidden {
-      -moz-appearance: none; // sass-lint:disable-line no-vendor-prefixes
+      -moz-appearance: none; /* stylelint-disable-line property-no-vendor-prefix */
       height: 1px;
       opacity: 0;
       width: 1px;
@@ -338,8 +338,7 @@
       position: static;
     }
 
-    .e-contextmenu-wrapper ul li
-    .e-contextmenu-container ul li {
+    .e-contextmenu-wrapper ul li .e-contextmenu-container ul li {
       height: $grid-xlfl-li-height;
       line-height: $grid-xlfl-li-height;
     }
@@ -386,12 +385,12 @@
 
     &.e-dialog .e-dlg-content {
       padding-left: $grid-checkbox-content-padding-left;
-      }
+    }
 
     .e-ftrchk,
     .e-searchbox {
       padding-left: $grid-checkbox-padding-topbottom;
-      }
+    }
 
     &.e-rtl {
       .e-dlg-content {
@@ -403,12 +402,12 @@
       .e-searchbox {
         padding-left: 0;
         padding-right: $grid-checkbox-padding-topbottom;
-          }
       }
+    }
 
     .e-searchbox {
       display: block;
-      }
+    }
   }
 
   .e-ftrchk {

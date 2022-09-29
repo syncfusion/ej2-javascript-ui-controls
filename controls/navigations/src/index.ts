@@ -11,3 +11,4 @@ export * from './treeview/index';
 export * from './sidebar/index';
 export * from './breadcrumb/index';
 export * from './carousel/index';
+export * from './appbar/index';

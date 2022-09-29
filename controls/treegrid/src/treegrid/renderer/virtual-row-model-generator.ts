@@ -66,6 +66,8 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
             const currentPage: number = this[model].currentPage;
             if (clear) {
                 this.cache = {};
+                this.movableCache = {};
+                this.frozenRightCache = {};
                 this.data = {};
                 this.groups = {};
             } else if (action === 'virtualscroll' && this.cache[currentPage] &&
@@ -75,6 +77,8 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         } else {
             if (clear || action === 'virtualscroll') {
                 this.cache = {}; this.data = {}; this.groups = {};
+                this.movableCache = {};
+                this.frozenRightCache = {};
             }
         }
         return clear;

@@ -266,10 +266,10 @@ export class ColumnBase {
         ) as HTMLElement;
         switch (series.seriesType) {
         case 'XY':
-            element.setAttribute('aria-label', point.x.toString() + ':' + point.yValue.toString());
+            element.setAttribute('aria-label', series.xName + ':' + point.yValue + ', ' + series.name);
             break;
         case 'HighLow':
-            element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString() + ':' + point.low.toString());
+            element.setAttribute('aria-label', series.xName + ':' + point.high + ', ' + point.low + ', ' + series.name);
             break;
         }
         appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);

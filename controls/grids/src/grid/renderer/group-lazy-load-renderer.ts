@@ -56,7 +56,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private objIdxByUid: { [x: number]: Row<Column>[] } = {};
     private initialGroupCaptions: { [x: number]: Row<Column>[] } = {};
     private requestType: string[] = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete',
-        'filterbeforeopen', 'filterchoicerequest'];
+        'filterbeforeopen', 'filterchoicerequest', 'infiniteScroll'];
+    private scrollTopCache: number|undefined = undefined;
 
     /** @hidden */
     public refRowsObj: { [x: number]: Row<Column>[] } = {};
@@ -90,6 +91,10 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const page: number = this.parent.pageSettings.currentPage;
         const rowsObject: Row<Column>[] = this.groupCache[page];
         const uid: string = tr.getAttribute('data-uid');
+        this.refreshCaches();
+        if (!this.scrollTopCache || this.parent.scrollModule['content'].scrollTop > this.scrollTopCache) {
+            this.scrollTopCache = this.parent.scrollModule['content'].scrollTop;
+        }
         const oriIndex: number = this.getRowObjectIndexByUid(uid);
         const isRowExist: boolean = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
         const data: Row<Column> = rowsObject[oriIndex];
@@ -120,6 +125,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const cache: Row<Column>[] = this.groupCache[this.parent.pageSettings.currentPage];
         const rowIdx: number = tr.rowIndex;
         const uid: string = tr.getAttribute('data-uid');
+        this.refreshCaches();
         const captionIndex: number = this.getRowObjectIndexByUid(uid);
         const e: LazyLoadArgs = {
             captionRowElement: tr, groupInfo: cache[captionIndex], cancel: false
@@ -130,6 +136,11 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             }
             args.isExpand = false;
             this.removeRows(captionIndex, rowIdx);
+            if (this.parent.enableInfiniteScrolling) {
+                this.groupCache[this.parent.pageSettings.currentPage] = extend([],
+                    this.refRowsObj[this.parent.pageSettings.currentPage]) as Row<Column>[];
+                this.refreshRowObjects([], captionIndex);
+            }
         });
     }
 
@@ -191,8 +202,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private refreshCaches(): void {
         const page: number = this.parent.pageSettings.currentPage;
         const cache: Row<Column>[] = this.groupCache[page];
-        this.rowsByUid = {};
-        this.objIdxByUid = {};
+        if (this.parent.enableInfiniteScrolling) {
+            this.rowsByUid[page] = [];
+            this.objIdxByUid[page] = [];
+        }
+        else {
+            this.rowsByUid = {};
+            this.objIdxByUid = {};
+        }
         for (let i: number = 0; i < cache.length; i++) {
             this.maintainRows(cache[i], i);
         }
@@ -333,6 +350,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 this.refRowsObj[page].splice(trIdx + 1, 1);
             }
         }
+        if (this.parent.scrollModule['content'].scrollTop > this.scrollTopCache) {
+            this.parent.scrollModule['content'].scrollTop = this.scrollTopCache;
+        }
         this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[page] });
     }
 
@@ -408,6 +428,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 this.refreshRowObjects(rows, args.isScroll ? this.rowObjectIndex : captionIndex);
             }
         }
+
         this.render(trIdx, rows, lastRow, aggregates);
         if (this.isFirstChildRow && !args.up) {
             this.parent.getContent().firstElementChild.scrollTop = rows.length * this.parent.getRowHeight();
@@ -1031,7 +1052,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private setCache(e?: { args: NotifyArgs, data: Row<Column>[] }): void {
         const page: number = this.parent.pageSettings.currentPage;
-        this.groupCache[page] = this.initialGroupCaptions[page] = extend([], e.data) as Row<Column>[];
+        if (this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll' &&
+            e.args['prevPage'] != e.args['currentPage']) {
+            this.groupCache[page] = this.initialGroupCaptions[page] = this.groupCache[e.args['prevPage']]
+            .concat(extend([], e.data) as Row<Column>[]);
+        }
+        else {
+            this.groupCache[page] = this.initialGroupCaptions[page] = extend([], e.data) as Row<Column>[];
+        }
     }
 
     private captionRowExpand(args: LazyLoadGroupArgs): void {
@@ -1046,9 +1074,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 query.isCountRequired = true;
             }
             query.lazyLoad.push({ key: 'onDemandGroupInfo', value: lazyLoad });
-            this.parent.showSpinner();
+            if (args.isScroll && this.parent.enableVirtualMaskRow) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
             this.parent.renderModule.data.getData({}, query).then((e: ReturnType) => {
                 this.parent.hideSpinner();
+                this.parent.removeMaskRow();
                 if (e.result.length === 0) {
                     return;
                 }

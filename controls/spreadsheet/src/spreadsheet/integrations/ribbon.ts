@@ -2922,6 +2922,7 @@ export class Ribbon {
         if (this.findDialog) {
             this.findDialog.hide();
         }
+        this.datavalidationDdb.destroy(); this.datavalidationDdb = null;
         this.removeEventListener();
     }
     private destroyComponent(id: string | HTMLElement, moduleName: string): void {

@@ -1,4 +1,4 @@
-//default 
+//default
 $ddl-input-font-size: 14px !default;
 $ddl-zero-value: 0 !default;
 $ddl-default-border-color: transparent !default;
@@ -23,6 +23,7 @@ $ddl-clear-icon-margin-right: 66px !default;
 $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
 $ddl-filter-margin: 0 !default;
+
 // Small Size
 
 $ddl-small-list-font-size: 12px !default;
@@ -139,5 +140,4 @@ $ddl-bigger-small-list-font-size: 13px !default;
   #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small.e-input-focus .e-input-filter {
     padding: 5px 5px 5px 12px;
   }
-
 }

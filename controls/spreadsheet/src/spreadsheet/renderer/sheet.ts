@@ -944,16 +944,28 @@ export class SheetRender implements IRenderer {
         this.parent.on(created, this.triggerCreatedEvent, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
         this.parent.on(colWidthChanged, this.colWidthChanged, this);
-        this.parent.on(spreadsheetDestroyed, this.destroy, this);
+        this.parent.on(spreadsheetDestroyed, this.removeEventListener, this);
     }
-    private destroy(): void {
-        this.removeEventListener();
+
+    /**
+     * Clears the internal properties of Sheet module.
+     *
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.headerPanel = null;
+        this.contentPanel = null;
+        this.col = null;
+        this.rowRenderer = null;
+        this.cellRenderer = null;
+        this.colGroupWidth = null;
         this.parent = null;
     }
+
     private removeEventListener(): void {
         this.parent.off(created, this.triggerCreatedEvent);
         this.parent.off(rowHeightChanged, this.rowHeightChanged);
         this.parent.off(colWidthChanged, this.colWidthChanged);
-        this.parent.off(spreadsheetDestroyed, this.destroy);
+        this.parent.off(spreadsheetDestroyed, this.removeEventListener);
     }
 }

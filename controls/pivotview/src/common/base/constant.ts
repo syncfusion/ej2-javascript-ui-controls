@@ -20,7 +20,7 @@ export const afterPivotTableRender: string = 'afterPivotTableRender';
 /** @hidden */
 export const beforeExport: string = 'beforeExport';
 /** @hidden */
-export const exportComplete : string ='exportComplete';
+export const exportComplete: string = 'exportComplete';
 /** @hidden */
 export const excelHeaderQueryCellInfo: string = 'excelHeaderQueryCellInfo';
 /** @hidden */
@@ -87,6 +87,8 @@ export const toolbarRender: string = 'toolbarRender';
 export const toolbarClick: string = 'toolbarClick';
 /** @hidden */
 export const chartTooltipRender: string = 'chartTooltipRender';
+/** @hidden */
+export const chartLegendClick: string = 'chartLegendClick';
 /** @hidden */
 export const chartLoaded: string = 'chartLoaded';
 /** @hidden */
@@ -168,6 +170,8 @@ export const initCalculatedField: string = 'init-calculatedfield';
 export const click: string = 'click';
 /** @hidden */
 export const initToolbar: string = 'init-toolbar';
+/** @hidden */
+export const initPivotPager: string = 'init-pivotPager';
 /** @hidden */
 export const initFormatting: string = 'init-formatting';
 /** @hidden */
@@ -271,6 +275,10 @@ export const aggregateField: string = 'Aggregate field';
 export const contextMenuCalculatedField: string = 'CalculatedField Context menu';
 /** @hidden */
 export const windowResize: string = 'Window resize';
+/** @hidden */
+export const rowPageNavigation: string = 'Navigate row page';
+/** @hidden */
+export const columnPageNavigation: string = 'Navigate column page';
 
 /**
  * Specifies action names of actionComplete events
@@ -360,3 +368,7 @@ export const drillThroughClosed: string = 'Drill-through closed';
 export const verticalScrolled: string = 'Vertically scrolled';
 /** @hidden */
 export const horizontalScrolled: string = 'Horizontally scrolled';
+/** @hidden */
+export const rowPageNavigated: string = 'Row page navigated';
+/** @hidden */
+export const columnPageNavigated: string = 'Column page navigated';

@@ -4,10 +4,12 @@ import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog, getCell, She
 import { Dialog } from "../../../src/spreadsheet/services/index";
 import { getComponent, L10n } from '@syncfusion/ej2-base';
 import { DropDownList } from "@syncfusion/ej2-dropdowns";
+import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
 
 describe('Data validation ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    let model: SpreadsheetModel;
 
     describe('Public Method ->', () => {
         beforeAll((done: Function) => {
@@ -136,17 +138,17 @@ describe('Data validation ->', () => {
 
         it('Dialog interaction', (done: Function) => {
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: ddlElem.parentElement });
                 setTimeout(() => {
-                    let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                    helper.click('.e-ddl.e-popup li:nth-child(5)');
+                    ddlElem = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
                     ddlElem.ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: ddlElem.parentElement });
                     setTimeout(() => {
-                        helper.click('.e-ddl.e-popup li:nth-child(5)');
-                        ddlElem = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                        ddlElem.ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: ddlElem.parentElement });
+                        helper.click('.e-ddl.e-popup li:nth-child(3)');
                         setTimeout(() => {
-                            helper.click('.e-ddl.e-popup li:nth-child(3)');
                             helper.triggerKeyNativeEvent(9);
                             helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = 'dumm';
                             helper.triggerKeyEvent('keyup', 89, null, null, null, helper.getElements('.e-datavalidation-dlg .e-values e-input')[0]);
@@ -191,23 +193,21 @@ describe('Data validation ->', () => {
         it('Add list validation for range of Whole column', (done: Function) => {
             helper.invoke('selectRange', ['I1']);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=G:G';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=G:G","value2":"","ignoreBlank":true,"inCellDropDown":true}');
+                const td: HTMLElement = helper.invoke('getCell', [0, 8]).children[0];
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
                 setTimeout(() => {
-                    let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                    ddlElem.ej2_instances[0].value = 'List';
-                    ddlElem.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=G:G';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
-                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=G:G","value2":"","ignoreBlank":true,"inCellDropDown":true}');
-                    const td: HTMLElement = helper.invoke('getCell', [0, 8]).children[0];
-                    (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
-                    setTimeout(() => {
-                        expect(helper.getElements('.e-ddl.e-popup ul')[0].textContent).toBe('Discount15711101336129');
-                        helper.click('.e-ddl.e-popup li:nth-child(4)');
-                        done();
-                    });
+                    expect(helper.getElements('.e-ddl.e-popup ul')[0].textContent).toBe('Discount15711101336129');
+                    helper.click('.e-ddl.e-popup li:nth-child(4)');
+                    done();
                 });
             });
         });
@@ -291,8 +291,213 @@ describe('Data validation ->', () => {
             done();
         });
     });
+
+    describe('Open pop up and then destroy spreadsheet ->', () => {
+        const model: SpreadsheetModel = { sheets: [{ ranges: [{ dataSource: defaultData }] }]}
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Open pop up and then destroy spreadsheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.invoke('destroy');
+            setTimeout(() => {
+                new Spreadsheet(model, '#' + helper.id);
+                setTimeout(() => {
+                    expect(document.getElementById('spreadsheet_datavalidation-popup') as HTMLElement).toBeNull;
+                    helper.switchRibbonTab(4);
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('UI Interaction III ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: defaultData
+                    }],
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking for Extend validation dialog', (done: Function) => {
+            helper.invoke('selectRange', ['D2:D5']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Greater than';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.invoke('selectRange', ['D2:D10']);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-goto-dlg.e-dialog');
+                    helper.click('.e-goto-dlg .e-footer-content button:nth-child(1)');
+                    done();
+                });
+            });
+        });
+
+        it('Clicking No option in Extend validation dialog', (done: Function) => {
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
+                helper.getElements('.e-goto-dlg .e-primary')[1].click();
+                done();
+            });
+        });
+
+        it('Checking for More validation dialog', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'LessThanOrEqualTo', value1: '20' }, 'E:E');
+            spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'EqualTo', value1: '15' }, 'E4');
+            helper.invoke('selectRange', ['E4']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
+                helper.getElements('.e-goto-dlg .e-primary')[0].click();
+                done();
+            });
+        });
+
+        it('Check MMinMaxError in Between Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D9:D13']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Between';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '60';
+                helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '45';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The Maximum must be greater than or equal to the Minimum.');
+                done();
+            });
+        });
+
+        it('Check ListLengthError in List  Datavalidation', (done: Function) => {
+            let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+            ddlElement.ej2_instances[0].value = 'List';
+            ddlElement.ej2_instances[0].dataBind();
+            helper.getElements('.e-datavalidation-dlg .e-input')[2].value = 'Syncfusion JavaScript (Essential JS 2) is a modern UI Controls library that has been built from the ground up to be lightweight, responsive, modular and touch friendly. It is written in TypeScript and has no external dependencies. It also includes complete support for Angular, React, Vue, ASP.NET MVC and ASP.NET Core frameworks.';
+            helper.triggerKeyEvent('keyup', 110, null, null, null, helper.getElements('.e-datavalidation-dlg .e-input')[2]);
+            helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+            helper.click('.e-datavalidation-dlg .e-primary');
+            expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The list values allows only upto 256 charcters');
+            done();
+        });
+
+        it('Keyup handler other than code 13', (done: Function) => {
+            let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+            ddlElement.ej2_instances[0].value = 'Whole Number';
+            ddlElement.ej2_instances[0].dataBind();
+            (helper.getElements('.e-datavalidation-dlg input')[3] as HTMLInputElement).value = '45';
+            (helper.getElements('.e-datavalidation-dlg input')[4] as HTMLInputElement).value = '50';
+            helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-datavalidation-dlg input')[3] as HTMLInputElement));
+            var btnElem = (helper.getElements('.e-datavalidation-dlg .e-primary')[0] as HTMLInputElement).disabled;
+            expect(btnElem).toBeFalsy();
+            helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+            helper.click('.e-datavalidation-dlg .e-primary');
+            done();
+        });
+
+        it('Open popup', (done: Function) => {
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'C2']);
+            helper.invoke('selectRange', ['C2']);
+            const td1: HTMLElement = helper.invoke('getCell', [1, 2]).children[0];
+            (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
+            setTimeout(() => {
+                (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
+                done(); 
+            });          
+        });
+
+        it('Defined name with Open popup', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({name: 'value', refersTo: '=Sheet1!D2:D5'});
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '=value' }, 'C3']);
+            helper.invoke('selectRange', ['C3']);
+            const td1: HTMLElement = helper.invoke('getCell', [2, 2]).children[0];
+            (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
+            setTimeout(() => {
+            var popupLength=document.getElementsByClassName('e-list-parent').length;
+            expect(popupLength).toBe(1);
+            (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
+            done();    
+            });  
+        });
+
+        it('Defined name - text with apostofe', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '2"0' }, 'D3']);
+            helper.invoke('selectRange', ['A1']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=value';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0].validation)).toBe('{"type":"List","operator":"Between","value1":"=value","value2":"","ignoreBlank":true,"inCellDropDown":true}');
+                done();     
+            });
+        });
+
+        it('Defined name with Open popup - without scrolling', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({name: 'value1', refersTo: '=Sheet1!D50:D55'})
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '=value1' }, 'F2']);
+            helper.invoke('selectRange', ['F2']);
+            const td1: HTMLElement = helper.invoke('getCell', [1, 5]).children[0];
+            (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
+            setTimeout(() => {
+            var popupLength=document.getElementsByClassName('e-list-parent').length;
+            expect(popupLength).toBe(1);
+            (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
+            done();  
+            });         
+        });
+
+        it('ProtectSheet with Listvalidation', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDefinedName({ name: 'value2', refersTo: '=Sheet1!D2:D5' });
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '=value2' }, 'E2']);
+            helper.invoke('selectRange', ['E2']);
+            helper.switchRibbonTab(4);
+            spreadsheet.protectSheet('Price Details', { selectCells: true });
+            const ddlObj: any = getComponent(helper.invoke('getCell', [1, 4]).querySelector('.e-dropdownlist'), 'dropdownlist');
+            ddlObj.showPopup();
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_protect').textContent).toBe('Unprotect Sheet');
+                (helper.getElements('.e-list-item')[0] as HTMLElement).click();
+                expect(helper.getElements('.e-editAlert-dlg.e-dialog').length).toBe(1);
+                helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
+                done();
+            });         
+        });
+    });
  
-    describe('Add list validation and remove list validation ->', () => {
+    describe('UI Interaction II ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
@@ -312,319 +517,58 @@ describe('Data validation ->', () => {
             helper.invoke('selectRange', ['D2']);
             helper.switchRibbonTab(4);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(4)');
-                expect(JSON.stringify(cell.validation)).toBeUndefined();
+            helper.click('.e-datavalidation-ddb li:nth-child(4)');
+            expect(JSON.stringify(cell.validation)).toBeUndefined();
             done();
-            });
         });
-    });
-    describe('Open pop up and then destroy spreadsheet ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Open pop up and then destroy spreadsheet', (done: Function) => {
-            helper.invoke('selectRange', ['E3:E2']);
-            helper.switchRibbonTab(4);
+
+        it('List validation for row', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-            helper.invoke('destroy');
-            expect(document.getElementById('Spreadsheet') as HTMLElement).toBeNull;
-            done();
-            });
-        });
-    });
-    describe('Keyup handler other than code 13 ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Keyup handler other than code 13', (done: Function) => {
-            helper.invoke('selectRange', ['E3:E2']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-                    (helper.getElements('.e-datavalidation-dlg input')[3] as HTMLInputElement).value = 's';
-                    (helper.getElements('.e-datavalidation-dlg input')[4] as HTMLInputElement).value = 'q';
-                    helper.triggerKeyEvent('keyup', 110, null, null, null, (helper.getElements('.e-datavalidation-dlg input')[3] as HTMLInputElement));
-                    var btnElem = (helper.getElements('.e-datavalidation-dlg .e-primary')[0] as HTMLInputElement).disabled;
-                    expect(btnElem).toBeFalsy();
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                    btnElem = (helper.getElements('.e-datavalidation-dlg .e-primary')[0] as HTMLInputElement).disabled;
-                    expect(btnElem).toBeTruthy();
-                    var errorElem = (helper.getElements('.e-datavalidation-dlg .e-dlg-error')[0] as HTMLInputElement).textContent;
-                    expect(errorElem).toBe('Please enter a correct value.');
-                    done();
-                    });
-                });
-            });
-        });
-    });
-    describe('Open popup ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Open popup', (done: Function) => {
-            helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'D2']);
-            helper.invoke('selectRange', ['D2']);
-            var td = helper.invoke('getCell', [1, 3]);
-            const td1: HTMLElement = helper.invoke('getCell', [1, 3]).children[0];
-            (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
-            setTimeout(() => {
-                (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
-            done(); 
-            });          
-        });
-    });
-describe('Defined name with Open popup ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Defined name with Open popup', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.addDefinedName({name: 'value', refersTo: '=Sheet1!D2:D5'});
-            helper.invoke('addDataValidation', [{ type: 'List', value1: '=value' }, 'E2']);
-            helper.invoke('selectRange', ['E2']);
-            const td1: HTMLElement = helper.invoke('getCell', [1, 4]).children[0];
-            (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
-            setTimeout(() => {
-            var popupLength=document.getElementsByClassName('e-list-parent').length;
-            expect(popupLength).toBe(1);
-            (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
-            done();    
-            });  
-        });  
-});
-describe('Defined name - text with apostofe ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Defined name - text with apostofe', (done: Function) => {
-        helper.edit('D3','2"0');
-        helper.triggerKeyNativeEvent(13);
-        const spreadsheet: Spreadsheet = helper.getInstance();
-        spreadsheet.addDefinedName({name: 'value', refersTo: '=Sheet1!D2:D5'});
-        helper.invoke('selectRange', ['A1']);
-        helper.switchRibbonTab(4);
-        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-        setTimeout(() => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
                 ddlElem.ej2_instances[0].value = 'List';
                 ddlElem.ej2_instances[0].dataBind();
-                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=value';
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=3:3';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[3].validation)).toBe('{"type":"List","operator":"Between","value1":"=value","value2":"","ignoreBlank":true,"inCellDropDown":true}');
-                done(); 
-    });     
-    });
-});
-});
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=3:3","value2":"","ignoreBlank":true,"inCellDropDown":true}');
+                const td: HTMLElement = helper.invoke('getCell', [0, 8]).children[0];
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                expect(helper.getElements('.e-ddl.e-popup ul')[0].textContent).toBe('Sports Shoes6/11/20145:56:32 AM2030600550');
+                helper.click('.e-ddl.e-popup li:nth-child(4)');
+                done();
+            });
+        });
 
-    describe('Defined name with Open popup - without scrolling->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Defined name with Open popup - without scrolling', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.addDefinedName({name: 'value', refersTo: '=Sheet1!D50:D55'})
-            helper.invoke('addDataValidation', [{ type: 'List', value1: '=value' }, 'E2']);
-            helper.invoke('selectRange', ['E2']);
-            const td1: HTMLElement = helper.invoke('getCell', [1, 4]).children[0];
-            (td1.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td1.children[0] });
-            setTimeout(() => {
-            var popupLength=document.getElementsByClassName('e-list-parent').length;
-            expect(popupLength).toBe(1);
-            (helper.getElements('.e-list-item')[0] as HTMLElement) .click();
-            done();  
-            });         
-        });
-    });
-   
-    describe('List validation for row->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('List validation for row', (done: Function) => {
-            helper.invoke('selectRange', ['I1']);
-            helper.switchRibbonTab(4);
+        it('Full column selection with Listvalidation', (done: Function) => {
+            helper.invoke('selectRange', ['A1:A200']);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '11,12,13';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[199].cells[0].validation)).toBe('{"type":"List","operator":"Between","value1":"11,12,13","value2":"","ignoreBlank":true,"inCellDropDown":true}');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(1)');
                 setTimeout(() => {
-                    let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                    ddlElem.ej2_instances[0].value = 'List';
-                    ddlElem.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=3:3';
                     helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.click('.e-datavalidation-dlg .e-clearall-btn');
                     helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
-                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8].validation)).toBe('{"type":"List","operator":"Between","value1":"=3:3","value2":"","ignoreBlank":true,"inCellDropDown":true}');
-                    const td: HTMLElement = helper.invoke('getCell', [0, 8]).children[0];
-                    (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
-                        expect(helper.getElements('.e-ddl.e-popup ul')[0].textContent).toBe('Sports Shoes6/11/20145:56:32 AM2030600550');
-                        helper.click('.e-ddl.e-popup li:nth-child(4)');
-                        done();
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[199].cells[0].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null}');
+                    done();
                 });
             });
         });
-    });
-    describe('ProtectSheet with Listvalidation ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('ProtectSheet with Listvalidation', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.addDefinedName({ name: 'value', refersTo: '=Sheet1!D2:D5' });
-            helper.invoke('addDataValidation', [{ type: 'List', value1: '=value' }, 'E2']);
-            helper.invoke('selectRange', ['E2']);
-            helper.switchRibbonTab(4);
-            spreadsheet.protectSheet('Price Details', { selectCells: true });
-            const ddlObj: any = getComponent(helper.invoke('getCell', [1, 4]).querySelector('.e-dropdownlist'), 'dropdownlist');
-            ddlObj.showPopup();
-            setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_protect').textContent).toBe('Unprotect Sheet');
-                (helper.getElements('.e-list-item')[0] as HTMLElement).click();
-                expect(helper.getElements('.e-editAlert-dlg.e-dialog').length).toBe(1);
-                done();
-            });       
-        });
-    });
-    describe('Full column selection with Listvalidation ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Full column selection with Listvalidation', (done: Function) => {
-            helper.invoke('selectRange', ['A2:A200']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-                    let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                    ddlElem.ej2_instances[0].value = 'List';
-                    ddlElem.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '11,12,13';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
-                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[199].cells[0].validation)).toBe('{"type":"List","operator":"Between","value1":"11,12,13","value2":"","ignoreBlank":true,"inCellDropDown":true}');
-                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                    setTimeout(() => {
-                        helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                        helper.click('.e-datavalidation-dlg .e-clearall-btn');
-                        helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
-                        setTimeout(() => {
-                            expect(JSON.stringify(helper.getInstance().sheets[0].rows[199].cells[0].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"0","value2":"0","ignoreBlank":true,"inCellDropDown":null}');
-                            done();
-                        });
-                    });
-                });
-        });
-    });
-});
 
-describe('Key press in datavalidation dialog input ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Key press in datavalidation dialog input', (done: Function) => {
-        helper.invoke('selectRange', ['A2:A5']);
-        helper.switchRibbonTab(4);
-        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-        setTimeout(() => {
+        it('Key press in datavalidation dialog input', (done: Function) => {
+            helper.invoke('selectRange', ['A2:A5']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
@@ -642,747 +586,291 @@ describe('Key press in datavalidation dialog input ->', () => {
                 done();
             });
         });
-    });
-    it('Double click to open pop up', (done: Function) => {
-        helper.invoke('selectRange', ['A3']);
-        let td: HTMLElement = helper.invoke('getCell', [2,0]);
-                let coords: ClientRect = td.getBoundingClientRect();
-                helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
+
+        it('Double click to open pop up', (done: Function) => {
+            helper.invoke('selectRange', ['A3']);
+            let td: HTMLElement = helper.invoke('getCell', [2,0]);
+            let coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
+            setTimeout(() => {
+                helper.getElements('#spreadsheetlistValid_options .e-list-item')[0].click();
                 setTimeout(() => {
-                    helper.getElements('#spreadsheetlistValid_options .e-list-item')[0].click();
-                    setTimeout(() => {
-                        helper.invoke('selectRange', ['C3']);
+                    helper.invoke('selectRange', ['C3']);
                     expect(helper.invoke('getCell', [2,0]).textContent).toBe('11');
                     done();
-                    });
-                });
-            });
-});
-describe('Providing formula in value1 and value2 input ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Providing formula in value1 and value2 input', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-                    (helper.getElements('.e-datavalidation-dlg input')[3] as HTMLInputElement).value = '=SUM(10,10)';
-                    (helper.getElements('.e-datavalidation-dlg input')[4] as HTMLInputElement).value = '=SUM(20,30)';
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(1)');
-                                done();
-                            });
-                        });
-                    });
                 });
             });
         });
-    });
-describe('Equal To Datavalidation ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Equal To Datavalidation', (done: Function) => {
+
+        it('Providing formula in value1 and value2 input', (done: Function) => {
             helper.invoke('selectRange', ['D2']);
-            helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-
-                        let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                        ddlElement.ej2_instances[0].value = 'Equal to';
-                        ddlElement.ej2_instances[0].dataBind();
-                        helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '30';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.click('.e-datavalidation-dlg .e-primary');
-                        setTimeout(() => {
-                            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                            setTimeout(() => {
-                                helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                                let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                                let coords: ClientRect = td.getBoundingClientRect();
-                                helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                                helper.triggerKeyNativeEvent(13);
-                                setTimeout(() => {
-                                    let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                    expect(!!dialog).toBeTruthy();
-                                    expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                    "This value doesn't match the data validation restrictions defined for the cell.");
-                                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                    helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                    setTimeout(() => {
-                                        helper.invoke('selectRange', ['E3']);
-                                        helper.edit('D2','30');
-                                        helper.triggerKeyNativeEvent(13);
-                                        setTimeout(()=> {
-                                            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":30,"validation":{"type":"WholeNumber","operator":"EqualTo","value1":"30","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                    done();
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-describe('Not Equal To Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Not Equal To Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Not equal to';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','30');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":30,"validation":{"type":"WholeNumber","operator":"NotEqualTo","value1":"10","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('Greater Than Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Greater Than Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Greater than';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '20';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','30');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":30,"validation":{"type":"WholeNumber","operator":"GreaterThan","value1":"20","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('Less Than Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Lesss Than Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Less than';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','9');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":9,"validation":{"type":"WholeNumber","operator":"LessThan","value1":"10","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('Greater Than or equal to Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Greater Than or equal to Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Greater than or equal to';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '20';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','20');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":20,"validation":{"type":"WholeNumber","operator":"GreaterThanOrEqualTo","value1":"20","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('Less Than or equal to Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Less Than or equal to Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Less than or equal to';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '5';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','5');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":5,"validation":{"type":"WholeNumber","operator":"LessThanOrEqualTo","value1":"5","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('NotBetween Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('NotBetween Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Not between';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '5';
-                    helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '15';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','25');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":25,"validation":{"type":"WholeNumber","operator":"NotBetween","value1":"5","value2":"15","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('Between Datavalidation ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Between Datavalidation', (done: Function) => {
-        helper.invoke('selectRange', ['D2']);
-        helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Between';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '15';
-                    helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '20';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            let td: HTMLElement = helper.invoke('getCell', [1, 3]);
-                            let coords: ClientRect = td.getBoundingClientRect();
-                            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
-                            helper.triggerKeyNativeEvent(13);
-                            setTimeout(() => {
-                                let dialog: HTMLElement = helper.getElement('.e-validationerror-dlg.e-dialog');
-                                expect(!!dialog).toBeTruthy();
-                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
-                                "This value doesn't match the data validation restrictions defined for the cell.");
-                                helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                                helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
-                                setTimeout(() => {
-                                    helper.invoke('selectRange', ['E3']);
-                                    helper.edit('D2','17');
-                                    helper.triggerKeyNativeEvent(13);
-                                    setTimeout(()=> {
-                                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":17,"validation":{"type":"WholeNumber","operator":"Between","value1":"15","value2":"20","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-});
-});
-describe('Equal To Datavalidation with blank cell range ->', () => {
-    beforeAll((done: Function) => {
-        helper.initializeSpreadsheet({
-            sheets: [{
-                ranges: [{
-                    dataSource: defaultData
-                }],
-            }]
-        }, done);
-    });
-    afterAll(() => {
-        helper.invoke('destroy');
-    });
-    it('Equal To Datavalidation with blank cell range', (done: Function) => {
-        helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Equal to';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '41';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                                setTimeout(()=> {
-                                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"EqualTo","value1":"41","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-    describe('Greater Than Datavalidation with blank cell range ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Greater Than Datavalidation with blank cell range', (done: Function) => {
-            helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Greater than';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '45';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            setTimeout(() => {
-                                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"GreaterThan","value1":"45","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-    describe('Less Than Datavalidation with blank cell range ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Less Than Datavalidation with blank cell range', (done: Function) => {
-            helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Less than';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '35';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            setTimeout(() => {
-                                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"LessThan","value1":"35","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-    describe('Greater Than or Equal To Datavalidation with blank cell range ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Greater Than or Equal To Datavalidation with blank cell range', (done: Function) => {
-            helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Greater than or equal to';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            setTimeout(() => {
-                                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"GreaterThanOrEqualTo","value1":"50","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-
-    describe('Less Than or Equal To Datavalidation with blank cell range ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Less Than or Equal To Datavalidation with blank cell range', (done: Function) => {
-            helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
-                const ddlObj: any = getComponent(helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0], 'dropdownlist');
-                ddlObj.value = 'Less than or equal to';
-                ddlObj.dataBind();
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                (helper.getElements('.e-datavalidation-dlg input')[3] as HTMLInputElement).value = '=SUM(10,10)';
+                (helper.getElements('.e-datavalidation-dlg input')[4] as HTMLInputElement).value = '=SUM(20,30)';
+                helper.click('.e-datavalidation-dlg .e-primary');
+                setTimeout(() => {
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                    expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    done();
+                });
+            });
+        });
+
+        it('Equal To Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Equal to';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"EqualTo","value1":"10","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Not Equal To Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Not equal to';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"NotEqualTo","value1":"10","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Greater Than Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Greater than';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '8';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"GreaterThan","value1":"8","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Lesss Than Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Less than';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"LessThan","value1":"15","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Greater Than or equal to Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Greater than or equal to';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"GreaterThanOrEqualTo","value1":"10","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Less Than or equal to Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Less than or equal to';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"LessThanOrEqualTo","value1":"10","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('NotBetween Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Not between';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '15';
+                helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '25';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary'); 
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"NotBetween","value1":"15","value2":"25","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Between Datavalidation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Between';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '5';
+                helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '15';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[3])).toBe('{"value":10,"validation":{"type":"WholeNumber","operator":"Between","value1":"5","value2":"15","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Equal To Datavalidation with blank cell range', (done: Function) => {
+            helper.invoke('selectRange', ['D9:D13']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Equal to';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '41';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [9, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"EqualTo","value1":"41","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Greater Than Datavalidation with blank cell range', (done: Function) => {
+            helper.invoke('selectRange', ['D9:D13']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Greater than';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '45';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [10, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"GreaterThan","value1":"45","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Less Than Datavalidation with blank cell range', (done: Function) => {
+            helper.invoke('selectRange', ['D9:D13']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Less than';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '35';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [8, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"LessThan","value1":"35","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Greater Than or Equal To Datavalidation with blank cell range', (done: Function) => {
+            helper.invoke('selectRange', ['D9:D13']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Greater than or equal to';
+                ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [10, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"GreaterThanOrEqualTo","value1":"50","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
+                done();
+            });
+        });
+
+        it('Less Than or Equal To Datavalidation with blank cell range', (done: Function) => {
+            helper.invoke('selectRange', ['D9:D13']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                ddlElement.ej2_instances[0].value = 'Less than or equal to';
+                ddlElement.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [10, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"LessThanOrEqualTo","value1":"50","value2":"","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
                 done();
             });
         });
-    });
-    describe('Between Datavalidation with blank cell range ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
+
         it('Between Datavalidation with blank cell range', (done: Function) => {
             helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
@@ -1395,27 +883,14 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [10, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"Between","value1":"45","value2":"60","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
                 done();
             });
         });
-    });
-    describe('NotBetween Datavalidation with blank cell range ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
+
         it('NotBetween Datavalidation with blank cell range', (done: Function) => {
             helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
             helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
@@ -1428,195 +903,12 @@ describe('Equal To Datavalidation with blank cell range ->', () => {
                 helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [10, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[3])).toBe('{"validation":{"type":"WholeNumber","operator":"NotBetween","value1":"30","value2":"45","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}}');
                 done();
             });
         });
-    });
-describe('Checking for Extend validation dialog ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Checking for Extend validation dialog', (done: Function) => {
-            helper.invoke('selectRange', ['D2:D5']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Greater than';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.invoke('selectRange', ['D2:D10']);
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                            setTimeout(() => {
-                                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
-                                helper.click('.e-goto-dlg .e-footer-content button:nth-child(1)');
-                                        done();
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-    describe('Clicking No option in Extend validation dialog ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Clicking No option in Extend validation dialog', (done: Function) => {
-            helper.invoke('selectRange', ['D2:D5']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Greater than';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                    setTimeout(() => {
-                        helper.invoke('selectRange', ['D2:D10']);
-                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                        setTimeout(() => {
-                            helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                            setTimeout(() => {
-                                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
-                                helper.getElements('.e-goto-dlg .e-primary')[1].click();
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
-describe('Checking for More validation dialog->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Checking for More validation dialog', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'LessThanOrEqualTo', value1: '20' }, 'D:D');
-            spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'EqualTo', value1: '15' }, 'D5');
-            helper.invoke('selectRange', ['D5']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-                    helper.setAnimationToNone('.e-goto-dlg.e-dialog');
-                    helper.getElements('.e-goto-dlg .e-primary')[0].click();
-                    done();
-                });
-            });
-        });
-    });
-describe('Check MinMaxError in Between Datavalidation  ->', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{
-                    ranges: [{
-                        dataSource: defaultData
-                    }],
-                }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Check MMinMaxError in Between Datavalidation', (done: Function) => {
-            helper.invoke('selectRange', ['D9:D13']);
-            helper.switchRibbonTab(4);
-            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-            setTimeout(() => {
-                helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                setTimeout(() => {
-
-                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Between';
-                    ddlElement.ej2_instances[0].dataBind();
-                    helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '60';
-                    helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '45';
-                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                    helper.click('.e-datavalidation-dlg .e-primary');
-                        setTimeout(() => {
-                            expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The Maximum must be greater than or equal to the Minimum.');
-                            done();
-                        });
-                    });
-                });
-            });
-        });
-describe('Check ListLengthError in List  Datavalidation  ->', () => {
-            beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{
-                        ranges: [{
-                            dataSource: defaultData
-                        }],
-                    }]
-                }, done);
-            });
-            afterAll(() => {
-                helper.invoke('destroy');
-            });
-            it('Check ListLengthError in List  Datavalidation', (done: Function) => {
-                helper.invoke('selectRange', ['D9:D13']);
-                helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-                        let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                        ddlElement.ej2_instances[0].value = 'List';
-                        ddlElement.ej2_instances[0].dataBind();
-                        helper.getElements('.e-datavalidation-dlg .e-input')[2].value = 'Syncfusion JavaScript (Essential JS 2) is a modern UI Controls library that has been built from the ground up to be lightweight, responsive, modular and touch friendly. It is written in TypeScript and has no external dependencies. It also includes complete support for Angular, React, Vue, ASP.NET MVC and ASP.NET Core frameworks.';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.click('.e-datavalidation-dlg .e-primary');
-                            setTimeout(() => {
-                                expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The list values allows only upto 256 charcters');
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
+    });         
 
     describe('CR-Issues ->', () => {
         describe('I282749, I300338, I303567, EJ2-62856 ->', () => {
@@ -1664,15 +956,10 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                                 document, cell);
                             setTimeout((): void => {
                                 helper.getElement('#' + helper.getElement().id + 'listValid_popup .e-list-item:last-child').click();
+                                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
                                 helper.invoke('selectRange', ['A1']);
-                                const filterCell: HTMLElement = helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon');
-                                helper.triggerMouseAction(
-                                    'mousedown', { x: filterCell.getBoundingClientRect().left + 1, y: filterCell.getBoundingClientRect().top + 1 },
-                                    null, filterCell);
-                                cell = helper.invoke('getCell', [0, 0]);
-                                helper.triggerMouseAction(
-                                    'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 },
-                                    document, cell);
+                                helper.invoke('getCell', [0, 0]).focus();
+                                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
                                 setTimeout((): void => {
                                     helper.getElement().getElementsByClassName('e-ftrchk')[2].click();
                                     helper.getElement('.e-excelfilter .e-footer-content .e-btn.e-primary').click();
@@ -1725,7 +1012,8 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                     expect(!!dlg).toBeTruthy();
                     expect((dlg.querySelector('.e-cellrange .e-input') as HTMLInputElement).value).toBe('A1:A1');
                     expect((dlg.querySelector('.e-ignoreblank .e-checkbox') as HTMLInputElement).checked).toBeTruthy();
-                    (helper.getInstance().serviceLocator.getService(dialog) as Dialog).hide();
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.click('.e-datavalidation-dlg .e-dlg-closeicon-btn');
                     setTimeout((): void => {
                         done();
                     });
@@ -1739,14 +1027,15 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                 spreadsheet.dataBind();
                 helper.edit('A1', '0');
                 setTimeout((): void => {
-                    let dlg: HTMLElement = helper.getElement().querySelector('.e-validationerror-dlg.e-dialog') as HTMLElement;
+                    var dlg = helper.getElement('.e-validationerror-dlg.e-dialog');
                     expect(!!dlg).toBeTruthy();
                     expect(dlg.querySelector('.e-dlg-content').textContent).toBe('Invalid value');
-                    (spreadsheet.serviceLocator.getService(dialog) as Dialog).hide();
+                    helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
+                    helper.click('.e-validationerror-dlg .e-dlg-closeicon-btn');
                     setTimeout((): void => {
                         done();
                     });
-                }, 10);
+                });
             });
         });
         describe('I275309 ->', () => {
@@ -2286,111 +1575,70 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
         });
     });
     describe('CR - Issues->', () => {
-        describe('EJ2-50373->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'B2:B10' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Data Validation not properly working when input value is given with Date Format', (done: Function) => {
-                helper.invoke('selectRange', ['B2:B10']);
-                helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-                        let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                        ddlElem.ej2_instances[0].value = 'Date';
-                        ddlElem.ej2_instances[0].dataBind();
-                        let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                        ddlElement.ej2_instances[0].value = 'Equal to';
-                        ddlElement.ej2_instances[0].dataBind();
-                        helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '6/23/2014';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
-                        setTimeout(() => {
-                            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            setTimeout(() => {
-                                expect(helper.invoke('getCell', [4, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                                expect(helper.invoke('getCell', [4, 1]).style.color).toBe('rgb(255, 0, 0)');
-                                expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBeNull;
-                                expect(helper.invoke('getCell', [5, 1]).style.color).toBeNull;
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-            it('Data Validation not properly working when input value is given with Time Format', (done: Function) => {
-                helper.invoke('selectRange', ['C2:C10']);
-                helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-                        let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                        ddlElem.ej2_instances[0].value = 'Time';
-                        ddlElem.ej2_instances[0].dataBind();
-                        let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                        ddlElement.ej2_instances[0].value = 'Equal to';
-                        ddlElement.ej2_instances[0].dataBind();
-                        helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '12:43:59 AM';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
-                        setTimeout(() => {
-                            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            setTimeout(() => {
-                                expect(helper.invoke('getCell', [4, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                                expect(helper.invoke('getCell', [4, 2]).style.color).toBe('rgb(255, 0, 0)');
-                                expect(helper.invoke('getCell', [5, 2]).style.backgroundColor).toBeNull;
-                                expect(helper.invoke('getCell', [5, 2]).style.color).toBeNull;
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
-        });
-        describe('EJ2-50399, EJ2-60806 ->', () => {
+        describe('EJ2-50373, EJ2-50399, EJ2-60806, EJ2-50626, EJ2-51866->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2:E4' }]
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ cells: [{ value: '1' }] },
+                    { cells: [{ value: '2' }] }, { cells: [{ value: '' }] }, { cells: [{ value: '3' }] },
+                    { cells: [{ value: '4' }] },  { cells: [{ value: '5' }] }] }], activeSheetIndex: 0
                 }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Add Data Validation', (done: Function) => {
+            it('EJ2-50373 - Data Validation not properly working when input value is given with Date Format', (done: Function) => {
+                helper.invoke('selectRange', ['B2:B10']);
                 helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.getElement('#'+helper.id+'_datavalidation').click();
+                helper.getElement('#'+helper.id+'_datavalidation-popup li:nth-child(1)').click();
                 setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-                        let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                        ddlElem.ej2_instances[0].value = 'Text Length';
-                        ddlElem.ej2_instances[0].dataBind();
-                        let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                        ddlElement.ej2_instances[0].value = 'Greater than';
-                        ddlElement.ej2_instances[0].dataBind();
-                        helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '6';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
-                        setTimeout(() => {
-                            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                            helper.click('.e-datavalidation-ddb li:nth-child(2)');
-                            helper.invoke('selectRange', ['E2']);
-                            done();
-                        });
-                    });
+                    let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                    ddlElem.ej2_instances[0].value = 'Date';
+                    ddlElem.ej2_instances[0].dataBind();
+                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                    ddlElement.ej2_instances[0].value = 'Equal to';
+                    ddlElement.ej2_instances[0].dataBind();
+                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '6/23/2014';
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                    expect(helper.invoke('getCell', [4, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    expect(helper.invoke('getCell', [4, 1]).style.color).toBe('rgb(255, 0, 0)');
+                    expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBeNull;
+                    expect(helper.invoke('getCell', [5, 1]).style.color).toBeNull;
+                    done();
                 });
             });
-            it('In Data validation, highlight cell color is removed if we double click on the cell', (done: Function) => {
-                let td: HTMLElement = helper.invoke('getCell', [1, 4]);
+
+            it('EJ2-50373 - Data Validation not properly working when input value is given with Time Format', (done: Function) => {
+                helper.invoke('selectRange', ['C2:C10']);
+                (helper.getElementFromSpreadsheet('.e-tab-header').children[0].children[5] as HTMLElement).click();
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.getElement('#'+helper.id+'_datavalidation-popup li:nth-child(1)').click();
+                setTimeout(() => {
+                    let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                    ddlElem.ej2_instances[0].value = 'Time';
+                    ddlElem.ej2_instances[0].dataBind();
+                    let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
+                    ddlElement.ej2_instances[0].value = 'Equal to';
+                    ddlElement.ej2_instances[0].dataBind();
+                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '12:43:59 AM';
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                    expect(helper.invoke('getCell', [4, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    expect(helper.invoke('getCell', [4, 2]).style.color).toBe('rgb(255, 0, 0)');
+                    expect(helper.invoke('getCell', [5, 2]).style.backgroundColor).toBeNull;
+                    expect(helper.invoke('getCell', [5, 2]).style.color).toBeNull;
+                    done();
+                });
+            });
+
+            it('EJ2-50399 - In Data validation, highlight cell color is removed if we double click on the cell', (done: Function) => {
+                helper.invoke('selectRange', ['C2']);
+                let td: HTMLElement = helper.invoke('getCell', [1, 2]);
                 let coords: ClientRect = td.getBoundingClientRect();
                 helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
                 helper.triggerKeyNativeEvent(13);
@@ -2400,15 +1648,14 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                     expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
                     "This value doesn't match the data validation restrictions defined for the cell.");
                     helper.setAnimationToNone('.e-validationerror-dlg.e-dialog');
-                    helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(1)');
-                    setTimeout(() => {
-                        expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 255, 0)');
-                        expect(helper.invoke('getCell', [1, 4]).style.color).toBe('rgb(255, 0, 0)');
-                        done();
-                    });
+                    helper.click('.e-validationerror-dlg .e-footer-content button:nth-child(2)');
+                    expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    expect(helper.invoke('getCell', [1, 2]).style.color).toBe('rgb(255, 0, 0)');
+                    done();
                 });
             });
-            it('Clear Highlight is not working after Hyperlink to Data Validation applied cells', (done: Function) => {
+
+            it('EJ2-60806 - Clear Highlight is not working after Hyperlink to Data Validation applied cells', (done: Function) => {
                 helper.getInstance().addDataValidation({ type: "Decimal", operator: "Between", value1: "0", value2: "40" }, 'H2:H11');
                 helper.invoke('addInvalidHighlight', ['H2:H11']);
                 helper.invoke('selectRange', ['H3']);
@@ -2418,60 +1665,23 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                 expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
                 done();                
             });
-        });            
-        describe('EJ2-50626', () => {
-            beforeAll((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterAll(() => {
-                helper.invoke('destroy');
-            });
-            it('Add Data Validation', (done: Function) => {
-                helper.invoke('selectRange', ['C3']);
-                helper.switchRibbonTab(4);
-                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
-                setTimeout(() => {
-                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
-                    setTimeout(() => {
-                        let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
-                        ddlElem.ej2_instances[0].value = 'List';
-                        ddlElem.ej2_instances[0].dataBind();
-                        helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = 'A,B,C';
-                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                        helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
-                        done();
-                    });
-                });
-            });
-            it('When DataValidation using list is applied, it shows duplicate values in formula bar', (done: Function) => {
-                const ddlObj: any = getComponent(helper.invoke('getCell', [2, 2]).querySelector('.e-dropdownlist'), 'dropdownlist');
+
+            it('EJ2-50626 - When DataValidation using list is applied, it shows duplicate values in formula bar', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "A,B,C" }, 'D2']);
+                helper.invoke('selectRange', ['D2']);
+                const ddlObj: any = getComponent(helper.invoke('getCell', [1, 3]).querySelector('.e-dropdownlist'), 'dropdownlist');
                 ddlObj.showPopup();
                 setTimeout(() => {
                     helper.click('.e-ddl.e-popup li:nth-child(1)');
-                    setTimeout(() => {
-                        expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('A');
-                        done();
-                    });
+                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('A');
+                    done();
                 });
-            });                 
-        });
-        describe('EJ2-51866->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ rows: [{  }] }, { rows: [{ cells: [{ value: '1' }] },
-                    { cells: [{ value: '2' }] }, { cells: [{ value: '' }] }, { cells: [{ value: '3' }] },
-                    { cells: [{ value: '4' }] },  { cells: [{ value: '5' }] }] }], activeSheetIndex: 0
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('List type data validation issue while refer another sheet ranges as value->', (done: Function) => {
-                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "=Sheet2!$A1:$A6" }, 'C2']);
-                helper.invoke('selectRange', ['C2']);
-                const ddlObj: any = getComponent(helper.invoke('getCell', [1, 2]).querySelector('.e-dropdownlist'), 'dropdownlist');
+            });  
+
+            it('EJ2-51866 - List type data validation issue while refer another sheet ranges as value->', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "=Sheet2!$A1:$A6" }, 'E2']);
+                helper.invoke('selectRange', ['E2']);
+                const ddlObj: any = getComponent(helper.invoke('getCell', [1, 4]).querySelector('.e-dropdownlist'), 'dropdownlist');
                 ddlObj.showPopup();
                 setTimeout(() => {
                     let popUpElem: HTMLElement = helper.getElement('.e-popup-open .e-dropdownbase');
@@ -2480,7 +1690,7 @@ describe('Check ListLengthError in List  Datavalidation  ->', () => {
                     helper.click('.e-ddl.e-popup li:nth-child(4)');
                     done();
                 });
-            });
+            });  
         });
     });
 });

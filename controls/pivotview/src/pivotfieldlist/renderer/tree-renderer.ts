@@ -71,17 +71,17 @@ export class TreeViewRenderer implements IAction {
                 locale: this.parent.locale,
                 cssClass: cls.FIELD_LIST_SEARCH_INPUT_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 input: this.textChange.bind(this),
-                showClearButton:true
+                showClearButton: true
             });
             this.fieldSearch.isStringTemplate = true;
             this.fieldSearch.appendTo(searchInput);
-            this.fieldSearch.addIcon('append',cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
+            this.fieldSearch.addIcon('append', cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
             let promptDiv: HTMLElement = createElement('div', {
                 className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
                 innerHTML: this.parent.localeObj.getConstant('noMatches')
             });
             let treeOuterDiv: HTMLElement = createElement('div', {
-                className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS +' '+ cls.TREE_CONTAINER
+                className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS + ' ' + cls.TREE_CONTAINER
             });
             this.treeViewElement = createElement('div', {
                 id: this.parent.element.id + '_TreeView',
@@ -122,7 +122,8 @@ export class TreeViewRenderer implements IAction {
                     'aria-disabled': 'false',
                     'aria-label': 'Sort ' + option,
                     'data-sort': option,
-                    'title': this.parent.localeObj.getConstant(options[option])
+                    'title': this.parent.localeObj.getConstant(options[option]),
+                    'role': 'button'
                 },
                 className: cls.ICON + ' ' + 'e-sort-' + option.toLowerCase() + ' ' +
                     (this.fieldListSort === option ? 'e-selected' : '')
@@ -184,7 +185,17 @@ export class TreeViewRenderer implements IAction {
         if (this.parent.dataType === 'olap') {
             allowDrag = this.updateOlapTreeNode(args);
         } else {
-            allowDrag = true;
+            if (args.nodeData.hasChildren) {
+                allowDrag = false;
+                (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
+                addClass([args.node], cls.FIELD_TREE_PARENT);
+            }
+            else {
+                allowDrag = true;
+            }
+        }
+        if (!isNullOrUndefined(args.nodeData.pid)) {
+            addClass([args.node], cls.FIELD_TREE_CHILD);
         }
         let liTextElement: HTMLElement = args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS);
         if (args.node.querySelector('.e-list-icon') && liTextElement) {
@@ -411,7 +422,7 @@ export class TreeViewRenderer implements IAction {
         if (this.parent.dataType === 'olap') {
             this.parentIDs = [];
             for (let i = 0; i < liList.length; i++) {
-                if(liList[i].classList.contains("e-level-1")) {
+                if (liList[i].classList.contains("e-level-1")) {
                     let id: string = liList[i].getAttribute('data-uid');
                     this.parentIDs.push(id);
                 }
@@ -573,6 +584,7 @@ export class TreeViewRenderer implements IAction {
             /* eslint-enable */
             let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
             let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+            let parentNode: Element = node.closest('.' + cls.FIELD_TREE_PARENT);
             if (args.action === 'check') {
                 let eventdrop: FieldDropEventArgs = {
                     fieldName: id, dropField: fieldInfo.fieldItem,
@@ -585,6 +597,9 @@ export class TreeViewRenderer implements IAction {
                 control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
                     if (!observedArgs.cancel) {
                         addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                        if (parentNode) {
+                            addClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                        }
                         this.updateSelectedNodes(li, args.action);
                         let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
                         this.updateReportSettings(addNode, observedArgs);
@@ -602,6 +617,9 @@ export class TreeViewRenderer implements IAction {
                 control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
                     if (!observedArgs.cancel) {
                         removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                        if (parentNode && isNullOrUndefined(parentNode.querySelector('.' + cls.FIELD_TREE_CHILD + ' .' + cls.NODE_CHECK_CLASS))) {
+                            removeClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                        }
                         this.updateSelectedNodes(li, args.action);
                         this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
                         if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
@@ -801,10 +819,18 @@ export class TreeViewRenderer implements IAction {
             data = this.getOlapTreeData(axis);
         } else {
             let keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
-            let fieldList: { [key: string]: { id?: string; caption?: string; isSelected?: boolean } } = {};
+            let treeDataInfo: { [key: string]: { id?: string; pid?: string; caption?: string; isSelected?: boolean; hasChildren?: boolean } } = {};
             for (let key of keys) {
                 let member: IField = this.parent.pivotFieldList[key];
-                fieldList[key] = { id: member.id, caption: member.caption, isSelected: member.isSelected };
+                treeDataInfo[key] = { id: member.id, pid: member.pid, caption: member.caption, isSelected: member.isSelected };
+                if (!isNullOrUndefined(member.pid) && !treeDataInfo[key].hasChildren) {
+                    let parentId: string = member.pid + '_group_name';
+                    treeDataInfo[key].pid = parentId;
+                    treeDataInfo[parentId] = {
+                        id: parentId, caption: member.pid,
+                        isSelected: treeDataInfo[parentId] && treeDataInfo[parentId].isSelected ? treeDataInfo[parentId].isSelected : member.isSelected, hasChildren: true
+                    };
+                }
             }
             if (this.parent.isAdaptive) {
                 let fields: IFieldOptions[][] =
@@ -814,21 +840,20 @@ export class TreeViewRenderer implements IAction {
                 let currentFieldSet: IFieldOptions[] = fields[axis];
                 let len: number = keys.length;
                 while (len--) {
-                    fieldList[keys[len]].isSelected = false;
+                    treeDataInfo[keys[len]].isSelected = false;
                 }
                 for (let item of currentFieldSet) {
-                    fieldList[item.name].isSelected = true;
+                    treeDataInfo[item.name].isSelected = true;
                 }
             }
             /* eslint-disable */
-            let list: { [key: string]: Object } = fieldList as { [key: string]: Object };
-            for (let member of keys) {
-                let obj: { [key: string]: Object } = list[member] as { [key: string]: Object };
+            let members = Object.keys(treeDataInfo);
+            for (let member of members) {
+                let obj: { [key: string]: Object } = treeDataInfo[member] as { [key: string]: Object };
                 /* eslint-enable */
                 data.push(obj);
             }
         }
-
         return data;
     }
     /* eslint-disable */

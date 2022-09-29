@@ -1,4 +1,4 @@
-//default 
+//default
 $hscroll-skin: 'fabric' !default;
 $hscroll-default-bg: $neutral-lighter !default;
 $hscroll-press-bg: $neutral-quintenary !default;
@@ -11,10 +11,10 @@ $hscroll-device-arrow-size: 14px !default;
 $hscroll-device-arrow-size-bigger: 18px !default;
 $hscroll-overlay-opacity: .5 !default;
 $hscroll-device-arrow-border-color: $default-border-color !default;
-$hscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$hscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow, .06) !default;
 $hscroll-device-arrow-bg: $hscroll-default-bg !default;
 $hscroll-device-arrow-border-size: 0 !default;
-$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .6) !default;
+$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow, .6) !default;
 $hscroll-device-arrow-color: $default-icon-color !default;
 $hscroll-overlay-bg: $hscroll-default-bg !default;
 $hscroll-overlay-start: rgba($hscroll-overlay-bg, .0001) !default;
@@ -47,4 +47,5 @@ $hscroll-default-icon-color: $theme-primary-font !default;
 @mixin hscroll-btn-animation-after {
   content: '';
 }
+
 //enddefault

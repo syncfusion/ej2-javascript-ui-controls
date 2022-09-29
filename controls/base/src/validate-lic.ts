@@ -10,7 +10,7 @@ const bypassKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105,
  */
 class LicenseValidator {
     private isValidated: boolean = false;
-    public version: string = '20.2';
+    public version: string = '20.3';
     public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats/i;
     private errors: IErrorType = {
         noLicense: 'This application was built using a trial version of Syncfusion Essential Studio.' +
@@ -95,7 +95,7 @@ class LicenseValidator {
             if (validateMsg && typeof document !== 'undefined' && !isNullOrUndefined(document)) {
                 const errorDiv: HTMLElement = createElement('div', {
                     innerHTML: validateMsg +
-                        '<span id="license-banner-error" class=".e-license-banner">' +
+                        '<span id="license-banner-event" class="e-license-banner" >' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">' +
                         '<line x1="5" y1="5" x2="15" y2="15" stroke="yellow" stroke-width="2.5" ' +
                         'stroke-miterlimit="10" stroke-linecap="round"></line><line x1="15" y1="5" ' +
@@ -107,7 +107,7 @@ class LicenseValidator {
                 });
                 errorDiv.setAttribute('id', 'js-licensing');
                 document.body.appendChild(errorDiv);
-                document.getElementById('license-banner-error').addEventListener('click', () => {
+                document.getElementById('license-banner-event').addEventListener('click', () => {
                     document.getElementById('js-licensing').remove();
                 });
             }

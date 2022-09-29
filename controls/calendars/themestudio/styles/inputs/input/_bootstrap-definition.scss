@@ -221,7 +221,7 @@ $input-bigger-small-left-child-min-height: $zero-value !default;
 $input-bigger-small-left-child-min-width: $zero-value !default;
 $input-icon-inner-width: $zero-value !default;
 $input-icon-inner-height: $zero-value !default;
-$input-readonly-bg-color: none !default;;
+$input-readonly-bg-color: none !default;
 $input-icon-shadow: inset  0 3px 5px rgba(0, 0, 0, .125) !default;
 $input-border-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-box-border-focus, .6) !default;
 $input-error-border-shadow:  inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-error-color, .6) !default;
@@ -232,17 +232,20 @@ $float-label-rtl-value: -7px !default;
 @mixin input-sizing {
   box-sizing: border-box;
 }
+
 @mixin input-height ($height) {
   height: $height;
 }
+
 @mixin input-state-color ($color) {
   border-color: $color;
 }
+
 @mixin input-selection {
   background: $brand-primary;
   color: $brand-primary-font;
 }
-// sass-lint:disable no-vendor-prefixes  
+/* stylelint-disable property-no-vendor-prefix */
 @mixin float-label-alignment {
   -moz-transform: translate(-0%, -50%);
   -ms-transform: translate(-0%, -50%);
@@ -255,6 +258,7 @@ $float-label-rtl-value: -7px !default;
   user-select: none;
   width: 100%;
 }
+
 @mixin textarea-float-label-alignment {
   -moz-transform: translate(-0%, -50%);
   -ms-transform: translate(-0%, -50%);
@@ -266,39 +270,51 @@ $float-label-rtl-value: -7px !default;
   transform: translate(-0%, -50%);
   width: 100%;
 }
+
 @mixin input-group-animation {
   content: '';
 }
+
 @mixin input-group-animation-left {
   content: '';
 }
+
 @mixin input-group-animation-width {
   content: '';
 }
+
 @mixin input-group-animation-right {
   content: '';
 }
+
 @mixin input-group-animation-bg {
   content: '';
 }
+
 @mixin input-group-hover-bg {
   content: '';
 }
+
 @mixin input-group-success-animation-bg {
   content: '';
 }
+
 @mixin input-group-warning-animation-bg {
   content: '';
 }
+
 @mixin input-group-error-animation-bg {
   content: '';
 }
+
 @mixin input-ripple-parent {
   content: '';
 }
+
 @mixin input-ripple-style {
   content: '';
 }
+
 @mixin input-ripple-animation {
   content: '';
 }

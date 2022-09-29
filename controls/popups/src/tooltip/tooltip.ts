@@ -474,7 +474,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
         this.tooltipEle.style.display = 'block';
         const pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY, !this.isBodyContainer,
-            this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
+                                                      this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
         const offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
         const collisionPosition: Array<number> = this.calculateElementPosition(pos, offsetPos);
         const collisionLeft: number = collisionPosition[0];
@@ -605,8 +605,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
                 } else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
                     leftValue = POINTER_ADJUST + 'px';
-                }else if((tipPosExclude)&&(this.tipPointerPosition === 'End'||this.tipPointerPosition === 'Start')){
-                    leftValue = (this.tipPointerPosition==='End')?((target.offsetWidth +((this.tooltipEle.offsetWidth-target.offsetWidth)/2))-(tipWidth/2))-POINTER_ADJUST + 'px': ((this.tooltipEle.offsetWidth-target.offsetWidth)/2)-(tipWidth/2)+POINTER_ADJUST+ 'px';
+                } else if ((tipPosExclude) && (this.tipPointerPosition === 'End'||this.tipPointerPosition === 'Start')){
+                    leftValue = (this.tipPointerPosition === 'End') ? ((target.offsetWidth + ((this.tooltipEle.offsetWidth - target.offsetWidth) / 2)) - (tipWidth / 2)) - POINTER_ADJUST + 'px'
+                    : ((this.tooltipEle.offsetWidth - target.offsetWidth) / 2) - (tipWidth / 2) + POINTER_ADJUST + 'px';
                 } else {
                     leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
                 }
@@ -657,7 +658,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (tempArr) {
                     if (this.enableHtmlParse) {
                         const nodeList: number = tempArr.length;
-                        for (var i = 0; i < nodeList; i++) {
+                        for (let i = 0; i < nodeList; i++) {
                             tooltipContent[append(tempArr, tooltipContent), 'innerHTML'] = this.content;
                         }
                     } else {
@@ -977,7 +978,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const elePosHorizontal: string = elePos.horizontal;
         if (elePos.position !== newpos) {
             const pos: OffsetPosition = calculatePosition(target, elePosHorizontal, elePosVertical, !this.isBodyContainer,
-                this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
+                                                          this.isBodyContainer ? null : this.containerElement.getBoundingClientRect());
             this.adjustArrow(target, newpos, elePosHorizontal, elePosVertical);
             const offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
             offsetPos.top -= this.getOffSetPosition('TopBottom', newpos, this.offsetY);

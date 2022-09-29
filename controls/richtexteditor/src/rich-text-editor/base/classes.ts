@@ -227,6 +227,36 @@ export const CLS_IMGBREAK: string = 'e-imgbreak';
  * @hidden
  * @deprecated
  */
+export const CLS_AUDIOBREAK: string = 'e-audio-break';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_CLICKELEM: string = 'e-clickelem';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_VID_CLICK_ELEM: string = 'e-video-clickelem';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_AUDIOWRAP: string = 'e-audio-wrap';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_VIDEOWRAP: string = 'e-video-wrap';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_VIDEOBREAK: string = 'e-video-break';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_CAPTION: string = 'e-img-caption';
 /**
  * @hidden
@@ -243,6 +273,16 @@ export const CLS_CAPINLINE: string = 'e-caption-inline';
  * @deprecated
  */
 export const CLS_IMGINLINE: string = 'e-imginline';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_AUDIOINLINE: string = 'e-audio-inline';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_VIDEOINLINE: string = 'e-video-inline';
 /**
  * @hidden
  * @deprecated
@@ -468,6 +508,16 @@ export const CLS_IMG_FOCUS: string = 'e-img-focus';
  * @hidden
  * @deprecated
  */
+export const CLS_AUD_FOCUS: string = 'e-audio-focus';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_VID_FOCUS: string = 'e-video-focus';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_RTE_DRAG_IMAGE: string = 'e-rte-drag-image';
 /**
  * @hidden
@@ -548,4 +598,4 @@ export const CLS_RTE_TB_ENABLED: string = 'e-rte-toolbar-enabled';
  * @hidden
  * @deprecated
  */
- export const CLS_RTE_RES_WEST: string = 'e-south-west';
+export const CLS_RTE_RES_WEST: string = 'e-south-west';

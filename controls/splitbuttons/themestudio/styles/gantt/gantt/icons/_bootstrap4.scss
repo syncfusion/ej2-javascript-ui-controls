@@ -106,19 +106,19 @@
     .e-backarrowspan::before,
     .e-icon-dlg-close::before {
       content: '\e85b';
-      }
+    }
 
     .e-left-resize-gripper::before,
     .e-right-resize-gripper::before {
       content: '\e903';
-      }
-   }
+    }
+  }
 
   .e-gantt-tooltip-arrow-left::before {
     content: '\e7c1';
-   }
+  }
 
   .e-gantt-tooltip-arrow-right::before {
     content: '\e7ce';
-   }
+  }
 }

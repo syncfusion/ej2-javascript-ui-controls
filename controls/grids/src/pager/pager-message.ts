@@ -30,7 +30,7 @@ export class PagerMessage implements IRender {
      * @hidden
      */
     public render(): void {
-        const div: Element = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': 'Pager Information' } });
+        const div: Element = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': this.pagerModule.getLocalizedLabel('Information') } });
         this.pageNoMsgElem = createElement('span', { className: 'e-pagenomsg', styles: 'textalign:right' });
         this.pageCountMsgElem = createElement('span', { className: 'e-pagecountmsg', styles: 'textalign:right' });
         append([this.pageNoMsgElem, this.pageCountMsgElem], div);

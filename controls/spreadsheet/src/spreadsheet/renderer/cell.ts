@@ -611,11 +611,48 @@ export class CellRenderer implements ICellRenderer {
     private updateView(
         args: { indexes: number[], sheetIndex?: number, refreshing?: boolean, checkWrap?: boolean, checkCF?: boolean }): void {
         if (isNullOrUndefined(args.sheetIndex) || (args.sheetIndex === this.parent.activeSheetIndex)) {
+            if (!args.indexes) {
+                const sheet: SheetModel = this.parent.getActiveSheet();
+                const frozenRow: number = this.parent.frozenRowCount(sheet);
+                const frozenCol: number = this.parent.frozenColCount(sheet);
+                const topLeftCell: number[] = getRangeIndexes(sheet.topLeftCell);
+                if (frozenRow && frozenCol) {
+                    this.refreshRange(
+                        [topLeftCell[0], topLeftCell[1], frozenRow - 1, frozenCol - 1], args.refreshing, args.checkWrap,
+                        false, args.checkCF);
+                }
+                if (frozenRow) {
+                    this.refreshRange(
+                        [topLeftCell[0], this.parent.viewport.leftIndex + frozenCol, frozenRow - 1, this.parent.viewport.rightIndex],
+                        args.refreshing, args.checkWrap, false, args.checkCF);
+                }
+                if (frozenCol) {
+                    this.refreshRange(
+                        [this.parent.viewport.topIndex + frozenRow, topLeftCell[1], this.parent.viewport.bottomIndex, frozenCol - 1],
+                        args.refreshing, args.checkWrap, false, args.checkCF);
+                }
+                args.indexes = [this.parent.viewport.topIndex + frozenRow, this.parent.viewport.leftIndex + frozenCol,
+                    this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex];
+            }
             this.refreshRange(args.indexes, args.refreshing, args.checkWrap, false, args.checkCF);
         } else if (args.refreshing) {
             this.calculateFormula(
                 { cell: getCell(args.indexes[0], args.indexes[1], getSheet(this.parent, args.sheetIndex), true, true),
                     rowIdx: args.indexes[0], colIdx: args.indexes[1], sheetIndex: args.sheetIndex });
         }
+    }
+
+    /**
+     * Removes the added event handlers and clears the internal properties of CellRenderer module. 
+     *
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.parent.off(updateView, this.updateView);
+        this.parent.off('calculateFormula', this.calculateFormula);
+        this.element = null;
+        this.th = null;
+        this.tableRow = null;
+        this.parent = null;
     }
 }

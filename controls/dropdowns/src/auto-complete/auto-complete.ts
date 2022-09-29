@@ -374,6 +374,7 @@ export class AutoComplete extends ComboBox {
 
     protected setSelection(li: Element, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (!this.isValidLI(li)) {
+            this.selectedLI = <HTMLElement>li;
             return;
         }
         if (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action !== 'enter'
@@ -389,7 +390,6 @@ export class AutoComplete extends ComboBox {
                 (e as KeyboardEventArgs).action === 'home' || (e as KeyboardEventArgs).action === 'end' || (e as KeyboardEventArgs).action === 'pageUp' || (e as KeyboardEventArgs).action === 'pageDown');
                 super.setAutoFill(li, isKeyNavigate);
             }
-            attributes(this.inputElement, { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
         } else {
             super.setSelection(li, e);
         }
@@ -523,7 +523,7 @@ export class AutoComplete extends ComboBox {
                     Input.calculateWidth(this.inputElement, this.inputWrapper.container);
                     if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
                         this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0].classList.add('e-icon');
-                    }   
+                    }
                     if (this.inputWrapper && this.inputWrapper.buttons && this.inputWrapper.buttons[0]) {
                         EventHandler.add(this.inputWrapper.buttons[0], 'click', this.dropDownClick, this);
                     }

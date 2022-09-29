@@ -203,8 +203,16 @@ export class Render {
      * @returns {void}
      */
     private refreshDataManager(args: NotifyArgs = {}): void {
-        if (args.requestType !== 'virtualscroll' && !(<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse) {
+        const gObj: IGrid = this.parent;
+        const maskRow: boolean = (gObj.loadingIndicator.indicatorType === 'Shimmer' && args.requestType !== 'virtualscroll'
+            && args.requestType !== 'infiniteScroll') || ((args.requestType === 'virtualscroll' || args.requestType === 'infiniteScroll')
+            && gObj.enableVirtualMaskRow);
+        if (args.requestType !== 'virtualscroll' && !(<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse && !maskRow) {
             this.parent.showSpinner();
+        }
+        if (maskRow) {
+            gObj.showMaskRow(args.requestType === 'virtualscroll' ? args.virtualInfo.sentinelInfo.axis
+                : args.requestType === 'infiniteScroll' ? (<{direction?: string}>args).direction : undefined);
         }
         this.parent.notify(events.resetInfiniteBlocks, args);
         this.emptyGrid = false;
@@ -389,10 +397,10 @@ export class Render {
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
-        const isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
-            && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'
-            && !(gObj.sortSettings.columns.length || gObj.filterSettings.columns.length || this.parent.groupSettings.columns.length
-            || gObj.searchSettings.key)));
+        const isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache &&
+            !gObj.groupSettings.enableLazyLoading && (args.requestType === 'delete' || (args.requestType === 'save' &&
+            this.parent.infiniteScrollModule.requestType === 'add' && !(gObj.sortSettings.columns.length ||
+            gObj.filterSettings.columns.length || this.parent.groupSettings.columns.length || gObj.searchSettings.key)));
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {
@@ -435,6 +443,7 @@ export class Render {
                 return;
             }
             if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
+                gObj.removeMaskRow();
                 this.updatesOnInitialRender(dataArgs);
             }
             if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
@@ -484,6 +493,7 @@ export class Render {
                 this.contentRenderer.setRowElements([]);
                 this.contentRenderer.setRowObjects([]);
                 this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), false);
+                gObj.removeMaskRow();
                 this.renderEmptyRow();
                 if (args) {
                     const action: string = (args.requestType || '').toLowerCase() + '-complete';
@@ -517,6 +527,7 @@ export class Render {
         this.setRowCount(1);
         this.parent.trigger(events.actionFailure, { error: e });
         this.parent.hideSpinner();
+        this.parent.removeMaskRow();
         if (args.requestType === 'save' as Action || args.requestType === 'delete' as Action
             || (<{ name: string }>args).name === 'bulk-save' as Action) {
             return;

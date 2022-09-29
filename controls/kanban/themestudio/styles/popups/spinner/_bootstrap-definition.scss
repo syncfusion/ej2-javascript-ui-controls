@@ -41,7 +41,7 @@ $spin-tailwind-stroke-color: $grey-light-font;
   animation: material-spinner-rotate .75s linear infinite;
 }
 
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @keyframes material-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -54,7 +54,6 @@ $spin-tailwind-stroke-color: $grey-light-font;
   }
 }
 
-// sass-lint:disable no-vendor-prefixes
 @keyframes fabric-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);

@@ -71,8 +71,8 @@
       background-color: $qrybldr-bg-color;
     }
 
-    & .e-rule-list>::after,
-    & .e-rule-list>::before {
+    & .e-rule-list > ::after,
+    & .e-rule-list > ::before {
       border-color: $qrybldr-rule-list-border-color;
     }
 
@@ -107,7 +107,7 @@
         background: $qrybldr-btngroup-bgcolor;
         border-color: $qrybldr-brdr-color;
         color: $qrybldr-btngroup-color;
-        }
+      }
     }
 
     & .e-group-header .e-btn-group:not(.e-rtl) .e-qb-toggle:last-of-type {
@@ -159,32 +159,30 @@
       &:active,
       &:hover {
         background-color: $qrybldr-brdr-color;
-     }
-
+      }
     }
-    }
+  }
 }
 
 .e-tooltip-wrap.e-querybuilder-error,
 .e-control.e-tooltip-wrap.e-popup.e-querybuilder-error {
   background-color: $qrybldr-val-error-bg-color;
   border-color: $qrybldr-val-error-bg-color;
-  }
+}
 
 .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
 .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-top {
   border-bottom-color: $qrybldr-val-error-bg-color;
   color: $qrybldr-val-error-bg-color;
-  }
+}
 
 .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-bottom,
 .e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-bottom {
   border-top-color: $qrybldr-val-error-bg-color;
   color: $qrybldr-val-error-bg-color;
-  }
+}
 
 .e-tooltip-wrap.e-querybuilder-error .e-tip-content,
 .e-tooltip-wrap.e-querybuilder-error .e-tip-content label {
   color: $qrybldr-val-error-color;
-  }
-  
+}

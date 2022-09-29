@@ -68,7 +68,7 @@
     background-color: $ddl-filter-background-color;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-ddl input.e-input::-webkit-contacts-auto-fill-button {
     display: none;
     pointer-events: none;
@@ -76,7 +76,7 @@
     right: 0;
     visibility: hidden;
   }
-  // sass-lint:enable no-vendor-prefixes
+  /* stylelint-enable property-no-vendor-prefix */
 
   .e-filter-parent {
     border: $ddl-filter-border;
@@ -98,9 +98,9 @@
       #{if(&, '&', '*')} .e-input-group.e-input-focus::before,
       #{if(&, '&', '*')} .e-input-group.e-input-focus::after {
         width: 0;
-       }
-     }
-   }
+      }
+    }
+  }
 
   .e-ddl#{&}.e-popup {
     background: $ddl-popup-background-color;
@@ -140,7 +140,7 @@
     }
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-ddl.e-input-group .e-ddl-hidden,
   .e-ddl.e-float-input .e-ddl-hidden {
     -webkit-appearance: initial;
@@ -222,7 +222,7 @@
     display: block;
   }
 
-  // Small Size 
+  // Small Size
 
   .e-small .e-ddl#{&}.e-popup,
   .e-input-group.e-ddl.e-small {
@@ -294,4 +294,3 @@
     min-height: 40px;
   }
 }
-

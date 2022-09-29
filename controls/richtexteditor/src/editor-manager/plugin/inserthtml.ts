@@ -46,15 +46,17 @@ export class InsertHtml {
         let range: Range = nodeSelection.getRange(docElement);
         if (range.startContainer === editNode && range.startContainer === range.endContainer && range.startOffset === 0 &&
             range.startOffset === range.endOffset && editNode.textContent.length === 0 && editNode.children[0].tagName === 'P') {
-            nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).children[0], (range.startContainer as HTMLElement).children[0], 0, 0);
+            nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).children[0],
+                                           (range.startContainer as HTMLElement).children[0], 0, 0);
             range = nodeSelection.getRange(docElement);
         }
         if (range.startContainer.nodeName === 'BR' && range.startOffset === 0 && range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer) {
-            const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.children).indexOf(range.startContainer as HTMLElement);
-            nodeSelection.setSelectionText(docElement,
-            (range.startContainer as HTMLElement).parentElement, (range.startContainer as HTMLElement).parentElement,
-            currentIndex + 1, currentIndex + 1);
+            const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.children).indexOf(
+                range.startContainer as HTMLElement);
+            nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).parentElement,(
+                range.startContainer as HTMLElement).parentElement,
+                                           currentIndex + 1, currentIndex + 1);
             range = nodeSelection.getRange(docElement);
         }
         const isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&
@@ -304,7 +306,7 @@ export class InsertHtml {
     private static getNodeCollection (range: Range, nodeSelection: NodeSelection, node: Node): Node[] {
         let nodes: Node[] = [];
         if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
-            range.startContainer.nodeName != 'BR' && range.startContainer.childNodes.length > 0 &&
+            range.startContainer.nodeName !== 'BR' && range.startContainer.childNodes.length > 0 &&
             (range.startContainer.nodeName === 'TD' || (range.startContainer.nodeType !== 3 &&
             (node as HTMLElement).classList && (node as HTMLElement).classList.contains('pasteContent')))) {
             nodes.push(range.startContainer.childNodes[range.endOffset]);
@@ -343,7 +345,7 @@ export class InsertHtml {
             if ((blockNode as HTMLElement).closest('LI') && node && (node as HTMLElement).firstElementChild &&
             (((node as HTMLElement)).firstElementChild.tagName === 'OL' || (node as HTMLElement).firstElementChild.tagName === 'UL')) {
                 let liNode: HTMLElement;
-                while((node as HTMLElement).firstElementChild.lastElementChild && (node as HTMLElement).firstElementChild.lastElementChild.tagName === 'LI') {
+                while ((node as HTMLElement).firstElementChild.lastElementChild && (node as HTMLElement).firstElementChild.lastElementChild.tagName === 'LI') {
                     liNode = ((node as HTMLElement).firstElementChild.lastElementChild as HTMLElement);
                     liNode.style.removeProperty('margin-left');
                     liNode.style.removeProperty('margin-top');
@@ -357,7 +359,8 @@ export class InsertHtml {
                 tempSpan.parentNode.replaceChild(node, tempSpan);
             } else {
                 const nodeSelection: NodeSelection = new NodeSelection();
-                let currentNode: Node = this.getNodeCollection(range, nodeSelection, node)[this.getNodeCollection(range, nodeSelection, node).length - 1];
+                const currentNode: Node = this.getNodeCollection(range, nodeSelection, node)[this.getNodeCollection(
+                    range, nodeSelection, node).length - 1];
                 let splitedElm: Node;
                 if ((currentNode.nodeName === 'BR' || currentNode.nodeName === 'HR' ||
                 (currentNode.nodeName === '#text' && !isNOU(currentNode.parentElement) && currentNode.parentElement.nodeName === 'LI')) &&

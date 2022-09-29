@@ -1,4 +1,4 @@
-//default 
+//default
 $datetime-default-text-indent: 10px !default;
 $datetime-list-bigger-line-height: 48px !default;
 $datetime-list-normal-line-height: 36px !default;
@@ -35,16 +35,21 @@ $datetime-time-icon-border-style: solid !default;
 $datetime-list-hover-border-color: 1px solid $hover-border !default;
 $datetime-list-default-border-style: 1px solid transparent !default;
 $datetime-default-overlay: rgba($bg-base-0, .6) !default;
+
 //mouse small
 $datetime-list-small-line-height: 26px !default;
 $datetime-list-small-text-indent: 10px !default;
 $datetime-list-small-font-size: 13px !default;
+
 // mouse small icon
 $datetime-icon-small-font-size: 14px !default;
+
 //touch small
 $datetime-list-bigger-small-line-height: 40px !default;
 $datetime-list-bigger-small-text-indent: 16px !default;
 $datetime-list-bigger-small-font-size: 14px !default;
+
 // touch small icon
 $datetime-icon-bigger-small-font-size: 18px !default;
+
 //enddefault

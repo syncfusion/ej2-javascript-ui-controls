@@ -230,8 +230,8 @@ export class TimelineViews extends VerticalView {
 
     public getContentRows(): Element[] {
         const rows: Element[] = [];
-        const tr: Element = createElement('tr', { attrs: { role: 'row' } });
-        const td: Element = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
+        const tr: Element = createElement('tr');
+        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
         const trCount: number = this.getRowCount();
         for (let i: number = 0; i < trCount; i++) {
             const ntr: Element = tr.cloneNode() as Element;

@@ -130,13 +130,13 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
-        it('checking to change annotation value using method', () => {
-            gauge.setAnnotationValue(0, 0, '#template1')
-            svg = document.getElementById('container_Secondary_Element');
-            expect(svg.childElementCount == 1).toBe(true);
-            svg = document.getElementById('container_Axis_0_Annotation_0');
-            expect(svg.firstElementChild.textContent).toBe('100');
-        });
+        // it('checking to change annotation value using method', () => {
+        //     gauge.setAnnotationValue(0, 0, '#template1')
+        //     svg = document.getElementById('container_Secondary_Element');
+        //     expect(svg.childElementCount == 1).toBe(true);
+        //     svg = document.getElementById('container_Axis_0_Annotation_0');
+        //     expect(svg.firstElementChild.textContent).toBe('100');
+        // });
 
         it('checking to change add the annotation using method', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {

@@ -1,4 +1,5 @@
 @include export-module('daterangepicker-bootstrap-icons') {
+
   /*! component icons */
   .e-input-group-icon.e-range-icon,
   #{if(&, '&', '*')}.e-control-wrapper .e-input-group-icon.e-range-icon {
@@ -9,26 +10,31 @@
     #{if(&, '&', '*')}::before {
       content: '\e243';
       font-family: 'e-icons';
-  }
+    }
 
     #{if(&, '&', '*')}:focus {
       background: $range-icon-hover-color;
       border-radius: $range-icon-border-radius;
+    }
   }
-}
 
   .e-daterangepicker {
     #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-next::before {
       content: '\e913';
-    }#{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
+    }
+    #{if(&, '&', '*')} .e-calendar .e-header .e-date-icon-prev::before {
       content: '\e904';
-    }#{if(&, '&', '*')} .e-change-icon::before {
+    }
+    #{if(&, '&', '*')} .e-change-icon::before {
       content: '\e85f';
-    }#{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-next::before {
+    }
+    #{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-next::before {
       content: '\e98f';
-    }#{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
+    }
+    #{if(&, '&', '*')} .e-calendar.e-rtl .e-header .e-date-icon-prev::before {
       content: '\e85c';
-    }#{if(&, '&', '*')}.e-rtl .e-start-end .e-change-icon::before {
+    }
+    #{if(&, '&', '*')}.e-rtl .e-start-end .e-change-icon::before {
       content: '\e85b';
     }
   }
@@ -57,4 +63,3 @@
     font-size: $range-bigger-small-icon-font-size;
   }
 }
-

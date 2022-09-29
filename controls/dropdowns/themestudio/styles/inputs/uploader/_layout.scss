@@ -184,7 +184,6 @@
               margin-left: $file-container-left;
               margin-right: $margin-rtl;
 
-
               #{if(&, '&', '*')} .e-file-status,
               #{if(&, '&', '*')} .e-file-information {
                 top: $file-status-rtl;
@@ -801,8 +800,8 @@
         #{if(&, '&', '*')} .e-file-drop {
           font-size: $drop-area-small-font-size;
           margin-left: $drop-small-area-padding-left;
+        }
       }
-    }
 
       #{if(&, '&', '*')} .e-upload-files {
         .e-upload-file-list {

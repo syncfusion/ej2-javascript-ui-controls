@@ -199,6 +199,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public showTimeIndicator: boolean;
 
     /**
+     * Defines whether to enable date navigations via swipe in touch devices or not.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowSwiping: boolean;
+
+    /**
      * To set the active view on scheduler, the `currentView` property can be used and it usually accepts either of the following available
      *  view options. The view option specified in this property will be initially loaded on the schedule.
      * * Day
@@ -2266,6 +2274,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    /**
+     * Method to check for refreshing the targeted resource row events.
+     *
+     * @returns {boolean} Returns the boolean value
+     * @private
+     */
+    public isSpecificResourceEvents(): boolean {
+        return this.activeViewOptions.group.resources.length > 0 && !this.activeViewOptions.group.allowGroupEdit &&
+            !this.rowAutoHeight && !this.virtualScrollModule && this.activeViewOptions.group.byGroupID;
+    }
+
     private unWireEvents(): void {
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.onScheduleResize);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'orientationchange', this.onScheduleResize);
@@ -3543,10 +3562,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.hideSpinner();
         this.unWireEvents();
         this.destroyHeaderModule();
-        if (this.eventTooltip) {
-            this.eventTooltip.destroy();
-            this.eventTooltip = null;
-        }
         if (this.eventBase) {
             this.eventBase.destroy();
             this.eventBase = null;

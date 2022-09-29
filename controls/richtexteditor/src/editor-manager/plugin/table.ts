@@ -578,8 +578,9 @@ export class TableCommand {
         if (min < (max = Math.min(max, eleArray.length - 1))) {
             for (rowValue = min; rowValue <= max; rowValue++) {
                 // eslint-disable-next-line
-                if (!(min < rowValue && eleArray[rowValue][0] === eleArray[rowValue - 1][0]) && eleArray[rowValue][0] &&
-                1 < (index = Math.min(parseInt(eleArray[rowValue][0].getAttribute('rowspan'), 10) || 1, max - min + 1)) && eleArray[rowValue][0] === eleArray[rowValue + 1][0]) {
+                if (!(min < rowValue && eleArray[rowValue][0] === eleArray[rowValue - 1][0])
+                    && eleArray[rowValue][0] && 1 < (index = Math.min(parseInt(eleArray[rowValue][0].getAttribute('rowspan'), 10) ||
+                    1, max - min + 1)) && eleArray[rowValue][0] === eleArray[rowValue + 1][0]) {
                     for (count = index - 1, colIndex = 1; colIndex < eleArray[0].length; colIndex++) {
                         if (eleArray[rowValue][colIndex] !== eleArray[rowValue][colIndex - 1]) {
                             for (rowMin = rowValue; rowMin < rowValue + index; rowMin++) {

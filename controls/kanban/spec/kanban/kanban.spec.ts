@@ -2313,3 +2313,22 @@ describe('Kanban base module', () => {
     });
 
 });
+describe('EJ2-62999-In kanban unique Id is not generated automatically when we do not set the Id property', () => {
+    let kanbanObj: Kanban;
+    const divElement: HTMLElement = createElement('div', {
+        className: 'defaultKanban' });
+    beforeAll((done: DoneFn) => {
+        document.body.appendChild(divElement);
+        kanbanObj = new Kanban({});
+        const target: HTMLElement = document.querySelector('.defaultKanban');
+        kanbanObj.appendTo(target);
+        done();
+    });
+    afterAll(() => {
+        util.destroy(kanbanObj);
+    });
+    it('check the id genarated or not', () => {
+        expect(kanbanObj.element.hasAttribute('id')).toBe(true);
+    });
+});
+

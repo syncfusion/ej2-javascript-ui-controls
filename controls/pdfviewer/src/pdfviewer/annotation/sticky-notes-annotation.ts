@@ -848,7 +848,7 @@ export class StickyNotesAnnotation {
             }
             // eslint-disable-next-line max-len
             this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
-            this.commentsContainer.accessKey = pageIndex.toString();
+            this.commentsContainer.accessKey = pageIndex.toString() + '_' + this.commentsCount;
             let isCommentsAdded: boolean = false;
             if (data) {
                 this.commentsContainer.id = data.AnnotName;
@@ -890,13 +890,13 @@ export class StickyNotesAnnotation {
                 if (title === 'null') {
                     title = data.AnnotationType;
                 }
-                this.createTitleContainer(commentDiv, title, data.Subject, data.ModifiedDate, data.Author);
+                this.createTitleContainer(commentDiv, title, pageIndex, data.Subject, data.ModifiedDate, data.Author);
             } else {
                 title = this.commentsContainer.getAttribute('name');
-                this.createTitleContainer(commentDiv, title, annotationSubType);
+                this.createTitleContainer(commentDiv, title, pageIndex, annotationSubType);
             }
             // eslint-disable-next-line max-len
-            const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
+            const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox'+ pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox' });
             // eslint-disable-next-line
             let editObj: any = new InPlaceEditor({
                 mode: 'Inline',
@@ -1339,9 +1339,9 @@ export class StickyNotesAnnotation {
         const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordioncontent' + pageIndex);
         // eslint-disable-next-line max-len
         this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
-        this.commentsContainer.accessKey = pageIndex.toString();
+        this.commentsContainer.accessKey = pageIndex.toString() + '_' + this.commentsCount;
         if (data) {
-            this.commentsContainer.id = data.annotName;
+            this.commentsContainer.id = data.annotName ? data.annotName : data.annotationId;
         }
         this.commentsContainer.addEventListener('mousedown', this.commentsAnnotationSelect.bind(this));
         // eslint-disable-next-line max-len
@@ -1359,10 +1359,10 @@ export class StickyNotesAnnotation {
         if (data && accordionContent) {
             if (data.indent) {
                 this.commentsContainer.setAttribute('name', 'shape_measure');
-                this.createTitleContainer(commentDiv, 'shape_measure', data.subject, data.modifiedDate, data.author);
+                this.createTitleContainer(commentDiv, 'shape_measure', pageIndex, data.subject, data.modifiedDate, data.author);
             } else if (data.shapeAnnotationType === 'sticky' || data.shapeAnnotationType === 'stamp') {
                 // eslint-disable-next-line max-len
-                const annotType: string = this.createTitleContainer(commentDiv, data.shapeAnnotationType, null, data.modifiedDate, data.author);
+                const annotType: string = this.createTitleContainer(commentDiv, data.shapeAnnotationType, pageIndex, null, data.modifiedDate, data.author);
                 this.commentsContainer.setAttribute('name', annotType);
                 if (annotType === 'sticky') {
                     if (!isCopy) {
@@ -1371,21 +1371,21 @@ export class StickyNotesAnnotation {
                 }
             } else if (data.shapeAnnotationType === 'textMarkup') {
                 this.commentsContainer.setAttribute('name', 'textMarkup');
-                this.createTitleContainer(commentDiv, 'textMarkup', data.subject, data.modifiedDate, data.author);
+                this.createTitleContainer(commentDiv, 'textMarkup', pageIndex, data.subject, data.modifiedDate, data.author);
             } else if (data.shapeAnnotationType === 'FreeText') {
                 data.note = data.dynamicText;
                 this.commentsContainer.setAttribute('name', 'freetext');
-                this.createTitleContainer(commentDiv, 'freeText', data.subject, data.modifiedDate);
+                this.createTitleContainer(commentDiv, 'freeText', pageIndex, data.subject, data.modifiedDate);
             } else if (data.shapeAnnotationType === 'Ink') {
                 data.note = data.dynamicText;
                 this.commentsContainer.setAttribute('name', 'ink');
-                this.createTitleContainer(commentDiv, 'ink', data.subject, data.modifiedDate);
+                this.createTitleContainer(commentDiv, 'ink', pageIndex, data.subject, data.modifiedDate);
             } else {
                 this.commentsContainer.setAttribute('name', 'shape');
                 if (data.shapeAnnotationType === 'Line') {
-                    this.createTitleContainer(commentDiv, 'shape', data.subject, data.modifiedDate, data.author);
+                    this.createTitleContainer(commentDiv, 'shape', pageIndex, data.subject, data.modifiedDate, data.author);
                 } else {
-                    this.createTitleContainer(commentDiv, 'shape', data.shapeAnnotationType, data.modifiedDate, data.author);
+                    this.createTitleContainer(commentDiv, 'shape', pageIndex, data.shapeAnnotationType, data.modifiedDate, data.author);
                 }
             }
         }
@@ -1468,12 +1468,12 @@ export class StickyNotesAnnotation {
     }
 
     // eslint-disable-next-line
-    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string, modifiedDate?: string, author?: string, note?: string): any {
+    private createTitleContainer(commentsDivElement: HTMLElement, type: string, pageIndex: number, subType?: string, modifiedDate?: string, author?: string, note?: string): any {
         let annotationType: string = this.getAnnotationType(type);
         // eslint-disable-next-line max-len
-        const commentTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitleConatiner', className: 'e-pv-comment-title-container' });
+        const commentTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitleConatiner_'+ pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-title-container' });
         // eslint-disable-next-line max-len
-        const commentTypeSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_commenttype' + '_icon' });
+        const commentTypeSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_commenttype' + '_icon' + pageIndex + '_' + this.commentsCount });
         commentTypeSpan.style.opacity = '0.6';
         this.updateCommentIcon(commentTypeSpan, annotationType, subType);
         let annotationAuthor: string;
@@ -1486,7 +1486,7 @@ export class StickyNotesAnnotation {
         commentTypeSpan.style.cssFloat = 'left';
         commentTitleContainer.appendChild(commentTypeSpan);
         // eslint-disable-next-line max-len
-        const commentsTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitle', className: 'e-pv-comment-title' });
+        const commentsTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitle' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-title' });
         if (!modifiedDate) {
             commentsTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
         } else {
@@ -1623,7 +1623,7 @@ export class StickyNotesAnnotation {
      */
     public updateAccordionContainer(removeDiv: HTMLElement): void {
         // eslint-disable-next-line
-        let pageNumber: any = parseInt(removeDiv.accessKey);
+        let pageNumber: any = parseInt(removeDiv.accessKey.split('_')[0]);
         const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageNumber);
         if (accordionContent) {
             accordionContent.parentElement.removeChild(accordionContent);
@@ -2186,7 +2186,7 @@ export class StickyNotesAnnotation {
                 return null;
             }
             // eslint-disable-next-line
-            let pageNumber: any = parseInt(element.accessKey);
+            let pageNumber: any = parseInt(element.accessKey.split('_')[0]);
             if (!element.classList.contains('e-pv-comments-border')) {
                 // eslint-disable-next-line
                 let commentsContainer: any = document.querySelectorAll('.e-pv-comments-border');
@@ -2438,9 +2438,9 @@ export class StickyNotesAnnotation {
             if (commentsDiv) {
                 // eslint-disable-next-line
                 let pageNumber: any;
-                if (commentsDiv.accessKey) {
+                if (commentsDiv.accessKey.split('_')[0]) {
                     // eslint-disable-next-line
-                    pageNumber = parseInt(commentsDiv.accessKey);
+                    pageNumber = parseInt(commentsDiv.accessKey.split('_')[0]);
                 } else {
                     pageNumber = this.pdfViewerBase.currentPageNumber;
                 }
@@ -2545,7 +2545,7 @@ export class StickyNotesAnnotation {
             // eslint-disable-next-line
             let commentsDiv: HTMLElement = document.getElementById(currentAnnotation.annotName);
             // eslint-disable-next-line
-            let pageNumber: any = parseInt(commentsDiv.accessKey);
+            let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
             const pageIndex: number = pageNumber - 1;
             // eslint-disable-next-line
             let pageAnnotations: any;
@@ -2614,7 +2614,7 @@ export class StickyNotesAnnotation {
             // eslint-disable-next-line
             let commentsDiv: HTMLElement = document.getElementById(currentAnnotation.annotName);
             // eslint-disable-next-line
-            let pageNumber: any = parseInt(commentsDiv.accessKey);
+            let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
             const pageIndex: number = pageNumber - 1;
             // eslint-disable-next-line
             let pageAnnotations: any;
@@ -2683,7 +2683,7 @@ export class StickyNotesAnnotation {
         let commentsParentElement: any = document.getElementById(commentsElement.id);
         if (commentsParentElement) {
             // eslint-disable-next-line
-            let pageNumber: any = parseInt(commentsParentElement.accessKey);
+            let pageNumber: any = parseInt(commentsParentElement.accessKey.split('_')[0]);
             const pageIndex: number = pageNumber - 1;
             const annotType: string = commentsElement.getAttribute('name');
             // eslint-disable-next-line
@@ -2751,7 +2751,7 @@ export class StickyNotesAnnotation {
                 let commentsMainDiv: any = document.getElementById(annotation.annotName);
                 if (commentsMainDiv) {
                     // eslint-disable-next-line
-                    let pageNumber: any = parseInt(commentsMainDiv.accessKey);
+                    let pageNumber: any = parseInt(commentsMainDiv.accessKey.split('_')[0]);
                     const pageIndex: number = pageNumber - 1;
                     // eslint-disable-next-line
                     let clonedAnnotationObject: any = cloneObject(annotation);
@@ -2772,7 +2772,7 @@ export class StickyNotesAnnotation {
                 let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
                 if (commentsDiv) {
                     // eslint-disable-next-line
-                    let pageNumber: any = parseInt(commentsDiv.accessKey);
+                    let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
                     pageIndex = pageNumber - 1;
                 }
                 // eslint-disable-next-line
@@ -2795,7 +2795,7 @@ export class StickyNotesAnnotation {
                 let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
                 if (commentsDiv) {
                     // eslint-disable-next-line
-                    let pageNumber: any = parseInt(commentsDiv.accessKey);
+                    let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
                     pageIndex = pageNumber - 1;
                 }
                 // eslint-disable-next-line
@@ -2833,7 +2833,7 @@ export class StickyNotesAnnotation {
             let commentsDiv: any = document.getElementById(annotation.annotName);
             if (commentsDiv) {
                 // eslint-disable-next-line
-                let pageNumber: any = parseInt(commentsDiv.accessKey);
+                let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
                 const pageIndex: number = pageNumber - 1;
                 this.renderComments(undoAnnotation, commentsDiv, true, annotation.annotName);
                 this.pdfViewer.annotation.redoCommentsElement.push(undoAnnotation);
@@ -2870,7 +2870,7 @@ export class StickyNotesAnnotation {
             let commentsMainDiv: any = document.getElementById(annotation.annotName);
             if (commentsMainDiv) {
                 // eslint-disable-next-line
-                let pageNumber: any = parseInt(commentsMainDiv.accessKey);
+                let pageNumber: any = parseInt(commentsMainDiv.accessKey.split('_')[0]);
                 const pageIndex: number = pageNumber - 1;
                 commentsMainDiv.firstChild.firstChild.nextSibling.ej2_instances[0].value = annotation.note;
                 commentsMainDiv.lastChild.style.display = 'block';
@@ -2883,7 +2883,7 @@ export class StickyNotesAnnotation {
             const commentsDiv: HTMLElement = document.getElementById(annotation.annotName);
             if (commentsDiv) {
                 // eslint-disable-next-line
-                let pageNumber: any = parseInt(commentsDiv.accessKey);
+                let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
                 const pageIndex: number = pageNumber - 1;
                 this.renderComments(comment, commentsDiv, true, annotation.annotName);
                 this.updateUndoRedoCollections(annotation, pageIndex);
@@ -2905,7 +2905,7 @@ export class StickyNotesAnnotation {
                 let activeDiv: any = document.getElementById(annotation.annotName);
                 if (activeDiv) {
                     // eslint-disable-next-line
-                    let pageNumber: any = parseInt(activeDiv.accessKey);
+                    let pageNumber: any = parseInt(activeDiv.accessKey.split('_')[0]);
                     pageIndex = pageNumber - 1;
                 }
                 // eslint-disable-next-line
@@ -2942,7 +2942,7 @@ export class StickyNotesAnnotation {
             let activeDiv: any = document.getElementById(annotation.annotName);
             if (activeDiv) {
                 // eslint-disable-next-line
-                let pageNumber: any = parseInt(activeDiv.accessKey);
+                let pageNumber: any = parseInt(activeDiv.accessKey.split('_')[0]);
                 pageIndex = pageNumber - 1;
             }
             // eslint-disable-next-line
@@ -3028,7 +3028,7 @@ export class StickyNotesAnnotation {
         let commentsDiv: any = document.getElementById(annotation.annotName);
         if (commentsDiv) {
             // eslint-disable-next-line
-            let pageNumber: any = parseInt(commentsDiv.accessKey);
+            let pageNumber: any = parseInt(commentsDiv.accessKey.split('_')[0]);
             const pageIndex: number = pageNumber - 1;
             // eslint-disable-next-line
             let parentDiv: any = commentsDiv.parentElement;
@@ -3391,9 +3391,10 @@ export class StickyNotesAnnotation {
     private convertUTCDateToLocalDate(date:any) 
     {
         let dateTime: Date = new Date( Date.parse(date+' '+'UTC'));
+        this.globalize = new Internationalization(this.pdfViewer.locale);
         let timeValue: string = dateTime.toLocaleTimeString(this.globalize.culture);
         let newTime: string;
-        if(typeof(timeValue.split(' ')[1])!=undefined){
+        if(!isNullOrUndefined(timeValue.split(' ')[1])){
             newTime = (timeValue.split(':').splice(0,2).join(':'))+' '+timeValue.split(' ')[1];
         }
         else{

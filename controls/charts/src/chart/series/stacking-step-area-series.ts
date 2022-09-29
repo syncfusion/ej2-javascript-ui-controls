@@ -31,6 +31,7 @@ export class StackingStepAreaSeries extends LineBase {
         let point2: ChartLocation; let point3: ChartLocation; let xValue: number; let lineLength: number;
         let prevPoint: Points = null; let validIndex: number; let startPoint: number = 0;
         let pointIndex: number;
+        let emptyPointDirection:  string = '';
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {
@@ -124,9 +125,20 @@ export class StackingStepAreaSeries extends LineBase {
             }
             options = new PathOption(
                 stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior,
-                stackSeries.border.width, stackSeries.border.color, stackSeries.opacity, stackSeries.dashArray, direction
+               0, 'transparent', stackSeries.opacity, stackSeries.dashArray, direction
             );
             this.appendLinePath(options, stackSeries, '');
+            /**
+             * To draw border for the path directions of area
+             */
+            if (stackSeries.border.width != 0) {
+                emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
+                options = new PathOption(
+                    stackSeries.chart.element.id + '_Series_border_' + stackSeries.index, 'transparent',
+                    stackSeries.border.width, stackSeries.border.color ? stackSeries.border.color : stackSeries.interior, 1, stackSeries.dashArray, emptyPointDirection
+                );
+                this.appendLinePath(options, stackSeries, '');
+            }
             this.renderMarker(stackSeries);
         }
     }

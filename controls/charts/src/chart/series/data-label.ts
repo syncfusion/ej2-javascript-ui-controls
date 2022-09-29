@@ -10,7 +10,7 @@ import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer } from
 import { BorderModel, MarginModel, FontModel } from '../../common/model/base-model';
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { LabelPosition, ErrorBarDirection } from '../utils/enum';
-import { Series, Points } from './chart-series';
+import { Series, Points, DataLabelSettings } from './chart-series';
 import { ITextRenderEventArgs } from '../../chart/model/chart-interface';
 import { textRender } from '../../common/model/constants';
 import {
@@ -71,6 +71,7 @@ export class DataLabel {
                 'transform': transform,
                 'clip-path': clipPath
             });
+            series.textElement.setAttribute('aria-hidden', 'true');
         }
         this.markerHeight = ((series.type === 'Scatter' || marker.visible)) ? (marker.height / 2) : 0;
         this.commonId = this.chart.element.id + '_Series_' + index + '_Point_';

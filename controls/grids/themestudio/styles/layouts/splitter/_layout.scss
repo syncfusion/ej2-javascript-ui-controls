@@ -29,8 +29,8 @@
           overflow: auto;
 
           &.e-pane-hidden {
-            flex-basis: 0 !important; // sass-lint:disable-line no-important
-            overflow: hidden !important; // sass-lint:disable-line no-important
+            flex-basis: 0 !important; /* stylelint-disable-line declaration-no-important */
+            overflow: hidden !important; /* stylelint-disable-line declaration-no-important */
           }
         }
       }
@@ -74,8 +74,8 @@
         overflow: auto;
 
         &.e-pane-hidden {
-          flex-basis: 0 !important; // sass-lint:disable-line no-important
-          overflow: hidden !important; // sass-lint:disable-line no-important
+          flex-basis: 0 !important; /* stylelint-disable-line declaration-no-important */
+          overflow: hidden !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
@@ -190,7 +190,7 @@
           &:not(.e-arrow-right) {
             border-radius: 50%;
             right: 5px;
-         }
+          }
 
           &.e-arrow-right {
             border-radius: 50%;
@@ -312,7 +312,7 @@
             border-radius: 50%;
             bottom: 20px;
             left: 22px;
-         }
+          }
 
           &.e-arrow-down {
             border-radius: 50%;
@@ -364,7 +364,6 @@
             margin-top: 2px;
           }
         }
-
       }
     }
   }
@@ -375,7 +374,7 @@
     }
   }
 
-  .e-bigger  .e-splitter {
+  .e-bigger .e-splitter {
     .e-pane {
       font-size: $bigger-splitpane-font-size;
     }

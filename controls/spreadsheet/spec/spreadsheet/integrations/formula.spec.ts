@@ -274,16 +274,6 @@ describe('Spreadsheet formula module ->', () => {
                     }, 100);
                 });
             });
-            it('EJ2-63297 - String concatenation formula not works properly when the formula contains space with string value->', (done: Function) => {
-                helper.invoke('updateCell', [{ formula: '=A1 & "test"' }, 'A86']);
-                const sheet: SheetModel = helper.getInstance().sheets[0];
-                expect(sheet.rows[85].cells[0].value).toBe('25test');
-                helper.invoke('updateCell', [{ formula: '=A1&"test"' }, 'A87']);
-                expect(sheet.rows[86].cells[0].value).toBe('25test');
-                helper.invoke('updateCell', [{ formula: '=A1 & " test"' }, 'A88']);
-                expect(sheet.rows[87].cells[0].value).toBe('25 test');
-                done();
-            });
         });
         describe('I261427 ->', () => {
             beforeEach((done: Function) => {
@@ -772,426 +762,297 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('I327667->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{  }] }] }] }, done);
+        describe('EJ2-49597, I327667, EJ2-53137, EJ2-51869, EJ2-51868, EJ2-47753, EJ2-49475, EJ2-56722, EJ2-48147, Ej2-54448->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }],  
+                rows: [{ index: 13, cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] }, {cells: [{ }]}, { cells: [{ formula: '=SUM(A14:A17)' }] },
+                { cells: [{ }] }, { cells: [{ value: '1'}, { value: '1'}] }, { cells:  [{ value: '2'}, { value: '1'}] },
+                { cells: [{ value: '3'}, { value: '1'}] }, { cells: [{ value: '-5'},{ value: '-1'}] },
+                { cells: [{ value: '-6'}, { value: '-1'}] }, { cells: [{ value: '-7'}, { value: '-1'}] },
+                { cells: [{ }] }, { cells: [{ value: '1' }, { value: '1.25' }, { value: '1500' }, { formula: '=A28*C28' }, { formula: '=B28*C28' }, { formula: '=E28*A28' }] }, 
+                { cells: [{ value: '1' }, { value: '' }, { value: '2000' }, { formula: '=A29*C29' }, { formula: '=B28*C29' }, { formula: '=E29*A29' }] }, 
+                { cells: [{ value: '1' }, { value: '' }, { value: '1750' }, { formula: '=A30*C30' }, { formula: '=B28*C30' }, { formula: '=E30*A30' }] },
+                { cells: [{ index: 5, formula: '=SUM(F21:F30)' }] }
+            ],selectedRange: 'A15' } ] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy'); 
             });
-            it('Match formula does not throw error when finding value is not present', (done: Function) => {
-                helper.edit('B1', 'A');
-                helper.edit('B3', '=Match(B1,A1:A11)');
-                expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBe('#N/A');
+            it('EJ2-49597 - Formula dependent cells not updated while clear the value using DELETE key', (done: Function) => {
+                helper.triggerKeyNativeEvent(46);
+                expect(helper.invoke('getCell', [14, 0]).value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[18].cells[0].value).toBe(8);
                 done();
             });
-        });
-        // describe('EJ2-49549->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({ 
-        //         sheets: [{ rows: [{ cells: [{ index: 0, formula:'=IF(SUMIF(Sheet2!$A1:$A6,">3",Sheet2!$B1:$B6)>3,1)'}, { index: 2 , formula: '=SUM(Sheet2!A1:B1)'}, { index: 3, formula: '=IF(Sheet2!A1>0,1,0)'} ] }] }, 
-        //                  { rows: [{cells: [{ value: '1'}, { value: '3'}] },
-        //                           {cells: [{ value: '2'}, { value: '2'}] },
-        //                           {cells: [{ value: '3'}, { value: '1'}] },
-        //                           {cells: [{ value: '2'}, { value: '5'}] },
-        //                           {cells: [{ value: '1'}, { value: '1'}] },
-        //                           {cells: [{ value: '5'}, { value: '8'}] }] }], activeSheetIndex: 0 }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Deleting a whole row on sheet that references other sheets changes values to #REF!-Issue 1', (done: Function) => {
-        //         helper.edit('C2', '5');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toBe(5);
-        //         helper.invoke('delete', [1, 1, 'Row']);
-        //         setTimeout(function () {
-        //             expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('1');
-        //             expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe(4);
-        //             expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBe('1');
-        //             done();
-        //         });
-        //     });
-        // });
-        describe('I327667->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy'); 
-            });
-            it('MATCH function doesnot work properly', (done: Function) => {
-                helper.edit('A12', 'Jeanette Pamplin');
-                helper.edit('H3', 'Jeanette Pamplin');
-                helper.edit('H4', '=Match(H3,A2:A30)');
+            it('I327667 - MATCH function doesnot work properly', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'Jeanette Pamplin' }, 'A12']);
+                helper.invoke('updateCell', [{ value: 'Jeanette Pamplin' }, 'H3']);
+                helper.invoke('updateCell', [{ formula: '=Match(H3,A2:A30)' }, 'H4']);
                 expect(helper.getInstance().sheets[0].rows[3].cells[7].value).toBe(11);
                 done();
             });
+            it('I327667 - Match formula does not throw error when finding value is not present', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'A' }, 'M1']);
+                helper.invoke('updateCell', [{ formula: '=Match(M1,N1:N10)' }, 'M3']);
+                expect(helper.getInstance().sheets[0].rows[2].cells[12].value).toBe('#N/A');
+                done();
+            });
+            it('EJ2-53137 - MAX function throws error->', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=MAX(K1,K10)' }, 'I1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBe('=MAX(K1,K10)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('0');
+                done();
+            });
+            it('EJ2-51869 - Need to avoid rounding decimal values while adding decimal values->', (done: Function) => {
+                helper.invoke('selectRange', ['J1:J5']);
+                helper.getElement('#' + helper.id + '_number_format').click();
+                helper.getElement('#' + helper.id + '_number_format-popup .e-item:nth-child(2)').click();
+                helper.invoke('updateCell', [{ value: '100000.50' }, 'J1']);
+                helper.invoke('updateCell', [{ value: '1.00' }, 'J2']);
+                helper.invoke('updateCell', [{ formula: '=SUM(J1:J2)' }, 'J3']);
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].formula).toBe('=SUM(J1:J2)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('100001.5');
+                done();
+            });
+            it('EJ2-51868 - Spreadsheet formula throws #value error->', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=(I3+I7)*-1' }, 'I2']);
+                expect(helper.getInstance().sheets[0].rows[1].cells[8].formula).toBe('=(I3+I7)*-1');
+                expect(helper.getInstance().sheets[0].rows[1].cells[8].value).toBe('0');
+                done();
+            });
+            it('EJ2-47753 - Dependent cells not updated for loaded JSON using openFromJson method', (done: Function) => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('100001.5');
+                helper.invoke('refresh');
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['J2']);
+                    helper.invoke('updateCell', [{ value: '2.00' }, 'J2']);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('100002.5');
+                    done();
+                });
+            });
+            it('EJ2-49475 - nested IF formula issue in spreadsheet', (done: Function) => {
+                helper.invoke('selectRange', ['C21']);
+                helper.invoke('updateCell', [{ formula: '=IF(SUMIF(A21:A26,"<0",B21:B26)<0,1,2)' }, 'C21']);
+                expect(helper.getInstance().sheets[0].rows[20].cells[2].value).toBe('1');
+                helper.invoke('updateCell', [{ value: '13' }, 'D21']);
+                helper.invoke('updateCell', [{ formula: '=IF(D1="","None",IF(D1>10,"Pass","Fail"))' }, 'E21']);
+                expect(helper.getInstance().sheets[0].rows[20].cells[4].value).toBe('Pass');
+                done();
+            });
+            it('EJ2-56722 - Cascading cell values does not get updated properly for imported file->', (done: Function) => {
+                expect(helper.getInstance().sheets[0].rows[30].cells[5].value).toBe('6562.5');
+                helper.invoke('updateCell', [{ value: '2' }, 'A29']);
+                expect(helper.getInstance().sheets[0].rows[28].cells[3].value).toBe('4000');
+                expect(helper.getInstance().sheets[0].rows[28].cells[5].value).toBe('5000');
+                expect(helper.getInstance().sheets[0].rows[30].cells[5].value).toBe('9062.5');
+                done();
+            });
+            it('EJ2-48147 - Formula suggestion box not showed for last cells', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.sheets[0].topLeftCell = 'A40'
+                spreadsheet.dataBind();
+                setTimeout(() => {
+                    spreadsheet.selectRange('C42');
+                    spreadsheet.startEdit();
+                    const editElem: HTMLElement = helper.getCellEditorElement();
+                    editElem.textContent = '=s';
+                    helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
+                    setTimeout(() => {
+                        let popUpElem: HTMLElement = helper.getElement('.e-popup-open .e-dropdownbase');
+                        expect(popUpElem.firstElementChild.childElementCount).toBe(9);
+                        helper.triggerKeyNativeEvent(13);
+                        done();
+                    });
+                });
+            });
+            it('Ej2-54448 - When data is save as json , values parameter are not available->', (done: Function) => {
+                const json: object = { Workbook: { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] },
+                { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, 
+                {index: 84, cells: [{ formula: '=SUM(A1:A5)' }] }] }],  selectedRange: 'A85'  }  }
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.openFromJson({ file: json});
+                setTimeout(() => {
+                    spreadsheet.sheets[0].topLeftCell = 'A80'
+                    spreadsheet.dataBind();
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[84].cells[0].value).toBe(15);
+                        done();
+                    });
+                });
+            });
+            it('EJ2-63297 - String concatenation formula not works properly when the formula contains space with string value->', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=A85 & "test"' }, 'A86']);
+                const sheet: SheetModel = helper.getInstance().sheets[0];
+                expect(sheet.rows[85].cells[0].value).toBe('15test');
+                helper.invoke('updateCell', [{ formula: '=A85&"test"' }, 'A87']);
+                expect(sheet.rows[86].cells[0].value).toBe('15test');
+                helper.invoke('updateCell', [{ formula: '=A85 & " test"' }, 'A88']);
+                expect(sheet.rows[87].cells[0].value).toBe('15 test');
+                done();
+            });
         });
-        // describe('EJ2-48147->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({ sheets: [{ }] }, done);
-        //     });
-        //     afterAll(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Formula suggestion box not showed for last cells', (done: Function) => {
-        //         helper.invoke('goTo', ['A42']);
-        //         setTimeout(() => {
-        //             const spreadsheet: Spreadsheet = helper.getInstance();
-        //             spreadsheet.selectRange('C42');
-        //             spreadsheet.startEdit();
-        //             const editElem: HTMLElement = helper.getCellEditorElement();
-        //             editElem.textContent = '=s';
-        //             helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
-        //             setTimeout(() => {
-        //                 let popUpElem: HTMLElement = helper.getElement('.e-popup-open .e-dropdownbase');
-        //                 expect(popUpElem.firstElementChild.childElementCount).toBe(9);
-        //                 done();
-        //             });
-        //         });
-        //     });
-        // });
-        // describe('EJ2-47753->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
-        //                 [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A5)' }] }], selectedRange: 'A5' }] }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Dependent cells not updated for loaded JSON using openFromJson method', (done: Function) => {
-        //         expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe(15);
-        //         helper.invoke('refresh');
-        //         setTimeout(() => {
-        //             helper.invoke('selectRange', ['A5']);
-        //             helper.edit('A5', '10');
-        //             setTimeout(() => {
-        //                 expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe(20);
-        //                 done();
-        //             });
-        //         });
-        //     });
-        // });
-        // describe('EJ2-42389->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ rows: [{ cells: [{ value: '4' }] }, { cells: [{ value: '5' }] } ] }, { rows: [{ cells: [{ index: 1, value: '4' }] }, { cells: [{ index: 1, value: '5'}] } ] }, 
-        //             { rows: [{ cells: [{ formula:'=(sheet1!a2*sheet2!b2)+(sheet1!a1/sheet2!b1)' }] }] }], activeSheetIndex: 2 }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Cross tab formula issue', (done: Function) => {
-        //         expect(helper.getInstance().sheets[2].rows[0].cells[0].formula).toBe('=(sheet1!a2*sheet2!b2)+(sheet1!a1/sheet2!b1)');
-        //         expect(helper.getInstance().sheets[2].rows[0].cells[0].value).toBe('26');
-        //         helper.edit('Z25', '25');
-        //         setTimeout(() => {
-        //             helper.edit('B1', '=sum(a1:a4)+sheet3!z25');
-        //             expect(helper.getInstance().sheets[2].rows[0].cells[1].formula).toBe('=sum(a1:a4)+sheet3!z25');
-        //             expect(helper.getInstance().sheets[2].rows[0].cells[1].value).toBe('51');
-        //             helper.edit('B5', '25');
-        //             setTimeout(() => {
-        //                 helper.edit('C1', '=(b5*25%)+(sheet3!Z25*1.125)');
-        //                 expect(helper.getInstance().sheets[2].rows[0].cells[2].formula).toBe('=(b5*25%)+(sheet3!Z25*1.125)');
-        //                 expect(helper.getInstance().sheets[2].rows[0].cells[2].value).toBe('34.375');
-        //                 done();
-        //             });
-        //         });
-        //     });
-        // });
-        // describe('EJ2-46382->', () => {
-        //     const model: SpreadsheetModel = { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
-        //         [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A5)' }] }], selectedRange: 'A5' }] };
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet(model, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Formula dependent cells not updated after destroy the spreadsheet', (done: Function) => {
-        //         helper.edit('B1', 'Formula');
-        //         helper.invoke('destroy');
-        //         setTimeout(() => {
-        //             new Spreadsheet(model, '#' + helper.id);
-        //             setTimeout(() => {
-        //                 helper.edit('A5', '10');
-        //                 expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe(20);
-        //                 expect(helper.invoke('getCell', [0, 2]).textContent).toBe('');
-        //                 done();
-        //             });
-        //         });
-        //     });
-        // });
-        // describe('EJ2-49597->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
-        //             [{ value: '4' }] }, {cells: [{ }]}, { cells: [{ formula: '=SUM(A1:A4)' }] }], selectedRange: 'A2' }] }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Formula dependent cells not updated while clear the value using DELETE key', (done: Function) => {
-        //         helper.invoke('selectRange', ['A2']);
-        //         helper.triggerKeyNativeEvent(8);
-        //         expect(helper.invoke('getCell', [2, 0]).value).toBeUndefined;
-        //         setTimeout(() => {
-        //             helper.triggerKeyNativeEvent(13);
-        //             helper.invoke('selectRange', ['A6']);
-        //             setTimeout(() => {
-        //                 expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe(8);
-        //                 done();
-        //             });
-        //         });
-        //     });
-        // });
-        // describe('EJ2-49475->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets:[{ rows:[{ cells: [{ value: '1'}, { value: '1'}] }, { cells:  [{ value: '2'}, { value: '1'}] },
-        //                             { cells: [{ value: '3'}, { value: '1'}] }, { cells: [{ value: '-5'},{ value: '-1'}] },
-        //                             { cells: [{ value: '-6'}, { value: '-1'}] }, { cells: [{ value: '-7'}, { value: '-1'}] }],selectedRange: 'C1'}]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('nested IF formula issue in spreadsheet', (done: Function) => {
-        //         helper.edit('C1', '=IF(SUMIF(A1:A6,"<0",B1:B6)<0,1,2)');
-        //         expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('1');
-        //         helper.edit('D1', '13');
-        //         helper.edit('E1', '=IF(D1="","None",IF(D1>10,"Pass","Fail"))');
-        //         expect(helper.getInstance().sheets[0].rows[0].cells[4].value).toBe('Pass');
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-49476', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ rows: [{ cells: [{ value: '10' }] }, {cells: [{ value: '20'}] }, { cells: [{ value: '30'}] } ]}, 
-        //             { rows: [{ }]}, { rows: [{ cells: [{ value: '20'}] }, { cells: [{ value: '202'}] }, { cells: [{ value: '202'}] }] }], activeSheetIndex: 1
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('improve the UI level formula enhancements for cross tab formula support in spraedsheet', (done: Function) => {
-        //         helper.edit('A1', '=B1+Sheet1!A2+Sheet1!A3+Sheet3!A3');
-        //         expect(helper.getInstance().sheets[1].rows[0].cells[0].formula).toBe('=B1+Sheet1!A2+Sheet1!A3+Sheet3!A3');
-        //         expect(helper.getInstance().sheets[1].rows[0].cells[0].value).toBe('252');
-        //         setTimeout(() => {
-        //             helper.edit('B2', '444');
-        //             helper.edit('A2', '=B2+Sheet1!A2+Sheet1!A3');
-        //             expect(helper.getInstance().sheets[1].rows[1].cells[0].formula).toBe('=B2+Sheet1!A2+Sheet1!A3');
-        //             expect(helper.getInstance().sheets[1].rows[1].cells[0].value).toBe('494');
-        //             setTimeout(() => {
-        //                 helper.edit('A3', '=B2+Sheet1!A2+Sheet3!A2');
-        //                 expect(helper.getInstance().sheets[1].rows[2].cells[0].formula).toBe('=B2+Sheet1!A2+Sheet3!A2');
-        //                 expect(helper.getInstance().sheets[1].rows[2].cells[0].value).toBe('666');
-        //                 setTimeout(() => {
-        //                     helper.edit('A4', '=(B2+Sheet1!A2)');
-        //                     expect(helper.getInstance().sheets[1].rows[3].cells[0].formula).toBe('=(B2+Sheet1!A2)');
-        //                     expect(helper.getInstance().sheets[1].rows[3].cells[0].value).toBe('464');
-        //                     setTimeout(() => {
-        //                         helper.edit('A5', '=(Sheet1!A2+B2)');
-        //                         expect(helper.getInstance().sheets[1].rows[4].cells[0].formula).toBe('=(Sheet1!A2+B2)');
-        //                         expect(helper.getInstance().sheets[1].rows[4].cells[0].value).toBe('464');
-        //                         helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[2].click();
-        //                         setTimeout(() => {
-        //                             helper.edit('B1', '=Sheet2!A3+A1');
-        //                             expect(helper.getInstance().sheets[2].rows[0].cells[1].formula).toBe('=Sheet2!A3+A1');
-        //                             expect(helper.getInstance().sheets[2].rows[0].cells[1].value).toBe('686');
-        //                             helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
-        //                             setTimeout(() => {
-        //                                 helper.edit('A6', '=Sheet1!A2+B2');
-        //                                 expect(helper.getInstance().sheets[1].rows[5].cells[0].formula).toBe('=Sheet1!A2+B2');
-        //                                 expect(helper.getInstance().sheets[1].rows[5].cells[0].value).toBe('464');
-        //                                 done();
-        //                             }, 10);
-        //                         }, 10);
-        //                     }, 10);
-        //                 }, 10);
-        //             });
-        //         })
-        //     });
-        // });
-        // describe('EJ2-52160', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ rows: [{ cells: [{ }] },
-        //                 { cells: [{ value: 'Entity 1' }, { value: '100' }, { value: '200' }, { value: '300' }] },
-        //                 { cells: [{ value: 'Entity 1' }] },
-        //                 { cells: [{ value: 'Entity 2' }, { value: '100' }, { value: '200' }, { value: '300' }] },
-        //                 { cells: [{ value: 'Entity 1' }] },
-        //                 { cells: [{ value: 'Entity 3' }, { value: '300' }, { value: '400' }, { value: '500' }] },
-        //                 { cells: [{ value: 'Entity 4' }, { value: '1' }, { value: '3' }, { value: '5' }] },
-        //                 { cells: [{ value: 'Entity 5' }, { value: '2' }, { value: '4' }, { value: '6' }] },
-        //                 { cells: [{ value: 'Entity 2' }] },
-        //                 { cells: [{ value: 'Entity 3' }] }] }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('UNIQUE function on multiple columns doesnot work properly', (done: Function) => {
-        //         helper.invoke('selectRange', ['G2']);
-        //         helper.edit('G2', '=UNIQUE(A1:D10)');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toBe('=UNIQUE(A1:D10)');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toBe('0');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toBe('0');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[8].value).toBe('0');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('0');
-        //         expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toBe('Entity 1');
-        //         expect(helper.getInstance().sheets[0].rows[9].cells[6].value).toBe('Entity 3');
-        //         expect(helper.getInstance().sheets[0].rows[9].cells[7].value).toBe('0');
-        //         expect(helper.getInstance().sheets[0].rows[9].cells[8].value).toBe('0');
-        //         expect(helper.getInstance().sheets[0].rows[9].cells[9].value).toBe('0');
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-51868->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Spreadsheet formula throws #value error->', (done: Function) => {
-        //         helper.edit('B2', '=(I3+I7)*-1');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[1].formula).toBe('=(I3+I7)*-1');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe('0');
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-51869->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A1:A10' }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Need to avoid rounding decimal values while adding decimal values->', (done: Function) => {
-        //         helper.getElement('#' + helper.id + '_number_format').click();
-        //         helper.getElement('#' + helper.id + '_number_format-popup .e-item:nth-child(2)').click();
-        //         helper.edit('A1', '100000.50');
-        //         helper.edit('A2', '1.00');
-        //         helper.edit('A3', '=SUM(A1:A2)');
-        //         expect(helper.getInstance().sheets[0].rows[2].cells[0].formula).toBe('=SUM(A1:A2)');
-        //         expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('100001.5');
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-53137->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('MAX function throws error->', (done: Function) => {
-        //         helper.edit('B1', '=MAX(A1,A10)');
-        //         expect(helper.getInstance().sheets[0].rows[0].cells[1].formula).toBe('=MAX(A1,A10)');
-        //         expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('0');
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-54384, Ej2-54448->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ ranges: [{ dataSource: defaultData }] }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('When data is save as json , values parameter are not available->', (done: Function) => {
-        //         const json: object = { Workbook: { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] },
-        //         { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, 
-        //         {index: 84, cells: [{ formula: '=SUM(A1:A5)' }] }] }],  selectedRange: 'A85'  }  }
-        //         const spreadsheet: Spreadsheet = helper.getInstance();
-        //         spreadsheet.openFromJson({ file: json});
-        //         setTimeout(() => {
-        //             helper.invoke('goTo', ['A85']);
-        //             setTimeout(() => {
-        //                 expect(helper.getInstance().sheets[0].rows[84].cells[0].value).toBe(15);
-        //                 done();
-        //             }, 10);
-        //         }, 10);
-        //     });
-        // });
-        // describe('EJ2-56672->', () => {
-        //     let rows: RowModel[];
-        //     beforeAll((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ rows: [{ cells: [{ value: 'cat' }, { formula: '=UNIQUE(A1:A100)' }, { formula: '=IFS(B1=0,"null",TRUE,B1)' }] }, 
-        //             { cells: [{ value: 'dog' }] }, { cells: [{ value: 'lion' }] }, { cells: [{ value: 'tiger' }] }], selectedRange: 'C1' }]
-        //         }, done);
-        //     });
-        //     afterAll(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('To refresh the all dependent cells for a formula that refers another formula cell->', (done: Function) => {
-        //         rows = helper.getInstance().sheets[0].rows;
-        //         expect(rows[0].cells[1].formula).toBe('=UNIQUE(A1:A100)');
-        //         expect(rows[0].cells[2].formula).toBe('=IFS(B1=0,"null",TRUE,B1)');
-        //         expect(rows[0].cells[1].value).toBe('cat');
-        //         expect(rows[1].cells[1].value).toBe('dog');
-        //         expect(rows[2].cells[1].value).toBe('lion');
-        //         expect(rows[3].cells[1].value).toBe('tiger');
-        //         expect(rows[4].cells[1].value).toBeUndefined;
-        //         expect(rows[0].cells[2].value).toBe('cat');
-        //         helper.invoke('autoFill', ['C2:C10', 'C1', 'Down', 'FillWithoutFormatting']);
-        //         expect(rows[1].cells[2].value).toBe('dog');
-        //         expect(rows[2].cells[2].value).toBe('lion');
-        //         expect(rows[3].cells[2].value).toBe('tiger');
-        //         expect(rows[4].cells[2].value).toBeUndefined; 
-        //         expect(rows[9].cells[2].value).toBeUndefined;
-        //         helper.edit('A4', 'hippo');
-        //         setTimeout(() => {
-        //             expect(rows[3].cells[1].value).toBe('hippo');
-        //             expect(rows[3].cells[2].value).toBe('hippo');
-        //             done();
-        //         });
-        //     });
-        //     it('Unique formula cell value throws #spill error on refresh ->', (done: Function) => {
-        //         expect(rows[0].cells[1].formula).toBe('=UNIQUE(A1:A100)');
-        //         expect(rows[0].cells[1].value).toBe('cat');
-        //         helper.getInstance().refresh();
-        //         setTimeout(() => {
-        //             expect(rows[0].cells[1].value).toBe('cat');
-        //             done();
-        //         });
-        //     });
-        // });
-        // describe('EJ2-56722->', () => {
-        //     beforeEach((done: Function) => {
-        //         model = {
-        //             sheets: [{ rows: [
-        //             { cells: [{ value: '1' }, { value: '1.25' }, { value: '1500' }, { formula: '=A1*C1' }, { formula: '=B1*C1' }, { formula: '=E1*A1' }] }, 
-        //             { cells: [{ value: '1' }, { value: '' }, { value: '2000' }, { formula: '=A2*C2' }, { formula: '=B1*C2' }, { formula: '=E2*A2' }] }, 
-        //             { cells: [{ value: '1' }, { value: '' }, { value: '1750' }, { formula: '=A3*C3' }, { formula: '=B1*C3' }, { formula: '=E3*A3' }] },
-        //             { cells: [{ index: 5, formula: '=SUM(F1:F3)' }] }
-        //             ] }]
-        //         },
-        //         helper.initializeSpreadsheet(model, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Cascading cell values does not get updated properly for imported file->', (done: Function) => {
-        //         expect(helper.getInstance().sheets[0].rows[3].cells[5].value).toBe('6562.5');
-        //         helper.edit('A2', '2');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe('4000');
-        //         expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toBe('5000');
-        //         expect(helper.getInstance().sheets[0].rows[3].cells[5].value).toBe('9062.5');
-        //         done();
-        //     });
-        // });
+        describe('EJ2-46382->', () => {
+            const model: SpreadsheetModel = { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
+                [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A5)' }] }], selectedRange: 'A5' }] };
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Formula dependent cells not updated after destroy the spreadsheet', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'Formula' }, 'B1']);
+                helper.invoke('destroy');
+                setTimeout(() => {
+                    new Spreadsheet(model, '#' + helper.id);
+                    setTimeout(() => {
+                        helper.invoke('updateCell', [{ value: '10' }, 'A5']);
+                        expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe(20);
+                        expect(helper.invoke('getCell', [0, 2]).textContent).toBe('');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-52160, EJ2-56672', () => {
+            let rows: RowModel[];
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [
+                        { cells: [{ }] },
+                        { cells: [{ value: 'Entity 1' }, { value: '100' }, { value: '200' }, { value: '300' }] },
+                        { cells: [{ value: 'Entity 1' }] },
+                        { cells: [{ value: 'Entity 2' }, { value: '100' }, { value: '200' }, { value: '300' }] },
+                        { cells: [{ value: 'Entity 1' }] },
+                        { cells: [{ value: 'Entity 3' }, { value: '300' }, { value: '400' }, { value: '500' }] },
+                        { cells: [{ value: 'Entity 4' }, { value: '1' }, { value: '3' }, { value: '5' }] },
+                        { cells: [{ value: 'Entity 5' }, { value: '2' }, { value: '4' }, { value: '6' }] },
+                        { cells: [{ value: 'Entity 2' }] },
+                        { cells: [{ value: 'Entity 3' }] },
+                        {  cells: [{ }]},
+                        {  cells: [{ value: 'cat' }, { formula: '=UNIQUE(A12:A100)' }, { formula: '=IFS(B12=0,"null",TRUE,B12)' } ]},
+                        {  cells: [{ value: 'dog' } ]},
+                        {  cells: [{ value: 'lion' } ]},
+                        {  cells: [{ value: 'tiger' } ]}
+                    ] }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('EJ2-52160 - UNIQUE function on multiple columns doesnot work properly', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=UNIQUE(A1:D10)' }, 'G2']);
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toBe('=UNIQUE(A1:D10)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[1].cells[8].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toBe('Entity 1');
+                expect(helper.getInstance().sheets[0].rows[9].cells[6].value).toBe('Entity 3');
+                expect(helper.getInstance().sheets[0].rows[9].cells[7].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[9].cells[8].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[9].cells[9].value).toBe('0');
+                done();
+            });
+            it('EJ2-56672 - To refresh the all dependent cells for a formula that refers another formula cell->', (done: Function) => {
+                rows = helper.getInstance().sheets[0].rows;
+                expect(rows[11].cells[1].formula).toBe('=UNIQUE(A12:A100)');
+                expect(rows[11].cells[2].formula).toBe('=IFS(B12=0,"null",TRUE,B12)');
+                expect(rows[11].cells[1].value).toBe('cat');
+                expect(rows[12].cells[1].value).toBe('dog');
+                expect(rows[13].cells[1].value).toBe('lion');
+                expect(rows[14].cells[1].value).toBe('tiger');
+                expect(rows[15].cells[1].value).toBeUndefined;
+                expect(rows[11].cells[2].value).toBe('cat');
+                helper.invoke('autoFill', ['C13:C20', 'C12', 'Down', 'FillWithoutFormatting']);
+                expect(rows[12].cells[2].value).toBe('dog');
+                expect(rows[13].cells[2].value).toBe('lion');
+                expect(rows[14].cells[2].value).toBe('tiger');
+                expect(rows[15].cells[2].value).toBeUndefined; 
+                expect(rows[16].cells[2].value).toBeUndefined;
+                helper.invoke('updateCell', [{ value: 'hippo' }, 'A15']);
+                expect(rows[14].cells[1].value).toBe('hippo');
+                expect(rows[14].cells[2].value).toBe('hippo');
+                done();
+            });
+            it('EJ2-56672 - Unique formula cell value throws #spill error on refresh ->', (done: Function) => {
+                expect(rows[11].cells[1].formula).toBe('=UNIQUE(A12:A100)');
+                expect(rows[11].cells[1].value).toBe('cat');
+                helper.getInstance().refresh();
+                setTimeout(() => {
+                    expect(rows[11].cells[1].value).toBe('cat');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-42389, EJ2-49476, EJ2-49549->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ }] }, { cells: [{ value: '10' }] }, {cells: [{ value: '20'}] }, { cells: [{ value: '30'}] } ] }, 
+                    { rows: [{ cells: [{ index: 1, value: '4' }, { index: 3, value: '1' }, { value: '3' }] }, { cells: [{ index: 1, value: '5'}, { index: 3, value: '2' }, { value: '2' }] }, 
+                    { cells: [{ index: 3, value: '3' }, { value: '1'}] }, { cells: [{ value: '20'}, { index: 3, value: '2' }, { value: '5' }] }, { cells: [{ value: '202'}, { index: 3, value: '1' }, { value: '1' }] }, 
+                    { cells: [{ value: '202'}, { index: 3, value: '5' }, { value: '8' }] } ] }, 
+                    { rows: [{ cells: [{ formula:'=(sheet1!a2*sheet2!b2)+(sheet1!a1/sheet2!b1)' }] }] }], activeSheetIndex: 2 }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('EJ2-42389 - Cross tab formula issue', (done: Function) => {
+                expect(helper.getInstance().sheets[2].rows[0].cells[0].formula).toBe('=(sheet1!a2*sheet2!b2)+(sheet1!a1/sheet2!b1)');
+                expect(helper.getInstance().sheets[2].rows[0].cells[0].value).toBe('26');
+                helper.invoke('updateCell', [{ value: '25' }, 'Z25']);
+                helper.invoke('updateCell', [{ formula: '=sum(a1:a4)+sheet3!z25' }, 'B1']);
+                expect(helper.getInstance().sheets[2].rows[0].cells[1].formula).toBe('=sum(a1:a4)+sheet3!z25');
+                expect(helper.getInstance().sheets[2].rows[0].cells[1].value).toBe('51');
+                helper.invoke('updateCell', [{ value: '25' }, 'B2']);
+                helper.invoke('updateCell', [{ formula: '=(b2*25%)+(sheet3!Z25*1.125)' }, 'C1']);
+                expect(helper.getInstance().sheets[2].rows[0].cells[2].formula).toBe('=(b2*25%)+(sheet3!Z25*1.125)');
+                expect(helper.getInstance().sheets[2].rows[0].cells[2].value).toBe('34.375');
+                done();
+            });
+            it('EJ2-49476 - improve the UI level formula enhancements for cross tab formula support in spraedsheet', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=B5+Sheet1!A5+Sheet1!A6+Sheet2!A5' }, 'A5']);
+                expect(helper.getInstance().sheets[2].rows[4].cells[0].formula).toBe('=B5+Sheet1!A5+Sheet1!A6+Sheet2!A5');
+                expect(helper.getInstance().sheets[2].rows[4].cells[0].value).toBe('252');
+                helper.invoke('updateCell', [{ value: '444' }, 'B6']);
+                helper.invoke('updateCell', [{ formula: '=B6+Sheet1!A5+Sheet1!A6' }, 'A6']);
+                expect(helper.getInstance().sheets[2].rows[5].cells[0].formula).toBe('=B6+Sheet1!A5+Sheet1!A6');
+                expect(helper.getInstance().sheets[2].rows[5].cells[0].value).toBe('494');
+                helper.invoke('updateCell', [{ formula: '=B6+Sheet1!A5+Sheet2!A5' }, 'A7']);
+                expect(helper.getInstance().sheets[2].rows[6].cells[0].formula).toBe('=B6+Sheet1!A5+Sheet2!A5');
+                expect(helper.getInstance().sheets[2].rows[6].cells[0].value).toBe('666');
+                helper.invoke('updateCell', [{ formula: '=(B6+Sheet1!A5)' }, 'A8']);
+                expect(helper.getInstance().sheets[2].rows[7].cells[0].formula).toBe('=(B6+Sheet1!A5)');
+                expect(helper.getInstance().sheets[2].rows[7].cells[0].value).toBe('464');
+                helper.invoke('updateCell', [{ formula: '=(Sheet1!A5+B6)' }, 'A9']);
+                expect(helper.getInstance().sheets[2].rows[8].cells[0].formula).toBe('=(Sheet1!A5+B6)');
+                expect(helper.getInstance().sheets[2].rows[8].cells[0].value).toBe('464');
+                helper.invoke('updateCell', [{ formula: '=(Sheet1!A5+B6)' }, 'A10']);
+                expect(helper.getInstance().sheets[2].rows[9].cells[0].formula).toBe('=(Sheet1!A5+B6)');
+                expect(helper.getInstance().sheets[2].rows[9].cells[0].value).toBe('464');
+                helper.invoke('updateCell', [{ formula: '=Sheet2!A5+A5' }, 'A11']);
+                expect(helper.getInstance().sheets[2].rows[10].cells[0].formula).toBe('=Sheet2!A5+A5');
+                expect(helper.getInstance().sheets[2].rows[10].cells[0].value).toBe('454');
+                helper.invoke('updateCell', [{ formula: '=Sheet1!A5+B6' }, 'A12']);
+                expect(helper.getInstance().sheets[2].rows[11].cells[0].formula).toBe('=Sheet1!A5+B6');
+                expect(helper.getInstance().sheets[2].rows[11].cells[0].value).toBe('464');
+                done();
+            });
+            it('EJ2-49549 - Deleting a whole row on sheet that references other sheets changes values to #REF!-Issue 1', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=IF(SUMIF(Sheet2!$D1:$D6,">3",Sheet2!$E1:$E6)>3,1)' }, 'A14']);
+                helper.invoke('updateCell', [{ formula: '=SUM(Sheet2!D1:E1)' }, 'C14']);
+                helper.invoke('updateCell', [{ formula: '=IF(Sheet2!D1>0,1,0)' }, 'D14']);
+                helper.invoke('updateCell', [{ value: '5' }, 'D15']);
+                expect(helper.getInstance().sheets[2].rows[14].cells[3].value).toBe(5);
+                helper.invoke('delete', [14, 14, 'Row']);
+                setTimeout(function () {
+                    expect(helper.getInstance().sheets[2].rows[13].cells[0].value).toBe('1');
+                    expect(helper.getInstance().sheets[2].rows[13].cells[2].value).toBe(4);
+                    expect(helper.getInstance().sheets[2].rows[13].cells[3].value).toBe('1');
+                    done();
+                });
+            });
+        });
     });
     describe('Stability ->', () => {
         describe('SUM Formula', () => {

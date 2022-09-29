@@ -146,7 +146,7 @@
 
   .e-de-ctnr-numbering::before {
     content: '\e72c';
-   }
+  }
 
   .e-de-ctnr-aligncenter::before {
     content: '\e732';
@@ -392,6 +392,11 @@
 
   .e-de-endnote::before {
     content: '\e436';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-paragraph-mark::before{
+    content: '\e720';
     font-family: 'e-icons';
   }
 }

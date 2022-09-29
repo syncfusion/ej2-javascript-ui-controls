@@ -196,7 +196,7 @@ export class ImageCommand {
             capImgWrap.appendChild(newTextEle);
         } else {
             detach(selectParent);
-            if (Browser.isIE) {
+            if (Browser.isIE && e.item.selection) {
                 e.item.selection.restore();
             }
             InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);

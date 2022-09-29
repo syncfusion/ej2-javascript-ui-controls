@@ -57,8 +57,7 @@ export class CellEdit {
         }
         if (data.hasChildRecords && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
             data['isManual'] === false) || this.parent.taskMode === 'Auto')) || field === taskSettings.duration
-            || field === taskSettings.dependency || field === taskSettings.progress
-            || field === taskSettings.work || field === 'taskType')) {
+            ||field === taskSettings.progress || field === taskSettings.work || field === 'taskType')) {
             args.cancel = true;
         } else {
             const callBackPromise: Deferred = new Deferred();

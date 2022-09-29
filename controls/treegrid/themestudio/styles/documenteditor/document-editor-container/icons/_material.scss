@@ -246,7 +246,7 @@
 
   .e-de-ctnr-numbering::before {
     content: '\e346';
-   }
+  }
 
   .e-de-ctnr-aligncenter::before {
     content: '\e35e';
@@ -283,7 +283,6 @@
   .e-de-ctnr-bottomborder::before {
     content: '\e298';
   }
-
 
   .e-de-ctnr-strokesize::before {
     content: '\ec25';
@@ -395,6 +394,11 @@
 
   .e-de-endnote::before {
     content: '\e436';
+    font-family: 'e-icons';
+  }
+
+  .e-de-e-paragraph-mark::before{
+    content: '\e353';
     font-family: 'e-icons';
   }
 }

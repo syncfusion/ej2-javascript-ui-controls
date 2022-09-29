@@ -10,7 +10,6 @@ import { ExportType } from '../utils/enum';
  * @hidden
  */
 export class ImageExport {
-    private control: Maps;
 
     /**
      * Constructor for Maps
@@ -18,7 +17,6 @@ export class ImageExport {
      * @param {Maps} control - Specifies the instance of the map
      */
     constructor(control: Maps) {
-        this.control = control;
     }
     /**
      * To export the file as image/svg format
@@ -29,27 +27,27 @@ export class ImageExport {
      * @returns {Promise<string>} - Returns the promise string.
      * @private
      */
-    public export(type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
+    public export(maps: Maps, type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const imageCanvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
+                    'width': maps.availableSize.width.toString(),
+                    'height': maps.availableSize.height.toString()
                 }
             });
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            const toolbarEle: HTMLElement = document.getElementById(this.control.element.id + '_ToolBar');
-            const svgParent: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            const toolbarEle: HTMLElement = document.getElementById(maps.element.id + '_ToolBar');
+            const svgParent: HTMLElement = document.getElementById(maps.element.id + '_Tile_SVG_Parent');
             let svgDataElement: string;
             let tileSvg: Element;
-            let svgObject: Element = getElementByID(this.control.element.id + '_svg').cloneNode(true) as Element;
-            if (!this.control.isTileMap) {
+            let svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
+            if (!maps.isTileMap) {
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                    this.control.svgObject.outerHTML + '</svg>';
+                    maps.svgObject.outerHTML + '</svg>';
             } else {
-                tileSvg = getElementByID(this.control.element.id + '_Tile_SVG').cloneNode(true) as Element;
+                tileSvg = getElementByID(maps.element.id + '_Tile_SVG').cloneNode(true) as Element;
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                 svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
             }
@@ -72,7 +70,7 @@ export class ImageExport {
             } else {
                 const image: HTMLImageElement = new Image();
                 const ctxt: CanvasRenderingContext2D = imageCanvasElement.getContext('2d');
-                if (!this.control.isTileMap) {
+                if (!maps.isTileMap) {
                     image.onload = (() => {
                         ctxt.drawImage(image, 0, 0);
                         window.URL.revokeObjectURL(url);
@@ -91,23 +89,23 @@ export class ImageExport {
                     });
                     image.src = url;
                 } else {
-                    const svgParentElement: HTMLElement = document.getElementById(this.control.element.id + '_MapAreaBorder');
+                    const svgParentElement: HTMLElement = document.getElementById(maps.element.id + '_MapAreaBorder');
                     let top: number = parseFloat(svgParentElement.getAttribute('y'));
                     let left: number = parseFloat(svgParentElement.getAttribute('x'));
                     const imgxHttp: XMLHttpRequest = new XMLHttpRequest();
-                    const imgTileLength: number = this.control.mapLayerPanel.tiles.length;
+                    const imgTileLength: number = maps.mapLayerPanel.tiles.length;
                     for (let i: number = 0; i <= imgTileLength + 1; i++) {
-                        const tile: HTMLElement = document.getElementById(this.control.element.id + '_tile_' + (i - 1));
+                        const tile: HTMLElement = document.getElementById(maps.element.id + '_tile_' + (i - 1));
                         const exportTileImg: HTMLImageElement = new Image();
                         exportTileImg.crossOrigin = 'Anonymous';
-                        ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
-                        ctxt.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
-                        ctxt.font = this.control.titleSettings.textStyle.size + ' Arial';
-                        let titleElement: HTMLElement = document.getElementById(this.control.element.id + '_Map_title');
+                        ctxt.fillStyle = maps.background ? maps.background : '#FFFFFF';
+                        ctxt.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
+                        ctxt.font = maps.titleSettings.textStyle.size + ' Arial';
+                        let titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
                         if (!isNullOrUndefined(titleElement)) {
                             ctxt.fillStyle = titleElement.getAttribute('fill');
                             ctxt.fillText(
-                                this.control.titleSettings.text, parseFloat(titleElement.getAttribute('x')),
+                                maps.titleSettings.text, parseFloat(titleElement.getAttribute('x')),
                                 parseFloat(titleElement.getAttribute('y'))
                             );
                         }
@@ -121,7 +119,6 @@ export class ImageExport {
                                     ctxt.setTransform(1, 0, 0, 1, left, top);
                                 }
                             } else {
-                                const tileParent: HTMLElement = document.getElementById(this.control.element.id + '_tile_parent');
                                 ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + left, parseFloat(tile.style.top) +
                                     top);
                             }
@@ -174,13 +171,8 @@ export class ImageExport {
     /**
      * To destroy the ImageExport.
      *
-     * @param {Maps} maps - Specifies the instance of the maps.
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
-    }
+    public destroy(): void { }
 }

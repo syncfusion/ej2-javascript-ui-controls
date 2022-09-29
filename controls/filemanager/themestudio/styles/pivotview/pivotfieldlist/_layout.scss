@@ -13,10 +13,10 @@
   }
 
   .e-pivot-formatting-dialog {
-    // sass-lint:disable-all
+    /* stylelint-disable */
     max-height: 480px !important;
     width: $format-dialog-width !important;
-    // sass-lint:enable-all
+    /* stylelint-enable */
     .e-format-table tr:nth-child(odd) {
       td {
         padding-bottom: 4px;
@@ -26,9 +26,9 @@
     .e-format-delete-icon {
       font-weight: normal;
       @if ($field-list-skin == 'bootstrap4') {
-        // sass-lint:disable-all
+        /* stylelint-disable */
         color: $black;
-        // sass-lint:enable-all
+        /* stylelint-enable */
         opacity: .5;
       }
 
@@ -49,7 +49,6 @@
         @if ($skin-name == 'bootstrap5') {
           padding-right: 8px;
         }
-
       }
     }
 
@@ -87,10 +86,10 @@
 
     .e-split-colorpicker {
       @if ($field-list-skin == 'bootstrap4') {
-        // sass-lint:disable-all
+        /* stylelint-disable */
         background-color: $format-label-font-color !important;
         color: $field-list-default-bg-color !important;
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
     }
 
@@ -101,15 +100,12 @@
       padding-right: 12px;
       padding-top: 12px;
 
-      @if($skin-name == 'bootstrap5') {
-        // sass-lint:disable-all
+      @if ($skin-name == 'bootstrap5') {
+        /* stylelint-disable */
         color: $field-list-default-font-color !important;
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
-
     }
-
-
 
     .e-format-delete-button:hover,
     .e-format-delete-button:focus,
@@ -142,9 +138,9 @@
       border: 1px solid $format-preview-border-color;
       border-radius: $field-list-default-border-radius;
       height: $format-preview-height;
-      // sass-lint:disable-all
+      /* stylelint-disable */
       margin: 0 !important;
-      // sass-lint:enable-all
+      /* stylelint-enable */
       padding-left: 6px;
       padding-top: 6px;
       width: $format-preview-width;
@@ -155,12 +151,12 @@
       margin: 0 2px;
       width: 14px;
       @if ($skin-name == 'bootstrap5') {
-        // sass-lint:disable-all
+        /* stylelint-disable */
         color: $field-list-default-font-color !important;
         &:hover {
           color: $field-list-active-color !important;
         }
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
     }
 
@@ -185,9 +181,9 @@
     .e-split-preview,
     .e-tip-transparent {
       border: 1px solid $format-preview-border-color;
-      // sass-lint:disable-all
+      /* stylelint-disable */
       border-radius: 0 !important;
-      // sass-lint:enable-all
+      /* stylelint-enable */
       height: 40%;
       left: -3px;
       position: absolute;
@@ -196,13 +192,13 @@
     }
 
     &.e-device {
-      // sass-lint:disable-all
+      /* stylelint-disable */
       min-width: 320px !important;
       width: 100%  !important;
       .e-format-inner-div {
         width: 100% !important;
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-format-value1,
       .e-format-value2,
@@ -232,7 +228,6 @@
         @if ($skin-name == 'tailwind') {
           margin-right: 30px;
         }
-
       }
     }
 
@@ -270,20 +265,20 @@
 
   .e-bigger.e-pivot-formatting-dialog,
   .e-bigger .e-pivot-formatting-dialog {
-    // sass-lint:disable-all
+    /* stylelint-disable */
     width: $format-dialog-bigger-width !important;
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-format-label,
     .e-format-value-label {
       font-size: $format-label-bigger-font-size;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-format-value1, .e-format-value2 {
         margin-bottom: 3px !important;
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-format-inner-div {
       padding-left: 16px;
@@ -306,13 +301,11 @@
       @if ($skin-name == 'bootstrap5') {
         padding-right: 12px;
       }
-
     }
 
     .e-format-font-color-picker {
       margin-left: 0;
       margin-right: 20px;
-
     }
 
     .e-format-color-picker .e-split-btn-wrapper .e-btn.e-icon-btn {
@@ -322,10 +315,10 @@
     }
 
     &.e-device {
-      // sass-lint:disable-all
+      /* stylelint-disable */
       min-width: 320px !important;
       width: 100%  !important;
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-format-color-picker {
         width: 33%;
@@ -350,9 +343,9 @@
   }
 
   .e-pivot-calc-dialog-div {
-    // sass-lint:disable-all
+    /* stylelint-disable */
     max-height: 600px !important;
-    // sass-lint:enable-all
+    /* stylelint-enable */
     min-width: 290px;
 
     .e-dlg-header-content,
@@ -363,9 +356,9 @@
     .e-dlg-content {
       padding-bottom: $pivot-dialog-content-padding;
       @if ($skin-name == 'FluentUI') {
-        // sass-lint:disable-all
+        /* stylelint-disable */
         padding-top: 1px !important;
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
 
       .e-pivot-calc-custom-format-div {
@@ -388,7 +381,7 @@
       padding-bottom: 0;
       text-overflow: ellipsis;
       white-space: nowrap;
-      @if($skin-name == 'bootstrap5') {
+      @if ($skin-name == 'bootstrap5') {
         padding-bottom: 4px;
       }
       @if ($skin-name == 'tailwind') {
@@ -430,11 +423,15 @@
           @if ($skin-name != 'bootstrap5') {
             color: $field-list-tree-icon-color;
           }
-          //sass-lint:disable-all
+          /* stylelint-disable */
           float: right !important;
-          margin: 0;          
-          margin-right: 12px !important;
-          //sass-lint:enable-all
+          margin: 0 12px 0 0;
+          /* stylelint-enable */
+          &.e-edit,
+          &.e-edited,
+          &.e-remove-report {
+            margin-top: $field-list-calc-list-icon;
+          }
         }
       }
 
@@ -513,14 +510,14 @@
           padding: 8px 8px 8px 12px;
         }
         @if ($skin-name == 'tailwind') {
-          // sass-lint:disable-all
+          /* stylelint-disable */
           height: 20px;
           margin-top: 0;
           padding: 0 5px;
           position: relative;
           bottom:1px;
           width: 20px;
-          //sass-lint:enable-all
+          /* stylelint-enable */
         }
         @if ($skin-name == 'FluentUI') {
           position: relative;
@@ -577,8 +574,8 @@
       .e-treeview .e-list-item div.e-edit.e-icons,
       .e-treeview .e-list-item div.e-edited.e-icons,
       .e-treeview .e-list-item div.e-remove-report.e-icons {
-        margin-right: 0;
         transform: rotate(0deg);
+        margin: $field-list-calc-list-icon-rtl 0 0 0;
       }
 
       .e-treeview ul {
@@ -595,7 +592,7 @@
       }
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-pivot-calc-input.e-empty-field::-webkit-input-placeholder {
       color: $error-font-color !important;
       font-weight: 600 !important;
@@ -615,7 +612,7 @@
         color: $error-font-color !important;
         font-weight: 600 !important;
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-pivot-formula {
       background-color: $pivot-formula-background;
@@ -651,7 +648,7 @@
       overflow: auto;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     &.e-olap-calc-dialog-div {
       min-width: 575px;
 
@@ -843,7 +840,7 @@
         }
       }
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
   }
 
   .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
@@ -854,10 +851,10 @@
 
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
-    //sass-lint:disable-all
-    max-height: 600px !important;
+    /* stylelint-disable */
+    max-height: 660px !important;
     min-width: 401px !important;
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-pivot-all-field-title,
     .e-pivot-field-name-title,
@@ -887,7 +884,7 @@
 
     .e-treeview .e-list-item div.e-icons {
       font-size: $field-list-bigger-icon-size;
-      @if($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
+      @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
         padding-top: 12px;
       }
     }
@@ -914,7 +911,7 @@
       padding-top: $pivot-dialog-footer-padding;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     &.e-olap-calc-dialog-div {
       max-height: 750px !important;
       min-width: 580px !important;
@@ -970,13 +967,16 @@
     .e-member-editor-dialog {
       max-width: 400px !important;
       min-width: 320px !important;
+      @if ($skin-name == 'FluentUI') {
+        min-height: 370px;
+      }
 
       .e-member-prompt {
         padding: 25px $field-list-editor-search-padding-size;
         text-align: center;
         width: 100%;
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-editor-search-container {
         display: flex;
@@ -1017,11 +1017,32 @@
         }
       }
 
+      &:not(.e-member-editor-dialog):not(.e-olap-field-list-tree) {
+        ul {
+          padding-left: $field-list-treeview-mobile-ul-padding;
+
+          li.e-pivot-parent {
+            @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+              padding-left: 13px;
+            }
+            @if ($skin-name == 'tailwind') {
+              padding-left: 5px;
+            }
+          }
+
+          li:not(.e-pivot-parent):not(.e-pivot-child) {
+            .e-text-content {
+              padding-left: $field-list-treeview-mobile-li-padding;
+            }
+          }
+        }
+      }
+
       .e-member-editor-container ul {
-        // sass-lint:disable-all
+        /* stylelint-disable */
         margin-left: $field-list-member-filter-list-padding-size;
         overflow: auto !important;
-        // sass-lint:enable-all
+        /* stylelint-enable */
 
         li {
           .e-list-text {
@@ -1034,13 +1055,36 @@
         }
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-disable {
         display: none !important;
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       &.e-rtl {
+        &:not(.e-member-editor-dialog):not(.e-olap-field-list-tree) {
+          ul {
+            padding-right: $field-list-treeview-mobile-ul-padding;
+
+            li.e-pivot-parent {
+              @if ($skin-name == 'bootstrap5') {
+                padding-right: 7px;
+              }
+              @if ($skin-name == 'FluentUI') {
+                padding-right: 13px;
+              }
+              @if ($skin-name == 'tailwind') {
+                padding-right: 5px;
+              }
+            }
+
+            li:not(.e-pivot-parent):not(.e-pivot-child) {
+              .e-text-content {
+                padding-right: $field-list-treeview-mobile-li-padding;
+              }
+            }
+          }
+        }
         .e-member-editor-outer-container {
           ul {
             margin-left: 0;
@@ -1065,7 +1109,7 @@
           }
         }
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
         &.e-rtl {
           .e-member-editor-outer-container {
             ul {
@@ -1114,7 +1158,6 @@
         box-shadow: none;
         margin-left: $field-list-sort-wrapper-padding-size;
 
-        // sass-lint:disable-all
         .e-member-sort {
           @if ($field-list-skin == 'bootstrap4') {
             background-color: $content-bg;
@@ -1161,7 +1204,6 @@
             }
           }
         }
-        // sass-lint:enable-all
       }
 
       .e-select-all-container ul {
@@ -1181,7 +1223,7 @@
 
       .e-filter-tab-container {
         border: 0;
-        // sass-lint:enable-all
+        /* stylelint-enable */
 
         .e-tab-header {
           .e-toolbar-item .e-icon-left + .e-tab-text {
@@ -1232,7 +1274,7 @@
         padding: 20px;
         padding-bottom: 0;
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
         .e-filter-text-div {
           color: $field-list-button-icon-color !important;
           font-size: 13px;
@@ -1242,7 +1284,7 @@
           }
 
         }
-        // sass-lint:enable-all
+        /* stylelint-enable */
 
         .e-filter-option-container-1,
         .e-filter-option-container-2,
@@ -1261,7 +1303,6 @@
         @if ($skin-name == 'tailwind') {
           padding-top: 0;
         }
-
       }
 
       &.e-excel-filter {
@@ -1315,7 +1356,7 @@
           }
         }
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
         &.e-rtl {
           .e-member-editor-outer-container {
             .e-editor-search-container {
@@ -1330,13 +1371,12 @@
     }
 
     .e-adaptive-field-list-dialog {
-      ul {
+      ul:first-child {
         min-height: 170px;
         overflow: auto;
       }
       .e-member-editor-container ul {
         li {
-          // sass-lint:disable-all
           .e-calc-measure-icon,
           .e-calc-dimension-icon,
           .e-attributeCDB-icon,
@@ -1354,7 +1394,6 @@
       }
 
       &.e-olap-editor-dialog {
-        // sass-lint:disable-all
         &.e-rtl {
           .e-member-editor-outer-container {
             ul li {
@@ -1477,7 +1516,6 @@
           padding: 12px 0 0 0 !important;
         }
 
-        // sass-lint:disable-all
 
         .e-empty-field::-webkit-input-placeholder {
           color: $error-font-color !important;
@@ -1498,7 +1536,7 @@
           color: $error-font-color !important;
           font-weight: 600 !important;
         }
-        // sass-lint:enable-all
+        /* stylelint-enable */
       }
     }
 
@@ -1557,7 +1595,7 @@
       }
     }
 
-    .e-text-content>.e-icons,
+    .e-text-content > .e-icons,
     .e-checkbox-wrapper,
     .e-list-icon {
       display: none;
@@ -1578,7 +1616,7 @@
         }
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-no-drop {
         display: inline-block !important;
         line-height: 0em;
@@ -1593,7 +1631,7 @@
           padding: 5px 0;
         }
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       &.e-rtl {
         .e-text-content {
@@ -1631,12 +1669,12 @@
       .e-no-drop {
         &::before {
           padding: 4px;
-          }
         }
+      }
     }
   }
 
-  // sass-lint:disable-all
+  /* stylelint-disable */
   .e-button-drag-clone {
     background-color: $field-list-drag-clone-bg-color !important;
     border: $field-list-border-size $field-list-border-type $field-list-drag-default-border-color;
@@ -1690,17 +1728,17 @@
     max-width: 400px !important;
     width: auto !important;
   }
-  // sass-lint:enable-all
+  /* stylelint-enable */
 
   .e-bigger .e-pivotfieldlist-container,
   .e-bigger.e-pivotfieldlist-container {
 
-    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div ,
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div,
     .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div {
       height: $field-list-member-filter-list-bigger-height;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-member-editor-dialog {
       .e-editor-search-container {
         .e-sort-ascend-icon,
@@ -1761,7 +1799,7 @@
         }
       }
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-member-editor-dialog {
       .e-filter-tab-container {
@@ -1780,7 +1818,7 @@
         }
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-excelfilter {
 
         @if ($skin-name == 'tailwind') {

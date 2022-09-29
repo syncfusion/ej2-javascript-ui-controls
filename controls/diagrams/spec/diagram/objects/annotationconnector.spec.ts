@@ -3,14 +3,111 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { BezierSegment } from '../../../src/diagram/objects/connector';
-import { NodeModel } from '../../../src/diagram/objects/node-model';
+import { BezierSegment, NodeModel } from '../../../src';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 /**
  * Connector Annotations
  */
 describe('Diagram Control', () => {
+  
+    describe('Bezier Annotation', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'Annotation' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
+                ports: [
+                    { id: 'port1', offset: { x: 0.5, y: 0 } },
+                    { id: 'port2', offset: { x: 0, y: 0.5 } },
+                    { id: 'port3', offset: { x: 1, y: 0.5 } },
+                    { id: 'port4', offset: { x: 0.5, y: 1 } },
+            ]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 350, annotations: [{ content: 'Node2' }],
+                ports: [
+                    { id: 'port1', offset: { x: 0.5, y: 0 } },
+                    { id: 'port2', offset: { x: 0, y: 0.5 } },
+                    { id: 'port3', offset: { x: 1, y: 0.5 } },
+                    { id: 'port4', offset: { x: 0.5, y: 1 } },
+            ]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100, annotations: [{ content: 'Node3' }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 100, height: 100, offsetX: 500, offsetY: 450, annotations: [{ content: 'Node4' }]
+            };
+            let connector1: ConnectorModel = {  id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'port3', targetPortID: 'port1',  annotations: [{ content: 'Connector' }],
+            type: 'Bezier' };
+            let connector2: ConnectorModel = { id: 'connector2',type: 'Bezier',
+            annotations: [{ content: 'Connector1'}],
+            sourceID: 'node3', targetID: 'node4', };
+            let connector3: ConnectorModel = { id: 'connector3',type: 'Bezier',
+            sourcePoint:{x:700,y:200} ,targetPoint: {x:1000,y:400},
+            annotations: [{ content: 'Connector3'}],
+            segments:[{type:'Bezier',point:{x:750,y:250}},{type:'Bezier',point:{x:900,y:350}}]
+            };
 
+            diagram = new Diagram({
+                width: '1200px', height: '800px', nodes: [node1, node2, node3, node4],
+                connectors: [connector1, connector2,connector3]
+            });
+            diagram.appendTo('#Annotation');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('checking the annotation of the connector connected with port', (done: Function) => {
+            let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 100,350);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 120, 550);
+            mouseEvents.mouseUpEvent(diagramCanvas,120, 550);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 150, 550);
+            diagram.connectors[0].type = 'Bezier';
+            diagram.dataBind();
+            expect(diagram.connectors[0].wrapper.offsetX=== 145).toBe(true);
+            expect(diagram.connectors[0].wrapper.offsetY=== 298.33).toBe(true);
+            done();
+        });
+        it('checking the annotation of the connector connected with node', (done: Function) => {
+            let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseDownEvent(diagramCanvas, 470,500);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 520, 750);
+            mouseEvents.mouseUpEvent(diagramCanvas,520, 750);
+            diagram.connectors[1].type = 'Bezier';
+            diagram.dataBind();
+            expect(diagram.connectors[1].wrapper.offsetX=== 524.99).toBe(true);
+            expect(diagram.connectors[1].wrapper.offsetY=== 398.48).toBe(true);
+            done();
+        });
+        it('checking the annotation of the connector ', (done: Function) => {
+            let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let connector= diagram.connectors[2];
+            (connector.segments[1] as BezierSegment).point.x = 950;
+            (connector.segments[1] as BezierSegment).point.y = 550;
+            diagram.dataBind();
+            (connector.segments[0] as BezierSegment).point.x = 650;
+            (connector.segments[0] as BezierSegment).point.y = 400;
+            diagram.dataBind();
+            diagram.connectors[2].type = 'Bezier';
+            diagram.dataBind();
+            expect(diagram.connectors[2].wrapper.offsetX=== 824.99).toBe(true);
+            expect(diagram.connectors[2].wrapper.offsetY=== 375).toBe(true);
+            done();
+        });
+    });
     describe('Straight segment annotation with offset 0', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -331,103 +428,5 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
-    });
-    describe('Bezier Annotation', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
-        beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
-            ele = createElement('div', { id: 'Annotation' });
-            document.body.appendChild(ele);
-            let node1: NodeModel = {
-                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
-                ports: [
-                    { id: 'port1', offset: { x: 0.5, y: 0 } },
-                    { id: 'port2', offset: { x: 0, y: 0.5 } },
-                    { id: 'port3', offset: { x: 1, y: 0.5 } },
-                    { id: 'port4', offset: { x: 0.5, y: 1 } },
-            ]
-            };
-            let node2: NodeModel = {
-                id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 350, annotations: [{ content: 'Node2' }],
-                ports: [
-                    { id: 'port1', offset: { x: 0.5, y: 0 } },
-                    { id: 'port2', offset: { x: 0, y: 0.5 } },
-                    { id: 'port3', offset: { x: 1, y: 0.5 } },
-                    { id: 'port4', offset: { x: 0.5, y: 1 } },
-            ]
-            };
-            let node3: NodeModel = {
-                id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100, annotations: [{ content: 'Node3' }]
-            };
-            let node4: NodeModel = {
-                id: 'node4', width: 100, height: 100, offsetX: 500, offsetY: 450, annotations: [{ content: 'Node4' }]
-            };
-            let connector1: ConnectorModel = {  id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'port3', targetPortID: 'port1',  annotations: [{ content: 'Connector' }],
-            type: 'Bezier' };
-            let connector2: ConnectorModel = { id: 'connector2',type: 'Bezier',
-            annotations: [{ content: 'Connector1'}],
-            sourceID: 'node3', targetID: 'node4', };
-            let connector3: ConnectorModel = { id: 'connector3',type: 'Bezier',
-            sourcePoint:{x:700,y:200} ,targetPoint: {x:1000,y:400},
-            annotations: [{ content: 'Connector3'}],
-            segments:[{type:'Bezier',point:{x:750,y:250}},{type:'Bezier',point:{x:900,y:350}}]
-            };
-
-            diagram = new Diagram({
-                width: '1200px', height: '800px', nodes: [node1, node2, node3, node4],
-                connectors: [connector1, connector2,connector3]
-            });
-            diagram.appendTo('#Annotation');
-        });
-
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-        it('checking the annotation of the connector connected with port', (done: Function) => {
-            let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseDownEvent(diagramCanvas, 100,350);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 120, 550);
-            mouseEvents.mouseUpEvent(diagramCanvas,120, 550);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 150, 550);
-            diagram.connectors[0].type = 'Bezier';
-            diagram.dataBind();
-            expect(diagram.connectors[0].wrapper.offsetX=== 145).toBe(true);
-            expect(diagram.connectors[0].wrapper.offsetY=== 298.33).toBe(true);
-            done();
-        });
-        it('checking the annotation of the connector connected with node', (done: Function) => {
-            let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseDownEvent(diagramCanvas, 470,500);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 520, 750);
-            mouseEvents.mouseUpEvent(diagramCanvas,520, 750);
-            diagram.connectors[1].type = 'Bezier';
-            diagram.dataBind();
-            expect(diagram.connectors[1].wrapper.offsetX=== 524.99).toBe(true);
-            expect(diagram.connectors[1].wrapper.offsetY=== 398.48).toBe(true);
-            done();
-        });
-        it('checking the annotation of the connector ', (done: Function) => {
-            let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let connector= diagram.connectors[2];
-            (connector.segments[1] as BezierSegment).point.x = 950;
-            (connector.segments[1] as BezierSegment).point.y = 550;
-            diagram.dataBind();
-            (connector.segments[0] as BezierSegment).point.x = 650;
-            (connector.segments[0] as BezierSegment).point.y = 400;
-            diagram.dataBind();
-            diagram.connectors[2].type = 'Bezier';
-            diagram.dataBind();
-            expect(diagram.connectors[2].wrapper.offsetX=== 824.99).toBe(true);
-            expect(diagram.connectors[2].wrapper.offsetY=== 375).toBe(true);
-            done();
-        });
     });
 });

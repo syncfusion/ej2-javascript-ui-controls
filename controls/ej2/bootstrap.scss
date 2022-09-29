@@ -3,6 +3,7 @@
  */
 @import "base/bootstrap.scss";
 @import "accordion/bootstrap.scss";
+@import "appbar/bootstrap.scss";
 @import "drop-down-list/bootstrap.scss";
 @import "input/bootstrap.scss";
 @import "popup/bootstrap.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/bootstrap.scss";
 @import "radio-button/bootstrap.scss";
 @import "switch/bootstrap.scss";
+@import "floating-action-button/bootstrap.scss";
+@import "speed-dial/bootstrap.scss";
 @import "list-view/bootstrap.scss";
 @import "sortable/bootstrap.scss";
 @import "daterangepicker/bootstrap.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/bootstrap.scss";
 @import "splitter/bootstrap.scss";
 @import "excel-filter/bootstrap.scss";
+@import "skeleton/bootstrap.scss";
 @import "grid/bootstrap.scss";
 @import "file-manager/bootstrap.scss";
 @import "treegrid/bootstrap.scss";
@@ -64,8 +68,10 @@
 @import "rich-text-editor/bootstrap.scss";
 @import "gantt/bootstrap.scss";
 @import "icons/bootstrap.scss";
+@import "image-editor/bootstrap.scss";
 @import "inplace-editor/bootstrap.scss";
 @import "kanban/bootstrap.scss";
+@import "message/bootstrap.scss";
 @import "toast/bootstrap.scss";
 @import "pdfviewer/bootstrap.scss";
 @import "timepicker/bootstrap.scss";

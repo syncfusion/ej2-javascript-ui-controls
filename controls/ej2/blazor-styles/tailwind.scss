@@ -3,6 +3,7 @@
  */
 @import "base/tailwind.scss";
 @import "accordion/tailwind.scss";
+@import "appbar/tailwind.scss";
 @import "drop-down-list/tailwind.scss";
 @import "input/tailwind.scss";
 @import "popup/tailwind.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/tailwind.scss";
 @import "radio-button/tailwind.scss";
 @import "switch/tailwind.scss";
+@import "floating-action-button/tailwind.scss";
+@import "speed-dial/tailwind.scss";
 @import "list-view/tailwind.scss";
 @import "sortable/tailwind.scss";
 @import "daterangepicker/tailwind.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/tailwind.scss";
 @import "splitter/tailwind.scss";
 @import "excel-filter/tailwind.scss";
+@import "skeleton/tailwind.scss";
 @import "grid/tailwind.scss";
 @import "file-manager/tailwind.scss";
 @import "treegrid/tailwind.scss";
@@ -63,8 +67,10 @@
 @import "progress-button/tailwind.scss";
 @import "rich-text-editor/tailwind.scss";
 @import "gantt/tailwind.scss";
+@import "image-editor/tailwind.scss";
 @import "inplace-editor/tailwind.scss";
 @import "kanban/tailwind.scss";
+@import "message/tailwind.scss";
 @import "toast/tailwind.scss";
 @import "pdfviewer/tailwind.scss";
 @import "timepicker/tailwind.scss";

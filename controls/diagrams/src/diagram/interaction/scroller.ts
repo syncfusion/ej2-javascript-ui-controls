@@ -631,7 +631,7 @@ export class DiagramScroller {
      *
      * @private
      */
-    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel,isInteractiveZoomPan?:boolean): void {
+    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -656,7 +656,7 @@ export class DiagramScroller {
 
                 let newOffset: PointModel = transformPointByMatrix(matrix, { x: 0, y: 0 });
                 if (factor === 1) {
-                    newOffset = this.applyScrollLimit(newOffset.x, newOffset.y,isInteractiveZoomPan);
+                    newOffset = this.applyScrollLimit(newOffset.x, newOffset.y, isInteractiveZoomPan);
                 }
                 if ((this.diagram.scrollActions & ScrollActions.PropertyChange ||
                     !(this.diagram.scrollActions & ScrollActions.Interaction)) ||
@@ -750,13 +750,13 @@ export class DiagramScroller {
                 deltaY += centerY + (margin.top - margin.bottom) / 2 * zoomFactor;
                 break;
             }
-            /**
-             * EJ2-62912 - fitToPage is not working when we call it multiple times.
+             /**
+             * EJ2-62912 - fit to page is not working properly when call it multiple times.
              */ 
+              
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 },true);
         } else {
             factor = 1 / this.currentZoom;
-
             this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 },true);
         }
     }
@@ -810,16 +810,16 @@ export class DiagramScroller {
         const actualbounds: Rect = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
         let hoffset: number = actualbounds.x + actualbounds.width / 2 - this.viewPortWidth / 2;
         let voffset: number = actualbounds.y + actualbounds.height / 2 - this.viewPortHeight / 2;
-        /**
+         /**
          * In applyScrollLimit method the sign of deltaX and deltaY 
          * will be changed ,so here we change the sign.
          * similarly for bringIntoView.
-         */
+         */ 
         hoffset*=-1;voffset*=-1;
         this.zoom(1, -this.horizontalOffset - hoffset, -this.verticalOffset - voffset, null);
     }
 
-    private applyScrollLimit(hOffset: number, vOffset: number,isInteractiveZoomPan:boolean): PointModel {
+    private applyScrollLimit(hOffset: number, vOffset: number, isInteractiveZoomPan: boolean): PointModel {
         /**
          * EJ2-60980- ScrollOffset is not updated properly in runtime.
          * EJ2-62524 - panning is not working properly in diagram.

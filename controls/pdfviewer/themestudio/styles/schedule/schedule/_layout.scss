@@ -1,4 +1,5 @@
 @include export-module('schedule-layout') {
+
   /*! schedule component layout */
 
   .e-schedule {
@@ -79,7 +80,7 @@
 
         .e-toolbar-left {
           .e-tbar-btn.e-icon-btn {
-            &:focus ,
+            &:focus,
             &:hover {
               border-radius: $schedule-header-hover-border-radius;
             }
@@ -354,8 +355,8 @@
       width: 100%;
     }
 
-    .e-schedule-table>tbody>tr>th,
-    .e-schedule-table>tbody>tr>td {
+    .e-schedule-table > tbody > tr > th,
+    .e-schedule-table > tbody > tr > td {
       box-sizing: border-box;
       font-weight: normal;
       overflow: hidden;
@@ -363,7 +364,7 @@
       white-space: nowrap;
     }
 
-    .e-outer-table>tbody>tr>td {
+    .e-outer-table > tbody > tr > td {
       padding: 0;
       vertical-align: top;
     }
@@ -385,7 +386,7 @@
 
     .e-content-wrap,
     .e-scroll-container {
-      -webkit-overflow-scrolling: touch; // sass-lint:disable-line no-vendor-prefixes
+      -webkit-overflow-scrolling: touch; /* stylelint-disable-line property-no-vendor-prefix */
       overflow: auto;
     }
 
@@ -626,7 +627,7 @@
 
         .e-all-day-row,
         .e-all-day-cells {
-          height: 0 !important; // sass-lint:disable-line no-important
+          height: 0 !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-appointment {
@@ -902,6 +903,15 @@
           &:hover {
             background-color: $schedule-disable-dates-color;
           }
+        }
+      }
+
+      &.e-virtual-mask .e-work-cells {
+        background-color: $schedule-disable-dates-color;
+        box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
+
+        &:hover {
+          background-color: $schedule-disable-dates-color;
         }
       }
 
@@ -1198,7 +1208,7 @@
         .e-vertical-view .e-time-cells-wrap {
           float: right;
         }
-       }
+      }
     }
 
     @media screen and (max-width: 480px) {
@@ -1206,7 +1216,7 @@
         .e-left-indent {
           width: $schedule-device-time-scale-width;
         }
-       }
+      }
     }
 
     .e-month-view,
@@ -1268,7 +1278,7 @@
 
       .e-header-cells {
         cursor: default;
-        font-weight: 400;
+        font-weight: normal;
         height: $schedule-month-header-cells-nrml-height;
         padding: $schedule-month-header-cells-padding;
       }
@@ -1303,6 +1313,15 @@
           &:hover {
             background-color: $schedule-disable-dates-color;
           }
+        }
+      }
+
+      &.e-virtual-mask .e-work-cells {
+        background-color: $schedule-disable-dates-color;
+        box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
+
+        &:hover {
+          background-color: $schedule-disable-dates-color;
         }
       }
 
@@ -1749,7 +1768,7 @@
       .e-left-indent,
       .e-header-cells {
         cursor: default;
-        font-weight: 400;
+        font-weight: normal;
         height: $schedule-month-header-cells-nrml-height;
         padding: $schedule-timeline-year-left-indent-padding;
         text-align: center;
@@ -2191,9 +2210,23 @@
     }
 
     .e-virtual-scroll {
+      &.e-vertical-view,
+      &.e-month-view {
+        .e-content-table {
+          transform: translateX(0);
+        }
+      }
+
+      &.e-timeline-view,
+      &.e-timeline-month-view,
+      &.e-timeline-year-view.e-vertical {
+        .e-content-table {
+          transform: translateY(0);
+        }
+      }
+
       .e-content-table {
         position: absolute;
-        transform: translateY(0);
 
         &.e-virtual-relative {
           position: relative;
@@ -2341,7 +2374,7 @@
 
       .e-header-cells {
         cursor: default;
-        font-weight: 400;
+        font-weight: normal;
         height: $schedule-month-header-cells-nrml-height;
         padding: 5px;
         text-align: center;
@@ -2412,7 +2445,7 @@
         color: $schedule-secondary-content-font-color;
         line-height: 26px;
         padding: 0 10px;
-       }
+      }
 
       .e-date-time {
         color: $schedule-secondary-content-font-color;
@@ -2628,7 +2661,7 @@
         color: $schedule-primary-content-font-color;
         line-height: 21px;
         padding: 0 10px;
-       }
+      }
 
       .e-date-time {
         color: $schedule-secondary-content-font-color;
@@ -2833,15 +2866,15 @@
                 padding-top: 3px;
               }
             }
-           }
+          }
 
           @if ($schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5') {
             .e-tbar-btn .e-tbar-btn-text {
               font-size: $schedule-header-bgr-font-size;
             }
-           }
-         }
-       }
+          }
+        }
+      }
     }
 
     .e-more-popup-wrapper {
@@ -2852,20 +2885,12 @@
 
     .e-vertical-view {
       .e-header-cells {
-        @if ($schedule-skin == 'FluentUI' or $schedule-skin == 'bootstrap5') {
-          height: $schedule-timezone-enable-bgr-height;
-          padding: $schedule-tbar-btn-bgr-padding;
-        }
-
         .e-header-day {
           font-size: $schedule-header-day-bgr-font-size;
         }
 
         .e-header-date {
           font-size: $schedule-header-date-bgr-font-size;
-          @if ($schedule-skin == 'FluentUI') {
-            padding-top: $schedule-more-popup-close-margin-top;
-          }
         }
       }
 
@@ -2912,7 +2937,7 @@
         @if ($schedule-skin == 'bootstrap4') {
           line-height: 24px;
           margin: 8px 0 0 8px;
-          }
+        }
       }
 
       .e-header-cells {
@@ -3238,7 +3263,7 @@
         float: right;
       }
     }
-   }
+  }
 
   .e-ddl.e-popup {
     .e-resource-template {
@@ -3550,7 +3575,7 @@
       .e-end-time-zone-container,
       .e-all-day-container {
         padding-right: 0;
-        }
+      }
     }
 
     .e-recurrence-container {
@@ -3734,7 +3759,7 @@
             @if ($schedule-skin == 'bootstrap4' or $schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5') {
               border-radius: 4px;
               padding: 8px;
-              }
+            }
           }
         }
       }
@@ -4266,7 +4291,7 @@
         }
       }
     }
-}
+  }
 
   .e-vertical-view .e-all-day-appointment-wrapper .e-appointment.e-schedule-event-clone {
     .e-appointment-details {

@@ -1,0 +1,32 @@
+@include export-module('message-fabric-dark-icons') {
+  .e-message {
+    .e-msg-icon::before,
+    .e-msg-close-icon::before {
+      font-family: 'e-icons';
+    }
+
+    .e-msg-icon::before {
+      content: '\e607';
+    }
+
+    .e-msg-close-icon::before {
+      content: '\e7a7';
+    }
+
+    &.e-success .e-msg-icon::before {
+      content: '\ea84';
+    }
+
+    &.e-error .e-msg-icon::before {
+      content: '\e7e9';
+    }
+
+    &.e-info .e-msg-icon::before {
+      content: '\e607';
+    }
+
+    &.e-warning .e-msg-icon::before {
+      content: '\e92f';
+    }
+  }
+}

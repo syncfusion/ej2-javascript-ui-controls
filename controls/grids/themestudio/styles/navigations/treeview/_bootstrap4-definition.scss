@@ -1,5 +1,5 @@
 //default
-// sass-lint:disable-all 
+/* stylelint-disable */
 $treeview-font-size: 14px !default;
 $treeview-icon-font-size: 8px !default;
 
@@ -126,8 +126,8 @@ $treeview-big-check-icon-wrap-width: calc(100% - 65px) !default;
 $treeview-big-check-icon-img-wrap-width: calc(100% - 93px) !default;
 $treeview-big-icon-wrap-width: calc(100% - 34px) !default;
 $treeview-big-icon-img-wrap-width: calc(100% - 62px) !default;
-$treeview-drag-icon-padding: 8px!default;
-$treeview-drag-icon-padding-right: 4px!default;
+$treeview-drag-icon-padding: 8px !default;
+$treeview-drag-icon-padding-right: 4px !default;
 $treeview-drag-icon-font-size: 14px;
 $treeview-font-family: $font-family !default;
 $treeview-drag-icon-font-size: 12px !default;

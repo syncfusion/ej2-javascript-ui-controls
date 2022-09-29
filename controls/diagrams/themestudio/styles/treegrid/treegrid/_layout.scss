@@ -201,7 +201,7 @@
         white-space: normal;
         word-wrap: break-word;
       }
-   }
+    }
 
     #{if(&, '&', '*')}.e-grid.e-print-grid-layout .e-icons {
       display: inline-block;
@@ -339,7 +339,7 @@
 
     .e-grid .e-gridcontent {
       tr.e-row:first-child {
-        td.e-rowcell.e-childborder ,
+        td.e-rowcell.e-childborder,
         td.e-rowdragdrop.e-childborder {
           border-bottom: $treegrid-rowdrag-childborder-border;
           border-top: $treegrid-rowdrag-childborder-border;
@@ -350,7 +350,7 @@
         td.e-rowdragdrop.e-droptop {
           border-top: $treegrid-rowdd-topbottom-border;
         }
-       }
+      }
 
       td.e-rowcell {
         &.e-childborder {

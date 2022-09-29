@@ -8,45 +8,44 @@ import { ExportType } from '../utils/enum';
  * @hidden
  */
 export class ImageExport {
-    private control: CircularGauge;
 
     /**
      * Constructor for gauge
      *
-     * @param {CircularGauge} control - Specfies the instance of the gauge
+     *  @param {CircularGauge} control - Specfies the instance of the gauge
      */
     // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: CircularGauge) {
-        this.control = control;
     }
 
     /**
      * To export the file as image/svg format
      *
+     * @param {CircularGauge} gauge - Specifies the instance of Circular Gauge.
      * @param {ExportType} type - Specifies the type of the image file.
      * @param {string} fileName - Specifies the file name of the image file.
      * @param {boolean} allowDownload - Specifies whether to download the image file or not.
      * @returns {Promise<string>} - Returns promise string.
      * @private
      */
-    public export(type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
+    public export(gauge: CircularGauge, type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
+                    'width': gauge.availableSize.width.toString(),
+                    'height': gauge.availableSize.height.toString()
                 }
             });
             const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                this.control.svgObject.outerHTML +
+            gauge.svgObject.outerHTML +
                 '</svg>';
             const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
-                        [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                        [(new XMLSerializer()).serializeToString(gauge.svgObject)],
                     { type: 'image/svg+xml' }
                 )
             );
@@ -93,14 +92,11 @@ export class ImageExport {
 
     /**
      * To destroy the ImageExport.
-     *
-     * @param {CircularGauge} gauge - Specifies the instance of the gauge.
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(gauge: CircularGauge): void {
-        // Destroy method performed here
-    }
+    public destroy(): void {}
 
     /**
     * To trigger the download element

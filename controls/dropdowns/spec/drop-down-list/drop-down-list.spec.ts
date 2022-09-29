@@ -1158,7 +1158,6 @@ describe('DDList', () => {
                 expect(listObj.element.parentElement.classList.contains('e-icon-anim')).toEqual(true);
                 expect(listObj.element.parentElement.classList.contains('e-input-focus')).toEqual(true);
                 expect(listObj.inputWrapper.container.getAttribute('aria-expanded')).toBe('true');
-                expect(listObj.inputWrapper.container.getAttribute('aria-hasPopup')).toBe('true');
                 listObj.showPopup();
                 expect(listObj.isPopupOpen).toEqual(true);
                 expect(listObj.element.parentElement.classList.contains('e-input-focus')).toEqual(true);
@@ -3792,7 +3791,6 @@ describe('DDList', () => {
         });
 
         it('select event args.cancel', (done) => {
-            expect(listObj.inputWrapper.container.getAttribute('aria-activedescendant')).toBe('null');
             listObj.showPopup();
             setTimeout(() => {
                 let items: Element[] = listObj.popupObj.element.querySelectorAll('li');

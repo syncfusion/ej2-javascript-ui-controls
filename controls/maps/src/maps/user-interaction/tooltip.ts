@@ -11,14 +11,12 @@ import { click } from '../model/constants';
  */
 export class MapsTooltip {
     private maps: Maps;
-    private tooltipSettings: TooltipSettingsModel;
     /**
      * @private
      */
     public svgTooltip: Tooltip;
     private isTouch: boolean;
     private tooltipId: string;
-    private currentTime: number;
     private clearTimeout: number;
     public tooltipTargetID: string;
     constructor(maps: Maps) {
@@ -374,11 +372,16 @@ export class MapsTooltip {
     /**
      * To destroy the tooltip.
      *
-     * @param {Maps} maps Specifies the maps instance
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
+    public destroy(): void {
+        if (!isNullOrUndefined(this.svgTooltip)) {
+            this.svgTooltip.destroy();
+        }
+        this.svgTooltip = null;
         this.removeEventListener();
+        //TODO: Calling the below code throws spec issue.
+        //this.maps = null;
     }
 }

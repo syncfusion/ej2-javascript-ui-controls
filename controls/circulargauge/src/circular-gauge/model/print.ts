@@ -1,4 +1,4 @@
-import { print as printWindow, createElement } from '@syncfusion/ej2-base';
+import { print as printFunction, createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../index';
 import { getElement } from '../utils/helper-common';
 import { IPrintEventArgs } from './interface';
@@ -11,8 +11,6 @@ import { beforePrint } from './constants';
  * @hidden
  */
 export class Print {
-    private control: CircularGauge;
-    private printWindow: Window;
 
     /**
      * Constructor for gauge
@@ -21,26 +19,26 @@ export class Print {
      */
     // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: CircularGauge) {
-        this.control = control;
     }
 
     /**
      * To print the gauge
      *
+     * @param {CircularGauge} gauge - Specifies the instance of Circular Gauge.
      * @param {string[] | string | Element} elements - Specifies the element.
      * @returns {void}
      * @private
      */
-    public print(elements?: string[] | string | Element): void {
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+    public print(gauge: CircularGauge, elements?: string[] | string | Element): void {
+        let printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        printWindow.moveTo(0, 0);
+        printWindow.resizeTo(screen.availWidth, screen.availHeight);
         const argsData: IPrintEventArgs = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+            cancel: false, htmlContent: this.getHTMLContent(gauge, elements), name: beforePrint
         };
-        this.control.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
+        gauge.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
             if (!argsData.cancel) {
-                printWindow(argsData.htmlContent, this.printWindow);
+                printFunction(argsData.htmlContent, printWindow);
             }
         });
     }
@@ -48,11 +46,12 @@ export class Print {
     /**
      * To get the html string of the gauge
      *
+     * @param {CircularGauge} gauge - Specifies the instance of Circular Gauge.
      * @param { string[] | string | Element} elements - Specifies the element.
      * @returns {Element} - Returns the div element.
      * @private
      */
-    public getHTMLContent(elements?: string[] | string | Element): Element {
+    public getHTMLContent(gauge: CircularGauge, elements?: string[] | string | Element): Element {
         const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
@@ -65,7 +64,7 @@ export class Print {
                 div.appendChild(getElement(elements).cloneNode(true) as Element);
             }
         } else {
-            div.appendChild(this.control.element.cloneNode(true) as Element);
+            div.appendChild(gauge.element.cloneNode(true) as Element);
         }
         return div;
     }
@@ -78,14 +77,10 @@ export class Print {
 
     /**
      * To destroy the Print.
-     *
-     * @param {CircularGauge} gauge - Specfies the instance of the gauge
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(gauge: CircularGauge): void {
-        // Destroy method performed here
-    }
-
-
+    public destroy(): void { }
+    
 }

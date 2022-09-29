@@ -1619,3 +1619,4 @@ describe('Point color mapping chart highlight and selection', function () {
             chartObj.refresh();
         });
     });
+    

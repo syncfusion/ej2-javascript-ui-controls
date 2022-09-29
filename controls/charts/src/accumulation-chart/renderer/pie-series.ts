@@ -39,12 +39,14 @@ export class PieSeries extends PieBase {
         if (!redraw) {
             let element: Element = chart.renderer.drawPath(option);
             element.setAttribute("tabindex",  point.index === 0 ? "0" : "");
+            element.setAttribute('aria-label', (point.x + ": " + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             point.degree = degree;
             point.start = start;
         } else {
             let element: Element = chart.renderer.drawPath(option);
             element.setAttribute("tabindex",  point.index === 0 ? "0" : "");
+            element.setAttribute('aria-label', (point.x + ": " + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             this.refresh(point, degree, start, chart, option);
         }
@@ -97,7 +99,7 @@ export class PieSeries extends PieBase {
                     seriousGroup.appendChild(createBorderEle);
                     if (point.isExplode && createBorderEle) {
                         const borderExplode: string = srcElem.getAttribute('transform');
-                        createBorderEle.setAttribute('transform', borderExplode);
+                        if (borderExplode) { createBorderEle.setAttribute('transform', borderExplode) };
                     }
                 }
             }

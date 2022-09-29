@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser, detach } from '@syncfusion/ej2-base';
 import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -944,31 +944,51 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private destroyComponents(): void {
         if (!this.recurrenceCount.isDestroyed) {
             this.recurrenceCount.destroy();
+            this.recurrenceCount = null;
         }
         if (!this.monthDate.isDestroyed) {
             this.monthDate.destroy();
+            this.monthDate = null;
         }
         if (!this.repeatInterval.isDestroyed) {
             this.repeatInterval.destroy();
+            this.repeatInterval = null;
         }
         if (!this.untilDateObj.isDestroyed) {
             this.untilDateObj.destroy();
+            this.untilDateObj = null;
         }
         if (!this.repeatType.isDestroyed) {
             this.repeatType.destroy();
+            this.repeatType = null;
         }
         if (!this.endType.isDestroyed) {
             this.endType.destroy();
+            this.endType = null;
         }
         if (!this.monthWeekPos.isDestroyed) {
             this.monthWeekPos.destroy();
+            this.monthWeekPos = null;
         }
         if (!this.monthWeekDays.isDestroyed) {
             this.monthWeekDays.destroy();
+            this.monthWeekDays = null;
         }
         if (!this.monthValue.isDestroyed) {
             this.monthValue.destroy();
+            this.monthValue = null;
         }
+
+        if (!this.onMonthDay.isDestroyed) {
+            this.onMonthDay.destroy();
+            this.onMonthDay = null;
+        }
+
+        if (!this.onWeekDay.isDestroyed) {
+            this.onWeekDay.destroy();
+            this.onWeekDay = null;
+        }
+
         this.dayButtons.forEach((element: Button) => {
             if (!element.isDestroyed) {
                 element.destroy();
@@ -1063,21 +1083,32 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.renderStatus = true;
         this.triggerChangeEvent();
     }
+
+    private detachInputs(): void {
+        const inputElements: HTMLInputElement[] = [].slice.call(this.element.querySelectorAll('input'));
+        for (const element of inputElements) {
+            detach(element);
+        }
+    }
+
     /**
      * Destroys the widget.
      *
      * @returns {void}
      */
     public destroy(): void {
-        this.destroyComponents();
-        super.destroy();
-        let removeClasses: string[] = ['e-' + this.getModuleName()];
-        if (this.cssClass) {
-            removeClasses = removeClasses.concat(this.cssClass.split(' '));
-        }
-        removeClass([this.element], removeClasses);
-        while (this.element.firstElementChild) {
-            this.element.removeChild(this.element.firstElementChild);
+        if (!this.isDestroyed) {
+            this.destroyComponents();
+            super.destroy();
+            let removeClasses: string[] = ['e-' + this.getModuleName()];
+            if (this.cssClass) {
+                removeClasses = removeClasses.concat(this.cssClass.split(' '));
+            }
+            removeClass([this.element], removeClasses);
+            this.detachInputs();
+            while (this.element.firstElementChild) {
+                this.element.removeChild(this.element.firstElementChild);
+            }
         }
     }
 

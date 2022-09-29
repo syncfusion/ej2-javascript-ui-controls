@@ -10,6 +10,11 @@ export type EditorMode = 'HTML' | 'Markdown';
 export type SaveFormat = 'Base64' | 'Blob';
 
 /**
+ * Defines types to be used to display the layout of the audio/video.
+ */
+export type DisplayLayoutOptions = 'Inline' | 'Break';
+
+/**
  * Defines tag to be used when enter key is pressed.
  */
 export type EnterKey = 'P' | 'DIV' | 'BR';

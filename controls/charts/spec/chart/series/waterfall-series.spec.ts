@@ -720,7 +720,7 @@ describe('Waterfall Series', () => {
         it('Legend position', (done: Function) => {
             loaded = (args: Object) => {
                 let legendElement: HTMLElement = document.getElementById('container_chart_legend_element');
-                expect((parseInt(legendElement.getAttribute('x'), 10)) == (337) || (parseInt(legendElement.getAttribute('x'), 10)) == (334)).toBe(true);
+                expect((parseInt(legendElement.getAttribute('x'), 10)) == (325) || (parseInt(legendElement.getAttribute('x'), 10)) == (328)).toBe(true);
                 expect((parseInt(legendElement.getAttribute('y'), 10)) == (46) ||
                        (parseInt(legendElement.getAttribute('y'), 10)) == (43)).toBe(true);
                 done();

@@ -374,17 +374,9 @@ export class StampAnnotation {
             let customStampleft: number = 0;
             let customStamptop: number = 0;
             // eslint-disable-next-line max-len
-            if (this.pdfViewer.customStampSettings.left > 0 && this.pdfViewer.customStampSettings.left < parseFloat(pageDiv.style.width)) {
                 customStampleft = this.pdfViewer.customStampSettings.left;
-            } else {
-                customStampleft = ((parseFloat(pageDiv.style.width) / 2) - (customStampWidth / 2)) / zoomFactor;
-            }
             // eslint-disable-next-line max-len
-            if (this.pdfViewer.customStampSettings.top > 0 && this.pdfViewer.customStampSettings.top < parseFloat(pageDiv.style.height)) {
                 customStamptop = this.pdfViewer.customStampSettings.top;
-            } else {
-                customStamptop = ((parseFloat(pageDiv.style.height) / 2) - (customStampHeight / 2)) / zoomFactor;
-            }
             // eslint-disable-next-line max-len
             let positions: IRectCollection = { width: customStampWidth, height: customStampHeight, left: customStampleft, top: customStamptop };
             // eslint-disable-next-line

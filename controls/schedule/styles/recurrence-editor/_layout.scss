@@ -1,4 +1,5 @@
 @include export-module('recurrence-editor-layout') {
+
   /*! Recurrence-Editor component layout */
   .e-recurrenceeditor {
     .e-editor {
@@ -75,8 +76,8 @@
     }
 
     &.e-rtl {
-      .e-end-on>div,
-      .e-month-expander>div>div {
+      .e-end-on > div,
+      .e-month-expander > div > div {
         float: right;
       }
 
@@ -128,7 +129,6 @@
         }
       }
     }
-
 
     .e-days {
       .e-week-expander-label {
@@ -188,10 +188,9 @@
         .e-end-on-left {
           padding-right: 16px;
         }
-
       }
 
-      &.e-non-week>.e-input-wrapper {
+      &.e-non-week > .e-input-wrapper {
         margin: 0;
       }
 
@@ -408,7 +407,6 @@
         .e-end-on-left {
           padding-right: 0;
         }
-
       }
 
       &.e-rtl {

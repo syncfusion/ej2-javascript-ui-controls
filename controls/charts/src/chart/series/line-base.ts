@@ -11,6 +11,7 @@ import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { SeriesRender } from '../../smithchart/series/seriesrender';
 
 
 /**
@@ -209,6 +210,56 @@ export class LineBase {
         }
         return { first: first ? first : points[0], last: last ? last : points[points.length - 1] };
     }
+
+     /**
+     * To Generate the area series border path direction from area series main direction path.
+     * 
+     *  @param {string} direction direction
+     *
+     * */
+    public getBorderDirection(
+       direction: string
+    ): string{
+        let coordinates = direction.split(" ");
+        if (coordinates.length > 3 && !(this.chart.stackingAreaSeriesModule) && !(this.chart.stackingStepAreaSeriesModule)) {
+            coordinates.splice(coordinates.length - 4, 3);
+        }
+        else if (this.chart.stackingAreaSeriesModule || this.chart.stackingStepAreaSeriesModule) {
+            coordinates.splice(coordinates.length / 2 + 1, coordinates.length / 2 + 1);
+            if (coordinates[coordinates.length - 1] === 'L') {
+                coordinates.splice(coordinates.length - 1, 1);
+            }
+        }
+        return coordinates.join(" ");
+    } 
+
+    /**
+     * To remove empty point directions from series direction of area types.
+     * 
+     *  @param {string} borderDirection direction
+     *
+     * */
+    public removeEmptyPointsBorder(
+        borderDirection: string
+    ): string {
+        let startIndex = 0;
+        let coordinates = borderDirection.split(" ");
+        let point;
+        do {
+            point = coordinates.indexOf("M", startIndex);
+            if (point > -1) {
+                coordinates.splice(point + 1, 3);
+                startIndex = point + 1;
+                if (point - 6 > 0) {
+                    coordinates.splice(point - 6, 6);
+                    startIndex -= 6;
+                }
+            }
+        } while (point != -1);
+
+        return coordinates.join(" ");
+    } 
+
     /**
      * To do the linear animation.
      *

@@ -26,7 +26,7 @@ describe('Find & Replace ->', () => {
                 expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe(150);
                 expect(helper.invoke('getCell', [10, 4]).textContent).toBe('150');
                 done();
-            });
+            }, 50);
         });
 
         it('Find all', (done: Function) => {
@@ -283,82 +283,82 @@ describe('Find & Replace ->', () => {
                 });
             });
         });
-        // describe('EJ2-49854->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{columns: [{ width: 350 }, { width: 350 }, { width: 350 }, { width: 350 } ],
-        //                 rows: [{cells: [{ value: 'Denial Rationale'}] },
-        //                 {cells: [{ }] },{ cells: [{ }] },{ cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.' }] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate.Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate.Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ }] },{ cells: [{ }] },{cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ }] },{cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
-        //                 {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //                 {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
-        //             ] }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Searching in spreadsheet need to scroll horizontally when values not in visible area', (done: Function) => {
-        //         helper.click('#' + helper.id + '_findbtn');
-        //         setTimeout(() => {
-        //             const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
-        //             findTxtBox.value = 'Moutain';
-        //             helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A4:A4');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A9:A9');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A12:A12');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A15:A15');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A16:A16');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A18:A18');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             expect(helper.getInstance().sheets[0].selectedRange).toBe('A21:A21');
-        //             helper.click('.e-findtool-dlg .e-findRib-next');
-        //             setTimeout(() => {
-        //                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A22:A22');
-        //                 done();
-        //             });
-        //         });
-        //     });
-        // });
-        describe('EJ2-51507, EJ2-61517 ->', () => {
-            const model: SpreadsheetModel = { sheets: [{  ranges: [{ dataSource: defaultData }] }] };
+        describe('EJ2-49854->', () => {
             beforeEach((done: Function) => {
-                helper.initializeSpreadsheet( model, done);
+                helper.initializeSpreadsheet({
+                    sheets: [{columns: [{ width: 350 }, { width: 350 }, { width: 350 }, { width: 350 } ],
+                        rows: [{cells: [{ value: 'Denial Rationale'}] },
+                        {cells: [{ }] },{ cells: [{ }] },{ cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.' }] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate.Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate.Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ }] },{ cells: [{ }] },{cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ }] },{cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
+                        {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'We are glad to announce that our weekly patch release We are glad to announce that our weekly patch release'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                        {cells: [{ value: 'Moutain Apply, Environment to the Nature or Climate or .Good for health.'}] },
+                    ] }]
+                }, done);
             });
             afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Searching in spreadsheet need to scroll horizontally when values not in visible area', (done: Function) => {
+                helper.click('#' + helper.id + '_findbtn');
+                setTimeout(() => {
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+                    findTxtBox.value = 'Moutain';
+                    helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A4:A4');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A5');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A9:A9');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A12:A12');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A15:A15');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A16:A16');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A18:A18');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A21:A21');
+                    helper.click('.e-findtool-dlg .e-findRib-next');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A22:A22');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-51507, EJ2-61517, EJ2-55821 ->', () => {
+            const model: SpreadsheetModel = { sheets: [{  ranges: [{ dataSource: defaultData }] }] };
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet( model, done);
+            });
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Destroyed the find dialog while destroying the spreadsheet component', (done: Function) => {
@@ -384,46 +384,41 @@ describe('Find & Replace ->', () => {
                     setTimeout(() => {
                         const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
                         expect(findTxtBox.value).toBe('Test');
+                        helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                        helper.click('.e-find-dlg .e-dlg-closeicon-btn');
                         done();
                     });
                 });
             });
+            it('EJ2-55821 - Need to fix the cancel event args not working for beforeReplace action in spreadsheet->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.actionBegin = (args: any): void => {
+                    if (args.action === 'beforeReplace') {  
+                        args.args.eventArgs.cancel = true; }
+                }
+                helper.invoke('selectRange', ['A2']);
+                helper.click('#' + helper.id + '_findbtn');
+                setTimeout(() => {
+                    helper.click('.e-findtool-dlg .e-findRib-more');
+                    setTimeout(() => {
+                        const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                        findTxtBox.value = 'Casual Shoes';
+                        helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                        setTimeout(() => {
+                            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                            replaceTxtBox.value = 'Test';
+                            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+                            setTimeout(() => {
+                                helper.click('.e-find-dlg .e-btn-replace');
+                                helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                                helper.click('.e-find-dlg .e-dlg-closeicon-btn');
+                                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
         });
-        // describe('EJ2-55821->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A2' }],
-        //             actionBegin(args){
-        //                 if(args.action == "beforeReplace"){
-        //                     args.args.eventArgs.cancel = true;
-        //                 }
-        //             }
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Need to fix the cancel event args not working for beforeReplace action in spreadsheet->', (done: Function) => {
-        //         helper.click('#' + helper.id + '_findbtn');
-        //         setTimeout(() => {
-        //             helper.click('.e-findtool-dlg .e-findRib-more');
-        //             setTimeout(() => {
-        //                 const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
-        //                 findTxtBox.value = 'Casual Shoes';
-        //                 helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
-        //                 setTimeout(() => {
-        //                     const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
-        //                     replaceTxtBox.value = 'Test';
-        //                     helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
-        //                     setTimeout(() => {
-        //                         helper.click('.e-find-dlg .e-btn-replace');
-        //                         expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
-        //                         done();
-        //                     });
-        //                 });
-        //             });
-        //         });
-        //     });
-        // });
     });
 });

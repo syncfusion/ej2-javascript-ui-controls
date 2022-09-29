@@ -72,8 +72,8 @@ $file-container-left: 60px !default;
 $ie-icons-position-value: 10px !default;
 $ie-abort-icon-position-value: 12px !default;
 
-//default 
-// uploader high contrast theme 
+//default
+// uploader high contrast theme
 $upload-font-family: inherit !default;
 $drop-area-font-size-smaller: 14px !default;
 $drop-area-font-size: 15px !default;
@@ -149,6 +149,7 @@ $remove-bigger-icon-width: 26px !default;
 $remove-icon-margin-top: -24px !default;
 $remove-icon-margin-top-smaller: -21px !default;
 $remove-icon-padding-smaller: 16px !default;
+
 // RTL
 $header-padding-rtl-bigger: 20px 16px 20px $zero-value !default;
 $header-padding-rtl-smaller: 16px 12px 16px $zero-value !default;
@@ -170,6 +171,7 @@ $play-icon-font-content: '\e327' !default;
 $disabled-state: rgba($content-font, .38) !default;
 
 $uploader-icons-hover-radius: 50% !default;
+
 // mouse small
 $header-padding-small: 12px 0 12px 12px !default;
 $drop-area-small-font-size: 13px !default;
@@ -185,6 +187,7 @@ $progress-bar-bottom-paddding-small: 2px !default;
 $drop-small-area-padding-left: 12px !default;
 $li-min-height-small: 76px !default;
 $header-padding-rtl-small: 12px 12px 12px 0 !default;
+
 //enddefault
 
 // form upload

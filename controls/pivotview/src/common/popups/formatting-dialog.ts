@@ -121,7 +121,8 @@ export class NumberFormatting implements IAction {
         });
         let table: HTMLElement = createElement('table', {
             id: this.parent.element.id + '_FormatTable',
-            className: cls.FORMATTING_TABLE
+            className: cls.FORMATTING_TABLE,
+            attrs: { 'role': 'tableItems' }
         });
         let tRow: HTMLElement = createElement('tr');
         let tValue: HTMLElement = createElement('td');

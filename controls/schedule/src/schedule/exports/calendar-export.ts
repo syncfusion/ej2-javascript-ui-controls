@@ -15,7 +15,7 @@ export class ICalendarExport {
     }
 
     public initializeCalendarExport(fileName: string, customData: Record<string, any>[]): void {
-        const icsString = this.getCalendarString(fileName, customData);
+        const icsString: string = this.getCalendarString(fileName, customData);
         this.download(icsString, fileName);
     }
 
@@ -93,6 +93,7 @@ export class ICalendarExport {
             app.UID = uId;
             filterCollection.push(app);
             iCalendarEvents.push(calendarEvent.join(SEPARATOR));
+
         });
         const iCalendar: string = [
             'BEGIN:VCALENDAR',
@@ -106,7 +107,6 @@ export class ICalendarExport {
         const icsString: string = iCalendar + SEPARATOR + iCalendarEvents.join(SEPARATOR) + SEPARATOR + 'END:VCALENDAR';
         return icsString;
     }
-
     private customFieldFilter(eventObj: Record<string, any>, fields: EventFieldsMapping): string[] {
         const defaultFields: string[] = Object.keys(fields).map((key: string) => (fields as Record<string, any>)[key]) as string[];
         const eventFields: string[] = Object.keys(eventObj);

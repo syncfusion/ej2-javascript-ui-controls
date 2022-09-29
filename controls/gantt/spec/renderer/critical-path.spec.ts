@@ -3,7 +3,7 @@
  */
  import { Gantt, Edit,CriticalPath, ContextMenu, ContextMenuClickEventArgs, RowDD } from '../../src/index';
  import * as cls from '../../src/gantt/base/css-constants';
- import { multiTaskbarData, projectData1, resources } from '../base/data-source.spec';
+ import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection } from '../base/data-source.spec';
  import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
  describe('Gantt spec for critical path', () => {
      describe('critical path rendering', () => {
@@ -1420,6 +1420,233 @@
             let criticalpath: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_critical-path') as HTMLElement;
             triggerMouseEvent(criticalpath, 'click');
             expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(25);     
+        });
+    });
+  describe('resource view without predecessor', () => {
+        Gantt.Inject(CriticalPath);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: multiTaskbarData,
+                resources: resources,
+                viewType: 'ResourceView',
+                collapseAllParentTasks: true,
+                showOverAllocation: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    expandState: 'isExpand',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                enableCriticalPath: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('Initial rendering critical path for resource view', () => {
+            expect(ganttObj.flatData[11].isCritical).toBe(true);
+            expect(ganttObj.flatData[12].isCritical).toBe(false);
+        });
+    });
+    describe('Critical path rendering for resource view', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: normalResourceData,
+            resources: resourceCollection,
+            enableCriticalPath: true,
+            enableMultiTaskbar: true,
+            viewType:'ResourceView',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            showOverAllocation: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resources', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            splitterSettings: { columnIndex: 3 },
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Multitaskbar Resource view', () => {
+           expect(ganttObj.currentViewData[15].ganttProperties.isCritical).toBe(true);
+        });
+        it('Multitaskbar Resource view', () => {
+            debugger
+            ganttObj.actionComplete = function (args: any): void {
+                if (args.requestType === "save") {
+                    expect(ganttObj.currentViewData[1].ganttProperties.isCritical).toBe(true);
+                    expect(ganttObj.currentViewData[2].ganttProperties.isCritical).toBe(true);
+                }
+            };
+            ganttObj.dataBind();
+            let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
+            triggerMouseEvent(duration, 'dblclick');
+            let input: any = (ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration')as any).ej2_instances[0];
+            input.value = '16 days';
+            input.dataBind();
+         });
+    });
+    describe('Critical path rendering for resource view', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+            dataSource: normalResourceData,
+            resources: resourceCollection,
+            enableCriticalPath: true,
+            enableMultiTaskbar: true,
+            collapseAllParentTasks: true,
+            viewType:'ResourceView',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            showOverAllocation: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resources', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            splitterSettings: { columnIndex: 3 },
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Multitaskbar Resource view', () => {
+           expect(ganttObj.currentViewData[15].ganttProperties.isCritical).toBe(true);
         });
     });
  });

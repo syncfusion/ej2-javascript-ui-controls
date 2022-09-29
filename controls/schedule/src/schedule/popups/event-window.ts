@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType, detach } from '@syncfusion/ej2-base';
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest, SanitizeHtmlHelper, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
@@ -296,6 +296,7 @@ export class EventWindow {
                 [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
             append(tempEle, form);
             this.parent.renderTemplates();
+            this.applyFormValidation();
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
         }
@@ -860,12 +861,26 @@ export class EventWindow {
             (rules && Object.keys(rules).length > 0) ? rules : undefined;
         const form: HTMLFormElement = this.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
         const rules: Record<string, any> = {};
-        rules[this.parent.eventSettings.fields.subject.name] = getValidationRule(this.parent.eventSettings.fields.subject.validation);
-        rules[this.parent.eventSettings.fields.location.name] = getValidationRule(this.parent.eventSettings.fields.location.validation);
-        rules[this.parent.eventSettings.fields.startTime.name] = getValidationRule(this.parent.eventSettings.fields.startTime.validation);
-        rules[this.parent.eventSettings.fields.endTime.name] = getValidationRule(this.parent.eventSettings.fields.endTime.validation);
-        rules[this.parent.eventSettings.fields.description.name] =
-            getValidationRule(this.parent.eventSettings.fields.description.validation);
+        const subjectRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.subject.validation);
+        if (!isNullOrUndefined(subjectRule)) {
+            rules[this.parent.eventSettings.fields.subject.name] = subjectRule;
+        }
+        const locationRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.location.validation);
+        if (!isNullOrUndefined(locationRule)) {
+            rules[this.parent.eventSettings.fields.location.name] = locationRule;
+        }
+        const startTimeRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.startTime.validation);
+        if (!isNullOrUndefined(startTimeRule)) {
+            rules[this.parent.eventSettings.fields.startTime.name] = startTimeRule;
+        }
+        const endTimeRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.endTime.validation);
+        if (!isNullOrUndefined(endTimeRule)) {
+            rules[this.parent.eventSettings.fields.endTime.name] = endTimeRule;
+        }
+        const descriptionRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.description.validation);
+        if (!isNullOrUndefined(descriptionRule)) {
+            rules[this.parent.eventSettings.fields.description.name] = descriptionRule;
+        }
         this.fieldValidator = new FieldValidator();
         this.fieldValidator.renderFormValidator(form, rules, this.element, this.parent.locale);
     }
@@ -1775,6 +1790,13 @@ export class EventWindow {
         }
     }
 
+    private detachComponents(): void {
+        const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        for (const element of formElements) {
+            detach(element);
+        }
+    }
+
     public destroy(isIgnore?: boolean): void {
         if (this.parent && !this.parent.isDestroyed) {
             this.parent.resetTemplates(['editorTemplate']);
@@ -1782,6 +1804,7 @@ export class EventWindow {
         this.destroyComponents();
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
+            detach(this.recurrenceEditor.element);
             this.recurrenceEditor = null;
         }
         if (this.fieldValidator) {
@@ -1792,8 +1815,12 @@ export class EventWindow {
             this.repeatDialogObject.destroy();
             this.repeatDialogObject = null;
         }
+        this.detachComponents();
         if (this.dialogObject) {
             if (this.dialogObject.element) {
+                const form: HTMLFormElement = this.dialogObject.element.querySelector('form');
+                util.removeChildren(form);
+                detach(form);
                 EventHandler.remove(this.dialogObject.element, 'keydown', this.preventEventSave);
             }
             this.dialogObject.destroy();
@@ -1810,6 +1837,7 @@ export class EventWindow {
             this.buttonObj = null;
             this.repeatStatus = null;
             this.eventWindowTime = null;
+            this.dialogEvent = null;
         }
     }
 

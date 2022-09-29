@@ -1,4 +1,4 @@
-//default 
+//default
 $ddl-chip-mobile-close-font: 16px !default;
 
 $ddl-multiselect-skin-name: 'bootstrap' !default;
@@ -130,6 +130,7 @@ $ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
 $ddl-multiselect-group-list-group-item-rtl-padding-right: 20px !default;
 $ddl-multiselect-label-position: 17px !default;
 $multiselect-disable-font-color: $grey-dd !default;
+
 // Small size
 $ddl-select-all-height-small: 22px !default;
 $ddl-small-chip-height: 22px !default;
@@ -142,6 +143,7 @@ $ddl-delim-small-font-size: 13px !default;
 $ddl-small-closer-margin-top: -3.5em !default;
 $ddl-chip-close-hooker-small-left: 8px !default;
 $ddl-delimviewheight-small: 26px !default;
+
 // Touch Small size
 $ddl-select-all-height-bigger-small: 34px !default;
 $ddl-bigger-small-chip-height: 28px !default;
@@ -153,6 +155,7 @@ $ddl-bigger-small-input-height: 34px !default;
 $ddl-delim-bigger-small-font-size: 14px !default;
 $ddl-delimviewheight-bigger-small: 34px !default;
 $ddl-closer-margin-top-bigger-small: -4em !default;
+
 //enddefault
 
 @include export-module('multiselect-bootstrap-dark') {

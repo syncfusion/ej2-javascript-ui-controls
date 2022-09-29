@@ -2049,3 +2049,25 @@ describe("EJ2-33526 XSS attack prevent with enableHtmlSanitizer as true", () => 
             }, 100);
         });
     });
+    describe("EJ2-62999-In Toast unique Id is not generated automatically when we do not set the Id property", () => { 
+        let toast: Toast;
+        beforeEach((): void => {
+            const ele: HTMLElement = document.createElement("div");    
+            ele.className = "defaultToast";
+            document.body.appendChild(ele);
+            toast = new Toast( {
+                title: 'SampleToast',
+                content: 'Sample Content',
+                });
+            const target: HTMLElement = document.querySelector('.defaultToast');
+            toast.appendTo(target);
+        });
+        afterEach((): void => {
+            if (toast) {
+                toast.destroy();
+            }
+        });      
+        it(' check the id genarated or not ', () => {
+            expect(toast.element.hasAttribute('id')).toBe(true);
+        });       
+    });

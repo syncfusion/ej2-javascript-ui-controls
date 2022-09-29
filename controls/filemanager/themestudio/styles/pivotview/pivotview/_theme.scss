@@ -13,7 +13,7 @@
       width: 12px;
     }
 
-    .e-grid.e-gridhover tr[role='row']:hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+    .e-grid.e-gridhover tr[role = 'row']:hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
       background-color: $pivotgrid-cell-hover-color;
     }
 
@@ -26,9 +26,8 @@
       text-align: right;
     }
 
-    .e-grid
-    .e-rowcell {
-      // sass-lint:disable-all
+    .e-grid .e-rowcell {
+      /* stylelint-disable */
       font-size: $pivotgrid-content-font-size !important;
       padding-left: 8px;
       -webkit-user-select: none;
@@ -123,7 +122,6 @@
     }
     }
 
-    // sass-lint:disable-all
 
     .e-grid .e-rowsheader.e-active,
     .e-grid .e-rowsheader.e-cellselectionbackground,
@@ -145,7 +143,7 @@
         color: $pivotgrid-header-selection-color !important;
       }
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-drop-indicator {
       display: block;
@@ -167,49 +165,49 @@
       }
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
 
     .e-sortfilterdiv {
-      float: right;
-      margin: $pivotgrid-vsort-mouse-margin !important;
-      @if ($pivotgrid-skin == 'bootstrap4') {
-        font-size: 10px !important;
-        padding: 15px;
-      }
-      @if ($skin-name == 'bootstrap5') {
-        font-size: 12px !important;
-        padding: 15px;
-      }
-      @if ($skin-name == 'FluentUI') {
-        font-size: 14px !important;
-      }
-
-      &.e-value-sort-icon {
-        font-size: $pivotgrid-value-sort-icon-font-size !important;
-        @if ($skin-name == 'tailwind') {
-          padding-top: 14px !important;
+      .e-value-sort-icon {
+        float: right;
+        @if ($pivotgrid-skin == 'bootstrap4') {
+          font-size: 10px !important;
         }
         @if ($skin-name == 'bootstrap5') {
-          padding-right: 5px !important;
+          font-size: 12px !important;
+        }
+        @if ($skin-name == 'FluentUI') {
+          font-size: 14px !important;
+        }
+
+        &.e-value-sort-icon {
+          font-size: $pivotgrid-value-sort-icon-font-size !important;
         }
       }
+
+      &:not(.e-value-sort-icon) {
+        display: none;
+      }
+    }
+
+    .e-stackedheadercelldiv .e-sortfilterdiv, .e-headercelldiv .e-sortfilterdiv {
+      margin: $pivotgrid-vsort-column-margin !important;
+    }
+
+    .e-stackedheadercelldiv .e-sortfilterdiv.e-value-sort-align, .e-headercelldiv .e-sortfilterdiv.e-value-sort-align {
+      margin: $pivotgrid-vsort-column-parent-margin !important;
     }
 
     .e-rowsheader .e-sortfilterdiv {
-      margin: -10px 0 !important;
+      margin: $pivotgrid-vsort-row-margin !important;
     }
 
     .e-rowsheader .e-sortfilterdiv.e-value-sort-align {
-      margin: $pivotgrid-vsort-row-margin !important;
+      margin: $pivotgrid-vsort-row-parent-margin !important;
     }
 
     .e-pivotchart > svg, .e-pivotchart-inner > svg {
       border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
-    }
-
-    .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
-    .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-mouse-wrap-margin !important;
     }
 
     .e-grid .e-icons {
@@ -377,12 +375,12 @@
       opacity: $pivotview-grid-content-opacity !important;
     }
 
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-rowcell {
       opacity: 1;
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-cellvalue {
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -390,7 +388,7 @@
         user-select: none;
       }
 
-      // sass-lint:enable-all
+      /* stylelint-enable */
     }
 
     .e-grouping-bar {
@@ -420,10 +418,9 @@
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
         border-bottom-width: 0;
         border-right-width: 0;
-
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-all-fields-axis {
         background: $pivotgrid-grp-bg-color;
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
@@ -462,7 +459,7 @@
           }
         }
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-right-axis-fields {
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
@@ -564,9 +561,9 @@
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-button-border-color;
         border-radius: $pivotgrid-button-border-radius;
         box-shadow: none;
-        // sass-lint:disable-all
+        /* stylelint-disable */
         color: $pivotgrid-button-font-color !important;
-        // sass-lint:enable-all
+        /* stylelint-enable */
         cursor: default;
         display: flex;
         font-weight: normal;
@@ -577,7 +574,7 @@
         vertical-align: bottom;
         z-index: 1;
         @if ($pivotgrid-skin == 'bootstrap4') {
-          font-weight: 400;
+          font-weight: normal;
         }
 
         &.e-list-selected {
@@ -666,7 +663,7 @@
           }
         }
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
         .e-draggable {
           height: initial !important;
         }
@@ -700,7 +697,7 @@
             display: none;
           }
         }
-        // sass-lint:enable-all
+        /* stylelint-enable */
 
         .e-sort {
           height: $pivotgrid-button-icon-size;
@@ -731,7 +728,7 @@
       width: 100%;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-group-row {
       padding: 0 !important;
 
@@ -774,26 +771,27 @@
               .e-pv-filtered,
               .e-remove,
               .e-edit {
-                color: $pivotgrid-icon-hover-color !important;
+                color: $pivotgrid-icon-hover-color  !important;
               }
             }
-    
+
             &.e-btn-focused {
               background-color: $pivotgrid-focus-color;
               color: $pivotgrid-button-acitve-font-color;
-              @if ($pivotgrid-skin == 'bootstrap4') {
+
+              @if ($pivotgrid-skin =='bootstrap4') {
                 background-color: $pivotgrid-border-color;
                 border-color: $pivotgrid-active-border-color;
                 box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
               }
-    
+
               .e-sort,
               .e-dropdown-icon,
               .e-pv-filter,
               .e-pv-filtered,
               .e-remove,
               .e-edit {
-                color: $pivotgrid-icon-focus-color !important;
+                color: $pivotgrid-icon-focus-color  !important;
               }
             }
     
@@ -857,7 +855,7 @@
       }
     }
 
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-axis-value {
       display: inline-block;
@@ -893,7 +891,7 @@
       }
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-chart-grouping-bar .e-axis-value {
       height: auto !important;
       padding-left: 6px;
@@ -915,7 +913,7 @@
         }
       }
     }
-    // sass-lint:enable-all  
+    /* stylelint-enable */  
 
     .e-icons:not(.e-frame):not(.e-btn-icon):not(.e-sort):not(.e-dropdown-icon):not(.e-pv-filter):not(.e-pv-filtered):not(.e-remove):not(.e-edit):not(.e-drag) {
       height: auto;
@@ -954,7 +952,7 @@
       }
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     th .e-expand,
     th .e-collapse {
       font-size: $pivotgrid-expcoldiv-fontsize !important;
@@ -962,10 +960,334 @@
       margin-top: $pivotgrid-drill-margintop;
     }
 
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-expand::before {
       font-size: $pivotgrid-expand-icon-fontsize;
+    }
+
+    .e-pivot-pager {
+      padding: $pivotpager-padding;
+
+      &.e-pivot-pager-bottom {
+        border-top: 0;
+      }
+  
+      &.e-pivot-pager-top {
+        border-bottom: 0;
+      }
+
+      .e-pivotview-vseparator {
+        height: auto;
+        border-left: $pivotpager-separator-border;
+        margin: $pivotpager-v-separator-margin;
+      }
+
+      .e-pivot-pager-maindiv {
+        display: flex;
+        flex-direction: row;
+
+        .e-pivot-pager-row-maindiv,
+        .e-pivot-pager-column-maindiv {
+          display: flex;
+          flex-direction: column;
+          width: 50%;
+
+          .e-icon-first,
+          .e-icon-prev,
+          .e-icon-next,
+          .e-icon-last {
+            font-size: $pivotpager-page-icon-size;
+            padding: $pivotpager-page-icon-padding;
+           
+          /* stylelint-disable */
+          @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+            margin: 0 !important;
+          }
+        }
+
+        /* stylelint-enable */
+
+          .e-pivotview-text-div {
+            display: flex;
+            flex-direction: row;
+          }
+          
+          .e-pivotview-row-pagerString,
+          .e-pivotview-column-pagerString {
+            color: $pivotpager-axis-title-font-color;
+            font-size: $pivotpager-title-font-size;
+            overflow: hidden;
+            text-align: initial;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 50%;
+          }
+
+          .e-pivotview-row-size,
+          .e-pivotview-column-size {
+            color: $pivotpager-size-title-font-color;
+            font-size: $pivotpager-title-font-size;
+            overflow: hidden;
+            text-align: end;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 50%;
+          }
+
+          .e-pivotview-text-div-1 {
+            flex: none;
+
+            .e-pagercontainer {
+              margin-top: $pivotpager-page-container-marging-top;
+              @if ($pivotgrid-skin == 'material-dark') or ($pivotgrid-skin == 'material') {
+                margin: $pivotpager-page-container-marging-top 0 0 0;
+              }
+
+              &.e-pivot-pager-info-container,
+              &.e-pager-dropdown {
+                border-style: none;
+                vertical-align: top;
+              }
+            }
+            
+            .e-pager-dropdown {
+              float: right;
+            }
+          }
+          
+          .e-pivot-row-of-string-maindiv,
+          .e-pivot-column-of-string-maindiv {
+            line-height: $pivotpager-single-title-line-height;
+
+            .e-pivotview-row-pagerNumber,
+            .e-pivotview-column-pagerNumber {
+              font-weight: $pivotpager-pager-number-font-weight;
+            }
+          }
+          
+          .e-pivot-row-pager-settings,
+          .e-pivot-column-pager-settings {
+            flex: none;
+
+            .e-numeric {
+              margin: $pivotpager-numeric-box-margin;
+              vertical-align: top;
+            }
+          }
+        }
+
+        &.e-pivot-pager-single-maindiv {
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            flex-direction: row;
+            width: 100%;
+
+            .e-pagercontainer {
+              margin-top: 0;
+
+              &.e-pivot-pager-info-container,
+              &.e-pager-dropdown {
+                border-style: none;
+              }
+            }
+
+            .e-pivotview-row-pagerString,
+            .e-pivotview-column-pagerString {
+              flex: auto;
+              font-size: $pivotpager-single-title-font-size;
+              line-height: $pivotpager-single-title-line-height;
+              text-align: center;
+            }
+
+            .e-pivotview-text-div-1 {
+              .e-pivotview-row-size,
+              .e-pivotview-column-size {
+                font-size: $pivotpager-single-title-font-size;
+                line-height: $pivotpager-single-title-line-height;
+                padding: 0 $pivotpager-single-size-title-padding 0 0;
+                width: inherit;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-compact-view {
+        .e-pivotview-vseparator {
+          margin-top: $pivotpager-v-separator-margin-top;
+        }
+
+        .e-pivot-pager-maindiv {
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            align-items: center;
+            flex-direction: row;
+
+            .e-pivotview-text-div,
+            .e-pivotview-text-div-1 {
+              display: flex;
+              flex-direction: row;
+              width: 50%;
+
+              .e-pagercontainer {
+                margin-top: 0;
+
+                @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+                  margin-top: $pivotpager-touch-page-container-marging-top;
+                }
+              }
+
+              .e-pivotview-row-size,
+              .e-pivotview-column-size {
+                flex: auto;
+                font-size: $pivotpager-single-title-font-size;
+                line-height: $pivotpager-single-title-line-height;
+                padding: 0 $pivotpager-single-size-title-padding 0 0;
+                text-align: end;
+                width: inherit;
+              }
+
+              .e-pivotview-row-pagerString,
+              .e-pivotview-column-pagerString {
+                font-size: $pivotpager-single-title-font-size;
+                line-height: $pivotpager-single-title-line-height;
+                min-width: 50px;
+                text-align: initial;
+                width: inherit;
+              }
+            }
+          }
+
+          &.e-pivot-pager-single-maindiv {
+            .e-pivot-pager-row-maindiv,
+            .e-pivot-pager-column-maindiv {
+              width: 100%;
+
+              .e-pagercontainer {
+                margin-top: 0;
+              }
+
+              .e-pivotview-row-pagerString,
+              .e-pivotview-column-pagerString {
+                text-align: center;
+                width: 100%;
+              }
+
+              .e-pivotview-text-div-1 {
+                width: auto;
+              }
+            }
+          }
+
+          &:not(.e-pivot-pager-single-maindiv) {
+            .e-pivot-pager-row-maindiv,
+            .e-pivot-pager-column-maindiv {
+              &.e-page-size-disable {
+                .e-pivotview-text-div {
+                  width: auto;
+                }
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-pivot-pager-maindiv {
+            .e-pivot-pager-row-maindiv,
+            .e-pivot-pager-column-maindiv {
+              .e-pivotview-text-div,
+              .e-pivotview-text-div-1 {
+                .e-pivot-row-pager-settings,
+                .e-pivot-column-pager-settings {
+                  padding: 0 $pivotpager-single-size-title-padding 0 0;
+                }
+  
+                .e-pivotview-row-size,
+                .e-pivotview-column-size {
+                  padding: 0 0 0 $pivotpager-single-size-title-padding;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      &.e-device {
+        .e-pivotview-hseparator {
+          border-top: $pivotpager-separator-border;
+          margin: $pivotpager-h-separator-margin;
+          width: auto;
+        }
+
+        .e-pivot-pager-maindiv {
+          flex-direction: column;
+
+          .e-pagercontainer {
+            display: inline-block;
+          }
+
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            width: 100%;
+          }
+
+          &:not(.e-pivot-pager-single-maindiv) {
+            .e-pagercontainer {
+              margin-top: $pivotpager-adaptive-page-container-marging-top;
+            }
+          }
+        }
+
+        /* stylelint-disable */
+        @media (max-width: 400px) {
+          .e-pivotview-row-size,
+          .e-pivotview-column-size,
+          .e-pivotview-row-pagerString,
+          .e-pivotview-column-pagerString {
+            min-width: 10px !important;
+          }
+        }
+        /* stylelint-enable */
+      }
+
+      &.e-rtl {
+        .e-pivot-pager-maindiv {
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            .e-pivot-row-pager-settings,
+            .e-pivot-column-pager-settings {
+              .e-numeric {
+                margin: $pivotpager-adaptive-numeric-box-margin;
+              }
+            }
+
+            .e-pager-dropdown {
+              float: left;
+            }
+          }
+
+          &.e-pivot-pager-single-maindiv {
+            .e-pivot-pager-row-maindiv,
+            .e-pivot-pager-column-maindiv {
+              .e-pivotview-text-div-1 {
+                .e-pivotview-row-size,
+                .e-pivotview-column-size {
+                  padding: 0 0 0 $pivotpager-single-size-title-padding;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      @media (max-width: 769px) {
+        .e-pivot-pager-maindiv {
+          .e-pagercontainer {
+            display: inline-block;
+          }
+        }
+      }
     }
 
     &.e-rtl {
@@ -975,7 +1297,7 @@
         margin-left: 0;
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-grid .e-rowsheader {
         padding-right: 8px !important;
       }
@@ -996,7 +1318,7 @@
         border-right: 0;
       }
 
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-rowsheader .e-cellvalue {
         margin-left: 0;
@@ -1058,7 +1380,7 @@
           padding-right: $pivotview-axis-indent-padding;
 
           .e-pvt-btn-div {
-            // sass-lint:disable-all
+            /* stylelint-disable */
             padding-left: $pivotgrid-horizontal-button-padding;
             padding-right: 0;
 
@@ -1080,12 +1402,12 @@
               }
             }
 
-            // sass-lint:enable-all
+            /* stylelint-enable */
           }
         }
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
         padding-right: 12px !important;
@@ -1094,13 +1416,17 @@
       .e-sortfilterdiv {
         float: left;
       }
-      // sass-lint:enable-all
+
+      th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border) {
+        border-left-width: 1px !important;
+      }
+      /* stylelint-enable */
     }
 
     &.e-device {
       .e-grouping-bar {
 
-        // sass-lint:disable-all
+        /* stylelint-disable */
         .e-pivot-button {
           line-height: 1em !important;
 
@@ -1205,7 +1531,8 @@
     .e-component-disable {
       display: none !important;
     }
-    // sass-lint:enable-all
+
+    /* stylelint-enable */
   }
 
   .e-pivottooltipwrap,
@@ -1286,7 +1613,7 @@
       }
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-grid .e-rowsheader {
       padding-left: 8px !important;
       @if ($skin-name == 'tailwind') {
@@ -1316,8 +1643,7 @@
         font-size: $pivotview-bigger-grid-header-font-size !important;
       }
     }
-    .e-bigger .e-stackedheadercelldiv
-    {
+    .e-bigger .e-stackedheadercelldiv {
       padding-left: 16px !important;
     }
 
@@ -1337,7 +1663,7 @@
           min-height: 36px !important;
         }
       }
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-pvt-btn-div {
         height: 30px;
@@ -1361,7 +1687,7 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            // sass-lint:disable-all
+            /* stylelint-disable */
             font-size: $pivotgrid-bigger-button-icon-size !important;
             height: $pivotgrid-bigger-button-icon-wrapper-size;
             margin-top: $pivotgrid-bigger-button-icon-touch-margin-size;
@@ -1451,7 +1777,6 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            // sass-lint:disable-all
             font-size: $pivotgrid-bigger-button-icon-size !important;
             height: $pivotgrid-bigger-button-icon-wrapper-size;
             width: $pivotgrid-bigger-button-icon-wrapper-size;
@@ -1471,9 +1796,7 @@
       }
     }
 
-    // sass-lint:disable-all
     .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-touch-margin !important;
       @if ($pivotgrid-skin == 'bootstrap4') or ($skin-name == 'bootstrap5') {
         font-size: 12px !important;
       }
@@ -1481,24 +1804,15 @@
       @if ($pivotgrid-skin == 'tailwind') {
         font-size: 16px !important;
       }
-      
-      @if ($pivotgrid-skin == 'bootstrap5') or ($skin-name == 'FluentUI') {
-        padding-top: 28px;
-      }
     }
 
-    .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
-    .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-touch-wrap-margin !important;
-    }
-
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container {
       height: $pivotgrid-member-filter-list-bigger-height;
     }
 
-    // sass-lint:disable-all
+    /* stylelint-disable */
 
     
     .e-stackedheadercelldiv,
@@ -1513,10 +1827,10 @@
     .e-grid .e-columnsheader {
       padding-right: 16px !important;
     }
-    // sass-lint:enable-all
+    /* stylelint-enable */
 
     .e-rowcell {
-      // sass-lint:disable-all
+      /* stylelint-disable */
       font-size: $pivotgrid-bigger-content-font-size !important;
       @if($skin-name == 'tailwind') {
         padding: 0 12px;
@@ -1525,7 +1839,6 @@
 
     &.e-rtl {
 
-      // sass-lint:disable-all
       .e-grid .e-rowsheader {
         padding-right: 10px !important;
       }
@@ -1540,7 +1853,7 @@
         padding-right: 8px !important;
       }
 
-      // sass-lint:enable-all
+      /* stylelint-enable */
 
       .e-grouping-bar {
 
@@ -1561,13 +1874,13 @@
         }
       }
 
-      // sass-lint:disable-all
+      /* stylelint-disable */
       .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
         padding-right: 16px !important;
       }
 
-      // sass-lint:enable-all
+      /* stylelint-enable */
     }
 
     @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
@@ -1577,6 +1890,106 @@
 
       .e-collapse::before {
         font-size: $pivotgrid-collapse-bigger-icon-fontsize;
+      }
+    }
+
+    .e-pivot-pager,
+    #{&}.e-pivot-pager.e-bigger {
+      padding: $pivotpage-touch-padding;
+
+      .e-pivotview-vseparator {
+        margin: $pivotpager-touch-v-separator-margin;
+      }
+
+      .e-pivot-pager-maindiv {
+        .e-pivot-pager-row-maindiv,
+        .e-pivot-pager-column-maindiv {
+
+          .e-icon-first,
+          .e-icon-prev,
+          .e-icon-next,
+          .e-icon-last {
+            font-size: $pivotpager-touch-page-icon-size;
+            padding: $pivotpager-touch-page-icon-padding;
+          }
+
+          .e-pivot-row-of-string-maindiv,
+          .e-pivot-column-of-string-maindiv {
+            line-height: $pivotpager-touch-single-title-line-height;
+          }
+
+          .e-pivotview-row-pagerString,
+          .e-pivotview-column-pagerString,
+          .e-pivotview-row-size,
+          .e-pivotview-column-size {
+            font-size: $pivotpager-string-font-touch-size;
+          }
+
+          .e-pivotview-text-div-1 {
+            .e-pagercontainer {
+              margin-top: $pivotpager-touch-page-container-marging-top;
+            }
+          }
+          
+          .e-pivot-row-pager-settings,
+          .e-pivot-column-pager-settings {
+            .e-numeric {
+              margin: $pivotpager-touch-numeric-boc-margin;
+            }
+          }
+        }
+
+        &.e-pivot-pager-single-maindiv {
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            .e-pagercontainer {
+              margin-top: 0;
+            }
+
+            .e-pivotview-row-pagerString,
+            .e-pivotview-column-pagerString,
+            .e-pivotview-row-size,
+            .e-pivotview-column-size {
+              font-size: $pivotpager-touch-single-title-font-size;
+            }
+          }
+        }
+      }
+
+      &.e-compact-view {
+        .e-pivot-pager-maindiv {
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            .e-pagercontainer {
+              margin-top: 0;
+
+              @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+                margin-top: $pivotpager-touch-page-container-marging-top;
+              }
+            }
+
+            .e-pivotview-row-pagerString,
+            .e-pivotview-column-pagerString,
+            .e-pivotview-row-size,
+            .e-pivotview-column-size {
+              font-size: $pivotpager-touch-single-title-font-size;
+            }
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-pivot-pager-maindiv {
+          .e-pivot-pager-row-maindiv,
+          .e-pivot-pager-column-maindiv {
+            .e-pivot-row-pager-settings,
+            .e-pivot-column-pager-settings {
+              .e-numeric {
+                margin: $pivotpager-touch-numeric-boc-margin;
+              }
+            }
+          }
+        }
       }
     }
   }

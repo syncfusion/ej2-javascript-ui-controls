@@ -843,7 +843,7 @@ export class TextSearch {
             if (characterBounds[count]) {
                 // eslint-disable-next-line
                 let charBound: any = characterBounds[count];
-                if (left > charBound.X) {
+                if (left > charBound.X + charBound.Width) {
                     isRTL = true;
                 }
                 top = (top < charBound.Y) ? top : charBound.Y;

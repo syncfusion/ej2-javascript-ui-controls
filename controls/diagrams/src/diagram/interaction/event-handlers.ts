@@ -14,7 +14,7 @@ import { Container } from '../core/containers/container';
 import { MarginModel } from '../core/appearance-model';
 import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
-import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool } from './tool';
+import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, FreeHandTool } from './tool';
 import { PolygonDrawingTool, PolyLineDrawingTool, FixedUserHandleTool } from './tool';
 import { Native, Node, SwimLane } from '../objects/node';
 import { ConnectorModel } from '../objects/connector-model';
@@ -68,6 +68,7 @@ import { randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
+import { PointPort } from '../objects/port';
 
 
 /**
@@ -366,6 +367,27 @@ export class DiagramEventHandler {
                     arg.element = this.diagram.selectedItems.userHandles[i];
                     if (eventName === DiagramEvent.onUserHandleMouseEnter) {
                         this.previousAction = this.action;
+                        // EJ2-32213- Added the below code to check whether the userhandle has tooltip content.
+                        // If userhandle has tooltip content then we open the tooltip based on the userhandle shape  
+                        if (arg.element.tooltip && arg.element.tooltip.openOn === 'Auto' && arg.element.tooltip.content !== '') {
+                            updateTooltip(this.diagram,arg.element );
+                            let targetEle: HTMLElement;
+                            if(arg.element.pathData){
+                                targetEle =  document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
+                            }
+                            else if(arg.element.source){
+                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_image');
+                            }
+                            else if(arg.element.content){
+                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_shape_native_element');
+                            }
+                            else {
+                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_shape_html_element');
+                            }
+                            if ( arg.element.tooltip.openOn === 'Auto') {
+                                (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                            }
+                        }
                     }
                     if (eventName === DiagramEvent.onUserHandleMouseDown) {
                         this.userHandleObject = this.diagram.selectedItems.userHandles[i].name;
@@ -377,7 +399,13 @@ export class DiagramEventHandler {
                             && element && element.id === this.userHandleObject + '_userhandle') {
                             this.diagram.triggerEvent(eventName, arg);
                         }
-                    } else {
+                    }
+                    if(eventName === DiagramEvent.onUserHandleMouseLeave){
+                        if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
+                            this.diagram.tooltipObject.close();
+                        }
+                    }
+                    else {
                         this.diagram.triggerEvent(eventName, arg);
                     }
                 }
@@ -439,19 +467,8 @@ export class DiagramEventHandler {
                         this.diagram.refreshDiagramLayer();
                     }
                 }
-                let target: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel;
-                const objects: IElement[] = this.objectFinder.findObjectsUnderMouse(
-                    this.currentPosition, this.diagram, this.eventArgs, null, this.action);
-                const obj: IElement = this.objectFinder.findObjectUnderMouse(
-                    this.diagram, objects, this.action, this.inAction, this.eventArgs, this.currentPosition);
-                let sourceElement: DiagramElement = null;
-                if (obj !== null) {
-                    sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
-                    if (sourceElement) {
-                        target = this.commandHandler.findTarget(sourceElement, obj);
-                    }
-                }
-                this.action = this.diagram.findActionToBeDone(obj, sourceElement, this.currentPosition, target);
+                var targetObject = this.getTargetElement();
+				this.action = this.diagram.findActionToBeDone(targetObject.obj, targetObject.sourceElement, this.currentPosition, targetObject.target);
                 //work around - correct it
                 const ctrlKey: boolean = this.isMetaKey(evt);
                 if (ctrlKey && evt.shiftKey && this.diagram.connectorEditingToolModule) {
@@ -700,7 +717,7 @@ export class DiagramEventHandler {
         } else if (autoScrollPosition) {
             if ((this.tool instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool
                 || this.tool instanceof MoveTool || this.tool instanceof ResizeTool
-                || this.tool instanceof SelectTool) && this.inAction) {
+                || this.tool instanceof SelectTool || this.tool instanceof ConnectTool) && this.inAction) {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const diagram: DiagramEventHandler = this;
                 const delay: number = 100;
@@ -858,8 +875,12 @@ export class DiagramEventHandler {
                 this.diagram.renderSelector(true);
             }
             if (!this.inAction && !this.diagram.currentSymbol && this.eventArgs) {
+				  /**
+                 * EJ2-45543 Provide Event support to notify the port click
+                 */
+				var targetObject = this.getTargetElement();
                 let arg: IClickEventArgs | IBlazorClickEventArgs = {
-                    element: cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
+                    element: (targetObject.target instanceof PointPort)? targetObject.target : cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
                     actualObject: cloneBlazorObject(this.eventArgs.actualObject),
                     button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
@@ -873,6 +894,26 @@ export class DiagramEventHandler {
         }
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
+    }
+	 /**
+     * return the clicked element such as node/connector/port/diagram
+     */
+    private getTargetElement (){
+        let target: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel;
+        const objects: IElement[] = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
+        const obj: IElement = this.objectFinder.findObjectUnderMouse(this.diagram, objects, this.action, this.inAction, this.eventArgs, this.currentPosition);
+        let sourceElement: DiagramElement = null;
+       if (obj !== null) {
+       sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
+       if (sourceElement) {
+           target = this.commandHandler.findTarget(sourceElement, obj);
+         }
+     } var targetObject = {
+         'obj': obj,
+         'sourceElement' : sourceElement,
+         'target' : target
+     };
+     return targetObject;
     }
     /* tslint:enable */
 
@@ -1091,9 +1132,9 @@ export class DiagramEventHandler {
             this.diagram.scrollActions |= ScrollActions.Interaction;
             let canMouseWheel:boolean = true;
             if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0)) {
-                this.diagram.scroller.zoom(1, change, 0, mousePosition,canMouseWheel);
+                this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel);
             } else {
-                this.diagram.scroller.zoom(1, 0, change, mousePosition,canMouseWheel);
+                this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel);
             }
             this.diagram.scrollActions &= ~ScrollActions.Interaction;
             if (horizontalOffset !== this.diagram.scroller.horizontalOffset
@@ -1290,33 +1331,81 @@ export class DiagramEventHandler {
 
     private doAutoScroll(option: string, e: PointerEvent | TouchEvent, delay?: number, autoScroll?: boolean): void {
         const position: string = option;
-        let canAutoScroll:boolean = true;
+        let canAutoScroll: boolean = true;
         if ((this.tool instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool
             || this.tool instanceof MoveTool || this.tool instanceof ResizeTool
-            || this.tool instanceof SelectTool) && this.inAction) {
+            || this.tool instanceof SelectTool || this.tool instanceof ConnectTool) && this.inAction) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const diagram: DiagramEventHandler = this;
             const pos: PointModel = this.getMousePosition(e);
             const autoScrollBorder: MarginModel = this.diagram.scrollSettings.autoScrollBorder;
             const newDelay: number = delay ? delay : 100;
             let left: number = 0; let top: number = 0;
+            let canUpdate: boolean = false;
+            let corner: string = '';
             const point: PointModel = { x: pos.x, y: pos.y };
+            // EJ2-61979 - Added below code to check whether we resize the node around four corners
+            if (this.tool instanceof ResizeTool && (this.tool.corner === 'ResizeSouthEast' || this.tool.corner === 'ResizeSouthWest' ||
+                this.tool.corner === 'ResizeNorthWest' || this.tool.corner === 'ResizeNorthEast')) {
+                canUpdate = true;
+                corner = this.tool.corner;
+            }
             switch (position) {
                 case 'right':
                     point.x = pos.x + 10;
                     left = 10;
+                    // EJ2-61979 - If node gets resized on southeast or northeast corner means then update the y position along with x position
+                    if (canUpdate) {
+                        if (corner === 'ResizeSouthEast') {
+                            point.y = pos.y + 10;
+                            top = 10;
+                        } else {
+                            point.y = pos.y - 10;
+                            top = -10;
+                        }
+                    }
                     break;
                 case 'left':
                     point.x = pos.x - 10;
                     left = -10;
+                    // EJ2-61979 - If node gets resized on northwest or southwest corner means then update the y position along with x position
+                    if (canUpdate) {
+                        if (corner === 'ResizeNorthWest') {
+                            point.y = pos.y - 10;
+                            top = -10;
+                        } else {
+                            point.y = pos.y + 10;
+                            top = 10;
+                        }
+                    }
                     break;
                 case 'bottom':
                     point.y = pos.y + 10;
                     top = 10;
+                    // EJ2-61979 - If node gets resized on southeast or southwest corner means then update the x position along with y position
+                    if (canUpdate) {
+                        if (corner === 'ResizeSouthEast') {
+                            point.x = pos.x + 10;
+                            left = 10;
+                        } else {
+                            point.x = pos.x - 10;
+                            left = -10;
+                        }
+                    }
                     break;
                 case 'top':
                     point.y = pos.y - 10;
                     top = -10;
+                    // EJ2-61979 - If node gets resized on northeast or northwest corner means then update the x position along with y position
+                    if (canUpdate) {
+                        if (corner === 'ResizeNorthEast') {
+                            point.x = pos.x + 10;
+                            left = 10;
+                        } else {
+                            point.x = pos.x - 10;
+                            left = -10;
+                        }
+                    }
                     break;
             }
             this.eventArgs.position = { x: point.x, y: point.y };
@@ -1326,10 +1415,11 @@ export class DiagramEventHandler {
             this.eventArgs.target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             this.tool.mouseMove(this.eventArgs);
             this.diagram.scrollActions |= ScrollActions.Interaction;
-            this.diagram.scroller.zoom(1, -left, -top, pos,canAutoScroll);
+            this.diagram.scroller.zoom(1, -left, -top, pos, canAutoScroll);
             this.diagram.scrollActions &= ~ScrollActions.Interaction;
         }
     }
+
     private mouseEvents(): void {
         const target: (NodeModel | ConnectorModel)[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
         for (let i: number = 0; i < target.length; i++) {
@@ -1742,7 +1832,10 @@ export class DiagramEventHandler {
                 const type: string = findObjectType(this.diagram.drawingObject);
                 if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
                     return new TextDrawingTool(this.commandHandler);
-                } else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
+                } else if(type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Freehand'){
+                    return new FreeHandTool(this.commandHandler);
+                } 
+                else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
                     (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
                     !((this.diagram.drawingObject.shape as BasicShapeModel).points)) {
                     return new PolygonDrawingTool(this.commandHandler);
@@ -1753,7 +1846,8 @@ export class DiagramEventHandler {
                 } else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Polyline') {
                     return new PolyLineDrawingTool(
                         this.commandHandler);
-                } else if (type === 'Connector') {
+                }
+                else if (type === 'Connector') {
                     return new ConnectorDrawingTool(
                         this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
                 }

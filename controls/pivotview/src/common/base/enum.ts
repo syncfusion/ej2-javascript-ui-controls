@@ -198,8 +198,8 @@ export type ChartSeriesType =
     'StackingArea' |
     /**  Allows to display the pivot chart with stacked bar series. */
     'StackingBar' |
-     /**  Allows to display the pivot chart with stacked line series. */
-     'StackingLine' |
+    /**  Allows to display the pivot chart with stacked line series. */
+    'StackingLine' |
     /**  Allows to display the pivot chart with step line series. */
     'StepLine' |
     /**  Allows to display the pivot chart with step area series. */
@@ -1029,4 +1029,16 @@ export type GrandTotalsPosition =
     /** Allows the grand totals to be displayed in top position in the pivot table's row and column axes. */
     'Top' |
     /** Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes. */
+    'Bottom';
+
+/**
+* Allows to display the pager UI either at top or bottom of the Pivot Table UI.
+* The options available are:
+* * Top: Allows the pager UI to be displayed in top position of the Pivot Table UI.
+* * Bottom: Allows the pager UI to be displayed in bottom position of the Pivot Table UI. 
+*/
+export type PagerPosition =
+    /** Allows the pager UI to be displayed in top position of the Pivot Table UI. */
+    'Top' |
+    /** Allows the pager UI to be displayed in bottom position of the Pivot Table UI. */
     'Bottom';

@@ -1,4 +1,4 @@
-//default 
+//default
 $range-bg-color: $bg-base-0 !default;
 $range-primary-color: $selection-bg !default;
 $range-primary-font-color: $selection-font !default;
@@ -10,7 +10,7 @@ $range-hover-content-color: darken($range-hover-color, 15%) !default;
 $range-today-color: $selection-bg !default;
 $range-selection-bg: darken($selection-bg, 15%) !default;
 $range-other-hover-color: $bg-base-0 !default;
-$range-other-month-date: $content-font-alt  !default;
+$range-other-month-date: $content-font-alt !default;
 $range-box-shadow: none !default;
 $range-box-shadow-none: none !default;
 $range-btn-font-weight: 500 !default;
@@ -31,7 +31,7 @@ $range-calendar-header-text-color: $selection-bg !default;
 $range-calendar-header-dark-color: $content-font !default;
 $range-calendar-medium-color: $content-font !default;
 $range-calendar-light-color: $content-font !default;
-$range-calendar-medium-font-size: 17x !default;
+$range-calendar-medium-font-size: 17px !default;
 $range-calendar-btn-font-size: 16px !default;
 $range-presets-normal-list-font-size: 14px !default;
 $range-presets-bigger-list-font-size: 15px !default;
@@ -134,6 +134,7 @@ $range-icon-bottom-right-radius: 0 !default;
 $range-icon-top-right-radius: 0 !default;
 $range-icon-margin: 0 !default;
 $range-sart-end-btn-padding: 1px 6px !default;
+
 // highcontrast theme variable
 $range-icon-font-size: 16px !default;
 $range-icon: '\e244' !default;
@@ -171,6 +172,7 @@ $range-calendar-today-start-color: 1px solid $hover-bg !default;
 $range-calendar-other-normal-border: none !default;
 $range-calendar-bigger-max: 292px !default;
 $range-active-font-color: $selection-font !default;
+
 // Mouse small size
 $range-small-header-label-size: 16px !default;
 $range-small-font-size: 12px !default;
@@ -183,8 +185,11 @@ $range-small-footer-margin: 10px 10px 10px 8px !default;
 $range-preset-small-list-height: 26px !default;
 $range-presets-small-list-font-size: 12px !default;
 $calendar-bigger-small-max-width: 232px !default;
+
 // mouse small icon
 $range-small-icon-font-size: 14px !default;
+
 // touch small icon
 $range-bigger-small-icon-font-size: 18px !default;
+
 //enddefault

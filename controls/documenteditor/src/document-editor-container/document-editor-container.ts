@@ -16,7 +16,7 @@ import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProp
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent } from '../document-editor/base/constants';
+import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 
 /**
@@ -566,7 +566,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Heading 6': 'Heading 6',
         'ZoomLevelTooltip': 'Zoom level. Click or tap to open the Zoom options.',
         'None': 'None',
-        'Borders': 'Borders'
+        'Borders': 'Borders',
+        'ShowHiddenMarks Tooltip': 'Show the hidden characters like spaces, tab, paragraph marks, and breaks.(Ctrl + *)'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -824,6 +825,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if(!isNullOrUndefined(this.documentEditorSettings.maximumRows)) {
             this.documentEditor.documentEditorSettings.maximumRows = this.documentEditorSettings.maximumRows;
         }
+        if(!isNullOrUndefined(this.documentEditorSettings.showHiddenMarks)) {
+            this.documentEditor.documentEditorSettings.showHiddenMarks = this.documentEditorSettings.showHiddenMarks;
+        }
     }
     /**
      * @private
@@ -930,6 +934,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
         this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
         this.documentEditor.on(protectionTypeChangeEvent,this.showPropertiesPaneOnSelection,this);
+        this.documentEditor.on(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks, this);
     }
     private unWireEvents(): void {
         if (isNullOrUndefined(this.documentEditor)) {
@@ -942,6 +947,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
         this.documentEditor.off(internalviewChangeEvent, this.onViewChange);
+        this.documentEditor.off(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks);
     }
     private onCommentBegin(): void {
         if (this.toolbarModule) {
@@ -1074,6 +1080,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updateZoomContent();
         }
+    }
+    private updateShowHiddenMarks(settings: DocumentEditorSettingsModel): void {
+        this.documentEditorSettings.showHiddenMarks = settings.showHiddenMarks;
+        this.tableProperties.tableTextProperties.paragraph.toggleHiddenMarks();
     }
     /**
      * @private

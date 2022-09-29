@@ -9,7 +9,7 @@ import {
     FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel, ResizeSettingsModel
 } from './grid-model';
 import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
-import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
+import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
 import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle } from './enum';
@@ -126,6 +126,20 @@ export interface IGrid extends Component<HTMLElement> {
      * @default PageSettings
      */
     pageSettings?: PageSettingsModel;
+
+    /**
+     * Configures the Loading Indicator of the Grid.
+     *
+     * @default LoadingIndicator
+     */
+    loadingIndicator?: LoadingIndicatorModel;
+
+    /**
+     * Specifies the shimmer effect for Grid virtual and infinite scrolling.
+     *
+     * @default true
+     */
+    enableVirtualMaskRow?: boolean;
 
     enableVirtualization: boolean;
 
@@ -667,6 +681,9 @@ export interface IGrid extends Component<HTMLElement> {
     hideColumns?(keys: string | string[], hideBy?: string): void;
     showSpinner?(): void;
     hideSpinner?(): void;
+    showMaskRow?(axisDirection?: string, dialogElement?: Element): void;
+    removeMaskRow?(): void;
+    addShimmerEffect?(): void;
     updateDefaultCursor?(): void;
     getVisibleColumns?(): Column[];
     refreshHeader?(): void;
@@ -2297,6 +2314,7 @@ export interface IFocus {
     jump?: (action: string, current: number[]) => SwapInfo;
     getFocusInfo?: () => FocusInfo;
     getFocusable?: (element: HTMLElement) => HTMLElement;
+    getTable?: () => HTMLTableElement;
     selector?: (row: Row<Column>, cell: Cell<Column>) => boolean;
     generateRows?: (rows: Row<Column>[], optionals?: Object) => void;
     getInfo?: (e?: BaseKeyboardEventArgs) => FocusedContainer;
@@ -2540,6 +2558,8 @@ export interface PdfHeaderFooterContent {
     value?: any;
     /** Defines the font for the content */
     font?: PdfStandardFont | PdfTrueTypeFont;
+    /** Defines the alignment of header */
+    stringFormat?: PdfStringFormat;
 }
 
 export interface PdfPosition {
@@ -2584,8 +2604,6 @@ export interface PdfContentStyle {
     hAlign?: PdfHAlign;
     /** Defines the vertical alignment. */
     vAlign?: PdfVAlign;
-    /** Defines the alignment of header */
-    stringFormat?: PdfStringFormat;
 }
 /**
  * Defines the context menu item model.

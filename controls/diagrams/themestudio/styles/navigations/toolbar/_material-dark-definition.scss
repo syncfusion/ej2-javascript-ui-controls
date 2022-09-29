@@ -1,4 +1,4 @@
-//default 
+//default
 $tbar-skin: 'material' !default;
 $tbar-zero-value: 0 !default;
 $tbar-pop-icon-bgr-padding: 0 !default;
@@ -86,8 +86,8 @@ $tbar-btn-bgr-mrgn: 5.5px 0 !default;
 $tbar-btn-bgr-height: calc(100% - 11px) !default;
 $tbar-btn-nrml-height: calc(100% - 10px) !default;
 $tbar-btn-nrml-mrgn: 4px 0 !default;
-$tbar-separator-nrml-mrgn: 7.5px 3px  !default;
-$tbar-separator-bgr-mrgn: 10px 5px  !default;
+$tbar-separator-nrml-mrgn: 7.5px 3px !default;
+$tbar-separator-bgr-mrgn: 10px 5px !default;
 $tbar-separator-nrml-height: calc(100% - 15px) !default;
 $tbar-separator-bgr-height: calc(100% - 20px) !default;
 $tbar-separator-nrml-minheight: 27px !default;
@@ -103,10 +103,10 @@ $tbar-btn-icon-nrml-height: 25px !default;
 $tbar-btn-icon-nrml-line-height: 25px !default;
 $tbar-left-item-line-height: 35px !default;
 $tbar-right-item-line-height: 24px !default;
-$tbar-btn-bgr-padding: $tbar-zero-value 6px  !default;
+$tbar-btn-bgr-padding: $tbar-zero-value 6px !default;
 $tbar-btn-bgr-focus-padding: 0 6px !default;
 $tbar-item-height: auto !default;
-$tbar-btn-nrml-padding: $tbar-zero-value 1.5px  !default;
+$tbar-btn-nrml-padding: $tbar-zero-value 1.5px !default;
 $tbar-pop-btn-bgr-padding: $tbar-zero-value 16px !default;
 $tbar-pop-btn-nrml-padding: $tbar-zero-value 16px !default;
 $tbar-item-pop-bg-color: transparent !default;
@@ -147,14 +147,12 @@ $tbar-separator-border: rgba($grey-white, .24) !default;
 $tbar-default-border: $grey-700 !default;
 $tbar-btn-border: none !default;
 
-
-
-
 //enddefault
 //dimensions
 $tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
 $tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame !default;
 $tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
+
 @mixin tbar-btn-animation {
   background-color: transparent;
   border-radius: 50%;
@@ -178,9 +176,9 @@ $tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !d
   0% {
     border-color: $tbar-ribble-animation-border-frame;
     box-shadow: $tbar-ribble-animation-shadow-frame;
-    }
+  }
 
   100% {
     box-shadow: $tbar-ribble-animation-shadow-frame-end;
-    }
- }
+  }
+}

@@ -589,11 +589,28 @@ export class GanttTreeGrid {
      */
     private composeIDColumn(column: GanttColumnModel): void {
         const isProjectView: boolean = this.parent.viewType === 'ProjectView';
+        let lengthDataSource: number = this.parent.dataSource['length'];
+        let taskIDName: string | number;
         column.isPrimaryKey = isProjectView ? true : false;
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('id');
         column.width = column.width ? column.width : 100;
-        column.allowEditing = column.allowEditing ? column.allowEditing : false;
-        column.editType = column.editType ? column.editType : 'numericedit';
+        for (let i:number = 0; i< lengthDataSource; i++) {
+            if (!isNullOrUndefined(this.parent.dataSource[i][this.parent.taskFields.id])) {
+                taskIDName = this.parent.dataSource[i][this.parent.taskFields.id];
+                break;
+            }
+        }
+        if(typeof(taskIDName) === "string") {
+            if (this.parent.viewType === 'ResourceView') {
+                column.allowEditing = column.allowEditing ? column.allowEditing : false;
+            } else {
+                column.allowEditing = column.allowEditing ? column.allowEditing : true;
+            }
+            column.editType = column.editType ? column.editType : 'stringedit';
+        } else {
+            column.allowEditing = column.allowEditing ? column.allowEditing : false;
+            column.editType = column.editType ? column.editType : 'numericedit';
+        }
         column.valueAccessor = isProjectView ? null : this.idValueAccessor.bind(this);
     }
     private composeUniqueIDColumn(column: GanttColumnModel): void {

@@ -664,7 +664,7 @@ describe('Collaborative Editing ->', () => {
             helper.invoke('insertHyperlink', [{ address: 'www.google.com' }, 'Sheet1!A7', 'Test', false]);
             setTimeout(() => {
                 setTimeout(() => {
-                    expect((getCell(6, 0, sheets2[0]).hyperlink as HyperlinkModel).address).toBe('www.google.com');
+                    expect((getCell(6, 0, sheets2[0]).hyperlink as HyperlinkModel).address).toBe('http://www.google.com');
                     expect(getCell(6, 0, sheets2[1]).hyperlink).toBeUndefined();
                     expect(helper2.getInstance().activeSheetIndex).toBe(1);
                     done();

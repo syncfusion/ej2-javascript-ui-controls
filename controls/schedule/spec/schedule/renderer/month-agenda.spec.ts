@@ -69,8 +69,6 @@ describe('Month-agenda view rendering', () => {
 
             it('work cells', () => {
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-                expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
                 expect(firstWorkCell.innerHTML).toEqual('<div class="e-date-header">1</div>');
@@ -689,14 +687,12 @@ describe('Month-agenda view rendering', () => {
 
         it('Checking resource rendering with resource data', () => {
             const row1: Element = schObj.element.querySelector('.e-appointment-wrap').children[0].children[0].children[0];
-            expect(row1.getAttribute('role')).toEqual('row');
             expect(row1.childElementCount).toEqual(3);
             const parElem1: HTMLElement = row1.children[0] as HTMLElement;
             expect(parElem1.getAttribute('rowspan')).toEqual('2');
             const parElem2: HTMLElement = row1.children[1] as HTMLElement;
             expect(parElem2.getAttribute('rowspan')).toEqual('1');
             const row2: Element = schObj.element.querySelector('.e-appointment-wrap').children[0].children[0].children[1];
-            expect(row2.getAttribute('role')).toEqual('row');
             expect(row2.childElementCount).toEqual(2);
         });
 

@@ -54,35 +54,31 @@ export class WorkbookHyperlink {
             cellAddr = cellAddr || sheet.selectedRange;
         }
         const cellIdx: number[] = getSwapRange(getRangeIndexes(cellAddr));
-        const cell: CellModel = {};
         if (typeof (hyperlink) === 'string') {
             if (hyperlink.toLowerCase().indexOf('www.') === 0) {
                 hyperlink = 'http://' + hyperlink;
             }
-            cell.hyperlink = hyperlink;
         } else {
-            let address: string = hyperlink.address;
-            if (address.toLowerCase().indexOf('www.') === 0) {
-                address =  'http://' + address;
+            if (hyperlink.address.toLowerCase().indexOf('www.') === 0) {
+                hyperlink.address =  'http://' + hyperlink.address;
             }
-            cell.hyperlink = { address: address };
-        }
-        if (args.displayText) {
-            cell.value = args.displayText;
         }
         let cellModel: CellModel;
+        let activeCell: number[] = getRangeIndexes(sheet.activeCell);
         for (let rIdx: number = cellIdx[0]; rIdx <= cellIdx[2]; rIdx++) {
             for (let cIdx: number = cellIdx[1]; cIdx <= cellIdx[3]; cIdx++) {
-                cellModel = cell.value ? getCell(rIdx, cIdx, sheet) || {} : cell;
-                cellModel.hyperlink = hyperlink;
-                if (isNullOrUndefined(cellModel.value)) {
-                    cellModel.value = cell.value;
+                cellModel = { hyperlink: hyperlink };
+                if (args.displayText) {
+                    if (args.triggerEvt) {
+                        if (rIdx === activeCell[0] && cIdx === activeCell[1]) {
+                            cellModel.value = args.displayText;
+                        }
+                    } else if (isNullOrUndefined(getCell(rIdx, cIdx, sheet, false, true).value)) {
+                        cellModel.value = args.displayText;
+                    }
                 }
-                if (!updateCell(this.parent, sheet, { cell: cellModel, rowIdx: rIdx, colIdx: cIdx, preventEvt: !args.triggerEvt })) {
-                    updateCell(
-                        this.parent, sheet, { rowIdx: rIdx, colIdx: cIdx, preventEvt: true, cell: { style:
-                            { textDecoration: 'underline', color: '#00e' } }});
-                }
+                cellModel.style = { textDecoration: 'underline', color: '#00e' };
+                updateCell(this.parent, sheet, { cell: cellModel, rowIdx: rIdx, colIdx: cIdx, preventEvt: !args.triggerEvt });
             }
         }
     }

@@ -122,7 +122,7 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private getIndicatorNode(indicator: IIndicator): NodeList {
-        const templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '" role="LabelIndicator" style="line-height:'
+        const templateString: string = '<label class="' + cls.label + ' ' + cls.taskIndicatorDiv + '"style="line-height:'
             + (this.parent.rowHeight) + 'px;' +
             'left:' + this.getIndicatorleft(indicator.date) + 'px;"><i class="' + indicator.iconClass + '"></i> </label>';
         return this.createDivElement(templateString);
@@ -680,7 +680,7 @@ export class ChartRows extends DateProcessor {
      */
     private getTaskBaselineNode(): NodeList {
         const data: IGanttData = this.templateData;
-        const template: string = '<div class="' + cls.baselineBar + ' ' + '" role="BaselineBar" style="margin-top:' + this.baselineTop +
+        const template: string = '<div class="' + cls.baselineBar + ' ' + '" role="term" style="margin-top:' + this.baselineTop +
             'px;left:' + data.ganttProperties.baselineLeft + 'px;' +
             'width:' + data.ganttProperties.baselineWidth + 'px;height:' +
             this.baselineHeight + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + '"></div>';
@@ -939,10 +939,10 @@ export class ChartRows extends DateProcessor {
         const className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
             'e-chart-row-border' : '';
         table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + '"' +
-        'role="ChartRow" style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
+        'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
         this.parent.rowHeight + 'px;">' +
             '<td class="' + cls.chartRowCell + ' ' + className
-            + '" role="ChartCell" style="width:' + this.parent.timelineModule.totalTimelineWidth + 'px;"></td></tr>';
+            + '"style="width:' + this.parent.timelineModule.totalTimelineWidth + 'px;"></td></tr>';
         return table.childNodes;
     }
 
@@ -1010,7 +1010,7 @@ export class ChartRows extends DateProcessor {
 
     private leftLabelContainer(): NodeList {
         const template: string = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? cls.leftLabelTempContainer :
-        cls.leftLabelContainer) + ' ' + '" tabindex="-1" role="LeftLabel" style="height:' +
+        cls.leftLabelContainer) + ' ' + '" tabindex="-1" role="term" style="height:' +
         (this.parent.rowHeight - 2) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     }
@@ -1023,7 +1023,7 @@ export class ChartRows extends DateProcessor {
         const template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
-            ' tabindex="-1" role="TaskBar" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
+            ' tabindex="-1" role="term" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
             ('width:' + this.milestoneHeight + 'px;height:' +
                     this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                         (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
@@ -1035,7 +1035,7 @@ export class ChartRows extends DateProcessor {
 
     private rightLabelContainer(): NodeList {
         const template: string = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? cls.rightLabelTempContainer :
-            cls.rightLabelContainer) + '" ' + ' tabindex="-1" role="RightLabel" style="left:' + this.getRightLabelLeft(this.templateData) + 'px; height:'
+            cls.rightLabelContainer) + '" ' + ' tabindex="-1" role="term" style="left:' + this.getRightLabelLeft(this.templateData) + 'px; height:'
             + (this.parent.rowHeight - 2) + 'px;"></div>';
         return this.createDivElement(template);
     }
@@ -1043,21 +1043,21 @@ export class ChartRows extends DateProcessor {
     private childTaskbarLeftResizer(): NodeList {
         const lResizerLeft: number = -(this.parent.isAdaptive ? 12 : 2);
         const template: string = '<div class="' + cls.taskBarLeftResizer + ' ' + cls.icon + '"' +
-            ' role="LeftResizer" style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
+            'style="left:' + lResizerLeft + 'px;height:' + (this.taskBarHeight) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarRightResizer(): NodeList {
         const rResizerLeft: number = this.parent.isAdaptive ? -2 : -10;
         const template: string = '<div class="' + cls.taskBarRightResizer + ' ' + cls.icon + '"' +
-            ' role="RightResizer" style="left:' + (this.templateData.ganttProperties.width + rResizerLeft) + 'px;' +
+            'style="left:' + (this.templateData.ganttProperties.width + rResizerLeft) + 'px;' +
             'height:' + (this.taskBarHeight) + 'px;"></div>';
         return this.createDivElement(template);
     }
 
     private childTaskbarProgressResizer(): NodeList {
         const template: string = '<div class="' + cls.childProgressResizer + '"' +
-            ' role="ProgressResizer" style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
+            'style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
             (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
             '><div class="' + cls.progressHandlerElement + '"></div>' +
             '<div class="' + cls.progressBarHandlerAfter + '"></div></div>';
@@ -1069,9 +1069,16 @@ export class ChartRows extends DateProcessor {
         const pointerLeft: number = -((this.parent.isAdaptive ? 14 : 2) + this.connectorPointWidth);
         const mileStoneLeft: number = -(this.connectorPointWidth + 2);
         const pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
+        let marginTop: string;
+        if((!this.templateData.ganttProperties.isAutoSchedule && this.templateData.hasChildRecords)) {
+            marginTop =  '';
+         }  
+         else {
+             marginTop =  'margin-top:' + this.connectorPointMargin + 'px';
+         }
         const template: string = '<div class="' + cls.leftConnectorPointOuterDiv + '" style="' +
             ((data.ganttProperties.isMilestone) ? ('margin-top:' + pointerTop + 'px;left:' + mileStoneLeft +
-                'px;') : ('margin-top:' + this.connectorPointMargin + 'px;left:' + pointerLeft + 'px;')) + '">' +
+                'px;') : (marginTop + ';left:' + pointerLeft + 'px;')) + '">' +
             '<div class="' + cls.connectorPointLeft + ' ' + this.parent.getUnscheduledTaskClass(data.ganttProperties) +
             '" style="width: ' + this.connectorPointWidth + 'px;' +
             'height: ' + this.connectorPointWidth + 'px;">' + this.touchLeftConnectorpoint + '</div></div>';
@@ -1082,10 +1089,16 @@ export class ChartRows extends DateProcessor {
         const data: IGanttData = this.templateData;
         const pointerRight: number = this.parent.isAdaptive ? 10 : -2;
         const pointerTop: number = Math.floor(this.milesStoneRadius - (this.connectorPointWidth / 2));
+        let marginTop: string;
+        if((!this.templateData.ganttProperties.isAutoSchedule && this.templateData.hasChildRecords)) {
+            marginTop =  '';
+         }  
+         else {
+             marginTop =  'margin-top:' + this.connectorPointMargin + 'px';
+         }
         const template: string = '<div class="' + cls.rightConnectorPointOuterDiv + '" style="' +
             ((data.ganttProperties.isMilestone) ? ('left:' + (this.milestoneHeight - 2) + 'px;margin-top:' +
-                pointerTop + 'px;') : ('left:' + (data.ganttProperties.width + pointerRight) + 'px;margin-top:' +
-                    this.connectorPointMargin + 'px;')) + '">' +
+                pointerTop + 'px;') : ('left:' + (data.ganttProperties.width + pointerRight) + 'px;' + marginTop + ';')) + '">' +
             '<div class="' + cls.connectorPointRight + ' ' + this.parent.getUnscheduledTaskClass(data.ganttProperties) +
             '" style="width:' + this.connectorPointWidth + 'px;height:' + this.connectorPointWidth + 'px;">' +
             this.touchRightConnectorpoint + '</div></div>';
@@ -1380,27 +1393,29 @@ export class ChartRows extends DateProcessor {
         const taskbarContainerNode: NodeList = this.taskbarContainer();
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('rowUniqueId', this.templateData.ganttProperties.rowUniqueID);
-        if (!this.templateData.hasChildRecords) {
-            const connectorLineLeftNode: NodeList = this.getLeftPointNode();
+        const connectorLineLeftNode: NodeList = this.getLeftPointNode();
+        if ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType == 'ProjectView') || !this.templateData.hasChildRecords) {
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
         }
         if (this.templateData.hasChildRecords) {
             const parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i, taskbarContainerNode);
             if (!this.templateData.ganttProperties.isAutoSchedule) {
                 const manualTaskbar: NodeList = this.getManualTaskbar();
+                manualTaskbar[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
+                const connectorLineRightNode: NodeList = this.getRightPointNode();
+                manualTaskbar[0].appendChild([].slice.call(connectorLineRightNode)[0]);
                 taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
             }
             if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
-                this.templateData.ganttProperties.baselineEndDate) {                    
+                this.templateData.ganttProperties.baselineEndDate) {
                     taskBaselineTemplateNode =(
                         (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
                     && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
                     this.templateData.ganttProperties.isMilestone)
-                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;
-            }
+                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;            }
         } else if (this.templateData.ganttProperties.isMilestone) {
             const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
             if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
@@ -1412,8 +1427,7 @@ export class ChartRows extends DateProcessor {
                         (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
                     && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
                     this.templateData.ganttProperties.isMilestone)
-                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;
-            }
+                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;            }
         } else {
             const scheduledTask: Boolean = isScheduledTask(this.templateData.ganttProperties);// eslint-disable-line
             let childTaskbarProgressResizeNode: NodeList = null; let childTaskbarRightResizeNode: NodeList = null;
@@ -1455,13 +1469,12 @@ export class ChartRows extends DateProcessor {
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
                     taskBaselineTemplateNode =(
-                (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
-            && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
-            this.templateData.ganttProperties.isMilestone)
-                        ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;
-            }
+                        (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
+                    && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+                    this.templateData.ganttProperties.isMilestone)
+                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;            }
         }
-        if (!this.templateData.hasChildRecords) {
+        if ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType == 'ProjectView') || !this.templateData.hasChildRecords) {
             const connectorLineRightNode: NodeList = this.getRightPointNode();
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineRightNode)[0]);
         }
@@ -1872,6 +1885,21 @@ export class ChartRows extends DateProcessor {
         return defaultValue;
     }
 
+    private generateBaselineAriaLabel(data: IGanttData): string {
+        data = this.templateData;
+        let defaultValue: string = '';
+        const nameConstant: string = this.parent.localeObj.getConstant('name');
+        const startDateConstant: string = this.parent.localeObj.getConstant('startDate');
+        const endDateConstant: string = this.parent.localeObj.getConstant('endDate');
+        const taskNameVal: string = data.ganttProperties.taskName;
+        const startDateVal: Date = data.ganttProperties.baselineStartDate;
+        const endDateVal: Date = data.ganttProperties.baselineEndDate;
+        defaultValue +=  'Baseline' + ' ';
+        defaultValue += nameConstant + ' ' + taskNameVal + ' ';
+        defaultValue += startDateConstant + ' ' + this.parent.getFormatedDate(startDateVal) + ' ';
+        defaultValue += endDateConstant + ' ' + this.parent.getFormatedDate(endDateVal) + ' ';
+        return defaultValue;
+    }
     private generateSpiltTaskAriaLabel(data: ITaskSegment, ganttProp: ITaskData): string {
         let defaultValue: string = '';
         const startDateConstant: string = this.parent.localeObj.getConstant('startDate');

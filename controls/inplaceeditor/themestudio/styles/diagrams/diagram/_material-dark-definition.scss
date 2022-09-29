@@ -65,32 +65,32 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 
 @include export-module('diagram-material-icons') {
   .e-diagram-menu {
-    .e-bringforward::before { content: '\e5a1'; }
-    .e-bringfront::before { content: '\e5a2'; }
-    .e-sendback::before { content: '\e5a3'; }
-    .e-sendbackward::before { content: '\e5a4'; }
-    .e-delete::before { content: '\e94a'; }
-    .e-ungroup::before { content: '\e5a6'; }
-    .e-group::before { content: '\e5a7'; }
-    .e-undo::before { content: '\e341'; }
-    .e-cut::before { content: '\e33b'; }
-    .e-save::before { content: '\e735'; }
-    .e-paste::before { content: '\e355'; }
-    .e-copy::before { content: '\e33d'; }
-    .e-redo::before { content: '\e354'; }
-    .e-zoomin::before { content: '\e349'; }
-    .e-italic::before { content: '\e35a'; }
-    .e-close::before { content: '\ec0f'; }
-    .e-pan::before { content: '\ec1a'; }
-    .e-bold::before { content: '\e339'; }
-    .e-underline::before { content: '\e343'; }
-    .e-zoomout::before { content: '\e351'; }
-    .e-export::before { content: '\e711'; }
-    .e-print::before { content: '\e34b'; }
-    .e-order::before { content: '\e4a4'; }
+    .e-bringforward::before{ content: '\e5a1'; }
+    .e-bringfront::before{ content: '\e5a2'; }
+    .e-sendback::before{ content: '\e5a3'; }
+    .e-sendbackward::before{ content: '\e5a4'; }
+    .e-delete::before{ content: '\e94a'; }
+    .e-ungroup::before{ content: '\e5a6'; }
+    .e-group::before{ content: '\e5a7'; }
+    .e-undo::before{ content: '\e341'; }
+    .e-cut::before{ content: '\e33b'; }
+    .e-save::before{ content: '\e735'; }
+    .e-paste::before{ content: '\e355'; }
+    .e-copy::before{ content: '\e33d'; }
+    .e-redo::before{ content: '\e354'; }
+    .e-zoomin::before{ content: '\e349'; }
+    .e-italic::before{ content: '\e35a'; }
+    .e-close::before{ content: '\ec0f'; }
+    .e-pan::before{ content: '\ec1a'; }
+    .e-bold::before{ content: '\e339'; }
+    .e-underline::before{ content: '\e343'; }
+    .e-zoomout::before{ content: '\e351'; }
+    .e-export::before{ content: '\e711'; }
+    .e-print::before{ content: '\e34b'; }
+    .e-order::before{ content: '\e4a4'; }
   }
 
   .e-symbolpalette {
-    .e-clear-searchtext::before { content: '\ec0f'; }
+    .e-clear-searchtext::before{ content: '\ec0f'; }
   }
 }

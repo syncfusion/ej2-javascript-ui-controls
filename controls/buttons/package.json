@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-buttons",
-	"version": "20.2.46",
+	"version": "18.44.0",
 	"description": "A package of feature-rich Essential JS 2 components such as Button, CheckBox, RadioButton and Switch.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-buttons.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-buttons.es2015.js",
+	"es2015": "./dist/es6/ej2-buttons.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*"
 	},
@@ -63,7 +63,10 @@
 		"toggle button",
 		"form control",
 		"form controls",
-		"input"
+		"input",
+		"floating action button",
+		"floating button",
+		"fab"
 	],
 	"repository": {
 		"type": "git",

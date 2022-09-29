@@ -22,13 +22,10 @@ import { MapsTooltip } from './tooltip';
 export class Zoom {
     private maps: Maps;
     public toolBarGroup: Element;
-    private groupElements: Element[];
     private currentToolbarEle: Element;
     public zoomingRect: Rect;
     public selectionColor: string;
     private fillColor: string;
-    private zoomInElements: Element;
-    private zoomOutElements: Element;
     private zoomElements: Element;
     private panElements: Element;
     public isPanning: boolean = false;
@@ -42,7 +39,6 @@ export class Zoom {
     public touchStartList: ITouches[] | TouchList;
     public touchMoveList: ITouches[] | TouchList;
     public previousTouchMoveList: ITouches[] | TouchList;
-    private pinchRect: Rect = new Rect(0, 0, 0, 0);
     public mouseDownPoints: Point;
     public mouseMovePoints: Point;
     public isDragZoom: boolean;
@@ -85,7 +81,6 @@ export class Zoom {
         this.selectionColor = this.maps.zoomSettings.selectionColor;
         this.fillColor = this.maps.zoomSettings.color;
         this.addEventListener();
-        this.groupElements = [];
     }
 
     /**
@@ -126,6 +121,7 @@ export class Zoom {
                     mapTotalHeight = availSize.height;
                 }
                 newZoomFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
+                newZoomFactor = newZoomFactor > 1.05 ? 1 : newZoomFactor;
                 map.translatePoint = this.calculateInitalZoomTranslatePoint(newZoomFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);                
             } else {
                 const point: Point = map.translatePoint;
@@ -141,7 +137,7 @@ export class Zoom {
                 map.translatePoint = map.previousPoint;
                 map.scale = map.mapScaleValue = map.previousScale;
             } else {
-                this.applyTransform();
+                this.applyTransform(map);
             }
         } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
             this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
@@ -183,7 +179,7 @@ export class Zoom {
                     //         element1 = element1;
                     //     }
                     // }
-                    this.applyTransform();
+                    this.applyTransform(this.maps);
                     if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                         document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
                     }
@@ -285,7 +281,7 @@ export class Zoom {
             }
             if (!isZoomCancelled) {
                 map.mapScaleValue = zoomCalculationFactor;
-                this.applyTransform(true);
+                this.applyTransform(map, true);
                 this.maps.zoomNotApplied = false;
                 this.zoomingRect = null;
             }
@@ -337,6 +333,7 @@ export class Zoom {
                     mapTotalHeight = availSize.height;
                 }
                 zoomCalculationFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
+                zoomCalculationFactor = zoomCalculationFactor > 1.05 ? 1 : zoomCalculationFactor;
                 map.translatePoint = this.calculateInitalZoomTranslatePoint(zoomCalculationFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);
             }
             else {
@@ -373,7 +370,7 @@ export class Zoom {
             }
         }
         if (!isZoomCancelled) {
-            this.applyTransform();
+            this.applyTransform(map);
         }
     }
 
@@ -424,20 +421,20 @@ export class Zoom {
         }
     }
 
-    public applyTransform(animate?: boolean): void {
+    public applyTransform(maps: Maps, animate?: boolean): void {
         let layerIndex: number;
         this.templateCount = 0;
         let layer: LayerSettings;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let zoomshapelocation: any;
         let i: number; let markerStyle: string;
-        const scale: number = this.maps.scale;
-        const x: number = this.maps.translatePoint.x;
-        const y: number = this.maps.translatePoint.y;
+        const scale: number = maps.scale;
+        const x: number = maps.translatePoint.x;
+        const y: number = maps.translatePoint.y;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const collection: any[] = []; this.maps.zoomShapeCollection = [];
-        if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
-            removeElement(this.maps.element.id + '_mapsTooltip');
+        const collection: any[] = []; maps.zoomShapeCollection = [];
+        if (document.getElementById(maps.element.id + '_mapsTooltip')) {
+            removeElement(maps.element.id + '_mapsTooltip');
         }
         if (this.layerCollectionEle) {
             for (let i: number = 0; i < this.layerCollectionEle.childElementCount; i++) {
@@ -445,33 +442,33 @@ export class Zoom {
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
                     this.index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
-                    this.currentLayer = <LayerSettings>this.maps.layersCollection[this.index];
-                    const factor: number = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
+                    this.currentLayer = <LayerSettings>maps.layersCollection[this.index];
+                    const factor: number = maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (let j: number = 0; j < layerElement.childElementCount; j++) {
                         let currentEle: Element = layerElement.childNodes[j] as Element;
                         if (!(currentEle.id.indexOf('_Markers_Group') > -1) && (!(currentEle.id.indexOf('_bubble_Group') > -1))
                             && (!(currentEle.id.indexOf('_dataLableIndex_Group') > -1))
                         ) {
-                            if (this.maps.isTileMap && (currentEle.id.indexOf('_line_Group') > -1)) {
+                            if (maps.isTileMap && (currentEle.id.indexOf('_line_Group') > -1)) {
                                 currentEle.remove();
                                 if (layerElement.children.length > 0 && layerElement.children[0]) {
                                     layerElement.insertBefore(
-                                        this.maps.navigationLineModule.renderNavigation(
-                                            this.currentLayer, this.maps.tileZoomLevel, this.index
+                                        maps.navigationLineModule.renderNavigation(
+                                            this.currentLayer, maps.tileZoomLevel, this.index
                                         ),
                                         layerElement.children[1]
                                     );
                                 } else {
-                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index));
+                                    layerElement.appendChild(maps.navigationLineModule.renderNavigation(this.currentLayer, maps.tileZoomLevel, this.index));
                                 }
                             } else if (currentEle.id.indexOf('Legend') == -1) {
-                                changeBorderWidth(currentEle, this.index, scale, this.maps);
-                                this.maps.zoomTranslatePoint = this.maps.translatePoint;
+                                changeBorderWidth(currentEle, this.index, scale, maps);
+                                maps.zoomTranslatePoint = maps.translatePoint;
                                 this.animateTransform(currentEle, animate, x, y, scale);
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            if (!this.isPanning) {
+                            if (!this.isPanning && !isNullOrUndefined(currentEle.childNodes[0])) {
                                 this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
                             }
                             currentEle = layerElement.childNodes[j] as Element;
@@ -490,14 +487,14 @@ export class Zoom {
                                             markerSelectionValues['latitude'] ||
                                             this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['longitude'] ===
                                             markerSelectionValues['longitude']) {
-                                            this.maps.markerSelection(this.currentLayer.markerSettings[markerIndex].selectionSettings,
-                                                                      this.maps, currentEle.children[k],
+                                            maps.markerSelection(this.currentLayer.markerSettings[markerIndex].selectionSettings,
+                                                                      maps, currentEle.children[k],
                                                                       this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex]
                                             );
                                         }
                                     }
-                                    if ((this.currentLayer.animationDuration > 0 || (this.maps.layersCollection[0].animationDuration > 0 && this.currentLayer.type === 'SubLayer')) && !this.isPanning) {
-                                        if (this.maps.isTileMap) {
+                                    if ((this.currentLayer.animationDuration > 0 || (maps.layersCollection[0].animationDuration > 0 && this.currentLayer.type === 'SubLayer')) && !this.isPanning) {
+                                        if (maps.isTileMap) {
                                             const groupElement: Element = document.querySelector('.GroupElement');
                                             if (groupElement && !(document.querySelector('.ClusterGroupElement')) && markerAnimation) {
                                                 (groupElement as HTMLElement).style.display = 'none';
@@ -508,27 +505,27 @@ export class Zoom {
                                         }
                                     }
                                 }
-                                if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
-                                    clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
-                                } else if (this.maps.markerModule.sameMarkerData.length > 0) {
-                                    this.maps.markerModule.sameMarkerData = [];
-                                    if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
-                                        removeElement(this.maps.element.id + '_mapsTooltip');
+                                if (this.isPanning && maps.markerModule.sameMarkerData.length > 0) {
+                                    clusterSeparate(maps.markerModule.sameMarkerData, maps, currentEle, true);
+                                } else if (maps.markerModule.sameMarkerData.length > 0) {
+                                    maps.markerModule.sameMarkerData = [];
+                                    if (document.getElementById(maps.element.id + '_mapsTooltip')) {
+                                        removeElement(maps.element.id + '_mapsTooltip');
                                     }
                                 }
-                                if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')
+                                if (document.getElementById(maps.element.id + '_mapsTooltip') && maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')
                                     && !this.isPanning) {
-                                    const mapsTooltip: MapsTooltip = this.maps.mapsTooltipModule;
+                                    const mapsTooltip: MapsTooltip = maps.mapsTooltipModule;
                                     const tooltipElement: Element = currentEle.querySelector('#' + mapsTooltip.tooltipTargetID);
                                     if (!isNullOrUndefined(tooltipElement)) {
                                         if (tooltipElement['style']['visibility'] === 'hidden') {
-                                            removeElement(this.maps.element.id + '_mapsTooltip');
+                                            removeElement(maps.element.id + '_mapsTooltip');
                                         } else {
                                             let x: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
                                             let y: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                            if (this.maps.isTileMap) {
-                                                x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                                y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                            if (maps.isTileMap) {
+                                                x += +getElement(maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                                y += +getElement(maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
                                             }
                                             mapsTooltip.svgTooltip.location.x = x;
                                             mapsTooltip.svgTooltip.location.y = y;
@@ -545,9 +542,9 @@ export class Zoom {
                                 layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                                 const bubleIndex: number = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[0]);
                                 const dataIndex: number = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[2]);
-                                for (let l: number = 0; l < this.maps.bubbleModule.bubbleCollection.length; l++) {
+                                for (let l: number = 0; l < maps.bubbleModule.bubbleCollection.length; l++) {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const bubbleCollection: any = this.maps.bubbleModule.bubbleCollection[l];
+                                    const bubbleCollection: any = maps.bubbleModule.bubbleCollection[l];
                                     if (bubbleCollection['LayerIndex'] === layerIndex && bubbleCollection['BubbleIndex'] === bubleIndex &&
                                         bubbleCollection['DataIndex'] === dataIndex) {
                                         const centerX: number = bubbleCollection['center']['x'];
@@ -564,24 +561,24 @@ export class Zoom {
                                     }
                                 }
                             }
-                        } else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1 && !isNullOrUndefined(this.maps.layers[this.index])) {
-                            this.intersect = []; this.maps.zoomLabelPositions = [];
-                            this.maps.zoomLabelPositions = this.maps.dataLabelModule.dataLabelCollections;
-                            let labelAnimate: boolean = !this.maps.isTileMap && animate;
+                        } else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1 && !isNullOrUndefined(maps.layers[this.index])) {
+                            this.intersect = []; maps.zoomLabelPositions = [];
+                            maps.zoomLabelPositions = maps.dataLabelModule.dataLabelCollections;
+                            let labelAnimate: boolean = !maps.isTileMap && animate;
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 if (currentEle.childNodes[k]['id'].indexOf('_LabelIndex_') > -1) {
                                     const labelIndex: number = parseFloat(currentEle.childNodes[k]['id'].split('_LabelIndex_')[1].split('_')[0]);
                                     this.zoomshapewidth = (currentEle.childNodes[k] as Element).getBoundingClientRect();
-                                    this.maps.zoomShapeCollection.push(this.zoomshapewidth);
+                                    maps.zoomShapeCollection.push(this.zoomshapewidth);
                                     this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', labelAnimate);
-                                    const dataLabel: DataLabelSettingsModel = this.maps.layers[this.index].dataLabelSettings;
+                                    const dataLabel: DataLabelSettingsModel = maps.layers[this.index].dataLabelSettings;
                                     const border: BorderModel = dataLabel.border;
                                     if (k > 0 && border['width'] > 1) {
-                                        if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1) {
-                                            const labelX: number = ((this.maps.zoomLabelPositions[labelIndex]['location']['x'] + x) * scale);
-                                            const labelY: number = ((this.maps.zoomLabelPositions[labelIndex]['location']['y'] + y) * scale);
+                                        if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1 && !isNullOrUndefined(maps.zoomLabelPositions[labelIndex])) {
+                                            const labelX: number = ((maps.zoomLabelPositions[labelIndex]['location']['x'] + x) * scale);
+                                            const labelY: number = ((maps.zoomLabelPositions[labelIndex]['location']['y'] + y) * scale);
                                             const zoomtext: string = currentEle.childNodes[k]['innerHTML'];
-                                            const style: FontModel = this.maps.layers[this.index].dataLabelSettings.textStyle;
+                                            const style: FontModel = maps.layers[this.index].dataLabelSettings.textStyle;
                                             const zoomtextSize: Size = measureText(zoomtext, style);
                                             const padding: number = 5;
                                             const rectElement: ChildNode = currentEle.childNodes[k - 1];
@@ -596,11 +593,11 @@ export class Zoom {
                         }
                     }
                 }
-                this.maps.arrangeTemplate();
+                maps.arrangeTemplate();
             }
             if (!isNullOrUndefined(this.currentLayer)) {
-                if (!animate || this.currentLayer.animationDuration === 0 || this.maps.isTileMap) {
-                    this.processTemplate(x, y, scale, this.maps);
+                if (!animate || this.currentLayer.animationDuration === 0 || maps.isTileMap) {
+                    this.processTemplate(x, y, scale, maps);
                 }
             }
         }
@@ -994,13 +991,13 @@ export class Zoom {
             if (!panArgs.cancel) {
                 if (panningXDirection && panningYDirection) {
                     map.translatePoint = new Point(x, y);
-                    this.applyTransform();
+                    this.applyTransform(map);
                 } else if (panningXDirection) {
                     map.translatePoint = new Point(x, map.translatePoint.y);
-                    this.applyTransform();
+                    this.applyTransform(map);
                 } else if (panningYDirection) {
                     map.translatePoint = new Point(map.translatePoint.x, y);
-                    this.applyTransform();
+                    this.applyTransform(map);
                 }
             }
             this.maps.zoomNotApplied = false;
@@ -1027,7 +1024,7 @@ export class Zoom {
             };
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
-            this.applyTransform();
+            this.applyTransform(map);
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
@@ -1040,7 +1037,7 @@ export class Zoom {
             (this.distanceX / this.maps.scale)) : this.maps.translatePoint.x;
         this.maps.translatePoint.y = !isNullOrUndefined(this.distanceY) ? this.maps.translatePoint.y -
             (this.distanceY / this.maps.scale) : this.maps.translatePoint.y;
-        this.applyTransform(false);
+        this.applyTransform(this.maps, false);
     }
 
     public toolBarZooming(zoomFactor: number, type: string): void {
@@ -1079,6 +1076,7 @@ export class Zoom {
                     mapHeight = size.height;
                 }
                 zoomFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                zoomFactor = zoomFactor > 1.05 ? 1 : zoomFactor;
                 map.translatePoint = this.calculateInitalZoomTranslatePoint(zoomFactor, mapWidth, mapHeight, size, min, map);
             } else {
                 translatePointX = translatePoint.x - (((size.width / scale) - (size.width / zoomFactor)) / 2);
@@ -1096,7 +1094,7 @@ export class Zoom {
                 map.translatePoint = map.zoomTranslatePoint = map.previousPoint;
                 map.scale = map.previousScale;
             } else {
-                this.applyTransform(true);
+                this.applyTransform(map, true);
             }
         } else if ((map.isTileMap) && ((zoomFactor >= minZoom && zoomFactor <= maxZoom) || map.isReset)) {
             let tileZoomFactor: number = prevLevel < minZoom && !map.isReset ? minZoom : zoomFactor;
@@ -1136,7 +1134,7 @@ export class Zoom {
                             // element1.removeChild(element1.children[element1.childElementCount - 1]);
                             // element1.childElementCount ? element1.removeChild(element1.children[element1.childElementCount - 1]) : element1;
                         }
-                        this.applyTransform(true);
+                        this.applyTransform(this.maps, true);
                         if (document.getElementById(this.maps.element.id + '_LayerIndex_1')) {
                             document.getElementById(this.maps.element.id + '_LayerIndex_1').style.display = 'block';
                         }
@@ -1150,6 +1148,8 @@ export class Zoom {
 
     public createZoomingToolbars(): void {
         const map: Maps = this.maps;
+        let zoomInElements: Element;
+        let zoomOutElements: Element;
         this.toolBarGroup = map.renderer.createGroup({
             id: map.element.id + '_Zooming_KitCollection',
             opacity: map.theme.toLowerCase() === 'fluentdark' ? 0.6 : 0.3
@@ -1165,10 +1165,6 @@ export class Zoom {
         const toolBarLength: number = map.zoomSettings.toolbars.length;
         const toolWidth: number = (map.zoomSettings.toolBarOrientation === 'Horizontal') ? (toolBarLength * kitWidth) + (toolBarLength * padding) : (kitWidth * 2);
         const toolHeight: number = (map.zoomSettings.toolBarOrientation === 'Horizontal') ? (kitHeight * 2) : (toolBarLength * kitHeight) + (toolBarLength * padding);
-        this.toolBarGroup.appendChild(map.renderer.drawRectangle(new RectOption(
-            map.element.id + '_Zooming_Rect', 'transparent', { color: 'transparent', width: 1 },
-            1, new Rect(0, 0, toolWidth, toolHeight), 0, 0
-        )) as SVGRectElement);
         const defElement: Element = map.renderer.createDefs();
         defElement.innerHTML = shadowElement;
         this.toolBarGroup.appendChild(defElement);
@@ -1225,7 +1221,7 @@ export class Zoom {
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, this.maps.themeStyle.zoomFillColor, 1, 1, null, direction)
                 ) as SVGPathElement);
-                this.zoomInElements = this.currentToolbarEle;
+                zoomInElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
             case 'zoomout':
@@ -1233,7 +1229,7 @@ export class Zoom {
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, this.maps.themeStyle.zoomFillColor, 1, 1, null, direction)
                 ) as SVGPathElement);
-                this.zoomOutElements = this.currentToolbarEle;
+                zoomOutElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
             case 'pan': {
@@ -1743,14 +1739,29 @@ export class Zoom {
     /**
      * To destroy the zoom.
      *
-     * @param {Maps} maps - Specifies the instance of the maps.
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
+    public destroy(): void {
+        this.toolBarGroup = null;
+        this.currentToolbarEle = null;
+        this.zoomingRect = null;
+        this.zoomElements = null;
+        this.panElements = null;
+        this.baseTranslatePoint = null;
+        this.touchStartList = null;
+        this.touchMoveList = null;
+        this.previousTouchMoveList = null;
+        this.mouseDownPoints = null;
+        this.mouseMovePoints = null;
+        this.startTouches = [];
+        this.zoomshapewidth = null;
+        this.intersect = [];
+        this.mouseDownLatLong = null;
+        this.mouseMoveLatLong = null;
         this.removeEventListener();
-        /**
-         * Destroy method performed here
-         */
+        //TODO: Calling the below code throws spec issue.
+        //this.maps = null;
+        this.currentLayer = null;
     }
 }

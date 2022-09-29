@@ -1,10 +1,11 @@
-import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList, L10n } from '@syncfusion/ej2-base';
 import { IGrid, IAction, BeforeCopyEventArgs, BeforePasteEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { parentsUntil } from '../base/util';
 import * as events from '../base/constant';
 import { ISelectedCell } from '../../index';
 import * as literals from '../base/string-literals';
+import { ServiceLocator } from '../services/service-locator';
 
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
@@ -15,6 +16,8 @@ export class Clipboard implements IAction {
     protected clipBoardTextArea: HTMLInputElement;
     private copyContent: string = '';
     private isSelect: boolean = false;
+    private l10n: L10n;
+    protected serviceLocator: ServiceLocator;
     //Module declarations
     private parent: IGrid;
 
@@ -22,10 +25,12 @@ export class Clipboard implements IAction {
      * Constructor for the Grid clipboard module
      *
      * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} serviceLocator - specifies the serviceLocator
      * @hidden
      */
-    constructor(parent?: IGrid) {
+    constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
+        this.serviceLocator = serviceLocator;
         this.addEventListener();
     }
 
@@ -178,11 +183,12 @@ export class Clipboard implements IAction {
     }
 
     private initialEnd(): void {
+        this.l10n = this.serviceLocator.getService<L10n>('localization');
         this.parent.off(events.contentReady, this.initialEnd);
         this.clipBoardTextArea = this.parent.createElement('textarea', {
             className: 'e-clipboard',
             styles: 'opacity: 0',
-            attrs: { tabindex: '-1', 'aria-label': 'clipboard' }
+            attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('ClipBoard') }
         }) as HTMLInputElement;
         this.parent.element.appendChild(this.clipBoardTextArea);
     }

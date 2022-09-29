@@ -48,17 +48,19 @@ export class SelectionCommands {
             let preventRestore: boolean = false;
             const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
             if (range.collapsed) {
-                let currentFormatNode: Node = isFormatted.getFormattedNode(range.startContainer, format, endNode);
-                let currentSelector: string = !isNOU(currentFormatNode) ?
+                const currentFormatNode: Node = isFormatted.getFormattedNode(range.startContainer, format, endNode);
+                const currentSelector: string = !isNOU(currentFormatNode) ?
                     ((currentFormatNode as HTMLElement).getAttribute('style') === null ? currentFormatNode.nodeName :
-                    currentFormatNode.nodeName + `[style='` + (currentFormatNode as HTMLElement).getAttribute('style') + `']`) : null;
+                        currentFormatNode.nodeName + `[style='` + (currentFormatNode as HTMLElement).getAttribute('style') + `']`) : null;
                 if (nodes.length > 0) {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
                 } else if (range.startContainer.nodeType === 3 && ((range.startContainer.parentElement.childElementCount > 0 &&
                     range.startOffset > 0 && range.startContainer.parentElement.firstElementChild.tagName.toLowerCase() !== 'br') ||
-                    !isNOU(currentFormatNode) && currentFormatNode as HTMLElement === ((range.startContainer.parentElement as HTMLElement).closest(currentSelector)) &&
-                    (((range.startContainer.parentElement as HTMLElement).closest(currentSelector)).textContent.replace(new RegExp(String.fromCharCode(8203), 'g'), '').trim().length != 0))) {
+                    !isNOU(currentFormatNode) && currentFormatNode as HTMLElement ===
+                        ((range.startContainer.parentElement as HTMLElement).closest(currentSelector)) &&
+                        (((range.startContainer.parentElement as HTMLElement).closest(currentSelector)).textContent.replace(
+                        new RegExp(String.fromCharCode(8203), 'g'), '').trim().length !== 0))) {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, range.startContainer);
                     nodes.push(range.startContainer);
@@ -177,7 +179,7 @@ export class SelectionCommands {
                         pointer = emptySpaceNode.textContent.length - 1;
                         domSelection.setCursorPoint(docElement, emptySpaceNode as Element, pointer);
                     } else if (!isNOU(emptySpaceNode.parentElement) && emptySpaceNode.parentElement.textContent.length === 0) {
-                        let brElem: HTMLElement = document.createElement('BR');
+                        const brElem: HTMLElement = document.createElement('BR');
                         emptySpaceNode.parentElement.appendChild(brElem);
                         detach(emptySpaceNode);
                         cursorNode = brElem;
@@ -237,9 +239,9 @@ export class SelectionCommands {
         endNode: Node,
         domNode: DOMNode): Node {
         let splitNode: HTMLElement = null;
-        let startText: string = range.startContainer.nodeName === '#text' ?
-        range.startContainer.textContent.substring(range.startOffset, range.startContainer.textContent.length) :
-        range.startContainer.textContent;
+        const startText: string = range.startContainer.nodeName === '#text' ?
+            range.startContainer.textContent.substring(range.startOffset, range.startContainer.textContent.length) :
+            range.startContainer.textContent;
         if (!(range.startContainer === range.endContainer && range.startOffset === 0
             && range.endOffset === (range.startContainer as Text).length)) {
             const nodeIndex: number[] = [];

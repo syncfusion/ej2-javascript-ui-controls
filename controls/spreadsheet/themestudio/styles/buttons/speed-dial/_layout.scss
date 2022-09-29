@@ -1,0 +1,373 @@
+@include export-module('speed-dial-layout') {
+  .e-speeddial-popup {
+    pointer-events: none;
+    position: absolute;
+
+    &.e-speeddial-top {
+      top: $sd-offset;
+
+      &.e-speeddial-radial .e-speeddial-li {
+        top: 0;
+      }
+
+      &.e-speeddial-radial.e-speeddial-middle .e-speeddial-li {
+        top: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+      }
+
+      &.e-speeddial-middle,
+      &.e-speeddial-linear {
+        top: var(--speeddialVertDist);
+      }
+    }
+
+    &.e-speeddial-bottom {
+      bottom: $sd-offset;
+
+      &.e-speeddial-radial .e-speeddial-li {
+        bottom: 0;
+      }
+
+      &.e-speeddial-radial.e-speeddial-middle .e-speeddial-li {
+        bottom: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+      }
+
+      &.e-speeddial-middle,
+      &.e-speeddial-linear {
+        bottom: var(--speeddialVertDist);
+      }
+    }
+
+    &.e-speeddial-left {
+      left: $sd-offset;
+
+      &.e-speeddial-radial .e-speeddial-li {
+        left: 0;
+      }
+
+      &.e-speeddial-radial.e-speeddial-center .e-speeddial-li {
+        left: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+      }
+
+      &.e-speeddial-center,
+      &.e-speeddial-linear {
+        left: var(--speeddialHorzDist);
+      }
+    }
+
+    &.e-speeddial-right {
+      right: $sd-offset;
+
+      &.e-speeddial-radial .e-speeddial-li {
+        right: 0;
+      }
+
+      &.e-speeddial-radial.e-speeddial-center .e-speeddial-li {
+        right: calc(.5 * var(--speeddialRadialMinWidth) + var(--speeddialRadialOffset));
+      }
+
+      &.e-speeddial-center,
+      &.e-speeddial-linear {
+        right: var(--speeddialHorzDist);
+      }
+    }
+
+    &.e-speeddial-template {
+      outline: none;
+      pointer-events: auto;
+      z-index: 100001;
+    }
+
+    &.e-speeddial-linear .e-speeddial-li {
+      margin: $sd-vert-li-margin;
+    }
+
+    .e-speeddial-ul {
+      box-sizing: border-box;
+      display: inline-flex;
+      flex-direction: column;
+      list-style-type: none;
+      margin: $sd-ul-margin;
+      padding: $sd-vert-ul-padding;
+    }
+
+    .e-speeddial-li {
+      align-items: center;
+      cursor: pointer;
+      display: inline-flex;
+      pointer-events: auto;
+      position: relative;
+      z-index: 100001;
+
+      &:not(.e-speeddial-text-li) .e-speeddial-li-text {
+        margin: $sd-li-text-margin;
+      }
+    }
+
+    .e-speeddial-li-text {
+      border-radius: 2px;
+      border: 1px solid;
+      padding: $sd-li-text-padding;
+      white-space: nowrap;
+      height: $sd-li-text-height;
+      line-height: $sd-li-text-height;
+    }
+
+    .e-speeddial-li-icon {
+      border-radius: 99999px;
+      border: 1px solid;
+      height: $sd-li-icon-height;
+      width: $sd-li-icon-width;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    &.e-speeddial-fixed {
+      position: fixed;
+    }
+
+    &.e-speeddial-vert-right .e-speeddial-li {
+      flex-direction: row-reverse;
+    }
+
+    &.e-speeddial-vert-bottom .e-speeddial-ul {
+      flex-direction: column-reverse;
+    }
+
+    &.e-speeddial-horz-right .e-speeddial-ul {
+      flex-direction: row-reverse;
+
+      &.e-speeddial-horz-top {
+        flex-direction: row;
+      }
+    }
+
+    &.e-speeddial-horz-left .e-speeddial-ul {
+      flex-direction: row;
+
+      &.e-speeddial-horz-top {
+        flex-direction: row-reverse;
+      }
+    }
+
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+      .e-speeddial-ul {
+        padding: $sd-horz-ul-padding;
+      }
+
+      .e-speeddial-li {
+        margin: $sd-horz-li-margin;
+      }
+    }
+
+    /* OVERFLOW CSS */
+    &.e-speeddial-overflow {
+      .e-speeddial-ul {
+        overflow: auto;
+        scroll-behavior: smooth;
+
+        /* Hide scrollbar for IE and Edge */
+        -ms-overflow-style: none;
+
+        /* Hide scrollbar for Firefox */
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+
+          /* Hide scrollbar for Chrome, Safari and Opera */
+          display: none;
+        }
+      }
+
+      &.e-speeddial-vert-overflow .e-speeddial-ul {
+        max-height: var(--speeddialOverflowLimit);
+      }
+
+      &.e-speeddial-horz-overflow .e-speeddial-ul {
+        max-width: var(--speeddialOverflowLimit);
+      }
+    }
+
+    &.e-speeddial-radial {
+      height: calc(var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinHeight));
+      width: calc(var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinWidth));
+
+      &.e-speeddial-middle {
+        height: calc(2 * var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinHeight));
+      }
+
+      &.e-speeddial-center {
+        width: calc(2 * var(--speeddialRadialOffset) + 2 * var(--speeddialRadialMinWidth));
+      }
+
+      &.e-speeddial-top-left {
+        border-bottom-right-radius: 100%;
+      }
+
+      &.e-speeddial-top-right {
+        border-bottom-left-radius: 100%;
+      }
+
+      &.e-speeddial-bottom-left {
+        border-top-right-radius: 100%;
+      }
+
+      &.e-speeddial-bottom-right {
+        border-top-left-radius: 100%;
+      }
+
+      .e-speeddial-ul {
+        border-radius: inherit;
+        height: inherit;
+        width: inherit;
+        padding: 0;
+        position: relative;
+      }
+
+      .e-speeddial-li {
+        position: absolute;
+        transform: rotate(var(--speeddialRadialAngle)) translate(var(--speeddialRadialOffset)) rotate(calc(-1 * var(--speeddialRadialAngle)));
+      }
+    }
+
+    &.e-speeddial-radial,
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+
+      .e-speeddial-li-text {
+        position: absolute;
+        visibility: hidden;
+      }
+    }
+  }
+
+  .e-small.e-speeddial-popup,
+  .e-small .e-speeddial-popup {
+    .e-speeddial-ul {
+      padding: $sd-small-vert-ul-padding;
+    }
+
+    &.e-speeddial-linear .e-speeddial-li {
+      margin: $sd-small-vert-li-margin;
+    }
+
+    .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
+      margin: $sd-small-li-text-margin;
+    }
+
+    .e-speeddial-li-text {
+      height: $sd-small-li-text-height;
+      line-height: $sd-small-li-text-height;
+    }
+
+    .e-speeddial-li-icon {
+      height: $sd-small-li-icon-height;
+      width: $sd-small-li-icon-width;
+    }
+
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+      .e-speeddial-ul {
+        padding: $sd-small-horz-ul-padding;
+      }
+
+      .e-speeddial-li {
+        margin: $sd-small-horz-li-margin;
+      }
+    }
+  }
+
+  .e-bigger.e-speeddial-popup,
+  .e-bigger .e-speeddial-popup {
+    .e-speeddial-ul {
+      padding: $sd-bigger-vert-ul-padding;
+    }
+
+    &.e-speeddial-linear .e-speeddial-li {
+      margin: $sd-bigger-vert-li-margin;
+    }
+
+    .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
+      margin: $sd-bigger-li-text-margin;
+    }
+
+    .e-speeddial-li-text {
+      height: $sd-bigger-li-text-height;
+      line-height: $sd-bigger-li-text-height;
+    }
+
+    .e-speeddial-li-icon {
+      height: $sd-bigger-li-icon-height;
+      width: $sd-bigger-li-icon-width;
+    }
+
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+      .e-speeddial-ul {
+        padding: $sd-bigger-horz-ul-padding;
+      }
+
+      .e-speeddial-li {
+        margin: $sd-bigger-horz-li-margin;
+      }
+    }
+  }
+
+  .e-bigger.e-small.e-speeddial-popup,
+  .e-bigger.e-small .e-speeddial-popup,
+  .e-bigger .e-small.e-speeddial-popup,
+  .e-small .e-bigger.e-speeddial-popup {
+    .e-speeddial-ul {
+      padding: $sd-bigger-small-vert-ul-padding;
+    }
+
+    &.e-speeddial-linear .e-speeddial-li {
+      margin: $sd-bigger-small-vert-li-margin;
+    }
+
+    .e-speeddial-li:not(.e-speeddial-text-li) .e-speeddial-li-text {
+      margin: $sd-bigger-li-text-margin;
+    }
+
+    .e-speeddial-li-text {
+      height: $sd-bigger-small-li-text-height;
+      line-height: $sd-bigger-small-li-text-height;
+    }
+
+    .e-speeddial-li-icon {
+      height: $sd-bigger-small-li-icon-height;
+      width: $sd-bigger-small-li-icon-width;
+    }
+
+    &.e-speeddial-horz-right,
+    &.e-speeddial-horz-left {
+      .e-speeddial-ul {
+        padding: $sd-bigger-small-horz-ul-padding;
+      }
+
+      .e-speeddial-li {
+        margin: $sd-bigger-small-horz-li-margin;
+      }
+    }
+  }
+
+  .e-speeddial-overlay {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 99998;
+
+    &.e-speeddial-fixed {
+      height: 100vh;
+      position: fixed;
+      width: 100vw;
+    }
+  }
+
+  .e-speeddial-hidden {
+    visibility: hidden;
+  }
+}

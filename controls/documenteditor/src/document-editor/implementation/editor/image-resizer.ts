@@ -1222,6 +1222,7 @@ export class ImageResizer {
         this.isImageResizing = false;
         this.isImageResizerVisible = false;
         this.currentImageElementBoxIn = undefined;
+        this.imageResizerPoints = undefined;
         //this.baseHistoryInfo = undefined;
         this.resizeMarkSizeIn = undefined;
         this.documentHelper = undefined;

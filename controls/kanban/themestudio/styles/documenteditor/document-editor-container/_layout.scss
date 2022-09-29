@@ -52,14 +52,14 @@
 
   .e-de-ctnr-hglt-no-color {
     font-size: 12px;
-    font-weight: 400;
+    font-weight: normal;
     left: 40px;
     padding-top: 11px;
     position: absolute;
     top: 100px;
   }
 
-  // sass-lint:disable-all
+  /* stylelint-disable */
   .e-de-scrollbar-hide::-webkit-scrollbar {
     width: 0;
   }
@@ -69,7 +69,7 @@
     scrollbar-width: none;
   }
 
-  // sass-lint:enable-all
+  /* stylelint-enable */
   @if $skin-name == 'FluentUI' {
     //Font color icons is smaller when comparing with other icons.
     .e-de-ctnr-group-btn .e-btn .e-btn-icon.e-icons.e-de-ctnr-fontcolor,
@@ -85,4 +85,3 @@
     }
   }
 }
-

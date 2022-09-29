@@ -61,7 +61,11 @@ describe('Chart Control', () => {
                     primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
                     series: [{
                         dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StepArea',
-                        name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{visible: true,dataLabel:{visible:false}}
+                        name: 'ChartSeriesNameGold', fill: 'skyblue', marker:{visible: true,dataLabel:{visible:false}},
+                        border: {
+                            color: 'blue',
+                            width: 4,
+                        }
                     },
                     ], width: '800',
                     title: 'Chart TS Title', legendSettings: { visible: false, },
@@ -84,6 +88,24 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded; 
             chartObj.refresh();
         });
+        it('Checking with stroke for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                 let seriesBorder: HTMLElement = document.getElementById('container_Series_border_0');
+                 expect(seriesBorder.getAttribute('stroke') === 'blue').toBe(true);
+                 done();
+             };
+             chartObj.loaded = loaded; 
+             chartObj.refresh();
+         });
+         it('Checking with fill for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                 let seriesBorder: HTMLElement = document.getElementById('container_Series_border_0');
+                 expect(seriesBorder.getAttribute('fill') === 'transparent').toBe(true);
+                 done();
+             };
+             chartObj.loaded = loaded; 
+             chartObj.refresh();
+         });
          it('Showing default data label', (done: Function) => {
             loaded = (args: Object): void => {
                 let element = document.getElementById('container_Series_0_Point_2_Text_0');

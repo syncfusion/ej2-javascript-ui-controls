@@ -49,7 +49,7 @@ export class DropDownButtons {
     }
 
     private beforeRender(args: MenuEventArgs): void {
-        const item: IDropDownItemModel = args.item as    IDropDownItemModel;
+        const item: IDropDownItemModel = args.item as IDropDownItemModel;
         if (item.cssClass) {
             addClass([args.element], item.cssClass);
         }
@@ -200,10 +200,14 @@ export class DropDownButtons {
                         itemName: 'Alignments', items: model.alignmentItems, element: targetElement
                     } as IDropDownModel);
                     break;
-                case 'align': this.imageAlignmentDropDown(type, tbElement, targetElement);
+                case 'align':
+                case 'videoalign':
+                    this.renderAlignmentDropDown(type, tbElement, targetElement, item);
                     break;
                 case 'display':
-                    this.imageDisplayDropDown(type, tbElement, targetElement);
+                case 'audiolayoutoption':
+                case 'videolayoutoption':
+                    this.renderDisplayDropDown(type, tbElement, targetElement, item);
                     break;
                 case 'tablerows': this.rowDropDown(type, tbElement, targetElement);
                     break;
@@ -217,7 +221,7 @@ export class DropDownButtons {
                 }
             }
         });
-        if(this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable) {
             this.setCssClass({cssClass: this.parent.cssClass});
         }
     }
@@ -388,29 +392,29 @@ export class DropDownButtons {
         } as IDropDownModel);
     }
 
-    private imageDisplayDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
-        targetElement = select('#' + this.parent.getID() + '_' + type + '_Display', tbElement);
+    private renderDisplayDropDown(type: string, tbElement: HTMLElement, targetElement: Element, item?: string): void {
+        targetElement = select('#' + this.parent.getID() + '_' + type + (item === 'display' ? '_Display' : item === 'videolayoutoption' ? '_VideoLayoutOption' : '_AudioLayoutOption'), tbElement);
         if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
             return;
         }
         this.displayDropDown = this.toolbarRenderer.renderDropDownButton({
-            iconCss: 'e-display e-icons',
+            iconCss: item === 'display' ? 'e-display e-icons' : item === 'videolayoutoption' ? 'e-video-display e-icons' : 'e-audio-display e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
-            itemName: 'Display',
-            items: model.imageDisplayItems,
+            itemName: item === 'display' ? 'Display' : item === 'videolayoutoption' ? 'VideoLayoutOption' : 'AudioLayoutOption',
+            items: item === 'display' ? model.imageDisplayItems : item === 'videolayoutoption' ? model.videoLayoutOptionItems : model.audioLayoutOptionItems,
             element: targetElement
         } as IDropDownModel);
     }
-    private imageAlignmentDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
-        targetElement = select('#' + this.parent.getID() + '_' + type + '_Align', tbElement);
+    private renderAlignmentDropDown(type: string, tbElement: HTMLElement, targetElement: Element, item?: string): void {
+        targetElement = select('#' + this.parent.getID() + '_' + type + (item === 'align' ? '_Align' : '_VideoAlign'), tbElement);
         if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
             return;
         }
         this.imageAlignDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-justify-left e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ICONS + ' ' + classes.CLS_QUICK_DROPDOWN,
-            itemName: 'Align',
-            items: model.imageAlignItems,
+            itemName: item === 'align' ? 'Align' : 'VideoAlign',
+            items: item === 'align' ? model.imageAlignItems : model.videoAlignItems,
             element: targetElement
         } as IDropDownModel);
     }

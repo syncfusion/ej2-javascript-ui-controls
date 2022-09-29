@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventHandler, formatUnit, isNullOrUndefined, createElement, addClass, append, prepend, remove } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, isNullOrUndefined, createElement, addClass, append, prepend, remove, extend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs, CallbackFunction } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
@@ -185,7 +185,7 @@ export class Month extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.group.byDate) {
             clsList.push('e-by-date');
         }
-        if (this.parent.activeViewOptions.allowVirtualScrolling) {
+        if (this.parent.activeViewOptions.allowVirtualScrolling && !this.parent.uiStateValues.isGroupAdaptive) {
             clsList.push(cls.VIRTUAL_SCROLL_CLASS);
         }
         if (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) {
@@ -237,11 +237,18 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public renderContent(): void {
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.parent.resourceBase.renderedResources = <TdData[]>extend([], this.parent.resourceBase.lastResourceLevel, null, true);
+        }
         const tr: Element = createElement('tr');
         if (this.parent.activeViewOptions.showWeekNumber) {
             tr.appendChild(this.renderWeekNumberContent());
         }
         const workTd: Element = createElement('td');
+        const levels: TdData[][] = this.colLevels.slice(0);
+        if (this.parent.virtualScrollModule) {
+            this.resetColLevels();
+        }
         const wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         const contentArea: Element = this.renderContentArea();
         if (this.parent.currentView === 'Month') {
@@ -254,6 +261,10 @@ export class Month extends ViewBase implements IRenderer {
         EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
         workTd.appendChild(wrap);
         tr.appendChild(workTd);
+        if (this.parent.virtualScrollModule) {
+            this.colLevels = levels;
+            this.parent.virtualScrollModule.renderVirtualTrack(wrap);
+        }
         this.element.querySelector('tbody').appendChild(tr);
         this.renderAppointmentContainer();
     }
@@ -284,6 +295,11 @@ export class Month extends ViewBase implements IRenderer {
         const wrap: Element = createElement('div', { className: cls.DATE_HEADER_WRAP_CLASS });
         container.appendChild(wrap);
         const table: Element = this.createTableLayout();
+        if (this.parent.currentView === 'Month') {
+            const thead: Element = createElement('thead');
+            thead.appendChild(createElement('tr'));
+            prepend([thead], table);
+        }
         this.createColGroup(table, this.colLevels[this.colLevels.length - 1]);
         const trEle: Element = createElement('tr');
         for (let i: number = 0; i < this.colLevels.length; i++) {
@@ -375,9 +391,12 @@ export class Month extends ViewBase implements IRenderer {
             const dates: Date[] = this.renderDates.map((date: Date) => new Date(+date));
             const count: number = this.parent.activeViewOptions.showWeekend ? util.WEEK_LENGTH :
                 this.parent.activeViewOptions.workDays.length;
+            const level: TdData[] = this.colLevels.slice(0, 1)[0];
+            const startIndex: number = this.renderDates.map(Number).indexOf(+level[0].date);
             for (let i: number = 0; i < (this.renderDates.length / count); i++) {
                 const colDates: Date[] = dates.splice(0, count);
-                for (const colDate of colDates) {
+                for (let j: number = startIndex; j < (this.colLevels[0].length + startIndex) && j < colDates.length; j++) {
+                    const colDate: Date = colDates[j];
                     if (includeResource) {
                         const lastRow: TdData[] = this.colLevels[(this.colLevels.length - 1)];
                         const resourcesTd: TdData[] = lastRow.slice(0, lastRow.length / count);
@@ -415,6 +434,7 @@ export class Month extends ViewBase implements IRenderer {
 
     public renderContentArea(): Element {
         const tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
+        this.setAriaAttributes(tbl);
         this.addAutoHeightClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
@@ -432,8 +452,8 @@ export class Month extends ViewBase implements IRenderer {
 
     public getContentRows(): Element[] {
         const trows: Element[] = [];
-        const tr: Element = createElement('tr', { attrs: { role: 'row' } });
-        const td: Element = createElement('td', { attrs: { role: 'gridcell', 'aria-selected': 'false' } });
+        const tr: Element = createElement('tr');
+        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
         const slotDatas: TdData[][] = this.getContentSlots();
         for (let row: number = 0; row < slotDatas.length; row++) {
             const ntr: Element = tr.cloneNode() as Element;

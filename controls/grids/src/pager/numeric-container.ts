@@ -73,8 +73,8 @@ export class NumericContainer implements IRender {
         for (let i: number = 1; i <= pagerObj.pageCount; i++) {
             link = createElement('a', {
                 className: 'e-link e-numericitem e-spacing e-pager-default',
-                attrs: { role: 'link', tabindex: '-1', 'aria-label': 'Page ' + i + ' of ' + pagerObj.totalPages + ' Pages',
-                    href: 'javascript:void(0);' , name: 'Goto page' + i }
+                attrs: { role: 'link', tabindex: '-1', 'aria-label': pagerObj.getLocalizedLabel('Page') + i + pagerObj.getLocalizedLabel('Of') +
+                    pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'), href: 'javascript:void(0);' , name: 'Goto page' + i }
             });
             if (pagerObj.currentPage === i) {
                 classList(link, ['e-currentitem', 'e-active'], ['e-pager-default']);
@@ -123,7 +123,8 @@ export class NumericContainer implements IRender {
         const links: NodeList = numericContainer.querySelectorAll('a');
         for (let i: number = 0; i < links.length; i++) {
             if ((<Element>links[i]).hasAttribute('aria-label') && (<Element>links[i]).hasAttribute('index')) {
-                (<Element>links[i]).setAttribute('aria-label', 'Page ' + (<Element>links[i]).getAttribute('index') + ' of ' + pagerObj.totalPages + ' Pages');
+                (<Element>links[i]).setAttribute('aria-label', pagerObj.getLocalizedLabel('Page') + (<Element>links[i]).getAttribute('index')
+                    + pagerObj.getLocalizedLabel('Of') + pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'));
             }
         }
     }

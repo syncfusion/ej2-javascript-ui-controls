@@ -1,5 +1,6 @@
 $skin-name: 'FluentUI' !default;
 $theme: 'Fluent' !default;
+
 //Layout Variables Start
 $spin-padding: 10px !default;
 $spin-label-margin-top: 10px !default;
@@ -9,6 +10,7 @@ $spin-boot4-stroke-width: 4 !default;
 $spin-fabric-stroke-width: 1.5 !default;
 $spin-boot5-stroke-width: 4 !default;
 $spin-tailwind-stroke-width: 4.5;
+
 //Layout Variables End
 
 //Theme based other styles start
@@ -46,7 +48,7 @@ $spin-tailwind-stroke-color: $primary-light;
   animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.21, .21, .21, .21);
 }
 
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @keyframes material-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -59,7 +61,6 @@ $spin-tailwind-stroke-color: $primary-light;
   }
 }
 
-// sass-lint:disable no-vendor-prefixes
 @keyframes fabric-spinner-rotate {
   0% {
     -webkit-transform: rotate(0);
@@ -71,4 +72,5 @@ $spin-tailwind-stroke-color: $primary-light;
     transform: rotate(360deg);
   }
 }
+
 //Theme based other styles end

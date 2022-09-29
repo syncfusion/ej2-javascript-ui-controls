@@ -1,0 +1,105 @@
+@include export-module('floating-action-button-layout') {
+  .e-fab.e-btn {
+    align-items: center;
+    border-radius: $fab-border-radius;
+    display: inline-flex;
+    min-height: $fab-min-height;
+    min-width: $fab-min-width;
+    padding: $fab-padding;
+    position: absolute;
+    z-index: 100000;
+
+    .e-btn-icon {
+      margin-top: 0;
+      font-size: $fab-icon-font-size;
+    }
+
+    &.e-icon-btn {
+      padding: 0;
+    }
+
+    &.e-fab-fixed {
+      position: fixed;
+    }
+
+    &.e-fab-top {
+      top: $fab-offset;
+      &.e-fab-middle {
+        top: var(--fabVertDist);
+      }
+    }
+
+    &.e-fab-bottom {
+      bottom: $fab-offset;
+      &.e-fab-middle {
+        bottom: var(--fabVertDist);
+      }
+    }
+
+    &.e-fab-left {
+      left: $fab-offset;
+      &.e-fab-center {
+        left: var(--fabHorzDist);
+      }
+    }
+
+    &.e-fab-right {
+      right: $fab-offset;
+      &.e-fab-center {
+        right: var(--fabHorzDist);
+      }
+    }
+  }
+
+  .e-fab-hidden {
+    visibility: hidden;
+  }
+
+  .e-small.e-fab.e-btn,
+  .e-small .e-fab.e-btn {
+    border-radius: $fab-small-border-radius;
+    min-height: $fab-small-min-height;
+    min-width: $fab-small-min-width;
+    padding: $fab-small-padding;
+
+    &.e-icon-btn {
+      padding: 0;
+    }
+
+    .e-btn-icon {
+      font-size: $fab-small-icon-font-size;
+    }
+  }
+  .e-bigger.e-fab.e-btn,
+  .e-bigger .e-fab.e-btn {
+    border-radius: $fab-bigger-border-radius;
+    min-height: $fab-bigger-min-height;
+    min-width: $fab-bigger-min-width;
+    padding: $fab-bigger-padding;
+
+    &.e-icon-btn {
+      padding: 0;
+    }
+
+    .e-btn-icon {
+      font-size: $fab-bigger-icon-font-size;
+    }
+  }
+  .e-bigger.e-small.e-fab.e-btn,
+  .e-bigger.e-small .e-fab.e-btn,
+  .e-bigger .e-small.e-fab.e-btn,
+  .e-small .e-bigger.e-fab.e-btn {
+    border-radius: $fab-bigger-small-border-radius;
+    min-height: $fab-bigger-small-min-height;
+    min-width: $fab-bigger-small-min-width;
+    padding: $fab-bigger-small-padding;
+
+    &.e-icon-btn {
+      padding: 0;
+    }
+
+    .e-btn-icon {
+      font-size: $fab-bigger-small-icon-font-size;
+    }
+  }
+}

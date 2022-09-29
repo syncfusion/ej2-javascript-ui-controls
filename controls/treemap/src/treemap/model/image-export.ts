@@ -9,7 +9,6 @@ import { triggerDownload } from '../utils/helper';
  * @hidden
  */
 export class ImageExport {
-    private control: TreeMap ;
     /**
      * Constructor for Maps
      *
@@ -17,7 +16,6 @@ export class ImageExport {
      */
     // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: TreeMap) {
-        this.control = control;
     }
     /**
      * This method is used to perform the export functionality for the rendered treemap.
@@ -28,25 +26,25 @@ export class ImageExport {
      * @returns {Promise} - Returns the promise string.
      * @private
      */
-    public export(type: ExportType, fileName: string, allowDownload ?: boolean): Promise<string> {
+    public export(treeMap: TreeMap, type: ExportType, fileName: string, allowDownload ?: boolean): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
 
                 attrs: {
-                    'height': this.control.availableSize.height.toString(),
-                    'width': this.control.availableSize.width.toString()
+                    'height': treeMap.availableSize.height.toString(),
+                    'width': treeMap.availableSize.width.toString()
                 } });
 
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
+            treeMap.svgObject.outerHTML +
             '</svg>';
             const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
-                        [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                        [(new XMLSerializer()).serializeToString(treeMap.svgObject)],
                     { type: 'image/svg+xml' }
                 )
             );
@@ -96,14 +94,9 @@ export class ImageExport {
 
     /**
      * To destroy the ImageExport.
-     *
-     * @param {TreeMap} treemap - Specifies the instance of the treemap.
+     * 
      * @returns {void}
      * @private
      */
-    public destroy(treemap: TreeMap): void {
-        // Destroy method performed here
-    }
-
-
+    public destroy(): void { }
 }

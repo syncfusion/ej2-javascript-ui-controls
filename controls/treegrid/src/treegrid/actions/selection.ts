@@ -310,7 +310,7 @@ export class Selection {
                     if (data[i].checkboxState === 'check') {
                         continue;
                     }
-                    if (multiFilterCheckState) {
+                     if (multiFilterCheckState) {
                         continue;
                     }
                     data[i].checkboxState = 'check';
@@ -452,8 +452,8 @@ export class Selection {
                     childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
                         this.parent.getCurrentViewRecords() : this.parent.flatData;
                     childData.forEach((record: ITreeData) => {
-                        if (this.parent.enableVirtualization && record.childRecords.length > 0) {
-                            if (record.hasChildRecords) {
+                        if (this.parent.enableVirtualization) {
+                            if (record.hasChildRecords && record.childRecords.length > 0) {
                                 this.updateParentSelection(record);
                             } else {
                                 this.updateSelectedItems(record, record.checkboxState);

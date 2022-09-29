@@ -1,7 +1,7 @@
 $hscroll-skin: 'fabric' !default;
 $hscroll-border-type: solid !default;
-$hscroll-hover-font: $hover-font-color  !default;
-$hscroll-active-font-color: $active-font-color  !default;
+$hscroll-hover-font: $hover-font-color !default;
+$hscroll-active-font-color: $active-font-color !default;
 $hscroll-default-bg: $neutral-white !default;
 $hscroll-press-bg: $theme-lighter !default;
 $hscroll-active-bg: $neutral-lighter !default;
@@ -29,8 +29,8 @@ $hscroll-overlay-end: rgba($hscroll-overlay-bg, 1) !default;
 $hscroll-right-bg: linear-gradient(-270deg, $hscroll-overlay-start 0%, $hscroll-overlay-end 100%) !default;
 $hscroll-left-bg:  linear-gradient(-270deg, $hscroll-overlay-end 0%, $hscroll-overlay-start 100%) !default;
 
-$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06) !default;
-$hscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$hscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow, .06) !default;
+$hscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow, .06) !default;
 $hscroll-device-arrow-bg: $neutral-white !default;
 $hscroll-device-arrow-border-size: 1px !default;
 $hscroll-device-arrow-border-color: $neutral-quintenaryalt !default;

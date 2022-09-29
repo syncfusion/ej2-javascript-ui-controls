@@ -279,13 +279,12 @@ export class Bubble {
     /**
      * To destroy the bubble.
      *
-     * @param {Maps} maps - Specifies the instance of the maps.
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.bubbleCollection = [];
+        //TODO: Calling the below code throws spec issue.
+        //this.maps = null;
     }
 }

@@ -17,7 +17,7 @@ export interface FilterSettingsModel {
      * Defines filter type of Gantt.
      * * `Menu` - Enables menu filters in Grid.
      *
-     * @hidden
+     * @default Menu
      */
     type?: FilterType;
 

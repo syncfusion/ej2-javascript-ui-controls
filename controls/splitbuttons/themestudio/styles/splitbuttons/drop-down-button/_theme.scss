@@ -1,4 +1,5 @@
 @include export-module('drop-down-button-theme') {
+
   /*! drop-down button theme */
   .e-dropdown-popup {
     background-color: $drop-down-btn-ul-bgcolor;
@@ -51,6 +52,26 @@
 
       & .e-separator {
         border-bottom-color: $drop-down-btn-li-border-color;
+      }
+    }
+  }
+
+  .e-dropdown-btn,
+  .e-dropdown-btn.e-btn {
+    &.e-inherit {
+      background: inherit;
+      border-color: transparent;
+      box-shadow: none;
+      color: inherit;
+
+      &:hover,
+      &:focus,
+      &:active,
+      &.e-active {
+        background-color: rgba(transparent, .056);
+        border-color: transparent;
+        box-shadow: none;
+        color: inherit;
       }
     }
   }

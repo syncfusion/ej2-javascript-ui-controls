@@ -326,6 +326,7 @@ export class NavigationPane {
         if (isNOU(currFiles)) {
             setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
+        if(this.parent.uploadObj.directoryUpload) this.updateTree(args);
     }
 
     private updateTree(args: ReadArgs): void {

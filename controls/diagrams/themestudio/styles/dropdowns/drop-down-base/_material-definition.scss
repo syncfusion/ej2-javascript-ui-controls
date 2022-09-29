@@ -8,6 +8,8 @@ $ddl-list-bottom-border: $ddl-list-border-size !default;
 
 $ddl-list-border-color: $grey-300 !default;
 $ddl-list-gradient-color: $grey-white !default;
+$mention-gradient-color: $grey-white !default;
+$mention-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
 $ddl-list-bg-color: $grey-white !default;
 $ddl-list-header-bg-color: $grey-50 !default;
 $ddl-list-tap-color: transparent !default;
@@ -16,6 +18,7 @@ $ddl-nodata-font-color: $grey-black !default;
 $ddl-list-default-font-color: rgba($grey-light-font, .87) !default;
 $ddl-list-active-border-color: $grey-white !default;
 $ddl-list-active-font-color: $accent !default;
+$mention-active-font-color: $accent !default;
 $ddl-list-active-bg-color: $grey-200 !default;
 $ddl-list-hover-border-color: $grey-white !default;
 $ddl-list-hover-bg-color: $grey-200 !default;

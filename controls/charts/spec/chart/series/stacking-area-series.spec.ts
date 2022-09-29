@@ -57,11 +57,20 @@ describe('Chart Control', () => {
                 series: [{
                     dataSource: data, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StackingArea',
                     name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
+                    border: {
+                        color: 'pink',
+                        width: 4
+                    }
                 },
                 {
                     dataSource: data2, xName: 'x', yName: 'y', animation: { enable: false }, type: 'StackingArea',
-                    name: 'ChartSeriesNameDiamond', fill: 'blue',
+                    name: 'ChartSeriesNameDiamond', fill: 'blue', 
+                    border: {
+                        color: 'pink',
+                        width: 4
+                    }
                 },
+               
                 ], width: '800',
                 title: 'Chart TS Title', legendSettings: { visible: false }
             });
@@ -84,7 +93,33 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
-
+        it('Checking fill with default points applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesBorder: HTMLElement = document.getElementById('container_Series_border_0');
+                expect(seriesBorder.getAttribute('fill') == 'transparent').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking stroke with default points applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesBorder: HTMLElement = document.getElementById('container_Series_border_0');
+                expect(seriesBorder.getAttribute('stroke') == 'pink').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Checking stroke-width with default points applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let seriesBorder: HTMLElement = document.getElementById('container_Series_border_0');
+                expect(seriesBorder.getAttribute('stroke-width') == '4').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
         it('Checking with null Points', (done: Function) => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container_Series_0');
@@ -316,8 +351,8 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container_Series_0');
                 expect(svg.getAttribute('fill') === 'red').toBe(true);
-                expect(svg.getAttribute('stroke') === 'green').toBe(true);
-                expect(svg.getAttribute('stroke-width') === '4').toBe(true);
+                expect(svg.getAttribute('stroke') === 'transparent').toBe(true);
+                expect(svg.getAttribute('stroke-width') === '0').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -325,17 +360,48 @@ describe('Chart Control', () => {
             chartObj.series[0].dataSource = data;
             chartObj.series[1].dataSource = data;
             chartObj.series[0].fill = 'red';
-            chartObj.series[0].border.color = 'green';
+            chartObj.series[0].border.color = 'transparent';
             chartObj.series[0].border.width = 4;
             chartObj.refresh();
 
         });
+
+        it(' checking with fill and stroke for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                var serieBorder = document.getElementById('container_Series_border_0');
+                expect(serieBorder.getAttribute('fill') === 'transparent').toBe(true);
+                expect(serieBorder.getAttribute('stroke') === 'blue').toBe(true);
+                expect(serieBorder.getAttribute('stroke-width') === '4').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].fill = 'red';
+            chartObj.series[0].border.color = 'blue';
+            chartObj.series[0].border.width = 4;
+            chartObj.refresh();
+        });
+
+        it(' checking  stroke when set to null for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                var serieBorder = document.getElementById('container_Series_border_0');
+                expect(serieBorder.getAttribute('fill') === 'transparent').toBe(true);
+                expect(serieBorder.getAttribute('stroke') === 'red').toBe(true);
+                expect(serieBorder.getAttribute('stroke-width') === '4').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].fill = 'red';
+            chartObj.series[0].border.color = null;
+            chartObj.series[0].border.width = 4;
+            chartObj.refresh();
+        });
+
         it(' checking with fill and stroke for stackingarea100 series', (done: Function) => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container_Series_0');
                 expect(svg.getAttribute('fill') === 'red').toBe(true);
-                expect(svg.getAttribute('stroke') === 'green').toBe(true);
-                expect(svg.getAttribute('stroke-width') === '4').toBe(true);
+                expect(svg.getAttribute('stroke') === 'transparent').toBe(true);
+                expect(svg.getAttribute('stroke-width') === '0').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -343,7 +409,7 @@ describe('Chart Control', () => {
             chartObj.series[0].dataSource = data;
             chartObj.series[1].dataSource = data;
             chartObj.series[0].fill = 'red';
-            chartObj.series[0].border.color = 'green';
+            chartObj.series[0].border.color = 'transparent';
             chartObj.series[0].border.width = 4;
             chartObj.series[0].type = 'StackingArea100';
             chartObj.series[1].type = 'StackingArea100';

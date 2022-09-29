@@ -1,8 +1,8 @@
 /*! component's theme wise override definitions and variables */
 $vscroll-skin: 'material' !default;
 $vscroll-nav-nrml-height: 40px !default;
-$vscroll-hover-font: $hover-font-color  !default;
-$vscroll-active-font-color: $active-font-color  !default;
+$vscroll-hover-font: $hover-font-color !default;
+$vscroll-active-font-color: $active-font-color !default;
 $vscroll-border-size: $border-size !default;
 $vscroll-border-type: solid !default;
 
@@ -32,8 +32,8 @@ $vscroll-overlay-end: rgba($vscroll-overlay-bg, 1) !default;
 $vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%) !default;
 $vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%) !default;
 
-$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06) !default;
-$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow, .06) !default;
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow, .06) !default;
 $vscroll-device-arrow-bg: $grey-50 !default;
 $vscroll-device-arrow-border-size: 1px !default;
 $vscroll-device-arrow-border-color: rgba($grey-black, .12) !default;
@@ -51,7 +51,7 @@ $vscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12)
   border-radius: 50%;
   border-width: 1px;
   box-sizing: border-box;
-  content: '' ;
+  content: '';
   height: 1px;
   left: 50%;
   position: absolute;

@@ -3,6 +3,7 @@
  */
 @import "base/material-dark.scss";
 @import "accordion/material-dark.scss";
+@import "appbar/material-dark.scss";
 @import "drop-down-list/material-dark.scss";
 @import "input/material-dark.scss";
 @import "popup/material-dark.scss";
@@ -33,6 +34,8 @@
 @import "datepicker/material-dark.scss";
 @import "radio-button/material-dark.scss";
 @import "switch/material-dark.scss";
+@import "floating-action-button/material-dark.scss";
+@import "speed-dial/material-dark.scss";
 @import "list-view/material-dark.scss";
 @import "sortable/material-dark.scss";
 @import "daterangepicker/material-dark.scss";
@@ -56,6 +59,7 @@
 @import "document-editor-container/material-dark.scss";
 @import "splitter/material-dark.scss";
 @import "excel-filter/material-dark.scss";
+@import "skeleton/material-dark.scss";
 @import "grid/material-dark.scss";
 @import "file-manager/material-dark.scss";
 @import "treegrid/material-dark.scss";
@@ -63,8 +67,10 @@
 @import "progress-button/material-dark.scss";
 @import "rich-text-editor/material-dark.scss";
 @import "gantt/material-dark.scss";
+@import "image-editor/material-dark.scss";
 @import "inplace-editor/material-dark.scss";
 @import "kanban/material-dark.scss";
+@import "message/material-dark.scss";
 @import "toast/material-dark.scss";
 @import "pdfviewer/material-dark.scss";
 @import "timepicker/material-dark.scss";

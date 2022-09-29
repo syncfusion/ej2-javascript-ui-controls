@@ -1,4 +1,5 @@
 @include export-module('split-button-layout') {
+
   /*! splitbutton layout */
   .e-split-btn-wrapper {
     display: inline-flex;
@@ -207,7 +208,7 @@
             padding-left: 0;
           }
         }
-    }
+      }
 
       .e-dropdown-btn {
         border-bottom-left-radius: $split-btn-border-radius;

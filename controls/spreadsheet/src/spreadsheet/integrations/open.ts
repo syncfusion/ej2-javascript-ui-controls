@@ -89,9 +89,10 @@ export class Open {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
             'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
         const openCancelFn: Function = (action: string): void => {
-            (this.parent.serviceLocator.getService(dialog) as Dialog).hide();
+            (this.parent.serviceLocator.getService(dialog) as Dialog).hide(true);
             const file: File = new File([], response.guid, { type: action.toLowerCase() });
-            this.parent.open(<OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password });
+            this.parent.open(
+                <OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password, orginalFile: response.eventArgs.file });
         };
         if (openError.indexOf(response.data) > -1) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -120,7 +121,7 @@ export class Open {
             }
             else  {
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-                dialogInst.hide();
+                dialogInst.hide(true);
                 const sizeLimitAlert: boolean = response.data.includes('LimitExceeded');
                 (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                     content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n)

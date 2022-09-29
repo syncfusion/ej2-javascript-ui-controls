@@ -85,6 +85,11 @@ export class ContentRender implements IRenderer {
             if (this.parent.isDestroyed) { return; }
             let rows: Row<Column>[] = this.rows.slice(0);
             if (this.parent.enableInfiniteScrolling) {
+                if (this.parent.groupSettings.enableLazyLoading) {
+                    for (let i: number = 0; i < this.visibleRows.length; i++) {
+                        this.setRowsInLazyGroup(this.visibleRows[i], i);
+                    }
+                }
                 rows = this.parent.getRowsObject(); const prevPage: number = (<{ prevPage: number }>arg).prevPage;
                 if (this.parent.infiniteScrollSettings.enableCache && prevPage) {
                     const maxBlock: number = this.parent.infiniteScrollSettings.maxBlocks; rows = [];
@@ -104,6 +109,9 @@ export class ContentRender implements IRenderer {
             this.parent.notify(events.contentReady, { rows: rows, args: arg });
             if (this.isLoaded) {
                 this.parent.isManualRefresh = false;
+                if (this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'sorting') {
+                    this.parent.infiniteScrollModule['groupCaptionAction'] = undefined;
+                }
                 this.parent.trigger(events.dataBound, {}, () => {
                     if (this.parent.allowTextWrap) {
                         this.parent.notify(events.freezeRender, { case: 'textwrap' });
@@ -381,6 +389,9 @@ export class ContentRender implements IRenderer {
         if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
             (this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage] = [];
         }
+        if (this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'delete') {//  || (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache))
+            this.visibleRows = [];
+        }
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
             if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
@@ -453,6 +464,10 @@ export class ContentRender implements IRenderer {
             }
             this.ariaService.setOptions(this.getTable() as HTMLElement, { colcount: gObj.getColumns().length.toString() });
         }
+        if (this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading) {
+            (this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage] =
+                (this.parent.contentModule as GroupLazyLoadRenderer)['groupCache'][this.parent.pageSettings.currentPage];
+        }
         if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
             this.parent.notify(events.refreshExpandandCollapse, {
                 rows: (this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage]
@@ -461,6 +476,7 @@ export class ContentRender implements IRenderer {
         if (isFrozenGrid) {
             contentModule.splitRows(tableName);
         }
+        gObj.removeMaskRow();
         if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll && this.ensureVirtualFrozenHeaderRender(args))
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = isFrozenGrid ? contentModule.getFrozenHeader(tableName) : gObj.getHeaderTable().querySelector( literals.tbody);
@@ -959,7 +975,8 @@ export class ContentRender implements IRenderer {
             let colGroup: Element;
             if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
                 && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()) {
-                colGroup = <Element>this.parent.getMovableVirtualHeader().querySelector(literals.colGroup).cloneNode(true);
+                colGroup = <Element>this.parent.getMovableVirtualHeader()
+                    .querySelector(literals.colGroup + ':not(.e-masked-colgroup)').cloneNode(true);
             } else {
                 colGroup = this.getHeaderColGroup();
             }
@@ -969,7 +986,8 @@ export class ContentRender implements IRenderer {
     }
 
     protected getHeaderColGroup(): Element {
-        return <Element>this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
+        return <Element>this.parent.element.querySelector('.' + literals.gridHeader)
+            .querySelector(literals.colGroup + ':not(.e-masked-colgroup)').cloneNode(true);
     }
 
     private initializeContentDrop(): void {

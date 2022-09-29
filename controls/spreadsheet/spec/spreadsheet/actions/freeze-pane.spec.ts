@@ -34,7 +34,7 @@ describe('Freeze pane ->', () => {
             expect(sheet.paneTopLeftCell).toBe('CS244');
             expect(helper.invoke('getContentTable').tBodies[0].childElementCount).toBe(childCount);
             done();
-        });
+        }, 30);
     });
     it('Virtual scrolling - scroll up', (done: Function) => {
         helper.invoke('goTo', ['D59']);
@@ -43,7 +43,7 @@ describe('Freeze pane ->', () => {
             expect(sheet.paneTopLeftCell).toBe('D59');
             expect(helper.invoke('getContentTable').tBodies[0].childElementCount).toBe(childCount);
             done();
-        });
+        }, 30);
     });
     it('Sorting', (done: Function) => {
         expect(sheet.rows[58].cells[0].value.toString()).toBe('10305');
@@ -57,7 +57,7 @@ describe('Freeze pane ->', () => {
             expect(sheet.rows[194].cells[0].value.toString()).toBe('10305');
             expect(helper.invoke('getCell', [194, 0]).textContent).toBe('10305');
             done();
-        });
+        }, 30);
     });
     it('SF-401876 -> Apply freeze pane issue when columns range selection are before the viewport', (done: Function) => {
         sheet.selectedRange = 'A1:H11';

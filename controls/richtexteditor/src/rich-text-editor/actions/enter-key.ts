@@ -11,6 +11,7 @@ export class EnterKeyAction {
     private range: Range;
     private startNode: Element;
     private endNode: Element;
+    private formatTags: string[];
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
@@ -42,6 +43,7 @@ export class EnterKeyAction {
     private enterHandler(e?: NotifyArgs): void {
         this.getRangeNode();
         let isTableEnter: boolean = true;
+        this.formatTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
         if (!isNOU(this.startNode.closest('TABLE')) && !isNOU(this.endNode.closest('TABLE'))) {
             isTableEnter = false;
             let curElement: HTMLElement = this.startNode as HTMLElement;
@@ -84,16 +86,31 @@ export class EnterKeyAction {
                                 if (focusElem.nodeName === '#text' && focusElem.textContent.length === 0) {
                                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                                         this.parent.contentModule.getDocument(),
-                                        focusElem as Element, focusElem.previousSibling.textContent.length);
+                                        focusElem as Element,
+                                        focusElem.textContent.length === 0 ? 0 : focusElem.previousSibling.textContent.length);
                                 } else {
                                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                                         this.parent.contentModule.getDocument(),
                                         focusElem as Element, focusElem.textContent.length >= 0 ? 0 : 1);
                                     if (focusElem.previousSibling.textContent.length === 0) {
                                         detach(focusElem.previousSibling);
+                                        if (!shiftKey) {
+                                            let currentFocusElem: Node = !isNOU(focusElem.lastChild) ? focusElem.lastChild : focusElem;
+                                            while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text' && currentFocusElem.nodeName !== 'BR') {
+                                                currentFocusElem = currentFocusElem.lastChild;
+                                            }
+                                            if (currentFocusElem.nodeName != 'BR' && currentFocusElem.parentElement.textContent.length === 0 && currentFocusElem.parentElement.innerHTML.length === 0 &&
+                                            currentFocusElem.parentElement.nodeName != 'BR') {
+                                                currentFocusElem.parentElement.appendChild(this.parent.createElement('BR'));
+                                            }
+                                            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                                this.parent.contentModule.getDocument(),
+                                                currentFocusElem.nodeName === 'BR' ? currentFocusElem as Element : currentFocusElem.parentElement as Element,
+                                                currentFocusElem.parentElement.textContent.length >= 0 || currentFocusElem.nodeName === 'BR' ? 0 : 1);
+                                        }
                                     } else if (focusElem.textContent.length === 0) {
-                                        let currentFocusElem: Node = focusElem.previousSibling.lastChild;
-                                        while (currentFocusElem.nodeName !== '#text') {
+                                        let currentFocusElem: Node = focusElem.previousSibling.nodeName === '#text' ? focusElem.previousSibling : focusElem.previousSibling.lastChild;
+                                        while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text') {
                                             currentFocusElem = currentFocusElem.lastChild;
                                         }
                                         this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
@@ -111,127 +128,160 @@ export class EnterKeyAction {
                         }
                         if (this.range.startContainer === this.range.endContainer &&
                             this.range.startOffset === this.range.endOffset && this.range.startContainer === this.parent.inputElement) {
-                            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                this.parent.contentModule.getDocument(),
-                                this.range.startContainer.childNodes[this.range.startOffset] as Element, 0);
+                            if (!isNOU(this.range.startContainer.childNodes[this.range.startOffset]) && 
+                            !isNOU((this.range.startContainer.childNodes[this.range.startOffset] as Element).previousElementSibling) &&
+                            (this.range.startContainer.childNodes[this.range.startOffset] as Element).previousElementSibling.nodeName === 'TABLE') {
+                                this.parent.tableModule.removeResizeElement();
+                            }
+                            if (!(this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE')) {
+                                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                    this.parent.contentModule.getDocument(),
+                                    this.range.startContainer.childNodes[this.range.startOffset] as Element, 0);
+                            }
                             this.getRangeNode();
                         }
                         if ((this.parent.enterKey === 'P' && !shiftKey) || (this.parent.enterKey === 'DIV' && !shiftKey) ||
                         (this.parent.shiftEnterKey === 'P' && shiftKey) ||
                         (this.parent.shiftEnterKey === 'DIV' && shiftKey)) {
-                            let nearBlockNode: Element;
-                            if (isTableEnter && this.parent.formatter.editorManager.domNode.isBlockNode(this.startNode)) {
-                                nearBlockNode = this.startNode;
+                             if (this.range.startOffset === 1 && this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.childNodes[0].nodeName === 'TABLE') {
+                                let newElem: Element = this.createInsertElement(shiftKey);
+                                newElem.appendChild(this.parent.createElement('BR'));
+                                this.parent.inputElement.appendChild(newElem);
+                                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                    this.parent.contentModule.getDocument(), newElem, 0);
                             } else {
-                                nearBlockNode = this.parent.formatter.editorManager.domNode.blockParentNode(this.startNode);
-                            }
-                            let isImageNode: boolean = false;
-                            let isFocusedFirst: boolean = false;
-                            if (this.range.startOffset != 0 && this.range.endOffset != 0 && this.range.startContainer === this.range.endContainer &&
-                                !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG')) {
-                                let startNodeText: string = this.range.startContainer.textContent;
-                                let splitFirstText: string = startNodeText.substring(0, this.range.startOffset);
-                                if (splitFirstText.charCodeAt(this.range.startOffset - 1) != 160 && splitFirstText.trim().length === 0) {
+                                let nearBlockNode: Element;
+                                if (isTableEnter && this.parent.formatter.editorManager.domNode.isBlockNode(this.startNode)) {
+                                    nearBlockNode = this.startNode;
+                                } else {
+                                    nearBlockNode = this.parent.formatter.editorManager.domNode.blockParentNode(this.startNode);
+                                }
+                                let isImageNode: boolean = false;
+                                let isFocusedFirst: boolean = false;
+                                if (this.range.startOffset !== 0 && this.range.endOffset !== 0 &&
+                                    this.range.startContainer === this.range.endContainer && !(!isNOU(nearBlockNode.childNodes[0])
+                                    && nearBlockNode.childNodes[0].nodeName === 'IMG')) {
+                                    const startNodeText: string = this.range.startContainer.textContent;
+                                    const splitFirstText: string = startNodeText.substring(0, this.range.startOffset);
+                                    if (splitFirstText.charCodeAt(this.range.startOffset - 1) !== 160 && splitFirstText.trim().length === 0) {
+                                        isFocusedFirst = true;
+                                    }
+                                } else if (this.range.startOffset === 0 && this.range.endOffset === 0) {
                                     isFocusedFirst = true;
                                 }
-                            } else if (this.range.startOffset === 0 && this.range.endOffset === 0) {
-                                isFocusedFirst = true;
-                            }
-                            this.removeBRElement(nearBlockNode);
-                            const fireFoxEnterAtMiddle: boolean = Browser.userAgent.indexOf('Firefox') != -1 && this.range.startOffset === 0 && this.range.startContainer === this.range.endContainer &&
-                                this.range.startContainer.nodeName === '#text' && !this.parent.formatter.editorManager.domNode.isBlockNode(this.range.startContainer.previousSibling as Element) &&
-                                this.range.startContainer.parentElement === this.range.startContainer.previousSibling.parentElement;
-                            if (!fireFoxEnterAtMiddle && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
-                                !(!isNOU(this.range.startContainer.previousSibling) &&
-                                (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
-                                let isNearBlockLengthZero: boolean;
-                                let newElem: Node;
-                                if (this.range.startContainer.nodeName === 'IMG') {
-                                    newElem = this.createInsertElement(shiftKey);
-                                    isImageNode = true;
-                                    isNearBlockLengthZero = false;
-                                } else {
-                                    if (nearBlockNode.textContent.trim().length !== 0 ||
-                                    nearBlockNode.childNodes[0].nodeName === 'IMG') {
-                                        newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
-                                            this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
+                                this.removeBRElement(nearBlockNode);
+                                const fireFoxEnterAtMiddle: boolean = Browser.userAgent.indexOf('Firefox') !== -1 && this.range.startOffset === 0 && this.range.startContainer === this.range.endContainer &&
+                                    this.range.startContainer.nodeName === '#text' && !this.parent.formatter.editorManager.domNode.isBlockNode(this.range.startContainer.previousSibling as Element) &&
+                                    this.range.startContainer.parentElement === this.range.startContainer.previousSibling.parentElement;
+                                if (!fireFoxEnterAtMiddle && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
+                                    !(!isNOU(this.range.startContainer.previousSibling) &&
+                                    (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
+                                    let isNearBlockLengthZero: boolean;
+                                    let newElem: Node;
+                                    if (this.range.startContainer.nodeName === 'IMG' || this.range.startContainer.nodeName === 'TABLE') {
+                                        newElem = this.createInsertElement(shiftKey);
+                                        isImageNode = true;
                                         isNearBlockLengthZero = false;
                                     } else {
-                                        newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
-                                            this.range, (nearBlockNode as HTMLElement), true).cloneNode(true);
-                                        isNearBlockLengthZero = true;
+                                        if ((nearBlockNode.textContent.trim().length !== 0 ||
+                                        nearBlockNode.childNodes[0].nodeName === 'IMG')) {
+                                            if ((this.range.startOffset === this.range.endOffset && this.range.startOffset != 0)) {
+                                                newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                                    this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
+                                            } else {
+                                                newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                                    this.range, (nearBlockNode as HTMLElement), true).cloneNode(true);
+                                                isImageNode = true;
+                                            }
+                                            isNearBlockLengthZero = false;
+                                        } else {
+                                            newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                                this.range, (nearBlockNode as HTMLElement), true).cloneNode(true);
+                                            isNearBlockLengthZero = true;
+                                        }
                                     }
-                                }
-                                const insertElem: HTMLElement = this.createInsertElement(shiftKey);
-                                while (newElem.firstChild) {
-                                    insertElem.appendChild(newElem.firstChild);
-                                }
-                                nearBlockNode.parentElement.insertBefore(insertElem, nearBlockNode);
-                                if (!isNearBlockLengthZero) {
-                                    let currentFocusElem: Node = insertElem;
-                                    let finalFocusElem: Node;
-                                    while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text') {
-                                        finalFocusElem = currentFocusElem;
-                                        currentFocusElem = currentFocusElem.lastChild;
+                                    let insertElem: HTMLElement;
+                                    if (this.formatTags.indexOf(newElem.nodeName.toLocaleLowerCase()) < 0) {
+                                        insertElem = this.createInsertElement(shiftKey);
                                     }
-                                    (finalFocusElem as HTMLElement).innerHTML = '<br>';
-                                    if (!isImageNode) {
-                                        detach(nearBlockNode);
+                                    else {
+                                        insertElem = this.parent.createElement(newElem.nodeName);
                                     }
-                                }
-                                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                    this.parent.contentModule.getDocument(), (insertElem as Element).nextElementSibling,
-                                    0);
-                            } else if (nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG')) {
-                                if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
-                                    const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
-                                        this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
-                                    this.parent.formatter.editorManager.domNode.insertAfter((newElem as Element), nearBlockNode);
+                                    while (newElem.firstChild) {
+                                        insertElem.appendChild(newElem.firstChild);
+                                    }
+                                    nearBlockNode.parentElement.insertBefore(insertElem, nearBlockNode);
+                                    if (!isNearBlockLengthZero) {
+                                        let currentFocusElem: Node = insertElem;
+                                        let finalFocusElem: Node;
+                                        while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text') {
+                                            finalFocusElem = currentFocusElem;
+                                            currentFocusElem = currentFocusElem.lastChild;
+                                        }
+                                        (finalFocusElem as HTMLElement).innerHTML = '<br>';
+                                        if (!isImageNode) {
+                                            detach(nearBlockNode);
+                                        }
+                                    }
                                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                        this.parent.contentModule.getDocument(), (newElem as Element),
-                                        newElem.textContent.length >= 0 ? 0 : 1);
-                                } else {
-                                    const insertElem: HTMLElement = this.createInsertElement(shiftKey);
-                                    insertElem.innerHTML = '<br>';
-                                    this.parent.formatter.editorManager.domNode.insertAfter(insertElem, nearBlockNode);
-                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                        this.parent.contentModule.getDocument(), insertElem, 0);
-                                }
-                            } else {
-                                const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
-                                    this.range, (nearBlockNode as HTMLElement), true);
-                                if (!isNOU(newElem.childNodes[0]) && newElem.childNodes[0].nodeName === '#text' &&
-                                    newElem.childNodes[0].textContent.length === 0) {
-                                    detach(newElem.childNodes[0]);
-                                }
-                                if (newElem.textContent.trim().length === 0) {
-                                    const brElm: HTMLElement = this.parent.createElement('br');
-                                    if (this.startNode.nodeName === 'A') {
-                                        let startParentElem: HTMLElement = this.startNode.parentElement;
-                                        this.startNode.parentElement.insertBefore(brElm, this.startNode);
-                                        detach(this.startNode);
-                                        this.startNode = startParentElem;
+                                        this.parent.contentModule.getDocument(), (insertElem as Element).nextElementSibling,
+                                        0);
+                                } else if (nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG')) {
+                                    if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
+                                        const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                            this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
+                                        this.parent.formatter.editorManager.domNode.insertAfter((newElem as Element), nearBlockNode);
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), (newElem as Element),
+                                            newElem.textContent.length >= 0 ? 0 : 1);
                                     } else {
-                                        this.startNode.appendChild(brElm);
+                                        const insertElem: HTMLElement = this.createInsertElement(shiftKey);
+                                        insertElem.innerHTML = '<br>';
+                                        this.parent.formatter.editorManager.domNode.insertAfter(insertElem, nearBlockNode);
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), insertElem, 0);
                                     }
-                                    if (newElem.childNodes[0].textContent === '\n') {
+                                } else {
+                                    const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                        this.range, (nearBlockNode as HTMLElement), true);
+                                    if (!isNOU(newElem.childNodes[0]) && newElem.childNodes[0].nodeName === '#text' &&
+                                        newElem.childNodes[0].textContent.length === 0) {
                                         detach(newElem.childNodes[0]);
                                     }
-                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                        this.parent.contentModule.getDocument(), this.startNode, 0);
-                                }
-                                if (((this.parent.enterKey === 'P' || this.parent.enterKey === 'DIV') && !shiftKey) || ((this.parent.shiftEnterKey === 'DIV' ||
-                                    this.parent.shiftEnterKey === 'P') && shiftKey)) {
-                                    const insertElm: HTMLElement = this.createInsertElement(shiftKey);
-                                    while (newElem.firstChild) {
-                                        insertElm.appendChild(newElem.firstChild);
+                                    if (newElem.textContent.trim().length === 0) {
+                                        const brElm: HTMLElement = this.parent.createElement('br');
+                                        if (this.startNode.nodeName === 'A') {
+                                            const startParentElem: HTMLElement = this.startNode.parentElement;
+                                            this.startNode.parentElement.insertBefore(brElm, this.startNode);
+                                            detach(this.startNode);
+                                            this.startNode = startParentElem;
+                                        } else {
+                                            if (this.startNode.nodeName != 'BR') {
+                                                this.startNode.appendChild(brElm);
+                                            }
+                                        }
+                                        if (newElem.childNodes[0].textContent === '\n') {
+                                            detach(newElem.childNodes[0]);
+                                        }
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), this.startNode, 0);
                                     }
-                                    this.parent.formatter.editorManager.domNode.insertAfter(insertElm, (newElem as HTMLElement));
-                                    detach(newElem);
-                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                        this.parent.contentModule.getDocument(),
-                                        this.parent.formatter.editorManager.domNode.isBlockNode(this.startNode) ?
-                                            insertElm : this.startNode, 0);
+                                    if (((this.parent.enterKey === 'P' || this.parent.enterKey === 'DIV') && !shiftKey) || ((this.parent.shiftEnterKey === 'DIV' ||
+                                        this.parent.shiftEnterKey === 'P') && shiftKey)) {
+                                        let isHeadingTag: number = this.formatTags.indexOf(newElem.nodeName.toLocaleLowerCase());
+                                        if ((isHeadingTag < 0) || (isHeadingTag >= 0 && newElem.textContent.trim().length === 0)) {
+                                            const insertElm: HTMLElement = this.createInsertElement(shiftKey);
+                                            while (newElem.firstChild) {
+                                                insertElm.appendChild(newElem.firstChild);
+                                            }
+                                            this.parent.formatter.editorManager.domNode.insertAfter(insertElm, (newElem as HTMLElement));
+                                            detach(newElem);
+                                            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                                this.parent.contentModule.getDocument(),
+                                                this.parent.formatter.editorManager.domNode.isBlockNode(this.startNode) ?
+                                                    insertElm : this.startNode, 0);
+                                        }
+                                    }
                                 }
                             }
                             (e.args as KeyboardEventArgs).preventDefault();
@@ -253,23 +303,30 @@ export class EnterKeyAction {
                             }
                             this.removeBRElement(currentParent);
                             let isEmptyBrInserted: boolean = false;
-                            let currentParentLastChild: Node = currentParent.lastChild; 
+                            let currentParentLastChild: Node = currentParent.lastChild;
                             while (!isNOU(currentParentLastChild) && !(currentParentLastChild.nodeName === '#text' || currentParentLastChild.nodeName === 'BR')) {
                                 currentParentLastChild = currentParentLastChild.lastChild;
                             }
                             const isLastNodeLength = this.range.startContainer === currentParentLastChild ?
-                            this.range.startContainer.textContent.length : currentParent.textContent.length;
+                                this.range.startContainer.textContent.length : currentParent.textContent.length;
                             if (currentParent !== this.parent.inputElement &&
                                 this.parent.formatter.editorManager.domNode.isBlockNode(currentParent) &&
                                 this.range.startOffset === this.range.endOffset &&
                                 this.range.startOffset === isLastNodeLength) {
                                 const focusBRElem: HTMLElement = this.parent.createElement('br');
-                                if (currentParentLastChild.nodeName === 'BR' && currentParent.textContent.length === 0) {
-                                    this.parent.formatter.editorManager.domNode.insertAfter(focusBRElem, (currentParentLastChild as Element));
+                                if (this.range.startOffset === 0 && this.range.startContainer.nodeName === 'TABLE') {
+                                    this.range.startContainer.parentElement.insertBefore(focusBRElem, this.range.startContainer);
                                 } else {
-                                    const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
-                                    this.parent.formatter.editorManager.domNode.insertAfter(focusBRElem, (this.range.startContainer as Element));
-                                    this.parent.formatter.editorManager.domNode.insertAfter(lineBreakBRElem, (this.range.startContainer as Element));
+                                    if (currentParentLastChild.nodeName === 'BR' && currentParent.textContent.length === 0) {
+                                        this.parent.formatter.editorManager.domNode.insertAfter(
+                                            focusBRElem, (currentParentLastChild as Element));
+                                    } else {
+                                        const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
+                                        this.parent.formatter.editorManager.domNode.insertAfter(
+                                            focusBRElem, (this.range.startContainer as Element));
+                                        this.parent.formatter.editorManager.domNode.insertAfter(
+                                            lineBreakBRElem, (this.range.startContainer as Element));
+                                    }
                                 }
                                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                                     this.parent.contentModule.getDocument(), focusBRElem, 0);
@@ -314,10 +371,9 @@ export class EnterKeyAction {
             }
         }
     }
-    
     private removeBRElement(currentElement: Node): void {
-        if (Browser.userAgent.indexOf('Firefox') != -1 &&
-        this.range.endOffset === currentElement.textContent.length && (currentElement.textContent.length !== 0 || 
+        if (Browser.userAgent.indexOf('Firefox') !== -1 &&
+        this.range.endOffset === currentElement.textContent.length && (currentElement.textContent.length !== 0 ||
         (currentElement as HTMLElement).querySelectorAll('BR').length > 1) &&
         !isNOU(currentElement.lastChild) && currentElement.lastChild.nodeName === 'BR') {
             detach(currentElement.lastChild);
@@ -326,6 +382,10 @@ export class EnterKeyAction {
 
     private insertBRElement(): void {
         let isEmptyBrInserted: boolean = false;
+        let isFocusTextNode: boolean = true;
+        if ( this.range.endContainer.textContent.length == 0 && this.range.startContainer.nodeName === "BR" ){
+            isFocusTextNode = false;
+        } 
         const brElm: HTMLElement = this.parent.createElement('br');
         if (this.startNode.nodeName === 'BR' && this.endNode.nodeName === 'BR' && this.range.startOffset === 0 && this.range.startOffset === this.range.endOffset) {
             this.parent.formatter.editorManager.domNode.insertAfter(brElm, this.startNode);
@@ -340,7 +400,7 @@ export class EnterKeyAction {
         if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && brElm.nextSibling.textContent.length > 0)) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                 this.parent.contentModule.getDocument(),
-                !isNOU(brElm.nextSibling) ? (brElm.nextSibling as Element) : brElm, 0);
+                !isNOU( brElm.nextSibling ) && isFocusTextNode ? (brElm.nextSibling as Element) : brElm, 0);
             isEmptyBrInserted = false;
         } else {
             const brElm2: HTMLElement = this.parent.createElement('br');

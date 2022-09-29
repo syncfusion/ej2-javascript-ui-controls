@@ -62,8 +62,6 @@ describe('Schedule timeline work week view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 2).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
@@ -2507,8 +2505,6 @@ describe('Schedule timeline work week view', () => {
         it('check work cells', () => {
             expect(schObj.getWorkCellElements().length).toEqual(48 * daysLength);
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 3, 30).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
@@ -3150,8 +3146,6 @@ describe('Schedule timeline work week view', () => {
             expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(240);
             expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(240 * resLength);
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 3, 30).getTime().toString());
             expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
@@ -3227,8 +3221,6 @@ describe('Schedule timeline work week view', () => {
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(240);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(240 * resLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-                expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 7).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
@@ -3282,8 +3274,6 @@ describe('Schedule timeline work week view', () => {
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(240);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(240 * resLength);
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-                expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 3, 30).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');

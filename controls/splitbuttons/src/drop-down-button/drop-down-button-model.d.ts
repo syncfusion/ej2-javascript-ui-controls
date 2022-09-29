@@ -74,6 +74,13 @@ export interface DropDownButtonModel extends ComponentModel{
     target?: string | Element;
 
     /**
+     * Specifies the event to close the DropDownButton popup.
+     *
+     * @default ""
+     */
+    closeActionEvents?: string;
+
+    /**
      * Triggers while rendering each Popup item of DropDownButton.
      *
      * @event beforeItemRender

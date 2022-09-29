@@ -442,6 +442,75 @@
         //      }
         //  });
      });
+     describe('Task Type changing in Dialogue edit', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    notes: 'Notes',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    resourceInfo: 'Resource',
+                    dependency: 'Predecessor',
+                    work: 'EstimatedWork',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceIDMapping: 'resourceId',
+                resourceNameMapping: 'resourceName',
+                resources: resourcesData,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Dialog'
+                },
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                    { type: 'Custom' }
+                ],
+                addDialogFields: [
+                    { type: 'General' },
+                    { type: 'Resources' },
+                    { type: 'Dependency' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                allowUnscheduledTasks: true
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(3);
+        });
+        it('Task type editing', () => {
+            ganttObj.dataBind();
+            let inputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'taskType')).ej2_instances[0];
+            inputObj.value = 'FixedDuration';
+            inputObj.dataBind();
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.currentViewData[2]['taskType']).toBe("FixedDuration");
+        });
+    });
      describe('Dialog editing - predecessor Tab', () => {
          let ganttObj: Gantt;
  
@@ -1763,7 +1832,7 @@
             }
         });
     });
-    describe('Edit Duration of new task', function () {
+	  describe('Edit Duration of new task', function () {
         let ganttObj: Gantt;
         beforeAll(function (done) {
             ganttObj = createGantt({
@@ -1878,43 +1947,32 @@
             triggerMouseEvent(saveRecord, 'click');
         });
     });
-    describe('Cr progress', () => {
+    describe('Edit custom column values in edit dialog', function () {
         let ganttObj: Gantt;
         let elem: HTMLElement;
         let dropdownlistObj: DropDownList;
-        let data: [{ value: "0", text:"Pendiente" },{ value:"25", text: "Iniciado" }, { value:"50", text:"Activo" }, { value: "100", text: "Completado" }, { value: "0", text: "Cancelado" }];
-        beforeAll((done: Function) => {
+        let data = [
+            {name:'deliver'},
+            {name:'stage'},
+            {name:'task'}
+        ];
+        beforeAll(function (done) {
             ganttObj = createGantt({
-                dataSource: dialogEditData,
-                allowSorting: true,
-                allowReordering: true,
-                enableContextMenu: true,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    dependency:'Predecessor',
-                    baselineStartDate: "BaselineStartDate",
-                    baselineEndDate: "BaselineEndDate",
-                    child: 'subtasks',
-                },
-                renderBaseline: true,
-                baselineColor: 'red',
+                dataSource: projectData1,
                 editSettings: {
                     allowAdding: true,
                     allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
+                    allowDeleting: true
                 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
                 columns: [
                     { field: 'TaskID', headerText: 'Task ID' },
                     { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
                     { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
-                    { field: 'Duration', headerText: 'Duration' },
-                    { field: 'Progress',editType:'dropdownedit',edit: {
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'taskType', headerText: 'taskType',
+                    edit: {
                         create: () => {
                             elem = document.createElement('input');
                             return elem;
@@ -1925,84 +1983,53 @@
                         destroy: () => {
                             dropdownlistObj.destroy();
                         },
-                        write: (args: any) => {
+                        write: (args: Object) => {
                             dropdownlistObj = new DropDownList({
                                 dataSource: data,
-                                fields: { text: 'text', value: 'value' },
-                                value: args.rowData[args.column.field],
-                                floatLabelType: 'Auto',
+                                fields: { value: 'name' },
                             });
                             dropdownlistObj.appendTo(elem);
                         }
-                    } }, 
-                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                    } }
                 ],
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
-                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
-                allowSelection: true,
-                selectedRowIndex: 1,
-                splitterSettings: {
-                    position: "50%",
-                   // columnIndex: 4
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
                 },
-                tooltipSettings: {
-                    showTooltip: true
-                },
-                allowFiltering: true,
-                gridLines: "Both",
-                showColumnMenu: true,
-                highlightWeekends: true,
-                timelineSettings: {
-                    showTooltip: true,
-                    topTier: {
-                        unit: 'Week',
-                        format: 'dd/MM/yyyy'
-                    },
-                    bottomTier: {
-                        unit: 'Day',
-                        count: 1
-                    }
-                },
-                labelSettings: {
-                    leftLabel: 'TaskID',
-                    rightLabel: 'Task Name: ${taskData.TaskName}',
-                    taskLabel: '${Progress}%'
-                },
-                allowResizing: true,
-                readOnly: false,
-                taskbarHeight: 20,
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
                 rowHeight: 40,
-                height: '550px',
-                allowUnscheduledTasks: true,
-                projectStartDate: new Date('03/25/2019'),
-                projectEndDate: new Date('05/30/2019'),            
+                taskbarHeight: 30,
+                allowSelection: true
             }, done);
         });
-        afterAll(() => {
-           if (ganttObj) {
-               destroyGantt(ganttObj);
-           }
-       });
-       beforeEach((done) => {
-           setTimeout(done, 1000);
-           ganttObj.openEditDialog(4);
-       });
-       it('Dropdownedit progress', () => {
-           ganttObj.actionBegin = function (args: any): void {
-               if (args.requestType === "beforeOpenEditDialog") {
-                   args.dialogModel.animationSettings = { 'effect': 'none' };
-               }
-           };
-           ganttObj.dataBind();
-           let progressField: any = document.querySelector('#' + ganttObj.element.id + 'Progress') as HTMLInputElement;
-           if (progressField) {
-            triggerMouseEvent(progressField, 'click');
-            progressField.value = "Pendiente";
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(2);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 2;
+        });
+        it('change custom dialog values in edit dialog', () => {
+            let customColumn: any = document.querySelector('#' + ganttObj.element.id + 'taskType') as HTMLInputElement;
+            triggerMouseEvent(customColumn, 'click');
+            let customValue: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'taskType')).ej2_instances[0];
+            customValue.value = 'task';
+            customValue.dataBind();
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
-            expect(ganttObj.currentViewData[3].ganttProperties.progress).toBe(0);
-           }
-       });
-    });
+            expect(getValue('taskType', ganttObj.flatData[1])).toBe('task');
+        });
+    });	 	 
  });
  

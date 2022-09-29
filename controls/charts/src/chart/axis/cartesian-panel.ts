@@ -468,6 +468,7 @@ export class CartesianAxisLayoutPanel {
         let axis: Axis;
         const axisElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisInsideCollection' });
         const axisLineElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisOutsideCollection' });
+        if (axisLineElement) { axisLineElement.setAttribute('aria-hidden', 'true'); }
         let outsideElement: Element; let isInside: boolean;
 
         for (let i: number = 0, len: number = chart.axisCollections.length; i < len; i++) {
@@ -475,7 +476,9 @@ export class CartesianAxisLayoutPanel {
 
             axis = chart.axisCollections[i];
             this.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Inside' });
+            if (this.element) { this.element.setAttribute('aria-hidden', 'true'); }
             outsideElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Outside' });
+            if (outsideElement) { outsideElement.setAttribute('aria-hidden', 'true') };
             for (const series of axis.series) {
                 if (axis.name === series.yAxisName || axis.name === series.xAxisName) {
                     axisVisibility = series.visible;
@@ -1033,8 +1036,7 @@ export class CartesianAxisLayoutPanel {
                 chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent, null, null,
                 null, null, null, null, null, null, chart.enableCanvas
             );
-           // element.setAttribute('tabindex', axis.tabIndex.toString());
-            element.setAttribute('aria-label', axis.description || axis.title);
+            element.setAttribute('aria-hidden', 'true');
         }
     }
 
@@ -1648,8 +1650,7 @@ export class CartesianAxisLayoutPanel {
                 chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent,
                 null, null, null, null, null, null, null, null, chart.enableCanvas
             );
-            element.setAttribute('aria-label', axis.description || axis.title);
-           // element.setAttribute('tabindex', axis.tabIndex.toString());
+            element.setAttribute('aria-hidden', 'true');
         }
     }
 

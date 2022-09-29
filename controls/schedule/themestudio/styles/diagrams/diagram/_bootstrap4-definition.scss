@@ -16,7 +16,7 @@ $diagram-border-stroke-disabled: $gray-400;
 
 $diagram-rotate-handle-color: $blue;
 
-$diagram-helper-stroke:  $blue ;
+$diagram-helper-stroke:  $blue;
 
 $diagram-highlighter-stroke: $blue;
 $diagram-selected-region-stroke: $blue;
@@ -67,32 +67,32 @@ $diagram-multiselect-stroke: $diagram-resize-handle-stroke;
 
 @include export-module('diagram-bootstrap-icons') {
   .e-diagram-menu {
-    .e-bringforward::before { content: '\e801'; }
-    .e-bringfront::before { content: '\e803'; }
-    .e-sendback::before { content: '\e7fe'; }
-    .e-sendbackward::before { content: '\e7fd'; }
-    .e-delete::before { content: '\e7fd'; }
-    .e-ungroup::before { content: '\e800'; }
-    .e-group::before { content: '\e802'; }
-    .e-undo::before { content: '\e752'; }
-    .e-cut::before { content: '\e73f'; }
-    .e-save::before { content: '\e74d'; }
-    .e-paste::before { content: '\e739'; }
-    .e-copy::before { content: '\e77b'; }
-    .e-redo::before { content: '\e778'; }
-    .e-zoomin::before { content: '\e70a'; }
-    .e-italic::before { content: '\e78e'; }
-    .e-close::before { content: '\e745'; }
-    .e-pan::before { content: '\e711'; }
-    .e-bold::before { content: '\e78b'; }
-    .e-underline::before { content: '\e792'; }
-    .e-zoomout::before { content: '\e74a'; }
-    .e-export::before { content: '\e780'; }
-    .e-print::before { content: '\e743'; }
-    .e-order::before { content: '\e7ff'; }
+    .e-bringforward::before{ content: '\e801'; }
+    .e-bringfront::before{ content: '\e803'; }
+    .e-sendback::before{ content: '\e7fe'; }
+    .e-sendbackward::before{ content: '\e7fd'; }
+    .e-delete::before{ content: '\e7fd'; }
+    .e-ungroup::before{ content: '\e800'; }
+    .e-group::before{ content: '\e802'; }
+    .e-undo::before{ content: '\e752'; }
+    .e-cut::before{ content: '\e73f'; }
+    .e-save::before{ content: '\e74d'; }
+    .e-paste::before{ content: '\e739'; }
+    .e-copy::before{ content: '\e77b'; }
+    .e-redo::before{ content: '\e778'; }
+    .e-zoomin::before{ content: '\e70a'; }
+    .e-italic::before{ content: '\e78e'; }
+    .e-close::before{ content: '\e745'; }
+    .e-pan::before{ content: '\e711'; }
+    .e-bold::before{ content: '\e78b'; }
+    .e-underline::before{ content: '\e792'; }
+    .e-zoomout::before{ content: '\e74a'; }
+    .e-export::before{ content: '\e780'; }
+    .e-print::before{ content: '\e743'; }
+    .e-order::before{ content: '\e7ff'; }
   }
 
   .e-symbolpalette {
-    .e-clear-searchtext::before { content: '\e724'; }
-   }
+    .e-clear-searchtext::before{ content: '\e724'; }
+  }
 }

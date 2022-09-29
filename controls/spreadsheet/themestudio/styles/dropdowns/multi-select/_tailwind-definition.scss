@@ -128,6 +128,7 @@ $ddl-bigger-small-clear-icon-height: 32px !default;
 $ddl-bigger-small-clear-icon-width: 32px !default;
 $ddl-bigger-chip-close-square: $text-xl !default;
 $ddl-bigger-chip-close-font: $text-xl !default;
+
 // Small size
 $ddl-select-all-height-small: 24px !default;
 $ddl-small-chip-height: 18px !default;
@@ -189,7 +190,6 @@ $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $icon-color !default;
 $ddl-close-icon-hover-color: $icon-color-hover !default;
 
-
 @include export-module('multiselect-tailwind') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
     line-height: 30px;
@@ -217,9 +217,8 @@ $ddl-close-icon-hover-color: $icon-color-hover !default;
     width: $ddl-chip-hooker-square;
   }
 
-  .e-multi-select-wrapper .e-searcher input[type='text'] {
+  .e-multi-select-wrapper .e-searcher input[type = 'text'] {
     color: $content-text-color;
     height: 100%;
   }
 }
-  

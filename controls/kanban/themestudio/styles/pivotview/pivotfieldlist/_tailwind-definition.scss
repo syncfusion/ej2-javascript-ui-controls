@@ -53,7 +53,7 @@ $pivot-calculated-icon-opacity: .87 !default;
 $field-list-bigger-button-line-height: 1.1em !default;
 $field-list-excel-member-filter-height: 165px !default;
 $field-list-excel-filter-height: 248px !default;
-$field-list-excel-member-filter-bigger-height: 110px !default;
+$field-list-excel-member-filter-bigger-height: 113px !default;
 $field-list-excel-filter-bigger-height: 220px !default;
 $format-label-font-opacity: .87 !default;
 $format-label-font-weight: 500 !default;
@@ -79,6 +79,12 @@ $field-list-search-popup-table-bigger-height: 400px !default;
 $field-list-search-popup-axis-table-bigger-height: 404px !default;
 $field-list-search-popup-axis-content-bigger-height: 165px !default;
 $field-list-filter-toolbar-items-margin: 20px !default;
+$field-list-treeview-ul-padding: 11px !default;
+$field-list-treeview-li-padding: 0 !default;
+$field-list-treeview-bigger-ul-padding: 7px !default;
+$field-list-treeview-bigger-li-padding: 0 !default;
+$field-list-treeview-mobile-ul-padding: 29px !default;
+$field-list-treeview-mobile-li-padding: 0 !default;
 
 // normal variables
 $field-list-active-color: $icon-color !default;

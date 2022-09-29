@@ -1,8 +1,9 @@
 @include export-module('button-layout') {
+
   /*! button layout */
   .e-btn,
   .e-css.e-btn {
-    // sass-lint:disable no-vendor-prefixes
+    /* stylelint-disable property-no-vendor-prefix */
     -webkit-font-smoothing: antialiased;
     border: $btn-border;
     border-radius: $btn-border-radius;
@@ -32,7 +33,6 @@
         text-decoration: none;
       }
 
-      // sass-lint:disable no-vendor-prefixes
       &::-moz-focus-inner {
         border: 0;
         padding: 0;
@@ -314,7 +314,7 @@
         margin-right: $btn-small-icon-margin;
       }
     }
-}
+  }
 
   .e-bigger.e-small .e-btn,
   .e-bigger.e-small .e-btn,
@@ -403,7 +403,7 @@
         margin-right: $btn-bigger-small-icon-margin;
       }
     }
-}
+  }
 
   .e-bigger .e-btn,
   .e-bigger .e-btn,

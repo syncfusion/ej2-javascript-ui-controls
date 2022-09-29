@@ -467,7 +467,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         if (obj.case === 'filter') {
             const filterRow: Element = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
-                this.getMovableHeader().querySelector('thead')
+                this.getMovableHeader().querySelector('thead:not(.e-masked-thead)')
                     .appendChild(this.filterRenderer(filterRow, this.parent.getFrozenColumns()));
                 const elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
                     querySelectorAll('thead .e-filterbarcell .e-input'));
@@ -681,7 +681,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     protected filterRenderer(ele: Element, frozenColumn: number, total?: number): Element {
         const clone: Element = ele.cloneNode(true) as Element;
         clone.innerHTML = '';
-        const end: number = total ? total : this.parent.getColumns().length;
+        let end: number = total ? total : this.parent.getColumns().length;
+        if (this.parent.allowRowDragAndDrop && this.parent.getFrozenColumns()) {
+            end += 1;
+            frozenColumn += 1;
+        }
         for (let i: number = frozenColumn; i < end; i++) {
             clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
         }

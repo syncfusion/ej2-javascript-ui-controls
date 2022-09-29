@@ -10,12 +10,13 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Rect } from '../../../src/diagram/primitives/rect';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
-import { DiagramTools, ConnectorConstraints } from '../../../src/diagram/enum/enum';
-import { ISelectionChangeEventArgs, IClickEventArgs, IDoubleClickEventArgs, ITextEditEventArgs, ICollectionChangeEventArgs, IHistoryChangeArgs, IDraggingEventArgs, IEndChangeEventArgs, ISizeChangeEventArgs, IRotationEventArgs, IPropertyChangeEventArgs, IConnectionChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
+import { DiagramTools, ConnectorConstraints, PortConstraints } from '../../../src/diagram/enum/enum';
+import { ISelectionChangeEventArgs, IClickEventArgs, IDoubleClickEventArgs, ITextEditEventArgs, ICollectionChangeEventArgs, IHistoryChangeArgs, IDraggingEventArgs, IEndChangeEventArgs, ISizeChangeEventArgs, IRotationEventArgs, IPropertyChangeEventArgs, IConnectionChangeEventArgs, IElementDrawEventArgs } from '../../../src/diagram/objects/interface/IElement'
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { DiagramModel } from '../../../src';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
+import { PortVisibility, ShapeAnnotationModel } from '../../../src/diagram/index';
 Diagram.Inject(BpmnDiagrams);
 Diagram.Inject(UndoRedo);
 Diagram.Inject(ConnectorEditing);
@@ -493,7 +494,7 @@ describe('Diagram Control', () => {
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
-            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, ports: [{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle',width : 50, height : 50, offset: { x: 0, y: 0.3 } }] };
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
 
             diagram = new Diagram({
@@ -519,6 +520,21 @@ describe('Diagram Control', () => {
                 }
             };
             mouseEvents.clickEvent(diagramCanvas, 100, 500);
+            done();
+        });
+
+        it('Checking click event for port', (done: Function) =>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.nodes[0].offsetX = 100;
+            diagram.nodes[0].offsetY = 100;
+            diagram.dataBind();
+            diagram.click = (args: IClickEventArgs) => {
+                mouseEvents.clickEvent(diagramCanvas, 100, 500);
+                if(args.element){
+                    expect(args.element === diagram.nodes[0].ports).toBe(true);
+                    done();
+                }
+            };
             done();
         });
 
@@ -1077,4 +1093,157 @@ describe('SourcePointChange and TargetPointChange Event on node dragging', () =>
         done();
     }); 
      
+});
+describe('Testing elementDraw events', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let nodeport1: PointPortModel = { offset: { x: 1, y: 0.5 } };
+let nodeport2: PointPortModel = { offset: { x: 0, y: 0.5 } };
+let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
+let node1: NodeModel = { id: 'node', offsetX: 100, offsetY: 100, shape: shape,ports: [{ id: 'port1', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 0.5 } },
+{ id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+{ id: 'port3', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+{ id: 'port4', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+]};
+let shape2: BasicShapeModel = { type: 'Basic', shape: 'Ellipse' };
+let node2: NodeModel = { id: 'node2', offsetX: 300, offsetY: 300, shape: shape2, ports: [{ id: 'port1', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 0.5 } },
+{ id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+{ id: 'port3', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+{ id: 'port4', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+] };
+let continuousDraw: any;
+let connectors: ConnectorModel[] = [{
+    id: 'connector1',
+    type: 'Straight',
+    sourcePoint: { x: 150, y: 150 },
+    targetPoint: { x: 250, y: 250 },
+},
+{
+    id: 'connector2',
+    type: 'Orthogonal',
+    sourcePoint: { x: 300, y: 100 },
+    targetPoint: { x: 400, y: 200 },
+}];
+ diagram = new Diagram({
+    width: '1000px', height: 700, nodes: [node1, node2], connectors: connectors,
+});
+diagram.scrollSettings.canAutoScroll = true;
+diagram.appendTo('#diagram');
+});
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking elementDraw event ', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 100, true);
+        let node: NodeModel = diagram.nodes[0];
+        node.ports[1].constraints = PortConstraints.Draw
+        mouseEvents.mouseDownEvent(diagramCanvas,102,81);
+        mouseEvents.mouseMoveEvent(diagramCanvas,102,81);
+        mouseEvents.mouseMoveEvent(diagramCanvas,300,292);
+        mouseEvents.mouseUpEvent(diagramCanvas,300,292);
+        diagram.elementDraw = (args: IElementDrawEventArgs) => {
+            if ((args.source as Connector).targetPortID ){
+                expect((args.source as Connector).targetPortID=== "port2").toBe(true);
+                done();
+            }
+        };
+    });
+});
+describe('History change id for changed properties', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'historyId' });
+        document.body.appendChild(ele);
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 400 };
+        let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 400 };
+        let node3: NodeModel = { id: 'node3', width: 100, height: 100, offsetX: 100, offsetY: 100 };
+        let node4: NodeModel = { id: 'node4', width: 100, height: 100, offsetX: 300, offsetY: 100 };
+        let connectors: ConnectorModel[] = [{id: 'connector1', type: 'Straight',sourcePoint: { x: 350, y: 550 },targetPoint: { x: 450, y: 740 },}];
+
+        diagram = new Diagram({
+            width: 1000, height: 1000, nodes: [node1, node2, node3, node4], connectors : connectors,
+        });
+
+        diagram.appendTo('#historyId');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking property change by adding color by without selection', (done: Function) => {
+        diagram.nodes[0].style.fill = 'yellow';
+        diagram.dataBind();
+        diagram.historyChange = (args : IHistoryChangeArgs) => {
+        expect(args.sourceId[0] == 'node1').toBe(true);
+        };
+        done();
+    });
+    it('Checking property change for multiple nodes with selection', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 10, 10);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 150, 120);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 500, 200);
+        mouseEvents.mouseUpEvent(diagramCanvas, 600, 300);
+        diagram.selectedItems.nodes[0].style.fill = 'yellow';
+        diagram.selectedItems.nodes[1].style.fill = 'green';
+        diagram.dataBind();
+        diagram.historyChange = (args : IHistoryChangeArgs) => {
+            expect(args.sourceId[0] == 'node3').toBe(true);
+            expect(args.sourceId[1] == 'node4').toBe(true);
+        };
+        diagram.undo();
+        diagram.historyChange = (args : IHistoryChangeArgs) => {
+            expect(args.sourceId[0] == 'node3').toBe(true);
+            expect(args.sourceId[1] == 'node4').toBe(true);
+        };
+        diagram.redo();
+        diagram.historyChange = (args : IHistoryChangeArgs) => {
+            expect(args.sourceId[0] == 'node3').toBe(true);
+            expect(args.sourceId[1] == 'node4').toBe(true);
+        };
+        done();
+    });
+
+    it('Checking property change for multiple nodes without selection', (done: Function) => {
+        diagram.nodes[0].style.fill = 'red';
+        diagram.nodes[1].style.fill = 'green';
+        diagram.dataBind();
+        diagram.historyChange = (args : IHistoryChangeArgs) => {
+            expect(args.sourceId[0] == 'node1').toBe(true);
+            expect(args.sourceId[1] == 'node2').toBe(true);
+        };
+    });
+
+    it('Checking property change for connectors', (done: Function) => {
+        diagram.connectors[0].style.strokeColor = 'yellow';
+        diagram.dataBind();
+        diagram.historyChange = (args : IHistoryChangeArgs) => {
+            expect(args.sourceId[0] == 'connector1').toBe(true);
+        };
+       done();
+    });
 });

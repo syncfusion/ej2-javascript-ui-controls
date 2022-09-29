@@ -15,6 +15,8 @@ export * from './plugin/isformatted';
 export * from './plugin/ms-word-clean-up';
 export * from './plugin/nodecutter';
 export * from './plugin/image';
+export * from './plugin/audio';
+export * from './plugin/video';
 export * from './plugin/selection-commands';
 export * from './plugin/selection-exec';
 export * from './plugin/clearformat-exec';

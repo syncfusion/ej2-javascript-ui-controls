@@ -1,4 +1,5 @@
 @include export-module('drop-down-button-layout') {
+
   /*! drop-down button layout */
   .e-dropdown-btn,
   .e-dropdown-btn.e-btn {
@@ -11,8 +12,8 @@
     &:hover {
       @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' {
         box-shadow: none;
+      }
     }
-  }
 
     &:focus {
       @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' {

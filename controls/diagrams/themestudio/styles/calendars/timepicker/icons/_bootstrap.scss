@@ -1,4 +1,5 @@
 @include export-module('timepicker-bootstrap-icons') {
+
   /*! component icons */
 
   .e-time-wrapper,
@@ -7,7 +8,5 @@
     #{if(&, '&', '*')} .e-time-icon.e-icons::before {
       content: '\e93e';
     }
-
   }
 }
-

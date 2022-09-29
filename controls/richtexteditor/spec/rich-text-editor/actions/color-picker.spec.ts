@@ -1,7 +1,7 @@
 /**
  * RTE - Color-picker action spec
  */
-import { Browser,detach,createElement } from "@syncfusion/ej2-base";
+import { Browser } from "@syncfusion/ej2-base";
 import { RichTextEditor } from './../../../src/index';
 import { renderRTE, destroy, dispatchKeyEvent, dispatchEvent } from "./../render.spec";
 
@@ -480,61 +480,5 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
         let selectPalette: HTMLElement = colorPickerPopup.querySelector('.e-selected');
         expect(selectPalette).not.toBeNull();
         expect(selectPalette.style.backgroundColor === 'rgb(0, 102, 102)').not.toBeNull();
-    });
-});
-
-describe('EJ2-61432 - Script issue thrown when we click background color toolbar of the RTE, which is rendered inside a table', function () {
-    let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
-    let mouseEventArgs: any;
-    let curDocument: Document;
-    let editNode: Element;
-    let selectNode: Element;
-    let elementCreate: HTMLElement = createElement('table', { 
-        innerHTML:
-            `
-                <tr>
-                    <td>
-                        <div id="defaultRTE">
-                        <p class='first-p-node'>First p node-0</p><p>First p node-1</p>
-                        </div>
-                    </td>
-                </tr>
-            ` });
-    beforeAll(() => {
-        debugger;
-        document.body.appendChild(elementCreate);
-        rteObj = new RichTextEditor({
-            toolbarSettings: {
-                items: ["FontColor", "BackgroundColor"]
-            }
-        });
-        rteObj.appendTo("#defaultRTE");
-        rteObj.dataBind();
-        rteEle = rteObj.element;
-        editNode = rteObj.contentModule.getEditPanel();
-        rteObj.contentModule.getEditPanel().innerHTML = elementCreate.innerHTML;
-        curDocument = rteObj.contentModule.getDocument();
-    });
-    afterAll((done: Function) => {
-        destroy(rteObj);
-        detach(elementCreate);
-        done(); 
-    });
-
-    it("ColorPicker - Background selection", () => {
-        selectNode = editNode.querySelector('.first-p-node');
-        setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
-        rteObj.notify('selection-save', {});
-        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[1];
-        backgroundColorPicker.click();
-        let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
-        mouseEventArgs = {
-            target: backgroundColorPickerItem
-        };
-        (rteObj.htmlEditorModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
-        selectNode = editNode.querySelector('.first-p-node');
-        expect((selectNode.childNodes[0] as HTMLElement).style.backgroundColor === 'rgb(255, 255, 0)');
-        backgroundColorPicker.click();
     });
 });

@@ -121,7 +121,7 @@
     line-height: 0;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-colorpicker {
     &.e-modal,
     &.e-hsv-model {
@@ -915,7 +915,6 @@
           & .e-ctrl-btn {
             width: 90.6%;
           }
-
 
           & .e-cancel {
             @if $skin-name == 'bootstrap4' {

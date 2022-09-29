@@ -529,6 +529,14 @@ export interface ILabelRenderingEventArgs extends IMapsEventArgs {
      */
     text: string;
     /**
+     * Defines the right and left position of text for the data-label in event argument.
+     */
+     offsetX: number;
+     /**
+     * Defines the top and bottom position of text for the data-label in event argument.
+     */
+    offsetY: number;
+    /**
      * Defines the color and width of the border for the data-label in event argument.
      */
     border: BorderModel;

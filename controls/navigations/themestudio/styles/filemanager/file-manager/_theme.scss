@@ -4,23 +4,31 @@
     color: $fe-ddl-icon-color;
   }
 }
+
 @mixin active-icon-color {
   .e-btn-icon,
   .e-tbar-btn-text {
     @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap5' {
       color: $fe-tb-active-color;
     }
+
+    @if $fm-skin-name == 'highcontrast' {
+      color: $fe-active-font-color;
+    }
   }
 }
+
 @mixin hover-icon-border-color {
   @if $fm-skin-name == 'bootstrap-dark' {
     border: 1px solid $fe-tb-hover-border-color;
   }
 }
+
 @mixin active-item {
   background: $fe-active-bg-color;
   border-color: $fe-active-border-color;
 }
+
 @mixin hover-item($bg-color, $border-color) {
   background: $bg-color;
   border-color: $border-color;
@@ -41,6 +49,15 @@
           @include active-icon-color;
           background: $fe-tb-focus-bg;
           border-color: $fe-tb-focus-border-color;
+          @if $fm-skin-name == 'highcontrast' {
+            background: $fe-active-bg-color;
+          }
+
+          &:hover {
+            @if $fm-skin-name == 'highcontrast' {
+              background: $fe-active-bg-color;
+            }
+          }
         }
 
         &:hover {
@@ -54,6 +71,9 @@
           @include active-icon-color;
           background: $fe-tb-focus-bg;
           border-color: $fe-tb-hover-border-color;
+          @if $fm-skin-name == 'highcontrast' {
+            background: $fe-active-bg-color;
+          }
         }
       }
     }
@@ -165,7 +185,7 @@
           tr:first-child th {
             background: $fe-grid-header-bg-color;
           }
-       }
+        }
 
         .e-headercell {
 
@@ -175,13 +195,13 @@
           @if $fm-skin-name == 'FluentUI' {
             &.e-fe-checkbox:hover {
               background: $content-bg-color;
+            }
           }
-        }
           @else {
             &.e-fe-checkbox:hover {
               background: $fe-grid-header-bg-color;
+            }
           }
-        }
 
           &.e-fe-grid-icon .e-headercelldiv:hover {
             background: $fe-hover-bg-color;
@@ -243,14 +263,14 @@
         }
       }
 
-      &.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+      &.e-gridhover tr[role = 'row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         @if $fm-skin-name == 'material-dark' or $fm-skin-name == 'bootstrap-dark' {
           background-color: $fe-hover-bg-color;
           color: $fe-grid-type-color;
         }
       }
 
-      &.e-gridhover tr[role='row'].e-fe-drop-file:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+      &.e-gridhover tr[role = 'row'].e-fe-drop-file:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: transparent;
       }
     }
@@ -301,7 +321,6 @@
           color: $fe-checkbox-color;
         }
       }
-
     }
 
     .e-fe-clone {

@@ -647,4 +647,3 @@ describe('Validating Track changes working when deleting paragraph', () => {
 //         setTimeout(function () { expect(isimage).toBe(true); }, 300);
 //     });
 // });
-

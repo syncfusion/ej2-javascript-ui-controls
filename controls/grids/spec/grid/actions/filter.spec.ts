@@ -3097,4 +3097,3 @@ describe('EJ2-62502 - clear filter testing with ColumnMenu ', ()=>{
         gridObj = actionComplete = null;
     });
 });
-

@@ -905,4 +905,85 @@ describe('Chart Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('testing label in chart', () => {
+        let chartObj: Chart;
+        let ele: HTMLElement;
+        let dataLabel: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chartObj = new Chart({
+                border: { width: 1, color: 'red' },
+                primaryXAxis: {
+                    labelFormat: 'p1',
+                    title: 'PrimaryXAxis', lineStyle: { color: 'blue', width: 2 },
+                    minorTicksPerInterval: 4, minorGridLines: { width: 0 }, minorTickLines: { width: 1 }
+                },
+                primaryYAxis: { title: 'PrimaryYAxis', lineStyle: { color: 'blue', width: 2 }, labelFormat: 'n2' },
+                series: [
+                    {
+                        name: 'series1', type: 'Column', fill: 'red',
+                        dataSource: seriesData1, animation: { enable: false }, xName: 'x', yName: 'y',
+                        marker: {
+                            visible: true,
+                            shape: 'Circle', dataLabel: { visible: true, format: 'n3' },
+                            fill: 'black', height: 10, width: 10
+                        }
+                    }, {
+                        name: 'series1', type: 'Column', fill: 'red',
+                        dataSource: seriesData1, animation: { enable: false }, xName: 'x', yName: 'y',
+                        marker: {
+                            visible: true,
+                            shape: 'Circle', dataLabel: { visible: true, format: '#{value}' },
+                            fill: 'black', height: 10, width: 10
+                        }
+                    },
+                ],
+                height: '400', width: '600', legendSettings: { visible: false }
+            }, '#container');
+            ;
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            ele.remove();
+        });
+        it('checking the Y axis label for the global format like n', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container1_AxisLabel_0');
+                expect(dataLabel.textContent == '0.00').toBe(true);
+                dataLabel = document.getElementById('container1_AxisLabel_6');
+                expect(dataLabel.textContent == '120.00').toBe(true);
+                done();
+            };
+            chartObj.animationComplete = null;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('checking the X axis label for the global format like p', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container0_AxisLabel_0');
+                expect(dataLabel.textContent == '200.0%').toBe(true);
+                dataLabel = document.getElementById('container0_AxisLabel_4');
+                expect(dataLabel.textContent == '1000.0%').toBe(true);
+                done();
+            };
+            chartObj.animationComplete = null;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('checking the  axis label for the custom format like ${value}', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container_Series_1_Point_0_Text_0');
+                expect(dataLabel.textContent == '#18').toBe(true);
+                dataLabel = document.getElementById('container_Series_1_Point_4_Text_0');
+                expect(dataLabel.textContent == '#52').toBe(true);
+                done();
+            };
+            chartObj.animationComplete = null;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
 }); 

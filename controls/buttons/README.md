@@ -1,6 +1,6 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-buttons/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-buttons)
 
-# ej2-buttons
+# ej2-buttons Component
 
 A package of Syncfusion JavaScript UI Components (Essential JS 2) Button, CheckBox, RadioButton and Switch.
 

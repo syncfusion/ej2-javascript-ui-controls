@@ -378,7 +378,7 @@
         &::before {
           content: '\e847';
         }
-     }
+      }
 
       & .e-stackedcolumn {
         &::before {
@@ -474,7 +474,7 @@
         }
       }
     }
-}
+  }
 
   .e-addchart-ddb {
     & .e-addchart-icon {
@@ -642,7 +642,7 @@
         content: '\e126';
       }
     }
-}
+  }
 
   .e-switch-row-column-icon {
     &::before {
@@ -660,7 +660,7 @@
 
   .e-cf-menu .e-ul .e-menu-item .e-menu-icon {
     font-size: 16px;
-   }
+  }
 
   .e-cf-menu {
     & .e-hlcellrules {
@@ -708,13 +708,13 @@
     & .e-lessthan {
       &::before {
         content: '\e410';
-       }
+      }
     }
 
     & .e-between {
       &::before {
         content: '\e411';
-       }
+      }
     }
 
     & .e-equalto {
@@ -818,8 +818,8 @@
     & .e-pdf {
       &::before {
         content: '\e88b';
-          }
       }
+    }
   }
 
   .e-spreadsheet,
@@ -841,7 +841,7 @@
         content: '\e739';
       }
     }
-}
+  }
 
   .e-undo-icon {
     &::before {
@@ -853,7 +853,7 @@
     &::before {
       content: '\e778';
     }
-}
+  }
 
   .e-sort-filter-ddb,
   .e-spreadsheet-contextmenu {
@@ -886,27 +886,27 @@
     & .e-hyperlink-icon {
       &::before {
         content: '\e72e';
-        }
       }
+    }
 
     & .e-edithyperlink-icon {
       &::before {
         content: '\e7af';
-        }
       }
+    }
 
     & .e-openhyperlink-icon {
       &::before {
         content: '\e7b5';
-        }
       }
+    }
 
     & .e-removehyperlink-icon {
       &::before {
         content: '\e7a8';
-        }
       }
     }
+  }
 
   .e-spreadsheet {
     & .e-sort-delete {
@@ -976,7 +976,7 @@
     & .e-protect-icon {
       &::before {
         content: '\e197';
-       }
+      }
     }
 
     & .e-sort-filter-icon {
@@ -988,7 +988,7 @@
     & .e-password-protect-icon {
       &::before {
         content: '\e88a';
-        }
       }
+    }
   }
 }

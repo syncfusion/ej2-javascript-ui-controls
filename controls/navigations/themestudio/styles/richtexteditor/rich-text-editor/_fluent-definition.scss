@@ -1,4 +1,5 @@
 $skin-name: 'FluentUI' !default;
+
 //Layout Variables Start
 $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
@@ -85,6 +86,7 @@ $rte-big-inline-tmp-color-min-width: 50px;
 $rte-inline-tmp-color-min-width: 36px;
 $rte-big-color-list-span-common-padding-left-right: 7px;
 $rte-default-character-count-opacity: .8;
+
 //Layout Variables End
 
 //Theme Variables Start
@@ -138,10 +140,10 @@ $rte-big-split-btn-active-color-icon-line-height: 38px !default;
 
 $rte-link-valid-color: $danger !default;
 $rte-upload-drag-border-clr: $border-dark !default;
-$rte-img-header-clr: $content-text-color  !default;
+$rte-img-header-clr: $content-text-color !default;
 $rte-drop-text-clr: $content-text-color-alt2 !default;
 $rte-default-character-count-color: $placeholder-text-color !default;
-$rte-warning-character-count-color: $warning  !default;
+$rte-warning-character-count-color: $warning !default;
 $rte-error-character-count-color: $danger !default;
 $rte-img-border: dashed 2px $primary !default;
 $rte-font-family: $font-family !default;
@@ -152,7 +154,7 @@ $rte-ext-tbar-overlay-icons-color: $icon-color-disabled !default;
 $rte-overlay-color: $overlay-bg-color !default;
 $rte-dropdown-selection-color: $secondary-text-color-pressed !default;
 $rte-anchor-color: $primary !default;
-$rte-ext-tbar-overlay-dropdown-color: $content-bg-color-alt4  !default;
+$rte-ext-tbar-overlay-dropdown-color: $content-bg-color-alt4 !default;
 $rte-img-resize-back-color: $primary !default;
 $rte-img-resize-color: $primary-text-color !default;
 $rte-table-header-color: $content-text-color-alt2 !default;
@@ -167,6 +169,7 @@ $rte-table-popup-box: $shadow-lg !default;
 $rte-table-border-color: $border-light !default;
 $rte-table-alternate-color: $content-bg-color-alt1 !default;
 $rte-table-header-bg: $content-bg-color-alt1 !default;
+
 //Theme Variables End
 
 $rte-tb-hover-font-color: $secondary-text-color-hover;
@@ -191,3 +194,5 @@ $rte-big-link-dlg-max-height: 411px !default;
 $rte-big-file-browser-dlg-max-height: 557px !default;
 $rte-big-table-dlg-max-height: 306px !default;
 $rte-big-edit-table-dlg-max-height: 388px !default;
+$rte-drop-text-width: 292px !default;
+$rte-drop-text-mobile-width: 242px !default;

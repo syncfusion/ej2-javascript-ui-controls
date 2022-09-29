@@ -94,6 +94,10 @@ describe('Chart Control', () => {
                     series: [{
                         dataSource: chartData, xName: 'x', yName: 'y', animation: { enable: false }, type: 'SplineArea',
                         name: 'Gold', fill: 'green',
+                        border: {
+                            color: 'yellow',
+                            width: 4
+                        }
                     },
                     ], width: '800',
                     title: 'Chart TS Title', legendSettings: { visible: false }
@@ -109,6 +113,15 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('container_Series_0');
                 expect(svg.getAttribute('stroke') === 'transparent').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh(); unbindResizeEvents(chartObj);
+        });
+        it('Checking stroke for applied border', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg: HTMLElement = document.getElementById('container_Series_border_0');
+                expect(svg.getAttribute('stroke') === 'yellow').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

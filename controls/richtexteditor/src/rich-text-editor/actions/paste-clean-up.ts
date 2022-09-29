@@ -33,9 +33,9 @@ export class PasteCleanup {
     private popupObj: Popup;
     private uploadObj: Uploader;
     private dialogObj: Dialog;
-    private keepRadioButton :RadioButton
-    private cleanRadioButton :RadioButton
-    private plainTextRadioButton :RadioButton
+    private keepRadioButton : RadioButton;
+    private cleanRadioButton : RadioButton;
+    private plainTextRadioButton : RadioButton;
     private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
         'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
         'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
@@ -102,8 +102,9 @@ export class PasteCleanup {
                 const file: File = e && (e.args as ClipboardEvent).clipboardData &&
                 (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
                     ((e.args as ClipboardEvent).clipboardData.items[0].getAsFile() === null ?
-                    (!isNOU((e.args as ClipboardEvent).clipboardData.items[1]) ? (e.args as ClipboardEvent).clipboardData.items[1].getAsFile() : null) :
-                    (e.args as ClipboardEvent).clipboardData.items[0].getAsFile()) : null;
+                        (!isNOU((e.args as ClipboardEvent).clipboardData.items[1]) ?
+                            (e.args as ClipboardEvent).clipboardData.items[1].getAsFile() : null) :
+                        (e.args as ClipboardEvent).clipboardData.items[0].getAsFile()) : null;
                 this.parent.notify(events.paste, {
                     file: file,
                     args: e.args,
@@ -473,7 +474,7 @@ export class PasteCleanup {
     private radioRender(): void {
         this.keepRadioButton = new RadioButton({ label: this.i10n.getConstant('keepFormat'),
             name: 'pasteOption', checked: true });
-            this.keepRadioButton .isStringTemplate = true;
+        this.keepRadioButton .isStringTemplate = true;
         const keepFormatElement: HTMLElement = this.parent.element.querySelector('#keepFormating');
         this.keepRadioButton.appendTo(keepFormatElement);
         this.cleanRadioButton = new RadioButton({ label: this.i10n.getConstant('cleanFormat'), name: 'pasteOption' });
@@ -611,7 +612,7 @@ export class PasteCleanup {
     }
 
     private cleanAppleClass (elem: HTMLElement): HTMLElement {
-        let appleClassElem: NodeListOf<Element> = elem.querySelectorAll('br.Apple-interchange-newline');
+        const appleClassElem: NodeListOf<Element> = elem.querySelectorAll('br.Apple-interchange-newline');
         for (let i = 0; i < appleClassElem.length; i++) {
             detach(appleClassElem[i]);
         }

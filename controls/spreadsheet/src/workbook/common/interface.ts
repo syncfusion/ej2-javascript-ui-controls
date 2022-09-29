@@ -492,6 +492,7 @@ export interface NumberFormatArgs {
     td?: HTMLElement;
     checkDate?: boolean;
     dateObj?: Date;
+    skipRowFill?: boolean;
 }
 /** @hidden */
 export interface DateFormatCheckArgs {
@@ -504,7 +505,6 @@ export interface DateFormatCheckArgs {
     isTime?: boolean;
     dateObj?: Date;
     updatedVal?: string;
-    processCustomDate?: boolean;
 }
 /** @hidden */
 export interface checkCellValid {

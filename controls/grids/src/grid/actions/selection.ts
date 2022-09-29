@@ -97,6 +97,7 @@ export class Selection implements IAction {
     private primaryKey: string;
     private chkField: string;
     private selectedRowState: { [key: number]: boolean } = {};
+    private unSelectedRowState: { [key: number]: boolean } = {};
     private totalRecordsCount: number = 0;
     private chkAllCollec: Object[] = [];
     private isCheckedOnAdd: boolean = false;
@@ -151,7 +152,7 @@ export class Selection implements IAction {
     private isRowDragSelected: boolean = false;
     private evtHandlers: { event: string, handler: Function }[];
     public isPartialSelection: boolean = false;
-
+    private rmtHdrChkbxClicked: boolean = false;
     /**
      * @hidden
      */
@@ -710,6 +711,7 @@ export class Selection implements IAction {
             rowObj.isSelected = chkState;
             if ((chkState && !this.isPartialSelection) || (this.isPartialSelection && rowObj.isSelectable && rowObj.isSelected)) {
                 this.selectedRowState[pKey] = chkState;
+                delete (this.unSelectedRowState[pKey]);
                 if (!this.persistSelectedData.some((data: Object) => this.getPkValue(this.primaryKey, data) === pKey)) {
                     this.persistSelectedData.push(rowObj.data);
                 }
@@ -721,6 +723,9 @@ export class Selection implements IAction {
 
     private updatePersistDelete(pKey: string, isPartialSelection?: boolean): void {
         delete (this.selectedRowState[pKey]);
+        if (this.rmtHdrChkbxClicked) {
+            this.unSelectedRowState[pKey] = true;
+        }
         let index: number;
         const isPresent: boolean = this.persistSelectedData.some((data: Object, i: number) => {
             index = i;
@@ -2645,6 +2650,24 @@ export class Selection implements IAction {
             // (this.getData()).forEach(function (data) {
             //     this.selectedRowState[data[this.primaryKey]] = true;
             // })
+            
+        }
+        else {
+            if (state) {
+                let selectedStateKeys: string[] = Object.keys(this.selectedRowState);
+                let unSelectedRowStateKeys: string[] = Object.keys(this.unSelectedRowState);
+                for (const data of this.parent.currentViewData) {
+                    let key: string = data[this.primaryKey].toString();
+                    if (selectedStateKeys.indexOf(key) === -1 && unSelectedRowStateKeys.indexOf(key) === -1) {
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
+                }
+            }
+            else {
+                this.selectedRowState = {};
+                this.unSelectedRowState = {};
+                this.rmtHdrChkbxClicked = false;
+            }
         }
     }
 
@@ -2741,7 +2764,7 @@ export class Selection implements IAction {
                     const rowObj: Row<Column> = this.parent.getRowObjectFromUID(
                         this.parent.getRows()[e.selectedRow].getAttribute('data-uid'));
                     this.selectedRowState[this.getPkValue(this.primaryKey, rowObj.data)] = rowObj.isSelected = this.isCheckedOnAdd;
-                }
+                    }
                 this.isHdrSelectAllClicked = false;
                 this.setCheckAllState();
             }
@@ -2783,6 +2806,14 @@ export class Selection implements IAction {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             if (this.selectedRecords.length) {
                 this.isPrevRowSelection = true;
+            }
+        }
+        if (this.parent.getDataModule().isRemote() && this.rmtHdrChkbxClicked) {
+            if (this.parent.checkAllRows === "Intermediate") {
+                this.setRowSelection(true);
+            }
+            else if (this.parent.checkAllRows === "Uncheck") {
+                this.setRowSelection(false);
             }
         }
         if (this.parent.enableVirtualization) {
@@ -2854,6 +2885,12 @@ export class Selection implements IAction {
         const stateStr: string = this.getCheckAllStatus(checkBox);
         let state: boolean = stateStr === 'Check';
         this.isHeaderCheckboxClicked = true;
+        if (this.parent.getDataModule().isRemote() && stateStr === "Uncheck") {
+            this.rmtHdrChkbxClicked = true;
+        }
+        else {
+            this.rmtHdrChkbxClicked = false;
+        }
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                 this.getPkValue(this.primaryKey, data) in this.selectedRowState);
@@ -3029,7 +3066,8 @@ export class Selection implements IAction {
                     && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen) || this.isHdrSelectAllClicked))
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && ((!this.parent.getDataModule().isRemote() &&
-                        this.getData().length && checkedLen === this.getData().length) ||
+                        this.getData().length && checkedLen === this.getData().length) || (this.parent.getDataModule().isRemote() &&
+                        !this.isPartialSelection && (checkedLen === this.parent.totalDataRecordsCount)) ||
                         (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))))) {
                     addClass([spanEle], ['e-check']);
                     setChecked(input, true);
@@ -3329,6 +3367,12 @@ export class Selection implements IAction {
         if (this.needColumnSelection) {
             cellIndex = columnIndex;
         }
+        if (this.parent.element.classList.contains('e-gridcell-read') && (e.keyArgs.action === 'tab' || e.keyArgs.action === 'shiftTab'
+            || e.keyArgs.action === 'rightArrow' || e.keyArgs.action === 'leftArrow')) {
+            let targetLabel: string = this.target.getAttribute('aria-label');
+            targetLabel = this.target.innerHTML + ' column header ' + this.parent.getColumnByIndex(cellIndex).field;
+            this.target.setAttribute('aria-label', targetLabel);
+        }
         switch (e.keyArgs.action) {
         case 'downArrow':
         case 'upArrow':
@@ -3476,6 +3520,11 @@ export class Selection implements IAction {
             }
         }
         this.addAttribute(this.target);
+        if (this.parent.element.classList.contains('e-gridcell-read')){
+            let targetLabel: string = this.target.getAttribute('aria-label');
+            targetLabel = this.target.innerHTML;
+            this.target.setAttribute('aria-label', targetLabel);
+        }
     }
 
     private applyRightLeftKey(rowIndex?: number, cellIndex?: number): void {

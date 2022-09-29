@@ -188,7 +188,7 @@ export class BaseToolbar {
             overflowMode: args.mode,
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            cssClass: args.cssClass,
+            cssClass: args.cssClass
         };
     }
 

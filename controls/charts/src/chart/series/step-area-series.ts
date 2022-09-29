@@ -33,6 +33,7 @@ export class StepAreaSeries extends LineBase {
         let xValue: number;
         let lineLength: number;
         let prevPoint: Points = null;
+        let emptyPointDirection:  string = '';
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {
@@ -86,11 +87,23 @@ export class StepAreaSeries extends LineBase {
 
         const options: PathOption = new PathOption(
             series.chart.element.id + '_Series_' + series.index, series.interior,
-            series.border.width, series.border.color, series.opacity, series.dashArray, direction
+            0, 'transparent', series.opacity, series.dashArray, direction
         );
         this.appendLinePath(options, series, '');
+        
+        /**
+          * To draw border for the path directions of area
+          */
+        if (series.border.width != 0) {
+            emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
+            const options: PathOption = new PathOption(
+                series.chart.element.id + '_Series_border_' + series.index, 'transparent',
+                series.border.width, series.border.color ? series.border.color : series.interior, 1, series.dashArray, emptyPointDirection
+            );
+            this.appendLinePath(options, series, '');
+        }
         this.renderMarker(series);
-    }
+    }   
     /**
      * Animates the series.
      *

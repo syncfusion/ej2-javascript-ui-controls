@@ -3,6 +3,8 @@ import { Side } from '../enum/enum';
 import { HorizontalAlignment, VerticalAlignment } from '../enum/enum';
 import { MarginModel } from '../core/appearance-model';
 import { Margin } from '../core/appearance';
+import { DiagramTooltipModel } from '../objects/tooltip-model';
+import { DiagramTooltip } from '../objects/tooltip';
 
 
 /**
@@ -203,6 +205,13 @@ export class UserHandle extends ChildProperty<UserHandle> {
     @Property(false)
     public disableConnectors: boolean;
 
+    /**
+    * Used to show tooltip for user handle on mouse over.
+    *
+    * @default {}
+    */
+    @Complex<DiagramTooltipModel>({}, DiagramTooltip)
+    public tooltip: DiagramTooltipModel;
 
     /**
      *

@@ -1,0 +1,14 @@
+@include export-module('floating-action-button-theme') {
+
+  .e-fab.e-btn {
+    box-shadow: $fab-box-shadow;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.e-active,
+    &:disabled {
+      box-shadow: $fab-box-shadow;
+    }
+  }
+}

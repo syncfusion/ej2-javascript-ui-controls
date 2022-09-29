@@ -5,7 +5,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Indexes } from '../../common/model/base';
 import { IndexesModel } from '../../common/model/base-model';
-import { Chart, Series, SelectionPattern, ChartSeriesType } from '../../chart';
+import { Chart, Series, SelectionPattern, ChartSeriesType} from '../../chart';
 import { AccumulationChart, AccumulationSeries, AccumulationType} from '../../accumulation-chart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 
@@ -63,6 +63,9 @@ export class BaseSelection {
                 }
                 seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
                     this.styleId + '_series_' + series.index + '> *';
+                if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight) {
+                    style.innerHTML += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
+                }
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
                 style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
             }
@@ -443,7 +446,7 @@ export class BaseSelection {
             }
         }
         for (const index of uniqueSeries) {
-            if (chart != null && chart.rangeColorSettings && chart.rangeColorSettings.length > 0) {
+            if (chart != null && chart.rangeColorSettings && chart.rangeColorSettings.length > 0 && chart.rangeColorSettings[0].colors.length > 0 ) {
                 if (this.control.series[0].visible) {
                     visible = true;
                     break;

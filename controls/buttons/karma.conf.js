@@ -20,6 +20,7 @@ module.exports = function (config) {
       "styles/check-box/material.css",
       "styles/radio-button/material.css",
       "styles/switch/material.css",
+      "styles/floating-action-button/material.css",
       { pattern: "src/**/*.js", included: false },     
       { pattern: "spec/**/*.spec.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false }

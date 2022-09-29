@@ -11,6 +11,8 @@ import { LinkCommand } from './../plugin/link';
 import { Alignments } from './../plugin/alignments';
 import { Indents } from './../plugin/indents';
 import { ImageCommand } from './../plugin/image';
+import { AudioCommand } from './../plugin/audio';
+import { VideoCommand } from './../plugin/video';
 import { TableCommand } from './../plugin/table';
 import { SelectionBasedExec } from './../plugin/selection-exec';
 import { InsertHtmlExec } from './../plugin/inserthtml-exec';
@@ -39,6 +41,8 @@ export class EditorManager {
     public alignmentObj: Alignments;
     public indentsObj: Indents;
     public imgObj: ImageCommand;
+    public audioObj: AudioCommand;
+    public videoObj: VideoCommand;
     public tableObj: TableCommand;
     public selectionObj: SelectionBasedExec;
     public inserthtmlObj: InsertHtmlExec;
@@ -67,6 +71,8 @@ export class EditorManager {
         this.indentsObj = new Indents(this);
         this.linkObj = new LinkCommand(this);
         this.imgObj = new ImageCommand(this);
+        this.audioObj = new AudioCommand(this);
+        this.videoObj = new VideoCommand(this);
         this.selectionObj = new SelectionBasedExec(this);
         this.inserthtmlObj = new InsertHtmlExec(this);
         this.insertTextObj = new InsertTextExec(this);
@@ -147,6 +153,14 @@ export class EditorManager {
             break;
         case 'images':
             this.observer.notify(CONSTANT.IMAGE, {
+                command: command, value: value, item: exeValue, event: event, callBack: callBack, selector: selector });
+            break;
+        case 'audios':
+            this.observer.notify(CONSTANT.AUDIO, {
+                command: command, value: value, item: exeValue, event: event, callBack: callBack, selector: selector });
+            break;
+        case 'videos':
+            this.observer.notify(CONSTANT.VIDEO, {
                 command: command, value: value, item: exeValue, event: event, callBack: callBack, selector: selector });
             break;
         case 'table':

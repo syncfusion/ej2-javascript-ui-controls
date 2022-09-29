@@ -374,12 +374,12 @@ export class Islamic {
                 localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
             if (islamicDate.year === parseInt(startHdrYr) - 1 || (year < startFullYr) || (year > endFullYr) && islamicDate.year !== parseInt(endHdrYr)) {
                 addClass([tdEle], OTHERMONTH);
-                if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
-                || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
-                addClass([tdEle], DISABLED); }
             } else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
                 || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);
+                if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
+                || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
+                addClass([tdEle], DISABLED); }
             } else if (!isNullOrUndefined(value) &&
                 (<any>(this.getIslamicDate(localDate))).year ===
                 (<any>(this.getIslamicDate(value))).year) {

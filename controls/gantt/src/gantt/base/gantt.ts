@@ -1729,6 +1729,7 @@ export class Gantt extends Component<HTMLElement>
             if (this.enableValidation) {
                 this.dataOperation.updateGanttData();
             }
+            this.predecessorModule.updateParentPredecessor();
             if (this.dataSource instanceof Object && isCountRequired(this)) {
                 const count: number = getValue('count', this.dataSource);
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
@@ -1739,6 +1740,7 @@ export class Gantt extends Component<HTMLElement>
             if (this.enableValidation) {
                 this.dataOperation.updateGanttData();
             }
+            this.predecessorModule.updateParentPredecessor();
             this.treeGridPane.classList.remove('e-temp-content');
             remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
             this.notify('dataReady', {});
@@ -2045,7 +2047,7 @@ export class Gantt extends Component<HTMLElement>
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 30 }, timelineUnitSize: 66, level: 22,
-                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
@@ -3398,7 +3400,7 @@ export class Gantt extends Component<HTMLElement>
         const tempSplitterSettings: Object = {};
         tempSplitterSettings[type] = value;
         const splitterPosition: string = this.splitterModule.calculateSplitterPosition(
-            tempSplitterSettings, true);
+            tempSplitterSettings);
         const pane1: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
         const pane2: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
         this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';
@@ -3436,7 +3438,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public expandByID(id: number): void {
+    public expandByID(id: number | string): void {
         const args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
@@ -3460,7 +3462,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public collapseByID(id: number): void {
+    public collapseByID(id: number | string): void {
         const args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
@@ -3480,7 +3482,10 @@ export class Gantt extends Component<HTMLElement>
             if (this.viewType === 'ResourceView') {
                 this.editModule.addRowPosition = rowPosition;
                 this.editModule.addRowIndex = rowIndex;
-                const resources: Object[] = data[this.taskFields.resourceInfo];
+                let resources: Object[]
+                if (!isNullOrUndefined(data)) {
+                     resources = data[this.taskFields.resourceInfo];
+                }
                 let id: string;
                 let parentTask: IGanttData;
                 if (!isNullOrUndefined(resources) && resources.length) {
@@ -3673,7 +3678,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public addPredecessor(id: number, predecessorString: string): void {
+    public addPredecessor(id: number | string, predecessorString: string): void {
         const ganttRecord: IGanttData = this.getRecordByID(id.toString());
         if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
             this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
@@ -3686,7 +3691,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public removePredecessor(id: number): void {
+    public removePredecessor(id: number | string): void {
         const ganttRecord: IGanttData = this.getRecordByID(id.toString());
         if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
             this.connectorLineEditModule.removePredecessor(ganttRecord);
@@ -3700,7 +3705,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public updatePredecessor(id: number, predecessorString: string): void {
+    public updatePredecessor(id: number | string, predecessorString: string): void {
         const ganttRecord: IGanttData = this.getRecordByID(id.toString());
         if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
             this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
@@ -3726,7 +3731,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public openEditDialog(taskId?: number): void {
+    public openEditDialog(taskId?: number | string): void {
         if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
             this.editModule.dialogModule.openEditDialog(taskId);
         }
@@ -3978,6 +3983,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public showColumn(keys: string | string[], showBy?: string): void {
         this.treeGrid.showColumns(keys, showBy);
+        this.updateTreeColumns()
     }
 
     /**
@@ -3990,6 +3996,8 @@ export class Gantt extends Component<HTMLElement>
      */
     public hideColumn(keys: string | string[], hideBy?: string): void {
         this.treeGrid.hideColumns(keys, hideBy);
+        this.updateTreeColumns()
+
     }
 
     /**

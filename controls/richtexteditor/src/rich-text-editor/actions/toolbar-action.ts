@@ -60,7 +60,8 @@ export class ToolbarAction {
     private dropDownSelect(e: IDropDownClickArgs): void {
         this.parent.notify(events.selectionRestore, {});
         if (!(document.body.contains(document.body.querySelector('.e-rte-quick-toolbar'))
-            && e.item && (e.item.command === 'Images' || e.item.command === 'Display' || e.item.command as string === 'Table'))) {
+            && e.item && (e.item.command === 'Images' || e.item.command === 'Audios' || e.item.command === 'Videos' ||
+			e.item.command === 'VideoLayoutOption' || e.item.command === 'Display' || e.item.command as string === 'Table'))) {
             const value: string = e.item.controlParent && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar
                 && this.parent.quickToolbarModule.tableQTBar.element.contains(e.item.controlParent.element) ? 'Table' : null;
             if (e.item.command === 'Lists') {

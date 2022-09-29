@@ -8,7 +8,6 @@
   }
 }
 
-
 @include export-module('dashboardlayout-layout') {
   .e-dashboardlayout.e-control {
 
@@ -135,7 +134,6 @@
     }
 
     & .e-panel {
-
       border: $panel-border;
       height: $panel-full-height;
       user-select: none;
@@ -217,13 +215,10 @@
         & .e-header-template {
           float: left;
         }
-
       }
-
     }
 
     .e-holder {
-
       background: $panel-drop-background;
       border: $panel-drop-border;
       border-radius: $panel-drop-border-radius;

@@ -167,8 +167,8 @@ export class Data {
             const resultData: Record<string, any>[] = extend([], e.result, null, true) as Record<string, any>[];
             this.parent.kanbanData = resultData;
         } 
-        else {
-            this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
+        else{
+                this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
                 const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
                 this.parent.kanbanData = resultData;
                 this.parent.notify(events.dataReady, { processedData: resultData });

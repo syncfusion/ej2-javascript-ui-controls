@@ -310,14 +310,12 @@ export class Selection {
     /**
      * To destroy the selection.
      *
-     * @param {Maps} maps - Specifies the maps instance.
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.selectionsettings = null;
         this.removeEventListener();
+        this.maps = null;
     }
 }

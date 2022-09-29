@@ -1,4 +1,5 @@
 @include export-module('radiobutton-layout') {
+
   /*! radiobutton layout */
 
   .e-radio-wrapper {
@@ -7,7 +8,7 @@
     position: relative;
   }
 
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-radio {
     -webkit-appearance: none;
     height: 1px;
@@ -123,7 +124,7 @@
         height: $radio-btn-ripple-size;
         left: $radio-btn-ripple-position;
         position: absolute;
-        top:  $radio-btn-ripple-position;
+        top: $radio-btn-ripple-position;
         width: $radio-btn-ripple-size;
         z-index: 1;
       }
@@ -171,7 +172,7 @@
           & .e-ripple-container {
             left: -8px;
             right: auto;
-            }
+          }
         }
       }
 
@@ -276,8 +277,8 @@
     }
   }
 
-  .e-small .e-radio+label,
-  .e-radio+label.e-small {
+  .e-small .e-radio + label,
+  .e-radio + label.e-small {
 
     & .e-label {
       line-height: $radio-btn-small-line-height;
@@ -337,10 +338,10 @@
         }
       }
     }
-}
+  }
 
-  .e-bigger.e-small .e-radio+label,
-  .e-radio+label.e-bigger.e-small {
+  .e-bigger.e-small .e-radio + label,
+  .e-radio + label.e-bigger.e-small {
 
     & .e-label {
       line-height: $radio-btn-bigger-small-line-height;
@@ -465,15 +466,15 @@
     }
   }
 
-  .e-bigger .e-radio+label {
+  .e-bigger .e-radio + label {
     @if $skin-name == 'FluentUI' {
       border: 1px solid transparent;
       height: 28px;
     }
   }
 
-  .e-bigger .e-radio+label,
-  .e-radio+label.e-bigger {
+  .e-bigger .e-radio + label,
+  .e-radio + label.e-bigger {
 
     & .e-label {
       font-size: $radio-btn-bigger-font-size;

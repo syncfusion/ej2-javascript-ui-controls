@@ -5,7 +5,7 @@
 import { extend } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
-    MonthAgenda, ScheduleModel, ICalendarExport
+    MonthAgenda, ScheduleModel, ICalendarExport, Timezone
 } from '../../../src/schedule/index';
 import { createSchedule, createGroupSchedule, destroy } from '../util.spec';
 import { readonlyEventsData, blockData } from '../base/datasource.spec';
@@ -22,6 +22,39 @@ describe('ICS calendar export', () => {
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
+    });
+
+    describe('String Export checking', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            let timezone: Timezone = new Timezone();
+            let startDate: Date = new Date(2018, 11, 5, 15, 25, 11);
+            let convertedStartDate: Date = timezone.remove(startDate, "UTC");
+            let endDate: Date = new Date(2018, 11, 5, 17, 25, 11);
+            let convertedEndDate: Date = timezone.remove(endDate, "UTC");
+            const events: Record<string, any>[] = [{
+                Id: 12,
+                Subject: 'event',
+                StartTime: convertedStartDate,
+                EndTime: convertedEndDate
+            }];
+            const options: ScheduleModel = { selectedDate: new Date(2017, 9, 19), timezone: 'UTC' };
+            schObj = createSchedule(options, events, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Ics string export checking', () => {
+            let icsstring = schObj.iCalendarExportModule.getCalendarString();
+            icsstring = icsstring.replace(/(\r\n|\n|\r)/gm, "");
+            expect(icsstring).toEqual('BEGIN:VCALENDARPRODID:-//Syncfusion Inc//Scheduler//EN' +
+                'VERSION:2.0CALSCALE:GREGORIAN' +
+                'METHOD:PUBLISHX-WR-CALNAME:CalendarX-WR-TIMEZONE:UTC' +
+                'BEGIN:VEVENTLOCATION:SUMMARY:eventUID:12' +
+                'DTSTART:20181205T152511DTEND:20181205T172511' +
+                'DESCRIPTION:ISREADONLY:falseEND:VEVENTEND:VCALENDAR');
+        });
     });
 
     describe('Export checking', () => {

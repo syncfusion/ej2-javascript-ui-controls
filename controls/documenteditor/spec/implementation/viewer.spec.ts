@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { PageLayoutViewer, DocumentHelper, Page, Point } from '../../src/index';
+import { PageLayoutViewer, DocumentHelper, Page } from '../../src/index';
 import { Editor } from '../../src/index';
 import { Selection } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';

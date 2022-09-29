@@ -40,6 +40,7 @@ export class Agenda extends AgendaBase implements IRenderer {
         const wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         workTd.appendChild(wrap);
         const tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
+        this.setAriaAttributes(tbl);
         wrap.appendChild(tbl);
         const tBody: Element = tbl.querySelector('tbody');
         const agendaDate: Date = util.resetTime(this.parent.selectedDate);

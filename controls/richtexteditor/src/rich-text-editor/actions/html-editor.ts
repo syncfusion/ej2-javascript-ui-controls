@@ -105,16 +105,6 @@ export class HtmlEditor {
             removeClass([this.parent.element], classes.CLS_RTE_READONLY);
         }
     }
-
-    private isTableClassAdded(): void  {
-        let tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
-        for (let i: number = 0; i < tableElement.length; i++) {
-            if(!tableElement[i].classList.contains('e-rte-table')){
-                tableElement[i].classList.add('e-rte-table')
-            }
-        }
-    }
-
     private onSelectionSave(): void {
         const currentDocument: Document = this.contentRenderer.getDocument();
         const range: Range = this.nodeSelectionObj.getRange(currentDocument);
@@ -129,19 +119,59 @@ export class HtmlEditor {
         }
     }
 
+    private isTableClassAdded(): void  {
+        let tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
+        for (let i: number = 0; i < tableElement.length; i++) {
+            if(!tableElement[i].classList.contains('e-rte-table')){
+                tableElement[i].classList.add('e-rte-table')
+            }
+        }
+    }
+
     private onKeyUp(e: NotifyArgs): void {
-        let args: KeyboardEvent = e.args as KeyboardEvent;
+        const args: KeyboardEvent = e.args as KeyboardEvent;
         const restrictKeys: number[] = [8, 9, 13, 16, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
             112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
         const range: Range = this.parent.getRange();
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         let pointer: number;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey) {
+            pointer = range.startOffset;
+            range.startContainer.nodeName === '#text' ? range.startContainer.parentElement.classList.add('currentStartMark') : (range.startContainer as Element).classList.add('currentStartMark');
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
-                pointer = range.startOffset - 1;
+                pointer = range.startOffset === 0 ? range.startOffset : range.startOffset - 1;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
+            }
+            let previousLength: number = this.parent.inputElement.innerHTML.length;
+            let currentLength: number = this.parent.inputElement.innerHTML.replace(regEx, '').length;
+            if (previousLength > currentLength) {
+                let currentChild: Element = this.parent.inputElement.firstChild as Element;
+                while(!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
+                    currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
+                    currentChild = currentChild.nextElementSibling;
+                }
+                if (this.parent.inputElement.querySelector('.currentStartMark').childNodes.length > 1) {
+                    let currentChild = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
+                    for (let i: number = 0; i < currentChild.length; i++) {
+                        if (currentChild[i].nodeName === '#text' && currentChild[i].textContent.length === 0) {
+                            detach(currentChild[i]);
+                            i--;
+                        }
+                    }
+                }
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.parent.contentModule.getDocument(),
+                    this.parent.inputElement.querySelector('.currentStartMark').childNodes[0] as Element,
+                    pointer);
+            }
+            let currentElem: Element = this.parent.inputElement.querySelector('.currentStartMark');
+            if (!isNOU(currentElem)) {
+                currentElem.classList.remove('currentStartMark');
+                if (currentElem.getAttribute('class').trim() === '') {
+                    currentElem.removeAttribute('class');
+                }
             }
             if (!isNOU(range.startContainer.previousSibling) && !isNOU(range.startContainer.previousSibling.parentElement) &&
             range.startContainer.parentElement === range.startContainer.previousSibling.parentElement &&
@@ -284,7 +314,7 @@ export class HtmlEditor {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
                 if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
                     this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
-                    liElement.previousElementSibling : liElement.previousElementSibling.lastElementChild;
+                        liElement.previousElementSibling : liElement.previousElementSibling.lastElementChild;
                     if (!isNullOrUndefined(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR') {
                         this.rangeElement = liElement.lastElementChild;
                         isLiElement = true;
@@ -366,9 +396,9 @@ export class HtmlEditor {
                 else {
                     if (currentRange.startOffset === 0 && currentRange.endOffset === 1 &&
                         this.deleteRangeElement.childNodes[0].nodeName === 'IMG') {
-                            this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-                                this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement, 0, 1);
-                            this.isImageDelete = true;
+                        this.parent.formatter.editorManager.nodeSelection.setSelectionText(
+                            this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement, 0, 1);
+                        this.isImageDelete = true;
                     } else {
                         this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                             this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
@@ -553,6 +583,16 @@ export class HtmlEditor {
                     member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                 });
             }
+            if (item.command === 'Audios') {
+                this.parent.notify(events.audioToolbarAction, {
+                    member: 'audio', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+            }
+            if (item.command === 'Videos') {
+                this.parent.notify(events.videoToolbarAction, {
+                    member: 'video', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+            }
             if (item.command === 'Links') {
                 this.parent.notify(events.linkToolbarAction, {
                     member: 'link', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
@@ -598,6 +638,16 @@ export class HtmlEditor {
             case 'Image':
                 this.parent.notify(events.insertImage, {
                     member: 'image', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+                break;
+            case 'Audio':
+                this.parent.notify(events.insertAudio, {
+                    member: 'audio', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                });
+                break;
+            case 'Video':
+                this.parent.notify(events.insertVideo, {
+                    member: 'video', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
                 });
                 break;
             case 'CreateTable':

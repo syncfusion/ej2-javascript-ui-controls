@@ -640,7 +640,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             index = val.name.indexOf('.') + 1;
             return (index === 0 && (!val.isFile)) ? 'Folder' : ((index !== 0) ? val.name.substr(index).replace(' ', '') : 'undetermined');
         });
-        if (strArr[0] == undefined) {
+        if(strArr[0]== undefined){
             strArr = details.name.split(',').map((val: string) => {
                 index = val.indexOf('.') + 1;
                 return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');

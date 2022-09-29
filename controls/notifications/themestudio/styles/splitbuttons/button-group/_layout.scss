@@ -1,5 +1,5 @@
 @include export-module('button-group-layout') {
-// sass-lint:disable-all
+/* stylelint-disable */
   #{if(&, '&', '*')}.e-btn-group,
   #{if(&, '&', '*')}.e-css.e-btn-group {
     display: -webkit-inline-flex;

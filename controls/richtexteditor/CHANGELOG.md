@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.3.47 (2022-09-29)
+
+### RichTextEditor
+
+#### New Features
+
+- **Insert Audio & Video**: This feature allows the editor to insert `audio` and `video` files from the local path or web URL or embed URL from sources such as YouTube or Vimeo and customize it by using the quick toolbar.
+
+#### Bug Fixes
+
+- `#F177143` - When using the keyboard buttons in RTE to navigate to the next cell, the Table selection is now removed.
+
 ## 20.2.50 (2022-09-20)
 
 ### RichTextEditor

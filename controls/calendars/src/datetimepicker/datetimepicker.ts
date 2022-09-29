@@ -616,13 +616,11 @@ export class DateTimePicker extends DatePicker {
         }
         const ariaAttribute: object = {
             'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-invalid': 'false',
-            'aria-haspopup': 'true', 'aria-activedescendant': 'null',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false',
-            'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off'
+            'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off'
         };
         if (this.inputElement) {
             Input.removeAttributes(<{ [key: string]: string }>ariaAttribute, this.inputElement);
-            this.inputElement.removeAttribute('aria-placeholder');
         }
         if (this.isCalendar()) {
             if (this.popupWrapper) {
@@ -1024,6 +1022,7 @@ export class DateTimePicker extends DatePicker {
                 }
                 addClass([this.inputWrapper.container], [ICONANIMATION]);
                 attributes(this.inputElement, { 'aria-expanded': 'true' });
+                attributes(this.inputElement, {  'aria-owns': this.inputElement.id + '_options'});
                 EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
             }
         });
@@ -1087,7 +1086,7 @@ export class DateTimePicker extends DatePicker {
             }, close: () => {
                 removeClass([this.timeIcon], ACTIVE);
                 this.unWireTimeListEvents();
-                this.inputElement.setAttribute('aria-activedescendant', 'null');
+                this.inputElement.removeAttribute('aria-activedescendant');
                 remove(this.popupObject.element);
                 this.popupObject.destroy();
                 this.dateTimeWrapper.innerHTML = '';
@@ -1295,10 +1294,10 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private setTimeActiveDescendant(): void {
-        if (!isNullOrUndefined(this.selectedElement)) {
+        if (!isNullOrUndefined(this.selectedElement)&& this.value) {
             attributes(this.inputElement, { 'aria-activedescendant': this.selectedElement.getAttribute('id') });
         } else {
-            attributes(this.inputElement, { 'aria-activedescendant': 'null' });
+            this.inputElement.removeAttribute('aria-activedescendant');
         }
     }
     protected addTimeSelection(): void {
@@ -1448,6 +1447,7 @@ export class DateTimePicker extends DatePicker {
             this.popupObject.hide(new Animation(animModel));
             this.inputWrapper.container.classList.remove(ICONANIMATION);
             attributes(this.inputElement, { 'aria-expanded': 'false' });
+            this.inputElement.removeAttribute('aria-owns');
             EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
         }
     }
@@ -1831,7 +1831,6 @@ export class DateTimePicker extends DatePicker {
                 break;
             case 'placeholder':
                 Input.setPlaceholder(newProp.placeholder, this.inputElement);
-                this.inputElement.setAttribute('aria-placeholder', newProp.placeholder);
                 break;
             case 'enabled':
                 Input.setEnabled(this.enabled, this.inputElement);
@@ -1891,7 +1890,7 @@ export class DateTimePicker extends DatePicker {
                 super.onPropertyChanged(newProp, oldProp);
                 break;
             }
-            if (!this.isDynamicValueChanged) {
+            if (!this.isDynamicValueChanged && !this.isIconClicked) {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;

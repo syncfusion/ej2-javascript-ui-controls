@@ -221,7 +221,8 @@ export class PivotUtil {
                     showValueTypeIcon: set.showValueTypeIcon,
                     showEditIcon: set.showEditIcon,
                     allowDragAndDrop: set.allowDragAndDrop,
-                    expandAll: set.expandAll
+                    expandAll: set.expandAll,
+                    groupName: set.groupName
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
                 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -671,7 +672,8 @@ export class PivotUtil {
                     allowDragAndDrop: fieldList[keys[i]].AllowDragAndDrop,
                     isCalculatedField: fieldList[keys[i]].IsCalculatedField,
                     showSubTotals: fieldList[keys[i]].ShowSubTotals,
-                    expandAll: fieldList[keys[i]].expandAll
+                    expandAll: fieldList[keys[i]].expandAll,
+                    groupName: fieldList[keys[i]].groupName
                 };
             }
         }

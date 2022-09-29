@@ -77,8 +77,8 @@ describe('Map layer testing', () => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') >= -1).toBe(true);
                 done();
             };
-            mapObj.print();  
-            mapObj.refresh();  
+            mapObj.print();
+            mapObj.refresh();
         });
         it('Checking a PDF', (): void => {
             mapObj.loaded = (args: ILoadedEventArgs): void => {
@@ -95,7 +95,6 @@ describe('Map layer testing', () => {
                 done();
             };
             mapObj.print();
-            mapObj.refresh();
         });
         it('Checking to print in multiple element', (done: Function) => {
             mapObj.loaded = (args: Object): void => {

@@ -271,6 +271,7 @@ $grid-bigger-header-font-size: $grid-header-font-size !default;
 $grid-content-font-size: 13px !default;
 $grid-header-height: 29px !default;
 $grid-bigger-header-height: $grid-header-height !default;
+
 // $grid-header-icon-color: $grey-dark-font !default;
 $grid-header-icon-color: $grey-white !default;
 $grid-hover-icon-color: $grey-white !default;
@@ -278,6 +279,7 @@ $grid-grouparea-margin: 3px 0 0 18px !default;
 $group-area-padding: 14px 24px !default;
 $group-text-padding-right: 9px !default;
 $group-unpgrouicon-margin-left: 6px !default;
+$grid-group-ungroupicon-margin-left: 6px !default;
 $group-sorticon-margin-left: 6px !default;
 $grid-rtl-group-sorticon-margin-right: 6px !default;
 $grid-grouptopleftcell-border-top: 1px solid !default;
@@ -487,7 +489,7 @@ $grid-rtl-textwrap-column-menu-margin: -13px -13px -23px -3px !default;
 $grid-filter-checkbox-width: 0 !default;
 $grid-filter-checkbox-white-space: nowrap !default;
 
-// group animator 
+// group animator
 $grid-group-animator-bigger-cell-margin: 15px 0 15px 0 !default;
 $grid-group-animator-bigger-drop-height: 54px !default;
 $grid-animator-bigger-area-margin: 15px !default;
@@ -544,7 +546,7 @@ $grid-responsive-search-left-padding: 0 !default;
 $grid-responsive-filter-clear-margin: 4px !default;
 $grid-responsive-toolbar-filter-font-size: 22px !default;
 $grid-responsive-tbar-zero-value: 0 !default;
-$grid-responsive-tbar-btn-bgr-padding: $grid-responsive-tbar-zero-value 6px  !default;
+$grid-responsive-tbar-btn-bgr-padding: $grid-responsive-tbar-zero-value 6px !default;
 $grid-responsive-btn-top: 0 !default;
 $grid-responsive-apply-btn-top: 3px !default;
 
@@ -552,7 +554,7 @@ $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -4px 0 0 !default;
 $grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
-$grid-rowcell-color: rgba($grid-content-font-color,  $grid-conent-font-opacity) !default;
+$grid-rowcell-color: rgba($grid-content-font-color, $grid-conent-font-opacity) !default;
 $grid-reorderarrow-margin-top: -4.5px !default;
 $grid-reorderdownarrow-margin-top: 4.5px !default;
 $grid-reorder-arrow-top-margin: 0 !default;

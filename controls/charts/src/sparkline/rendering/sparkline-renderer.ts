@@ -560,6 +560,7 @@ export class SparklineRenderer {
             id: spark.element.id + '_sparkline_label_g',
             style: 'pointer-events: none;'
         });
+        group.setAttribute('aria-hidden', 'true');
         let g: Element;
         let temp: SparkValues;
         const textId: string = id + 'text_';

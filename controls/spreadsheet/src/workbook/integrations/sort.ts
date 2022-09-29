@@ -53,7 +53,7 @@ export class WorkbookSort {
      * @returns {void} - Sorts range of cells in the sheet.
      */
     private initiateSortHandler(
-        eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs>, previousSort: SortCollectionModel, isMethod?: boolean }): void {
+        eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs>, previousSort: SortCollectionModel }): void {
         const args: BeforeSortEventArgs = eventArgs.args;
         const deferred: Deferred = new Deferred();
         const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(args.range);
@@ -94,14 +94,12 @@ export class WorkbookSort {
             }
         }
         range[0] = containsHeader ? range[0] + 1 : range[0];
+        const cell: number[] = getCellIndexes(sheet.activeCell);
+        const header: string = getColumnHeaderText(cell[1] + 1);
         delete sortOptions.containsHeader;
         let sortDescriptors: SortDescriptor | SortDescriptor[] = sortOptions.sortDescriptors;
-        const sortField: string = Array.isArray(sortDescriptors) ? (sortDescriptors.length > 0 ? sortDescriptors[0].field : null) : 
-        (sortDescriptors ? sortDescriptors.field : null);
-        const columnIndex: number = sortField ? getCellIndexes(sortField + '1')[1] :(eventArgs.isMethod ? range[1] : getCellIndexes(sheet.activeCell)[1]);
-        const header: string = sortField || getColumnHeaderText(columnIndex + 1);
         const address: string = getRangeAddress(range);
-        getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, columnIndex).then((jsonData: { [key: string]: CellModel }[]) => {
+        getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, range[1]).then((jsonData: { [key: string]: CellModel }[]) => {
             const dataManager: DataManager = new DataManager(jsonData);
             const query: Query = new Query();
             if (Array.isArray(sortDescriptors)) { //multi-column sorting.
@@ -154,7 +152,8 @@ export class WorkbookSort {
                 }
                 cell = this.skipBorderOnSorting(rowIdx, j, args.sheet, cell);
                 if (cell && cell.formula) {
-                    cell.formula = getUpdatedFormula([rowIdx, j], [parseInt(data['__rowIndex'] as string, 10) - 1, j], args.sheet, cell);
+                    cell.formula = getUpdatedFormula(
+                        [rowIdx, j], [parseInt(data['__rowIndex'] as string, 10) - 1, j], args.sheet, cell, this.parent, true);
                 }
                 setCell(rowIdx, j, args.sheet, cell);
             }

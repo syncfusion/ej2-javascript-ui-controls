@@ -67,8 +67,6 @@ describe('Schedule Week view', () => {
 
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
-            expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
@@ -93,7 +91,7 @@ describe('Schedule Week view', () => {
         });
 
         it('checking content rows', () => {
-            expect(schObj.activeView.getContentRows().length).toEqual(0);
+            expect(schObj.activeView.getContentRows().length).toEqual(48);
         });
     });
 
@@ -368,7 +366,7 @@ describe('Schedule Week view', () => {
             expect(schObj.currentView).toEqual('Week');
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
-            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const dialogElement: HTMLElement = document.querySelector('.e-dialog' + '.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.classList.contains('e-popup-close')).toBeTruthy();
         });
 
@@ -389,14 +387,6 @@ describe('Schedule Week view', () => {
             schObj.maxDate = new Date(2017, 9, 7, 23, 30, 0);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
-            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
-            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
-            schObj.currentView = 'Day';
-            schObj.minDate = new Date(2017, 9, 4);
-            schObj.selectedDate = new Date(2017, 9, 4);
-            schObj.maxDate = new Date(2017, 9, 4, 23, 59, 0);
-            schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
         });

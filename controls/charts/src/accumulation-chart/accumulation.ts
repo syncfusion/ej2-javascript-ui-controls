@@ -49,7 +49,7 @@ import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
 import { getTitle, AccPointData } from '../common/utils/helper';
 import { Index } from '../common/model/base';
 import { IThemeStyle } from '../chart/model/chart-interface';
-import { IAccResizeEventArgs, IAccBeforeResizeEventArgs } from './model/pie-interface';
+import { IAccResizeEventArgs, IAccBeforeResizeEventArgs, IAccLegendClickEventArgs } from './model/pie-interface';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
 import { ExportUtils } from '../common/utils/export';
@@ -443,6 +443,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public loaded: EmitType<IAccLoadedEventArgs>;
 
     /**
+     * Triggers after legend clicked.
+     *
+     * @event legendClick
+     */
+    @Event()
+    public legendClick: EmitType<IAccLegendClickEventArgs>;
+
+    /**
      * Triggers before accumulation chart load.
      *
      * @event
@@ -818,6 +826,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.element.classList.add('e-accumulationchart');
         }
         this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute('aria-label', this.title);
         this.element.setAttribute("class", this.element.getAttribute("class") + " e-accumulationchart-focused");
         
         const loadEventData: IAccLoadedEventArgs = {
@@ -1735,13 +1744,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      */
     private renderBorder(): void {
         const padding: number = this.border.width;
-        appendChildElement(
-            false, this.svgObject, this.renderer.drawRectangle(new RectOption(
-                this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1,
-                new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))
-            ),
-            this.redraw
-        );
+        let rect: RectOption = new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1,
+        new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding));
+        let htmlObject: Element = this.renderer.drawRectangle(rect);
+        htmlObject.setAttribute('aria-hidden', 'true');
+    appendChildElement(
+        false, this.svgObject,htmlObject ,this.redraw);
         // to draw back ground image for accumulation chart
         const backGroundImage: string = this.backgroundImage;
         if (backGroundImage) {
@@ -1818,10 +1826,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             getAnchor, this.titleCollection, '', 'auto'
         );
         if (!this.subTitle) {
-        options.x = parseInt(this.series[0].radius) >= 80 || getAnchor != 'middle' ? options.x : this.accBaseModule.center.x;
+        options.x = parseInt(this.series[0].radius) >= 80 ? options.x : this.accBaseModule.center.x;
         options.y = parseInt(this.series[0].radius) >= 80 ? options.y : (this.accBaseModule.center.y - this.accBaseModule.radius - padding 
                                                                          - titleHeight - legendHeight - expodeValue);
-        if (this.series[0].type === 'Pie' && getAnchor === 'middle' && parseInt(this.series[0].radius) < 80) {
+        if (this.series[0].type === 'Pie' && parseInt(this.series[0].radius) < 80) {
             options.x = (this.accBaseModule.center.x - (titleSize.width / 2)) < this.initialClipRect.x ?
                         (titleSize.width / 2) + this.initialClipRect.x :
                         (this.accBaseModule.center.x + (titleSize.width / 2)) > (this.initialClipRect.x + this.initialClipRect.width) ?
@@ -1832,7 +1840,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
         );
         if (element) {
-            element.setAttribute('aria-label', this.title);
             element.setAttribute('tabindex', "0");
             element.parentNode.insertBefore(element, this.svgObject.children[1]);
         }

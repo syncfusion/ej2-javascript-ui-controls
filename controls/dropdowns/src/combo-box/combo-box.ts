@@ -391,15 +391,12 @@ export class ComboBox extends DropDownList {
 
     protected getAriaAttributes(): { [key: string]: string } {
         const ariaAttributes: { [key: string]: string } = {
-            'aria-owns': this.element.id + '_options',
             'role': 'combobox',
             'aria-autocomplete': 'both',
             'aria-labelledby': this.hiddenElement.id,
-            'aria-hasPopup': 'true',
             'aria-expanded': 'false',
             'aria-readonly': this.readonly.toString(),
             'autocomplete': 'off',
-            'autocorrect': 'off',
             'autocapitalize': 'off',
             'spellcheck': 'false'
         };
@@ -752,7 +749,7 @@ export class ComboBox extends DropDownList {
         value: string | Object,
         eventArgs: { [key: string]: Object | string | number },
         previousValue: string | number | boolean,
-        e?: MouseEvent| KeyboardEventArgs | TouchEvent): void {
+        e?: MouseEvent| KeyboardEventArgs| TouchEvent): void {
         const fields: FieldSettingsModel = this.fields;
         const item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
         let dataItem: { [key: string]: string | Object } = {};

@@ -1,4 +1,4 @@
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @mixin sibling-theme($left, $right) {
   @if $skin-name == 'material' {
     background: $treeview-drag-line-bg;
@@ -8,6 +8,7 @@
     border-#{$right}-color: transparent;
   }
 }
+
 @mixin active-hover-theme {
   background-color: $treeview-item-active-hover-bg;
   border-color: $treeview-item-active-hover-border-color;
@@ -16,6 +17,7 @@
     box-shadow: $treeview-border-shadow;
   }
 }
+
 @mixin active-editing-theme {
   background-color: $treeview-item-border-color;
   border-color: $treeview-item-border-color;
@@ -24,11 +26,13 @@
     box-shadow: none;
   }
 }
+
 @mixin active-font-weight {
   @if $skin-name == 'highcontrast' {
     font-weight: $treeview-active-font-weight;
   }
 }
+
 @include export-module('treeview-theme') {
   .e-bigger .e-treeview,
   .e-treeview.e-bigger {
@@ -44,7 +48,6 @@
     .e-icon-collapsible::before,
     .e-icon-expandable::before {
       font-size: $treeview-big-icon-font-size;
-
     }
 
     &.e-drag-item {
@@ -52,16 +55,16 @@
       .e-icon-expandable {
         @if $skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-icon-padding;
-    }
-  }
+        }
+      }
 
       .e-list-text {
         @if $skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-text-padding;
+        }
       }
     }
   }
-}
 
   .e-treeview {
     -webkit-tap-highlight-color: transparent;
@@ -84,7 +87,7 @@
       .e-input {
         @include active-font-weight;
       }
-     }
+    }
 
     .e-list-icon,
     .e-list-img {
@@ -192,7 +195,7 @@
     }
 
     .e-list-item.e-active {
-      &> .e-fullrow {
+      & > .e-fullrow {
         background-color: $treeview-item-active-bg;
         border-color: $treeview-item-active-border-color;
       }
@@ -323,14 +326,14 @@
         color: $treeview-drag-item-color;
         @if $skin-name == 'bootstrap4' {
           padding: $treeview-drag-text-padding;
+        }
       }
-    }
 
       .e-text-content {
         @if $skin-name == 'bootstrap4' {
           -webkit-box-shadow: $treeview-drag-item-box-shadow;
           border-radius: .5em;
-          box-shadow:  $treeview-drag-item-box-shadow;
+          box-shadow: $treeview-drag-item-box-shadow;
         }
       }
 
@@ -342,7 +345,7 @@
         background-color: $treeview-drop-count-bg;
         border-color: $treeview-drop-count-border;
         color: $treeview-drop-count-color;
-    }
+      }
 
       &.e-rtl {
 
@@ -355,7 +358,7 @@
           }
         }
       }
-  }
-    // sass-lint:enable no-vendor-prefixes
+    }
+    /* stylelint-enable property-no-vendor-prefix */
   }
 }

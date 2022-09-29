@@ -806,6 +806,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 this.getScrollPosition(scrollParent, draEleTop);
             }
         }
+
         this.dragProcessStarted = true;
         this.prevLeft = left;
         this.prevTop = top;

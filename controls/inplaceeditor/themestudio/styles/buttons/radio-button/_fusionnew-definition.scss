@@ -53,7 +53,7 @@ $radio-btn-checked-background-color: $primary !default;
 $radio-btn-checked-ripple-bgcolor: transparent !default;
 $radio-btn-check-transition: none !default;
 $radio-btn-disabled-border-color: $border-light !default;
-$radio-btn-disabled-checked-border-color: transparent  !default;
+$radio-btn-disabled-checked-border-color: transparent !default;
 $radio-btn-disabled-background-color: $primary-light !default;
 $radio-btn-disabled-color: $content-text-color-disabled !default;
 $radio-btn-disabled-checked-color: $primary-text-color !default;
@@ -68,4 +68,5 @@ $radio-btn-ripple-bgcolor: transparent !default;
 $radio-btn-focus-check-bg-color: $radio-btn-hover-check-bg-color !default;
 $radio-btn-focus-check-border-color: $radio-btn-hover-check-border-color !default;
 $radio-btn-focus-outline: $radio-btn-background-color 0 solid !default;
+
 //enddefault

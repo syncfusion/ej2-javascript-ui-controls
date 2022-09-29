@@ -1804,7 +1804,7 @@ describe('Check Connector annotation Alignment value ', () => {
     it('Rotate', (done: Function) => {
         rotate(diagram, 15, undefined);
         let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        expect(Math.round(label.offsetX) == 220 && Math.round(label.offsetY) == 140 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 34 && label.rotateAngle == 345).toBe(true);
+        expect(Math.round(label.offsetX) == 191 && Math.round(label.offsetY) == 123 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 34 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Select after annotation rotation', (done: Function) => {
@@ -1819,27 +1819,28 @@ describe('Check Connector annotation Alignment value ', () => {
     it('Drag after annotation rotation', (done: Function) => {
         drag(diagram);
         let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        expect(Math.round(label.offsetX) == 223 && Math.round(label.offsetY) == 152 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 59).toBe(true);
+        expect(Math.round(label.offsetX) == 211 && Math.round(label.offsetY) == 130 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 60 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Resize East after annotation rotation', (done: Function) => {
         resize(diagram, 'resizeEast');
         let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        expect(Math.round(label.offsetX) == 230 && Math.round(label.offsetY) == 150 &&  Math.round(label.width) == 71 &&  Math.round(label.height) == 59).toBe(true);
+        expect(Math.round(label.offsetX) == 221 && Math.round(label.offsetY) == 140 &&  Math.round(label.width) == 86 &&  Math.round(label.height) == 60 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Resize West after annotation rotation', (done: Function) => {
         resize(diagram, 'resizeWest');
         let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        expect(Math.round(label.offsetX) == 237 && Math.round(label.offsetY) == 148 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 59).toBe(true);
+        expect(Math.round(label.offsetX) == 231 && Math.round(label.offsetY) == 150 &&  Math.round(label.width) == 57 &&  Math.round(label.height) == 60 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Rotate', (done: Function) => {
         rotate(diagram, 15, undefined);
         let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        expect(Math.round(label.offsetX) == 237 && Math.round(label.offsetY) == 148 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 59 && label.rotateAngle == 10).toBe(true);
+        expect(Math.round(label.offsetX) == 231 && Math.round(label.offsetY) == 150 &&  Math.round(label.width) ==57 &&  Math.round(label.height) == 60 && label.rotateAngle == 75).toBe(true);
         done();
     });
+
 });
 describe('Check Node annotation Alignment value ', () => {
     let diagram: Diagram;
@@ -1977,6 +1978,7 @@ describe('Check Node annotation Alignment value ', () => {
         done();
     });
 });
+
 
 describe('Hyperlink Link target',()=>{
     let diagram: Diagram;

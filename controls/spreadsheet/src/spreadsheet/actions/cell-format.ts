@@ -1,6 +1,6 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue, completeAction } from '../common/index';
-import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
+import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, getSwapRange } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
@@ -15,7 +15,7 @@ export class CellFormat {
     private checkHeight: boolean = false;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
-        this.parent.on(initialLoad, this.addEventListener, this);
+        this.addEventListener();
     }
     private applyCellFormat(args: CellFormatArgs): void {
         if (args.checkHeight) {
@@ -282,6 +282,7 @@ export class CellFormat {
         return size === 'thin' ? 1 : (size === 'medium' ? 2 : (size === 'thick' ? 3 :
             (parseInt(size, 10) ? parseInt(size, 10) : 1)));
     }
+
     private clearObj(args: { options: ClearOptions, isAction?: boolean, isFromUpdateAction?: boolean }): void {
         const options: ClearOptions = args.options;
         const range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
@@ -355,7 +356,9 @@ export class CellFormat {
                                 this.parent.notify(wrapEvent, { range: [sRIdx, sCIdx, sRIdx, sCIdx], wrap: false, sheet: sheet });
                             }
                             if (cell.hyperlink) {
-                                removeClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
+                                if (cellElem) {
+                                    removeClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
+                                }
                                 if (options.type === 'Clear All') {
                                     this.parent.removeHyperlink(sheet.name + '!' + getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]));
                                 }
@@ -386,7 +389,6 @@ export class CellFormat {
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(initialLoad, this.addEventListener);
             this.parent.off(applyCellFormat, this.applyCellFormat);
             this.parent.off(clearViewer, this.clearObj);
         }

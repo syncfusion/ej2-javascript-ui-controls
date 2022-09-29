@@ -327,8 +327,8 @@ export class NodeSelection {
         }
         if (node && constant >= 0 && node.nodeName !== 'html') {
             if (node.nodeType === 3 && node.nodeValue.replace(/\u00a0/g, '&nbsp;') === '&nbsp;') {
-		constant = node.textContent.length;
-	    }
+                constant = node.textContent.length;
+            }
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;

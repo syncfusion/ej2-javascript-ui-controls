@@ -1,4 +1,4 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, BasicModule, SheetModel } from '../../../src/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 
@@ -66,58 +66,76 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
             setTimeout(() => {
                 expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                helper.setAnimationToNone('.e-dialog');
+                helper.click('.e-dlg-closeicon-btn');
+                helper.triggerKeyEvent('keydown', 27, null, false, false, editorElem);
                 done();
             }, 10);
         });
-
+        it('Delete sheet formula reference update checking', (done: Function) => {
+            helper.invoke('updateCell', [{ formula: '=SUM(TestSheet!D2:D4)' }, 'Sheet1!A1']);
+            helper.invoke('updateCell', [{ formula: "=SUM('TestSheet'!D2:D4)" }, 'Sheet1!A2']);
+            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
+            helper.openAndClickCMenuItem(null, null, [2], false, false, null, true, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-item.e-active'));
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            expect(sheet.rows[0].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
+            expect(sheet.rows[0].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
+            done();
+        });
     });
 
     describe('CR Issues ->', () => {
-        describe('I328870 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }] }, done);
+        describe('I328870, fb24295, EJ2-50411, EJ2-52987, EJ2-50389, EJ2-50564,  ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }], activeSheetIndex: 1 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Cannot hide sheet by using HIDE context menu option in Spreadsheet', (done: Function) => {
-                expect(helper.getInstance().activeSheetIndex).toBe(0);
+                expect(helper.getInstance().activeSheetIndex).toBe(1);
                 expect(helper.getInstance().sheets.length).toBe(2);
                 var td = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
                 var coords = td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(function () {
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                     helper.click('#' + helper.id + '_contextmenu li:nth-child(5)');
-                    expect(helper.getInstance().activeSheetIndex).toBe(1);
-                    done();
+                    setTimeout(() => {
+                        expect(helper.getInstance().activeSheetIndex).toBe(0);
+                        done();
+                    });
                 });
             });
-        });
-        describe('fb24295 ->', ()=> {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows:[{ cells: [{ value: '1'},] }, {cells: [{ value: '2'}] }, 
-                { cells: [{ value: '0' }] }, {cells: [{ value: '5' }] } ], selectedRange: 'A1:A4' }] }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Count not getting displayed properly', (done: Function) => {
+            it('fb24295 - Count not getting displayed properly', (done: Function) => {
+                helper.invoke('selectRange', ['D2:D5']);
                 helper.click('#' + helper.id + '_aggregate');
                 expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 4');
                 done();
             });
-        });
-        describe('EJ2-50389, EJ2-50564->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
-            })
-            afterEach(() => {
-                helper.invoke('destroy');
+            it('EJ2-50411 - Aggregate - Count value is changed if we select any option in aggregate', (done: Function) => {
+                helper.invoke('selectRange', ['H2:H11']);
+                helper.click('#' + helper.id + '_aggregate');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 10');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                helper.click('#' + helper.id + '_aggregate');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 10');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li:nth-child(2)').textContent).toBe('Sum: 554');
+                done();
             });
-            it('Cannot Rename the sheet by using RENAME context menu option in Spreadsheet', (done: Function) => {
+            it('EJ2-52987 - Sheet Name Does Not Support Carrot Bracket->', (done: Function) => {
+                helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                editorElem.click();
+                editorElem.value = '<TestSheet>';
+                helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
+                expect(helper.getInstance().sheets[0].name.toString()).toBe('<TestSheet>');
+                done();
+            });
+            it('EJ2-50389, EJ2-50564 - Cannot Rename the sheet by using RENAME context menu option in Spreadsheet', (done: Function) => {
                 helper.click('.e-add-sheet-tab');
                 expect(helper.getInstance().activeSheetIndex).toBe(1);
-                expect(helper.getInstance().sheets.length).toBe(2);
+                expect(helper.getInstance().sheets.length).toBe(3);
                 setTimeout(() => {
                     helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
                     let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
@@ -127,45 +145,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                     expect(helper.getInstance().sheets[1].name).toBe('New Sheet');
                     done();
                 });
-            });
-        });
-        describe('EJ2-50411->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ ranges: [{ dataSource: defaultData }],selectedRange: 'H2:H11' }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Aggregate - Count value is changed if we select any option in aggregate', (done: Function) => {
-                helper.click('#' + helper.id + '_aggregate');
-                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 10');
-                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
-                helper.click('#' + helper.id + '_aggregate');
-                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 10');
-                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li:nth-child(2)').textContent).toBe('Sum: 554');
-                done();
-            });
-        });
-        describe('EJ2-52987->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({
-                    sheets: [{ }]
-                }, done);
-            });
-            afterEach(() => {
-                helper.invoke('destroy');
-            });
-            it('Sheet Name Does Not Support Carrot Bracket->', (done: Function) => {
-                helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
-                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
-                editorElem.click();
-                editorElem.value = '<TestSheet>';
-                helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
-                expect(helper.getInstance().sheets[0].name.toString()).toBe('<TestSheet>');
-                done();
-            });
+            }); 
         });
         describe('CR-Issues ->', () => {
             describe('EJ2-60868 ->', () => {

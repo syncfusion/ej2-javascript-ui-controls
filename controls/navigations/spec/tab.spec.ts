@@ -374,6 +374,74 @@ describe('Tab Control', () => {
             expect(tab.items[0].header.iconPosition).toEqual('right');
         });
     });
+
+    describe('Disable Animation testing', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('None animation', () => {
+            tab = new Tab({
+                width: '300px',
+                height: '250px',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ],
+                animation: {
+                    previous: { effect: 'None', duration: 400, easing: 'ease' },
+                    next: { effect: 'None', duration: 400, easing: 'ease' }
+                }
+            }, '#ej2Tab');
+            let element1: HTMLElement = document.getElementById('e-item-ej2Tab_0');
+            tab.select(element1);
+            let element2: HTMLElement = document.getElementById('e-item-ej2Tab_1');
+            tab.select(element2);
+            let element3: HTMLElement = document.getElementById('e-item-ej2Tab_2');
+            tab.select(element3);
+            expect(tab.animation.previous.effect).toEqual('None');
+            expect(tab.animation.next.effect).toEqual('None');
+            let content: HTMLElement[] = [].slice.call(document.querySelectorAll('.e-content .e-active'));
+            expect(content[0].innerText).toEqual('Content3');
+            expect(content.length).toEqual(1);
+        });
+        it('Handling null case in animation', () => {
+            tab = new Tab({
+                width: '300px',
+                height: '250px',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ],
+                animation: {
+                    previous: { effect: null, duration: 400, easing: 'ease' },
+                    next: { effect: null, duration: 400, easing: 'ease' }
+                }
+            }, '#ej2Tab');
+            let element1: HTMLElement = document.getElementById('e-item-ej2Tab_0');
+            tab.select(element1);
+            let element2: HTMLElement = document.getElementById('e-item-ej2Tab_1');
+            tab.select(element2);
+            let element3: HTMLElement = document.getElementById('e-item-ej2Tab_2');
+            tab.select(element3);
+            expect(tab.animation.previous.effect).toEqual(null);
+            expect(tab.animation.next.effect).toEqual(null);
+            let content: HTMLElement[] = [].slice.call(document.querySelectorAll('.e-content .e-active'));
+            expect(content[0].innerText).toEqual('Content3');
+            expect(content.length).toEqual(1);
+        });
+    });
+
     describe('Width property testing', () => {
         let tab: Tab;
         beforeEach((): void => {

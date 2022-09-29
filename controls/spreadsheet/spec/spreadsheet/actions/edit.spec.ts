@@ -122,7 +122,7 @@ describe('Editing ->', () => {
                 expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Test 2');
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B3:B3');
                 done();
-            });
+            }, 10);
         });
 
         it('F2', (done: Function) => {
@@ -133,7 +133,7 @@ describe('Editing ->', () => {
                 expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBe('Test 3');
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A3:A3');
                 done();
-            });
+            }, 10);
         });
 
         it('Delete', (done: Function) => {
@@ -141,7 +141,7 @@ describe('Editing ->', () => {
             setTimeout(() => {
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[0])).toBe('{}');
                 done();
-            });
+            }, 5);
         });
 
         it('Cell template', (done: Function) => {
@@ -191,7 +191,7 @@ describe('Editing ->', () => {
             expect(helper.getInstance().editModule.isEdit).toBeTruthy();
             helper.invoke('endEdit');
             done();
-        });
+        }, 20);
 
         it('Alt enter', (done: Function) => {
             helper.invoke('selectRange', ['F2']);
@@ -229,7 +229,7 @@ describe('Editing ->', () => {
             helper.triggerKeyNativeEvent(13);
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[5])).toBe('{"value":7,"formula":"=sum(G4)"}');
             done();
-        });
+        }, 20);
     });
 
     describe('Rtl ->', () => {
@@ -325,7 +325,7 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I309407, EJ2-60617, EJ2-62809, EJ2-62885 ->', () => {
+        describe('I309407, EJ2-60617, EJ2-6280, EJ2-628859 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }], height: 1000,
@@ -339,6 +339,7 @@ describe('Editing ->', () => {
                 helper.invoke('destroy');
             });
             it('curser is moving to the 4th cell when click on the second cell after entering value in first cell', (done: Function) => {
+                helper.invoke('selectRange', ['A1'])
                 const spreadsheet: any = helper.getInstance();
                 expect(spreadsheet.sheets[0].selectedRange).toEqual('A1:A1');
                 spreadsheet.editModule.startEdit();
@@ -347,7 +348,7 @@ describe('Editing ->', () => {
                 setTimeout((): void => {
                     expect(spreadsheet.sheets[0].selectedRange).toEqual('A2:A2');
                     done();
-                });
+                }, 10);
             });
 
             it('Edit dot(.) in a cell changes to NaN issue', (done: Function) => {
@@ -380,7 +381,7 @@ describe('Editing ->', () => {
         describe('I290629 ->', () => {
             beforeEach((done: Function) => {
                 model = {
-                    sheets: [{ ranges: [{ dataSource: defaultData }] }], height: 1000,
+                    sheets: [{ ranges: [{ dataSource: defaultData }], topLeftCell: 'A73' }], height: 1000,
                     created: (): void => {
                         helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
                     }
@@ -391,17 +392,14 @@ describe('Editing ->', () => {
                 helper.invoke('destroy');
             });
             it('Editing issue occurs in edge & chrome browser from my laptop - "Script error throws while editing after scrolling"', (done: Function) => {
-                helper.invoke('goTo', ['A73']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].topLeftCell).toEqual('A73');
+                helper.edit('C90', 'Test');
                 setTimeout((): void => {
-                    const spreadsheet: Spreadsheet = helper.getInstance();
-                    expect(spreadsheet.sheets[0].topLeftCell).toEqual('A73');
-                    helper.edit('C90', 'Test');
-                    setTimeout((): void => {
-                        expect(spreadsheet.sheets[0].rows[89].cells[2].value).toEqual('Test');
-                        expect(helper.invoke('getCell', [89, 2]).textContent).toEqual('Test');
-                        expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('Test');
-                        done();
-                    });
+                    expect(spreadsheet.sheets[0].rows[89].cells[2].value).toEqual('Test');
+                    expect(helper.invoke('getCell', [89, 2]).textContent).toEqual('Test');
+                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('Test');
+                    done();
                 });
             });
         });
@@ -628,139 +626,118 @@ describe('Editing ->', () => {
                 });
             });
         });
-        // describe('EJ2-49472', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ colCount: 10, rowCount: 90, ranges: [{ dataSource: defaultData }] }],
-        //                 scrollSettings: {enableVirtualization: false, isFinite: true }
-        //             }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Spreadsheet scrolls up on Enter/Tab keypress while editing the cells', (done: Function) => {
-        //         helper.invoke('goTo', ['A85']);
-        //         helper.edit('A85', '1');
-        //         setTimeout(() => {
-        //             helper.triggerKeyNativeEvent(13);
-        //             setTimeout(() => {
-        //                 helper.edit('A86', '1');
-        //                 helper.triggerKeyNativeEvent(9);
-        //                 setTimeout(() => {
-        //                     helper.edit('B86', '1');
-        //                     expect(helper.getInstance().sheets[0].selectedRange).toEqual('B86:B86');
-        //                     done();
-        //                 });
-        //             });
-        //         });
-        //     });
-        // });
-        // describe('EJ2-53885->', () => {
-        //     beforeEach((done: Function) => {
-        //         model = {
-        //             sheets: [{ selectedRange: 'B2' }],
-        //             cellEditing: (args: CellEditEventArgs):  void => {
-        //                 expect(args.value).toEqual('CellSave');
-        //                 expect(args.oldValue).toEqual('');
-        //             }
-        //         }
-        //         helper.initializeSpreadsheet(model, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('cellEditing event args does not contains edited value->', (done: Function) => {
-        //         helper.invoke('startEdit');
-        //         helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-54233->', () => {
-        //     let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             actionBegin: (args: any): void => {
-        //                 if (args.action === 'cellSave') { actionBeginCalled = true; }
-        //             },
-        //             actionComplete: (args: any): void => {
-        //                 if (args.action === 'cellSave') { actionCompleteCalled = true; }
-        //             },
-        //             cellSave: (args: CellSaveEventArgs): void => {
-        //                 expect(args.address).toEqual('Sheet1!A1');
-        //                 expect(args.oldValue).toBeUndefined;
-        //                 expect(args.value as any).toEqual('CellSave');
-        //             }
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Events not triggered in uniformity when cellEdit and save action.->', (done: Function) => {
-        //         expect(actionBeginCalled).toBeFalsy();
-        //         expect(actionCompleteCalled).toBeFalsy();
-        //         helper.invoke('startEdit');
-        //         helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
-        //         helper.triggerKeyNativeEvent(13);
-        //         expect(actionBeginCalled).toBeTruthy();
-        //         expect(actionCompleteCalled).toBeTruthy();
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-55703->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             beforeCellSave: (args: CellEditEventArgs) => {
-        //                 args.value = 'New value';
-        //               }
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Not able to change the cell value in the beforeCellSave event while saving the edited value.->', (done: Function) => {
-        //         helper.invoke('startEdit');
-        //         helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
-        //         helper.triggerKeyNativeEvent(13);
-        //         expect(helper.invoke('getCell', [0, 0]).textContent).toBe('New value');
-        //         done();
-        //     });
-        // });
-        // describe('EJ2-55046->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange:'G1:G1000' }]
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('script error on cell delete issues->', (done: Function) => {
-        //         helper.triggerKeyNativeEvent(46);
-        //         setTimeout(() => {
-        //             expect(helper.invoke('getCell', [0, 6]).textContent).toBeUndefined;
-        //             done();
-        //         });
-        //     });
-        // });
-        // describe('EJ2-56562->', () => {
-        //     beforeEach((done: Function) => {
-        //         helper.initializeSpreadsheet({
-        //             sheets: [{ ranges: [{ dataSource: defaultData }] }],
-        //             actionBegin(args){
-        //                 if(args.action == "cellDelete"){
-        //                     args.args.eventArgs.cancel = true;
-        //                 }
-        //             }
-        //         }, done);
-        //     });
-        //     afterEach(() => {
-        //         helper.invoke('destroy');
-        //     });
-        //     it('Need to provide cancel argument in action begin for delete cell action->', (done: Function) => {
-        //         helper.triggerKeyNativeEvent(46);
-        //         expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
-        //         done();
-        //     });
-        // });
+        describe('EJ2-55046, EJ2-54233, EJ2-56562, EJ2-49472, EJ2-55703,', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ colCount: 20, rowCount: 90, ranges: [{ dataSource: defaultData }] }],
+                        scrollSettings: {enableVirtualization: false, isFinite: true }
+                    }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('EJ2-55046 - script error on cell delete issues->', (done: Function) => {
+                helper.invoke('selectRange', ['G1:G1000']);
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 6]).textContent).toBeUndefined;
+                    done();
+                });
+            });
+
+            it('EJ2-54233 - Events not triggered in uniformity when cellEdit and save action.->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                let actionBeginCalled: boolean = false; let actionCompleteCalled: boolean = false;
+                const actionBegin: any = spreadsheet.actionBegin;
+                const actionComplete: any = spreadsheet.actionComplete;
+                const cellSave: any = spreadsheet.cellSave;
+                spreadsheet.actionBegin = (args: any): void => {
+                    if (args.action === 'cellSave') { actionBeginCalled = true; }
+                },
+                spreadsheet.actionComplete = (args: any): void => {
+                    if (args.action === 'cellSave') { actionCompleteCalled = true; }
+                },
+                spreadsheet.cellSave = (args: CellSaveEventArgs): void => {
+                    expect(args.address).toEqual('Sheet1!A1');
+                    expect(args.oldValue).toBeUndefined;
+                    expect(args.value as any).toEqual('CellSave');
+                }
+                expect(actionBeginCalled).toBeFalsy();
+                expect(actionCompleteCalled).toBeFalsy();
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    expect(actionBeginCalled).toBeTruthy();
+                    expect(actionCompleteCalled).toBeTruthy();
+                    spreadsheet.actionBegin = actionBegin;
+                    spreadsheet.actionComplete = actionComplete;
+                    spreadsheet.cellSave = cellSave;
+                    done();
+                });
+            });
+
+            it('EJ2-56562 - Need to provide cancel argument in action begin for delete cell action->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.actionBegin = (args: any): void => {
+                    if (args.action === 'cellDelete') {  
+                        args.args.eventArgs.cancel = true; }
+                }
+                helper.invoke('selectRange', ['B1']);
+                helper.triggerKeyNativeEvent(46);
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Date');
+                done();
+            });
+
+            it('EJ2-49472 - Spreadsheet scrolls up on Enter/Tab keypress while editing the cells', (done: Function) => {
+                helper.invoke('goTo', ['A85']);
+                helper.edit('A85', '1');
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    helper.edit('A86', '1');
+                    helper.triggerKeyNativeEvent(9);
+                    setTimeout(() => {
+                        helper.edit('B86', '1');
+                        expect(helper.getInstance().sheets[0].selectedRange).toEqual('B86:B86');
+                        done();
+                    });
+                });
+            });
+
+            it('EJ2-55703 - Not able to change the cell value in the beforeCellSave event while saving the edited value.->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.beforeCellSave = (args: CellEditEventArgs): void => {
+                    args.value = 'New value';
+                }
+                helper.invoke('goTo', ['A1']);
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
+                helper.triggerKeyNativeEvent(13);
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('New value');
+                done();
+            });
+        });
+        describe('EJ2-53885->', () => {
+            beforeEach((done: Function) => {
+                model = {
+                    sheets: [{ selectedRange: 'B2' }],
+                    cellEditing: (args: CellEditEventArgs):  void => {
+                        expect(args.value).toEqual('CellSave');
+                        expect(args.oldValue).toEqual('');
+                    }
+                }
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('cellEditing event args does not contains edited value->', (done: Function) => {
+                helper.invoke('startEdit');
+                helper.getElement('.e-spreadsheet-edit').textContent = 'CellSave';
+                done();
+            });
+        });
     });
 });

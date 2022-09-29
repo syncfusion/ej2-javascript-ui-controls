@@ -8,6 +8,8 @@
  * @hidden
  */
 export const IMAGE: string = 'INSERT-IMAGE';
+export const AUDIO: string = 'INSERT-AUDIO';
+export const VIDEO: string = 'INSERT-VIDEO';
 
 export const TABLE: string = 'INSERT-TABLE';
 
@@ -109,4 +111,5 @@ export const CLEAR_TYPE: string = 'clear-type';
  *
  * @hidden
  */
-export const SELF_CLOSING_TAGS: string[] = ['area', 'base' ,'br', 'embed', 'hr', 'img', 'input', 'param', 'source', 'track', 'wbr', 'iframe', 'td'];
+export const SELF_CLOSING_TAGS: string[] = ['area', 'base', 'br', 'embed', 'hr', 'img', 'input', 'param', 'source', 'track', 'wbr', 'iframe', 'td'];
+

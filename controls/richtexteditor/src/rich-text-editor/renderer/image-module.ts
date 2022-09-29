@@ -400,8 +400,8 @@ export class Image {
             img.style.minWidth = this.parent.insertImageSettings.minWidth === 0 ? '20px' : formatUnit(this.parent.insertImageSettings.minWidth);
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    var original = img.offsetWidth + this.mouseX;
-                    var finalWidthByPerc = (original / img.offsetWidth) *(parseFloat(img.style.width).toString() == 'NaN' ?  (img.offsetWidth/(parseFloat(getComputedStyle( this.parent.element).width))*100) : parseFloat(img.style.width));
+                    const original = img.offsetWidth + this.mouseX;
+                    const finalWidthByPerc = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?  (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) : parseFloat(img.style.width));
                     img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
                     img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
@@ -411,12 +411,13 @@ export class Image {
             } else if (img.style.width === '' && img.style.height !== '') {
                 img.style.height = expectedY + 'px';
             } else if (img.style.width !== '' && img.style.height === '') {
-                let currentWidth: number = ((width / height * expectedY) + width / height) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
-                ((width / height * expectedY) + width / height) : (this.parent.inputElement.getBoundingClientRect().right - 32);
+                const currentWidth: number = ((width / height * expectedY) + width / height) <
+                    (this.parent.inputElement.getBoundingClientRect().right - 32) ?
+                    ((width / height * expectedY) + width / height) : (this.parent.inputElement.getBoundingClientRect().right - 32);
                 img.style.width = currentWidth.toString() + 'px';
             } else if (img.style.width !== '') {
-                let currentWidth: number = (width / height * expectedY) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
-                (width / height * expectedY) : (this.parent.inputElement.getBoundingClientRect().right - 32);
+                const currentWidth: number = (width / height * expectedY) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
+                    (width / height * expectedY) : (this.parent.inputElement.getBoundingClientRect().right - 32);
                 img.style.width = currentWidth + 'px';
                 img.style.height = expectedY + 'px';
             } else {
@@ -430,8 +431,10 @@ export class Image {
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    var original = img.offsetWidth + this.mouseX;
-                    var finalWidthByPerc =(original /img.offsetWidth)*(parseFloat(img.style.width).toString() == 'NaN' ?  (img.offsetWidth/(parseFloat(getComputedStyle( this.parent.element).width))*100) : parseFloat(img.style.width));
+                    const original = img.offsetWidth + this.mouseX;
+                    const finalWidthByPerc = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?
+                        (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) :
+                        parseFloat(img.style.width));
                     img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
                     img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
@@ -1185,8 +1188,8 @@ export class Image {
         }
         this.removingImgName = absoluteUrl.replace(/^.*[\\\/]/, '');
         const xhr: XMLHttpRequest = new XMLHttpRequest();
-        xhr.addEventListener("readystatechange", function() {
-            if (this.readyState == 4 && this.status == 200) {
+        xhr.addEventListener('readystatechange', function() {
+            if (this.readyState === 4 && this.status === 200) {
                 proxy.triggerPost(this.response);
             }
         });
@@ -1564,11 +1567,11 @@ export class Image {
         const imgWidth: string = this.i10n.getConstant('imageWidth');
         const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' + ' ' + this.parent.cssClass });
         const widthVal: string = isNullOrUndefined(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
-            selectNode.style.width !== '') ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
-            this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
+                selectNode.style.width !== '') ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
+                this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
         const heightVal: string = isNullOrUndefined(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
             selectNode.style.height !== '') ? selectNode.style.height : !isNullOrUndefined(this.changedHeightValue) ?
-            this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
+                this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
         this.changedWidthValue = null;
         this.changedHeightValue = null;
         const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + imgWidth +
@@ -2166,7 +2169,7 @@ export class Image {
                 }, 900);
             },
             success: (e: ImageSuccessEventArgs) => {
-                if(e.operation === "cancel"){
+                if (e.operation === 'cancel'){
                     return;
                 }
                 isUploading = false;
@@ -2315,6 +2318,7 @@ export class Image {
     private moduleDestroy(): void {
         this.parent = null;
     }
+
     /**
      * For internal use only - Get the module name.
      *

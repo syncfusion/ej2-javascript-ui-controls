@@ -1307,7 +1307,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         };
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
-        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> | boolean} = { args: eventArgs, promise: promise, isMethod: true };
+        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> } = { args: eventArgs, promise: promise };
         this.notify(events.initiateSort, sortArgs);
         return sortArgs.promise as Promise<SortEventArgs>;
     }

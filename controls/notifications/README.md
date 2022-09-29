@@ -28,6 +28,15 @@ Badges can be used to alert users about new or unread messages, notifications, a
 * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=badge#/material/badge/default.html)
 * [Product Page](https://www.syncfusion.com/javascript-ui-controls/badge/?utm_source=npm&utm_campaign)
 
+### Message
+
+The Message component has an option to display the messages with severity by differentiating icons and colors to denote the importance and context of the message to the end user.
+
+* [Getting Started](https://ej2.syncfusion.com/documentation/message/getting-started/?lang=typescript&utm_source=npm&utm_campaign=message)
+* [API References](https://ej2.syncfusion.com/documentation/api/message/?utm_source=npm&utm_campaign=message)
+* [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=message#/bootstrap5/message/default.html)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/message/?utm_source=npm&utm_campaign=message)
+
 ### Toasts
 
 The toast is a small container, in which user can show a single or multiple informative lines with actions.
@@ -56,6 +65,13 @@ The toast is a small container, in which user can show a single or multiple info
 2. **Predefined Colours** - Provided 8 predefined situational colours of Badges.
 3. **Position** - Supports 3 different positions, such as `default`, `top` and `bottom`.
 
+### Message
+
+1. **Severity** - Provides an option to display the message with distinctive icons and colors based on the severity type. The available severity types such as **Normal**, **Success**, **Info**, **Warning**, and **Error**.
+2. **Variants** - Provides an option to display the message with predefined appearance variants. The available variants such as **Text**, **Outlined**, and **Filled**.
+3. **Visibility** - Provides an option to show or hide the message.
+4. **Template** - Provides an option to customize the content of the message.
+
 ### Toasts
 
 1. **Position** - Enables to position the toast anywhere on the screen. It has a predefined set of positions and custom inputs for position based on the target.
@@ -81,4 +97,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/notifications/CHANGELOG.md?utm_source=npm&utm_campaign=notification)
 
-© Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

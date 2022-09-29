@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-notifications",
-	"version": "20.2.45",
+	"version": "19.16.0",
 	"description": "A package of Essential JS 2 notification components such as Toast and Badge which used to notify important information to end-users.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-notifications.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-notifications.es2015.js",
+	"es2015": "./dist/es6/ej2-notifications.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*",

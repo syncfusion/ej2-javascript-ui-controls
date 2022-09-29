@@ -1662,7 +1662,7 @@ describe('Grid base module', () => {
             gridObj.actionComplete = actionComplete;
             gridObj.clearGridActions();
         });
-
+        
         it('check the group and sort columns', () => {
             // Check parent cssClass name
             expect(gridObj.element.classList.contains('grid1')).toBeTruthy();
@@ -1679,28 +1679,55 @@ describe('Grid base module', () => {
         });
     });
 
-    describe('EJ2- 621260 - setRowData Method not working properly in Frozen Grid=>', () => {
+    describe('Normal Grid Mask Row', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: data,
-                    frozenRows: 2,
-                    columns: [{ field: 'OrderID', type: 'number', isPrimaryKey: true, freeze: 'Left'  },
-                    { field: 'CustomerID', type: 'string' },
-                    { field: 'Freight', format: 'C2', type: 'number', allowFiltering: false },
-                    { field: 'OrderDate', format: 'yMd' },
-                    { field: 'Verified', freeze: 'Right' }
-                    ],
-                },
-                done);
+                    dataSource: data.slice(0, 10),
+                    loadingIndicator: { indicatorType: 'Shimmer' },
+                    height: 300,
+                    columns: [
+                        { field: 'OrderID'},
+                        { field: 'CustomerID'},
+                        { field: 'EmployeeID'},
+                    ]
+                }, done);
         });
-        it('update particular row', () => {
-            gridObj.setRowData(10250, { OrderID: 1249, CustomerID: 'new value', CustomerName: 'accc' });
-            let selRow: any = gridObj.contentModule.getRows()[2];
-            expect((<any>selRow).data.CustomerID).toEqual('new value');
+        it('Show Mask Row', () => {
+            gridObj.showMaskRow();
+            (gridObj as any).translateMaskRow({target: gridObj.getContent().firstChild});
+            expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
+        });
+        it('Refresh Mask Row', () => {
+            (gridObj as any).refreshMaskRow();
+            expect(gridObj.getContent().querySelector('.e-masked-table').clientWidth).toBe(gridObj.getContent().querySelector('.e-table:not(.e-masked-table)').clientWidth);
+        });
+        it('Remove Mask Row', () => {
+            gridObj.removeMaskRow();
+            expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Auto generated columns Mask Row for coverage', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 10),
+                    loadingIndicator: { indicatorType: 'Shimmer' },
+                    height: 300
+                }, done);
+        });
+        it('Create Empty Mask Table', () => {
+            expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });

@@ -1850,6 +1850,9 @@ export class Legend {
                                 '_BubbleIndex_' + j + '_dataIndex_' + shape['dataIndex'], this.maps.element.id) : querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
                                 '_MarkerIndex_' + shape['markerIndex'] + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
                             if (!isNullOrUndefined(shape['shape']) && shape['shape'] === 'Balloon') {
+                                mapElement = this.maps.legendSettings.type === 'Bubbles' ? querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
+                                '_BubbleIndex_' + j + '_dataIndex_' + shape['dataIndex'] + '_Group', this.maps.element.id) : querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
+                                '_MarkerIndex_' + shape['markerIndex'] + '_dataIndex_' + shape['dataIndex'] + '_Group', this.maps.element.id);
                                 mapElement = mapElement.children[0];
                             }
                             if (isVisible && mapElement !== null) {
@@ -1983,6 +1986,9 @@ export class Legend {
                                 '_BubbleIndex_' + j + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id) : querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
                                 '_MarkerIndex_' + j + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id);
                             if (!isNullOrUndefined(mapdata['shape']) && mapdata['shape'] === 'Balloon') {
+                                LegendInteractive = this.maps.legendSettings.type === 'Bubbles' ? querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
+                                '_BubbleIndex_' + j + '_dataIndex_' + mapdata['dataIndex'] + '_Group', this.maps.element.id) : querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
+                                '_MarkerIndex_' + j + '_dataIndex_' + mapdata['dataIndex'] + '_Group', this.maps.element.id);
                                 LegendInteractive = LegendInteractive.children[0];
                             }
                             if (isVisible && LegendInteractive !== null) {
@@ -2202,14 +2208,29 @@ export class Legend {
     /**
      * To destroy the legend.
      *
-     * @param {Maps} maps - Specifies the instance of the maps
      * @returns {void}
      * @private
      */
-    public destroy(maps: Maps): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.legendCollection = [];
+        this.legendRenderingCollections = [];
+        this.translate = null;
+        this.legendBorderRect = null;
+        this.initialMapAreaRect = null;
+        this.legendTotalRect = null;
+        this.totalPages = [];
+        this.legendItemRect = null;
+        this.legendGroup = null;
+        this.shapeHighlightCollection = [];
+        this.legendHighlightCollection = [];
+        this.shapePreviousColor = [];
+        this.selectedNonLegendShapes = [];
+        this.legendLinearGradient = null;
+        this.currentLayer = null;
+        this.defsElement = null;
+        this.legendElement = [];
+        this.oldShapeElement = null;
         this.removeEventListener();
+        this.maps = null;
     }
 }

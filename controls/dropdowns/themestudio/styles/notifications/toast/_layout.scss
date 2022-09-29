@@ -1,6 +1,7 @@
 @include export-module('toast-layout') {
+
   /*! toast layout */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-bigger .e-toast-container,
   .e-toast-container.e-bigger {
 
@@ -163,8 +164,6 @@
       }
     }
   }
-
-
 
   .e-toast-container {
     display: inline-flex;

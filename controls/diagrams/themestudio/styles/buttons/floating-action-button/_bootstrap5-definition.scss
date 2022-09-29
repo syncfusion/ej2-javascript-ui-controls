@@ -1,0 +1,19 @@
+$fab-offset: 16px !default;
+
+$fab-border-radius: 9999px !default;
+$fab-min-height: 40px !default;
+$fab-min-width: 40px !default;
+
+$fab-small-border-radius: $fab-border-radius !default;
+$fab-small-min-height: 32px !default;
+$fab-small-min-width: 32px !default;
+
+$fab-bigger-border-radius: $fab-border-radius !default;
+$fab-bigger-min-height: 52px !default;
+$fab-bigger-min-width: 52px !default;
+
+$fab-bigger-small-border-radius: $fab-border-radius !default;
+$fab-bigger-small-min-height: 46px !default;
+$fab-bigger-small-min-width: 46px !default;
+
+$fab-box-shadow: 0 4px 6px rgba(0, 0, 0, .2), 0 0 4px rgba(0, 0, 0, .16) !default;

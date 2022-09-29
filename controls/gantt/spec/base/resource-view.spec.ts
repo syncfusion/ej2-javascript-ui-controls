@@ -1046,7 +1046,76 @@ describe('Self reference data', () => {
         ganttObj.updateRecordByID(data);
     });
 });
-describe('Delete parent record in resource view', () => {
+describe('Resource view with persistence', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: normalResourceData,
+            resources: resourceCollection,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            showOverAllocation: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resources', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            splitterSettings: { columnIndex: 3 },
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            enablePersistence: true,
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Enabled Persistence', () => {
+       expect(ganttObj.currentViewData.length).toBe(13);
+    });
+});
+   describe('Delete parent record in resource view', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt({
@@ -1127,74 +1196,5 @@ describe('Delete parent record in resource view', () => {
         let args: any = { action: 'delete', preventDefault: preventDefault };
         ganttObj.keyboardModule.keyAction(args);
     });
-});
-     describe('Resource view with persistence', () => {
-        let ganttObj: Gantt;
-        beforeAll((done: Function) => {
-            ganttObj = createGantt({
-                dataSource: normalResourceData,
-                resources: resourceCollection,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    dependency: 'Predecessor',
-                    resourceInfo: 'resources',
-                    work: 'work',
-                    child: 'subtasks'
-                },
-                resourceFields: {
-                    id: 'resourceId',
-                    name: 'resourceName',
-                    unit: 'resourceUnit',
-                    group: 'resourceGroup'
-                },
-                showOverAllocation: true,
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                columns: [
-                    { field: 'TaskID', visible: false },
-                    { field: 'TaskName', headerText: 'Name', width: 250 },
-                    { field: 'work', headerText: 'Work' },
-                    { field: 'Progress' },
-                    { field: 'resources', headerText: 'Group' },
-                    { field: 'StartDate' },
-                    { field: 'Duration' },
-                ],
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-                splitterSettings: { columnIndex: 3 },
-                labelSettings: {
-                    rightLabel: 'resources',
-                    taskLabel: 'Progress'
-                },
-                enablePersistence: true,
-                allowResizing: true,
-                allowSelection: true,
-                highlightWeekends: true,
-                treeColumnIndex: 1,
-                height: '450px',
-                projectStartDate: new Date('03/28/2019'),
-                projectEndDate: new Date('05/18/2019')
-            }, done);
-        });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
-        });
-        it('Enabled Persistence', () => {
-           expect(ganttObj.currentViewData.length).toBe(13);
-        });
     });
 });

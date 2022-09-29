@@ -1,4 +1,3 @@
-
 $group-row-bg-color: $neutral-white !default;
 $grid-font-size: 13px !default;
 $grid-icon-color: $default-icon-color !default;
@@ -53,6 +52,7 @@ $group-sorticon-margin-left: 0 !default;
 $group-sorticon-margin-top: 0 !default;
 $group-ungroupicon-padding: 5px 3px !default;
 $group-unpgrouicon-margin-left: 0 !default;
+$grid-group-ungroupicon-margin-left: 0 !default;
 $grid-rtl-group-sorticon-margin-left: 0 !default;
 $grid-grouped-padding: 8px 8px 5px !default;
 $grid-ungroup-icon-opactiy: 1 !default;
@@ -491,7 +491,7 @@ $grid-rtl-textwrap-column-menu-margin: -20px -13px -23px -3px !default;
 $grid-filter-checkbox-width: 0 !default;
 $grid-filter-checkbox-white-space: nowrap !default;
 
-// group animator 
+// group animator
 $grid-group-animator-bigger-cell-margin: 19px 0 19px 0 !default;
 $grid-group-animator-bigger-drop-height: 54px !default;
 $grid-animator-bigger-area-margin: 22px !default;
@@ -554,7 +554,7 @@ $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -10px 0 0 !default;
 $grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
-$grid-rowcell-color: rgba($grid-content-font-color,  $grid-conent-font-opacity) !default;
+$grid-rowcell-color: rgba($grid-content-font-color, $grid-conent-font-opacity) !default;
 $grid-reorderarrow-margin-top: -4.5px !default;
 $grid-reorderdownarrow-margin-top: 4px !default;
 $grid-reorder-arrow-top-margin: 0 !default;

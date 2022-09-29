@@ -27,7 +27,7 @@
 
       #{if(&, '&', '*')} .e-content table tbody tr.e-month-hide:last-child {
         display: $datepicker-othermonth-row;
-	}
+      }
     }
 
     #{if(&, '&', '*')}.e-popup-wrapper {
@@ -46,7 +46,7 @@
       top: 0;
       width: 100%;
       z-index: 999;
-	}
+    }
 
     #{if(&, '&', '*')} .e-model-header {
       background-color: $datepicker-modal-header-bg;
@@ -60,8 +60,8 @@
         font-weight: $model-year-font-weight;
         line-height: $model-year-line-height;
         margin: 0;
+      }
     }
-}
 
     #{if(&, '&', '*')} .e-model-month,
     #{if(&, '&', '*')} .e-model-day {
@@ -70,10 +70,10 @@
       line-height: $model-month-line-height;
       margin: 0;
     }
-}
+  }
 }
 
-// sass-lint:disable-all
+/* stylelint-disable */
 .e-date-overflow {
   overflow: hidden !important;
 }
@@ -121,8 +121,7 @@
   #{if(&, '&', '*')} .e-datepicker.e-popup-expand {
 
     #{if(&, '&', '*')} .e-model-header {
-
-      height:15%;
+      height: 15%;
 
       #{if(&, '&', '*')} .e-popup-close {
         float: right;
@@ -131,9 +130,9 @@
       }
 
       #{if(&, '&', '*')} .e-popup-close::before {
-        content: "\e932";
-        font-family: "e-icons";
-        color: rgba(255,255,255);
+        content: '\e932';
+        font-family: 'e-icons';
+        color: rgba(0, 0, 0, 0.54);
       }
     }
 
@@ -169,10 +168,6 @@
 
   }
 }
-
-
-// sass-lint:enable-all
-
 
 @media screen and (orientation: landscape) and (max-height: 360px) {
 
@@ -243,4 +238,4 @@
     }
   }
 }
-
+/* stylelint-enable */

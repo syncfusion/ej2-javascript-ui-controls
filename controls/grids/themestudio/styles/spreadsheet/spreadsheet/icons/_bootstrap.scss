@@ -378,7 +378,7 @@
         &::before {
           content: '\e847';
         }
-     }
+      }
 
       & .e-stackedcolumn {
         &::before {
@@ -474,7 +474,7 @@
         }
       }
     }
-}
+  }
 
   .e-addchart-ddb {
     & .e-addchart-icon {
@@ -642,7 +642,7 @@
         content: '\e126';
       }
     }
-}
+  }
 
   .e-switch-row-column-icon {
     &::before {
@@ -704,13 +704,13 @@
     & .e-lessthan {
       &::before {
         content: '\e410';
-       }
+      }
     }
 
     & .e-between {
       &::before {
         content: '\e411';
-       }
+      }
     }
 
     & .e-equalto {
@@ -814,8 +814,8 @@
     & .e-pdf {
       &::before {
         content: '\e88b';
-          }
       }
+    }
   }
 
   .e-spreadsheet,
@@ -837,7 +837,7 @@
         content: '\e601';
       }
     }
-}
+  }
 
   .e-undo-icon {
     &::before {
@@ -849,7 +849,7 @@
     &::before {
       content: '\ebd3';
     }
-}
+  }
 
   .e-sort-filter-ddb,
   .e-spreadsheet-contextmenu {
@@ -882,27 +882,27 @@
     & .e-hyperlink-icon {
       &::before {
         content: '\e290';
-        }
       }
+    }
 
     & .e-edithyperlink-icon {
       &::before {
         content: '\e289';
-        }
       }
+    }
 
     & .e-openhyperlink-icon {
       &::before {
         content: '\e278';
-        }
       }
+    }
 
     & .e-removehyperlink-icon {
       &::before {
         content: '\e286';
-        }
       }
     }
+  }
 
   .e-spreadsheet {
     & .e-sort-delete {
@@ -984,7 +984,7 @@
     & .e-password-protect-icon {
       &::before {
         content: '\e88a';
-        }
       }
+    }
   }
 }
