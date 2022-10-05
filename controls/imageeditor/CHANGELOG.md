@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.48 (2022-10-05)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Screen Orientation Alignment in mobile mode" has been resolved.
+
 ## 20.3.47 (2022-09-29)
 
 ### Image Editor

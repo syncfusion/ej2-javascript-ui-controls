@@ -2055,6 +2055,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 year++;
                 month -= 12;
             }
+            while (month < 1) {
+                month += 12;
+                year--;
+            }
             isValidMonth = true;
             let tempDay: number = new Date(year, month, 1, -1).getDate();
             while (day > tempDay) {
@@ -2065,8 +2069,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
             if (day < 1) {
                 month--;
+                if (month < 1) {
+                    month = 12;
+                    year--;
+                }
                 tempDay = new Date(year, month, 1, -1).getDate();
-                day = tempDay - day;
+                day = tempDay + day;
             }
         }
         const dateTime: number = Date.parse(year.toString() + this.getParseDateTimeSeparator() + month.toString() +

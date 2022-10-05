@@ -431,6 +431,52 @@ export class InkAnnotation {
             }
         }
     }
+    // To save the imported annotations while downloading or exporting for the page above 10 without a scroll (EJ2-63924)
+    /**
+     * @private
+     */
+    public saveImportedInkAnnotation(annotation: any, pageNumber: number): any {
+        let annotationObject: any = null;
+        let currentBounds: any = annotation.Bounds;
+        let bounds: any = { x: currentBounds.X, y: currentBounds.Y, width: currentBounds.Width, height: currentBounds.Height }
+        let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        let customData: any = this.pdfViewer.annotation.getCustomData(annotation);
+        let comments: any = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
+        let review: any = { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author };
+        let annotationSettings: any = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+        let annotationSelectorSettings: any = this.getSettings(annotation);
+        let data: any = annotation.PathData;
+        if (typeof (data) === 'object' && data.length > 1) {
+            data = getPathString(data);
+        }
+        else {
+            if (annotation.IsPathData || (data.split('command').length <= 1)) {
+                data = data;
+            }
+            else {
+                data = getPathString(JSON.parse(data));
+            }
+        }
+        annotationObject = {
+            allowedInteractions: allowedInteractions, annotName: annotation.AnnotName, annotationSelectorSettings: annotationSelectorSettings,
+            annotationSettings: annotationSettings, author: annotation.Author, bounds: bounds, customData: customData, comments: comments, data: data, 
+            id: "Ink" , isCommentLock: annotation.IsCommentLock, isLocked: annotation.IsLocked, isPrint: annotation.IsPrint, modifiedDate: annotation.ModifiedDate,
+            note: annotation.Note, opacity: annotation.Opacity, pageIndex: pageNumber, review: review, shapeAnnotationType: annotation.AnnotationType, 
+            strokeColor: annotation.StrokeColor, subject: annotation.Subject, thickness: annotation.Thickness
+        }
+        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_ink');
+    }
+    // To get the annotation selector settings 
+    private getSettings(annotation: any): any{
+        let selector: any = this.pdfViewer.annotationSelectorSettings;
+        if (annotation.AnnotationSelectorSettings) {
+            selector = annotation.AnnotationSelectorSettings;
+        }
+        else {
+            selector = this.getSelector(annotation.ShapeAnnotationType, annotation.Subject);
+        }
+        return selector;
+    }
     /**
      * @param pageNumber
      * @param annotations

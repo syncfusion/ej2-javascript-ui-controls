@@ -1804,7 +1804,8 @@ export class CommandHandler {
         this.diagram.removeObjectsFromLayer(this.diagram.nameTable[obj.id]);
         delete this.diagram.nameTable[obj.id];
 		// EJ2-62652 - Added below code to empty the segment collection if connector type is bezier
-        if(obj instanceof Connector && obj.type === 'Bezier' && obj.segments.length > 0) {
+        if(obj instanceof Connector && obj.type === 'Bezier' && obj.segments.length > 0
+        && ((this.diagram.drawingObject as Connector)&& (this.diagram.drawingObject as Connector).type==="Bezier")) {
            obj.segments = [];
         }
         const newObj: Node | Connector = this.diagram.add(obj);

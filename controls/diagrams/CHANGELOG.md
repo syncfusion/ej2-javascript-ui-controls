@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 20.3.47 (2022-09-29)
+## 20.3.48 (2022-10-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `I401143` - Now, HTML element gets rendered properly while drag and drop from one lane to other lane.
 
 ### Diagram
 

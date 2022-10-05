@@ -259,6 +259,10 @@ export class Edit {
             }
             this.updateGridEditMode('Batch');
         }
+        else if(this.parent.editSettings.mode === 'Cell' && (!column.allowEditing || column.isPrimaryKey)){
+            this.isOnBatch = true;
+            this.updateGridEditMode('Batch');
+        }
     }
     private updateGridEditMode(mode: string): void {
         this.parent.grid.setProperties({editSettings: {mode: mode}}, true);
@@ -907,7 +911,12 @@ export class Edit {
                     }
                     index = (childRecordCount1 > 0) ? ( currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     if (this.isSelfReference) {
-                        value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = idMapping;
+                        if (!this.parent.isLocalData && this.parent.editModule.selectedIndex === -1) {
+                            value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = null;
+                        }
+                        else {
+                            value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = idMapping;
+                        }
                         if (!isNullOrUndefined(value.parentItem)) {
                             updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }

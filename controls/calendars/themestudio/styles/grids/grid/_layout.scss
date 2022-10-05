@@ -3565,6 +3565,10 @@
         border-spacing: .25px;
       }
 
+      span.e-ungroupbutton.e-icons {
+        margin-left: $grid-group-ungroupicon-margin-left;
+      }
+
       .e-rowcell.e-frozen-right-border,
       .e-headercell.e-frozen-right-border,
       .e-filterbarcell.e-frozen-right-border {

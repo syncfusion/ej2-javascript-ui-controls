@@ -102,72 +102,72 @@ console.log('Apply portrait to the document');
 console.log('Apply paper size to letter');
         editor.editorModule.onPaperSize('letter')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(611.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(791.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(612);
+        expect(selectionSectionFormat.pageHeight).toEqual(792);
     });
     it('Apply paper size to tabloid', () => {
 console.log('Apply paper size to tabloid');
         editor.editorModule.onPaperSize('tabloid')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(791.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(1223.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(792);
+        expect(selectionSectionFormat.pageHeight).toEqual(1224);
     });
     it('Apply paper size to legal', () => {
 console.log('Apply paper size to legal');
         editor.editorModule.onPaperSize('legal')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(611.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(1007.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(612);
+        expect(selectionSectionFormat.pageHeight).toEqual(1008);
     });
     it('Apply paper size to statement', () => {
 console.log('Apply paper size to statement');
         editor.editorModule.onPaperSize('statement')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
         expect(selectionSectionFormat.pageWidth).toEqual(396);
-        expect(selectionSectionFormat.pageHeight).toEqual(611.9);
+        expect(selectionSectionFormat.pageHeight).toEqual(612);
     });
 
     it('Apply paper size to executive', () => {
 console.log('Apply paper size to executive');
         editor.editorModule.onPaperSize('executive')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(521.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(755.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(522);
+        expect(selectionSectionFormat.pageHeight).toEqual(756);
     });
     it('Apply paper size to a3', () => {
 console.log('Apply paper size to a3');
         editor.editorModule.onPaperSize('a3')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(841.8);
-        expect(selectionSectionFormat.pageHeight).toEqual(1190.4);
+        expect(selectionSectionFormat.pageWidth).toEqual(841.9);
+        expect(selectionSectionFormat.pageHeight).toEqual(1190.55);
     });
     it('Apply paper size to a4', () => {
 console.log('Apply paper size to a4');
         editor.editorModule.onPaperSize('a4')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(595.2);
-        expect(selectionSectionFormat.pageHeight).toEqual(841.8);
+        expect(selectionSectionFormat.pageWidth).toEqual(595.3);
+        expect(selectionSectionFormat.pageHeight).toEqual(841.9);
     });
     it('Apply paper size to a5', () => {
 console.log('Apply paper size to a5');
         editor.editorModule.onPaperSize('a5')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(419.5);
-        expect(selectionSectionFormat.pageHeight).toEqual(595.2);
+        expect(selectionSectionFormat.pageWidth).toEqual(419.55);
+        expect(selectionSectionFormat.pageHeight).toEqual(595.3);
     });
     it('Apply paper size to b4', () => {
 console.log('Apply paper size to b4');
         editor.editorModule.onPaperSize('b4')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(728.4);
-        expect(selectionSectionFormat.pageHeight).toEqual(1031.7);
+        expect(selectionSectionFormat.pageWidth).toEqual(728.5);
+        expect(selectionSectionFormat.pageHeight).toEqual(1031.8);
     });
     it('Apply paper size to b5', () => {
 console.log('Apply paper size to b5');
         editor.editorModule.onPaperSize('b5')
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(515.8);
-        expect(selectionSectionFormat.pageHeight).toEqual(728.4);
+        expect(selectionSectionFormat.pageWidth).toEqual(515.9);
+        expect(selectionSectionFormat.pageHeight).toEqual(728.5);
     });
     it('Apply margin value to lastCustomSetting', () => {
 console.log('Apply margin value to lastCustomSetting');
@@ -274,28 +274,28 @@ console.log('Apply landscape to the document');
 console.log('Apply paper size to letter');
         editor.editorModule.onPaperSize('letter');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(791.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(611.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(792);
+        expect(selectionSectionFormat.pageHeight).toEqual(612);
     });
     it('Apply paper size to tabloid', () => {
 console.log('Apply paper size to tabloid');
         editor.editorModule.onPaperSize('tabloid');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(1223.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(791.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(1224);
+        expect(selectionSectionFormat.pageHeight).toEqual(792);
     });
     it('Apply paper size to legal', () => {
 console.log('Apply paper size to legal');
         editor.editorModule.onPaperSize('legal');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(1007.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(611.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(1008);
+        expect(selectionSectionFormat.pageHeight).toEqual(612);
     });
     it('Apply paper size to statement', () => {
 console.log('Apply paper size to statement');
         editor.editorModule.onPaperSize('statement');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(611.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(612);
         expect(selectionSectionFormat.pageHeight).toEqual(396);
     });
 
@@ -303,43 +303,43 @@ console.log('Apply paper size to statement');
 console.log('Apply paper size to executive');
         editor.editorModule.onPaperSize('executive');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(755.9);
-        expect(selectionSectionFormat.pageHeight).toEqual(521.9);
+        expect(selectionSectionFormat.pageWidth).toEqual(756);
+        expect(selectionSectionFormat.pageHeight).toEqual(522);
     });
     it('Apply paper size to a3', () => {
 console.log('Apply paper size to a3');
         editor.editorModule.onPaperSize('a3');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(1190.4);
-        expect(selectionSectionFormat.pageHeight).toEqual(841.8);
+        expect(selectionSectionFormat.pageWidth).toEqual(1190.55);
+        expect(selectionSectionFormat.pageHeight).toEqual(841.9);
     });
     it('Apply paper size to a4', () => {
 console.log('Apply paper size to a4');
         editor.editorModule.onPaperSize('a4');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(841.8);
-        expect(selectionSectionFormat.pageHeight).toEqual(595.2);
+        expect(selectionSectionFormat.pageWidth).toEqual(841.9);
+        expect(selectionSectionFormat.pageHeight).toEqual(595.3);
     });
     it('Apply paper size to a5', () => {
 console.log('Apply paper size to a5');
         editor.editorModule.onPaperSize('a5');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(595.2);
-        expect(selectionSectionFormat.pageHeight).toEqual(419.5);
+        expect(selectionSectionFormat.pageWidth).toEqual(595.3);
+        expect(selectionSectionFormat.pageHeight).toEqual(419.55);
     });
     it('Apply paper size to b4', () => {
 console.log('Apply paper size to b4');
         editor.editorModule.onPaperSize('b4');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(1031.7);
-        expect(selectionSectionFormat.pageHeight).toEqual(728.4);
+        expect(selectionSectionFormat.pageWidth).toEqual(1031.8);
+        expect(selectionSectionFormat.pageHeight).toEqual(728.5);
     });
     it('Apply paper size to b5', () => {
 console.log('Apply paper size to b5');
         editor.editorModule.onPaperSize('b5');
         selectionSectionFormat = editor.documentHelper.selection.sectionFormat;
-        expect(selectionSectionFormat.pageWidth).toEqual(728.4);
-        expect(selectionSectionFormat.pageHeight).toEqual(515.8);
+        expect(selectionSectionFormat.pageWidth).toEqual(728.9);
+        expect(selectionSectionFormat.pageHeight).toEqual(515.9);
     });
 });
 describe('PageSetup Dialog Test Case Validation - 4', function () {
@@ -695,13 +695,13 @@ console.log('Apply format');
         editor.openBlank();
         editor.editorModule.onLandscape();
         editor.editorModule.onPaperSize('statement');
-        expect(editor.selection.sectionFormat.pageWidth).toBe(611.9);
+        expect(editor.selection.sectionFormat.pageWidth).toBe(612);
         expect(editor.selection.sectionFormat.pageHeight).toBe(396);
         editor.editorHistory.undo();
         expect(editor.selection.sectionFormat.pageWidth).toBe(792);
         expect(editor.selection.sectionFormat.pageHeight).toBe(612);
         editor.editorHistory.redo();
-        expect(editor.selection.sectionFormat.pageWidth).toBe(611.9);
+        expect(editor.selection.sectionFormat.pageWidth).toBe(612);
         expect(editor.selection.sectionFormat.pageHeight).toBe(396);
     });
 });

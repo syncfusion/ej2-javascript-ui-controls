@@ -2125,10 +2125,17 @@ export class DialogEdit {
     // eslint-disable-next-line
     private updateSegmentsData(segmentForm: HTMLElement, data: IGanttData): void {
         const gridObj: Grid = <Grid>(<EJ2Instance>segmentForm).ej2_instances[0];
+        const isEdit: boolean = gridObj.isEdit;
+        let dataSource: ITaskSegment[]
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        const dataSource: ITaskSegment[] = <ITaskSegment[]>gridObj.currentViewData;
+        if (isEdit) {
+             dataSource = <ITaskSegment[]>gridObj.dataSource;
+        } else {
+            dataSource = <ITaskSegment[]>gridObj.currentViewData;
+        }
+        
         this.updateSegmentTaskData(dataSource);
     }
 
@@ -2218,10 +2225,6 @@ export class DialogEdit {
         const ids: string[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i];
-            const newId: string = preData.name.split('-')[0];
-            if (preData.id !== newId) {
-                preData.id = newId;
-            }
             if (ids.indexOf(preData.id) === -1) {
                 let name: string = preData.id + preData.type;
                 if (preData.offset && preData.offset.indexOf('-') !== -1) {

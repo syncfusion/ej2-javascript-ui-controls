@@ -51,7 +51,7 @@ import { DialogUtility } from '@syncfusion/ej2-popups';
 import { DocumentHelper, Layout } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { XmlHttpRequestHandler } from '../../base/ajax-helper';
-import { CommentActionEventArgs, beforeCommentActionEvent, trackChangeEvent, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from '../../base/index';
+import { CommentActionEventArgs, beforeCommentActionEvent, trackChangeEvent, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend, internalStyleCollectionChange } from '../../base/index';
 import { CommentView } from '../comments';
 import { SelectionBorder } from '../selection/selection-format';
 import { Paragraph } from '../../../document-editor-container/properties-pane/paragraph-properties';
@@ -161,6 +161,7 @@ export class Editor {
      * @private
      */
     public isXmlMapped: boolean = false;
+    private combineLastBlock: boolean = false;
     /**
      * @private
      * @returns {boolean} - Returns the restrict formatting
@@ -345,6 +346,7 @@ export class Editor {
         clearDirectFormatting = isNullOrUndefined(clearDirectFormatting) ? false : clearDirectFormatting;
         let startPosition: number = undefined;
         let endPosition: number = undefined;
+        this.owner.notify(internalStyleCollectionChange, {});
         if (clearDirectFormatting) {
             this.initComplexHistory('ApplyStyle');
             this.setOffsetValue(this.selection);
@@ -1947,7 +1949,7 @@ export class Editor {
             }
             isRemoved = this.removeSelectedContents(selection);
             this.skipReplace = false;
-            if (!isNullOrUndefined(endPosition) && this.owner.search.isRepalceTracking) {
+            if (!isNullOrUndefined(endPosition) && this.owner.search && this.owner.search.isRepalceTracking) {
                 this.owner.search.isRepalceTracking = false;
                 this.selection.start.setPositionInternal(this.selection.start);
                 this.selection.end.setPositionInternal(endPosition);
@@ -3000,7 +3002,7 @@ export class Editor {
         //Update SectionIndex for splitted body widget
         this.updateSectionIndex(sectionFormat, newBodyWidget, true);
         // insert New header footer widget in to section index 
-        if (!this.editorHistory.isUndoing) {
+        if (this.editorHistory && !this.editorHistory.isUndoing) {
             this.insertRemoveHeaderFooter(newBodyWidget.sectionIndex, true);
         }
         // if (this.documentHelper.viewer instanceof PageLayoutViewer) {
@@ -5844,11 +5846,11 @@ export class Editor {
         if (newElement instanceof ContentControl && newElement.type === 0) {
             this.documentHelper.contentControlCollection.push(newElement);
         }
-        if (newElement instanceof ShapeBase && newElement.textWrappingStyle !== 'Inline') {
+        if ((newElement instanceof ImageElementBox && newElement.textWrappingStyle !== 'Inline') || newElement instanceof ShapeElementBox) {
             if (paragraph.floatingElements.indexOf(newElement) === -1) {
                 paragraph.floatingElements.push(newElement);
             }
-            if (paragraph.bodyWidget.floatingElements.indexOf(newElement) === -1) {
+            if (paragraph.bodyWidget.floatingElements.indexOf(newElement) === -1 && newElement.textWrappingStyle !== 'Inline') {
                 paragraph.bodyWidget.floatingElements.push(newElement);
             }
         }
@@ -7990,6 +7992,7 @@ export class Editor {
             style.name = this.getUniqueStyleName(style.name);
         }
         this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), style, this.documentHelper.styles);
+        this.owner.notify(internalStyleCollectionChange, {});
         return this.documentHelper.styles.findByName(style.name);
     }
 
@@ -11084,12 +11087,17 @@ export class Editor {
         let section: BodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget as BodyWidget : undefined;
         let startLine: LineWidget = undefined;
         let endLineWidget: LineWidget = undefined;
+        let isCombineLastBlock = this.combineLastBlock;
         if (paragraph === start.paragraph) {
             startOffset = start.offset;
             startLine = start.currentWidget;
             if (end.paragraph.isInsideTable) {
                 isCombineNextParagraph = this.isEndInAdjacentTable(paragraph, end.paragraph);
             }
+            if (!isCombineNextParagraph) {
+                isCombineNextParagraph = this.combineLastBlock;
+            }
+            this.combineLastBlock = false;
         } else {
             startLine = paragraph.firstChild as LineWidget;
         }
@@ -11180,7 +11188,7 @@ export class Editor {
                     } else {
 
                         currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, startLine, startOffset, true);
-                        this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
+                        this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction, isCombineLastBlock);
                         this.removeRevisionForBlock(paragraph, undefined, false, true);
                         this.addRemovedNodes(paragraph);
                     }
@@ -11188,6 +11196,10 @@ export class Editor {
                 return;
             }
         } else {
+            if (end.paragraph === paragraph && end.paragraph.isInsideTable && (start.currentWidget.isFirstLine() && start.offset > selection.getStartOffset(start.paragraph) || !start.currentWidget.isFirstLine()) &&
+                end.offset >= selection.getLineLength(end.paragraph.lastChild as LineWidget) && end.paragraph.nextRenderedWidget as ParagraphWidget) {
+                this.combineLastBlock = true;
+            }
             let newParagraph: ParagraphWidget = undefined;
             let previousBlock: BlockWidget = paragraph.previousWidget as BlockWidget;
             let prevParagraph: ParagraphWidget = (previousBlock instanceof ParagraphWidget) ? previousBlock : undefined;
@@ -11294,7 +11306,7 @@ export class Editor {
                 this.delBlock = undefined;
             }
         }
-        this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction);
+        this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction, isCombineLastBlock);
     }
     private deleteSection(selection: Selection, section: BodyWidget, nextSection: BodyWidget, editAction: number): void {
         if (editAction < 4) {
@@ -11598,8 +11610,10 @@ export class Editor {
     }
     private removeAutoShape(inline: ShapeBase): void {
         let shapeIndex: number = inline.line.paragraph.floatingElements.indexOf(inline);
-
-        inline.line.paragraph.bodyWidget.floatingElements.splice(inline.line.paragraph.bodyWidget.floatingElements.indexOf(inline), 1);
+        let floatingElementIndex: number = inline.line.paragraph.bodyWidget.floatingElements.indexOf(inline);
+        if (floatingElementIndex > -1) {
+            inline.line.paragraph.bodyWidget.floatingElements.splice(floatingElementIndex, 1);
+        }
         inline.line.paragraph.floatingElements.splice(shapeIndex, 1);
     }
     /**
@@ -11690,7 +11704,7 @@ export class Editor {
      * @param {IWidget} node Specifies the node.
      * @returns {void}
      */
-    public addRemovedNodes(node: IWidget): void {
+    public addRemovedNodes(node: IWidget, isInsertBefore?: boolean): void {
         if (node instanceof CommentCharacterElementBox && node.commentType === 0 && node.commentMark) {
             node.removeCommentMark();
         }
@@ -11706,7 +11720,11 @@ export class Editor {
             }
         }
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-            this.editorHistory.currentBaseHistoryInfo.removedNodes.push(node);
+            if (isInsertBefore) {
+                this.editorHistory.currentBaseHistoryInfo.removedNodes.splice(0, 0, node);
+            } else {
+                this.editorHistory.currentBaseHistoryInfo.removedNodes.push(node);
+            }
         } else if (this.editHyperlinkInternal) {
             this.nodes.push(node);
         }
@@ -12300,7 +12318,7 @@ export class Editor {
         return undefined;
     }
 
-    private insertParagraphPaste(paragraph: ParagraphWidget, currentParagraph: ParagraphWidget, start: TextPosition, end: TextPosition, isCombineNextParagraph: boolean, editAction: number): void {
+    private insertParagraphPaste(paragraph: ParagraphWidget, currentParagraph: ParagraphWidget, start: TextPosition, end: TextPosition, isCombineNextParagraph: boolean, editAction: number, isCombineLastBlock?: boolean): void {
 
         if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
             let nextParagraph: ParagraphWidget = this.selection.getNextParagraphBlock(currentParagraph);
@@ -12328,7 +12346,7 @@ export class Editor {
             }
         }
         if (isCombineNextParagraph) {
-            this.deleteParagraphMark(currentParagraph, this.selection, editAction);
+            this.deleteParagraphMark(currentParagraph, this.selection, editAction, false, isCombineLastBlock);
         }
     }
 
@@ -12467,7 +12485,7 @@ export class Editor {
                         this.documentHelper.bookmarks.remove(inline.name);
                     }
                 }
-                if (inline instanceof ShapeBase && inline.textWrappingStyle !== 'Inline') {
+                if ((inline instanceof ImageElementBox && inline.textWrappingStyle !== 'Inline') || inline instanceof ShapeElementBox) {
                     this.removeAutoShape(inline);
                 }
                 //clear form field revisions if it is intentionally deleted.
@@ -13144,6 +13162,9 @@ export class Editor {
         let container: Widget = paragraphAdv.containerWidget;
         let childNodes: BlockWidget[] = container.childWidgets as BlockWidget[];
         childNodes.splice(insertIndex, 0, paragraph);
+        paragraph.containerWidget = container;
+        paragraph.index = blockIndex;
+        this.updateNextBlocksIndex(paragraph, true);
         if ((!isNullOrUndefined(container.containerWidget) && container.containerWidget instanceof FootNoteWidget) || (container instanceof TableCellWidget && !isNullOrUndefined(container.bodyWidget) && container.bodyWidget.containerWidget instanceof FootNoteWidget)) {
             let height: number = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat).Height;
             if (container instanceof TableCellWidget) {
@@ -13160,9 +13181,6 @@ export class Editor {
                 this.insertParaRevision(paragraphAdv);
             }
         }
-        paragraph.containerWidget = container;
-        paragraph.index = blockIndex;
-        this.updateNextBlocksIndex(paragraph, true);
 
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container as BodyWidget, paragraph, false);
     }
@@ -14729,7 +14747,7 @@ export class Editor {
         }
     }
 
-    private deleteParagraphMark(paragraph: ParagraphWidget, selection: Selection, editAction: number, handleParaMark?: boolean): void {
+    private deleteParagraphMark(paragraph: ParagraphWidget, selection: Selection, editAction: number, handleParaMark?: boolean, isCombineLastBlock?: boolean): void {
         if (isNullOrUndefined(paragraph.containerWidget)) {
             return;
         }
@@ -14810,8 +14828,9 @@ export class Editor {
                     this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
                     this.removeBlock(nextParagraph);
                     //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
-                    if(this.editorHistory.currentBaseHistoryInfo.action !== "Insert")
-                        this.addRemovedNodes(nextParagraph);                }
+                    if (this.editorHistory.currentBaseHistoryInfo.action !== "Insert")
+                        this.addRemovedNodes(nextParagraph, isCombineLastBlock);
+                }
             }
         }
     }
@@ -15178,11 +15197,11 @@ export class Editor {
             }
         } else if (property === 'statement') {
             if (width < height) {
-                sectionFormat.pageWidth = 392;
+                sectionFormat.pageWidth = 396;
                 sectionFormat.pageHeight = 612;
             } else {
                 sectionFormat.pageWidth = 612;
-                sectionFormat.pageHeight = 392;
+                sectionFormat.pageHeight = 396;
             }
         } else if (property === 'executive') {
             if (width < height) {

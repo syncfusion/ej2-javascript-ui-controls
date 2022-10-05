@@ -1040,14 +1040,14 @@ export class FormFields {
                     annot = {
                         // eslint-disable-next-line max-len
                         id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                        shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: rotateAngle === 90 || rotateAngle === 270 ? (bounds.width / 1.25) : (bounds.height / 1.25)
+                        shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: rotateAngle === 90 || rotateAngle === 270 ? (bounds.width / 1.35) : (bounds.height / 1.35)
                     };
                     if (annot.shapeAnnotationType === 'SignatureText') {
                         let textWidth: number = this.getTextWidth(annot.data, annot.fontSize, annot.fontFamily); 
                         let widthRatio: number = 1;
                         if (textWidth > bounds.width)
                            widthRatio =  bounds.width / textWidth;
-                        annot.fontSize = this.getFontSize(Math.ceil((annot.fontSize * widthRatio))); 
+                        annot.fontSize = this.getFontSize(Math.floor((annot.fontSize * widthRatio))); 
                     }
                     signString = annot.data;
                     signatureFontFamily = annot.fontFamily;
@@ -1281,7 +1281,7 @@ export class FormFields {
      * @private
      */
     public getDefaultBoundsforSign(bounds:any):any{
-        return { x: bounds.x + 7, y: bounds.y + 6, width: bounds.width - 15, height: bounds.height - 14 };
+        return { x: bounds.x + 4, y: bounds.y + 4, width: bounds.width - 8, height: bounds.height - 8 };
     }
     /**
      * @private

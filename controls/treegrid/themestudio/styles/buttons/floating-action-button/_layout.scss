@@ -5,11 +5,13 @@
     display: inline-flex;
     min-height: $fab-min-height;
     min-width: $fab-min-width;
+    padding: $fab-padding;
     position: absolute;
     z-index: 100000;
 
     .e-btn-icon {
       margin-top: 0;
+      font-size: $fab-icon-font-size;
     }
 
     &.e-icon-btn {
@@ -58,9 +60,14 @@
     border-radius: $fab-small-border-radius;
     min-height: $fab-small-min-height;
     min-width: $fab-small-min-width;
+    padding: $fab-small-padding;
 
     &.e-icon-btn {
       padding: 0;
+    }
+
+    .e-btn-icon {
+      font-size: $fab-small-icon-font-size;
     }
   }
   .e-bigger.e-fab.e-btn,
@@ -68,9 +75,14 @@
     border-radius: $fab-bigger-border-radius;
     min-height: $fab-bigger-min-height;
     min-width: $fab-bigger-min-width;
+    padding: $fab-bigger-padding;
 
     &.e-icon-btn {
       padding: 0;
+    }
+
+    .e-btn-icon {
+      font-size: $fab-bigger-icon-font-size;
     }
   }
   .e-bigger.e-small.e-fab.e-btn,
@@ -80,9 +92,14 @@
     border-radius: $fab-bigger-small-border-radius;
     min-height: $fab-bigger-small-min-height;
     min-width: $fab-bigger-small-min-width;
+    padding: $fab-bigger-small-padding;
 
     &.e-icon-btn {
       padding: 0;
+    }
+
+    .e-btn-icon {
+      font-size: $fab-bigger-small-icon-font-size;
     }
   }
 }

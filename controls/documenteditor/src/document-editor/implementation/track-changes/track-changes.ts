@@ -357,7 +357,9 @@ export class Revision {
         let paraFloatingElementIndex: number = element.line.paragraph.floatingElements.indexOf(element as ShapeBase);
         element.line.paragraph.floatingElements.splice(paraFloatingElementIndex, 1);
         let blockFloatingElementIndex: number = element.line.paragraph.bodyWidget.floatingElements.indexOf(element as ShapeBase);
-        element.line.paragraph.bodyWidget.floatingElements.splice(blockFloatingElementIndex, 1);
+        if (blockFloatingElementIndex > -1) {
+            element.line.paragraph.bodyWidget.floatingElements.splice(blockFloatingElementIndex, 1);
+        }
         this.owner.editor.removeEmptyLine(paraWidget);
     }
 

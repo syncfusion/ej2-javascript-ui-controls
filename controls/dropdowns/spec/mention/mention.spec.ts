@@ -1,18 +1,17 @@
-import { EmitType, Browser, createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
 import { Mention } from '../../src/mention/mention';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 
 L10n.load({
-    'fr': {
+    'fr-BE': {
         'mention': {
-            noRecordsTemplate: "Pas de modèle d'enregistrement"
+            'noRecordsTemplate': "Aucun enregistrement trouvé"
         }
     },
     'es': {
         'mention': {
-            noRecordsTemplate: "Pas de",
-            actionFailureTemplate:  "Pas de"
+            'noRecordsTemplate': "Pas de"
         }
     }
 });
@@ -1552,6 +1551,85 @@ describe('Mention', () => {
             element.value = '@ ';
             mentionObj.onKeyUp(keyMentionEventArgs);
             expect(document.querySelectorAll('.e-mention.e-popup').length === 0).toBe(true);
+        });
+    });
+
+    describe('Locale testing for norecordstemplate', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            document.body.appendChild(element);
+            mentionObj = new Mention({ dataSource: [], locale: 'fr-BE', showMentionChar: true });
+            mentionObj.appendTo(element);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('ShowPopup with norecordstemplate locale value', (done) => {
+            element.value = '@';
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect((document.querySelector('.e-nodata') as HTMLElement).innerText).toEqual('Aucun enregistrement trouvé');
+            done();
+        });
+    });
+
+    describe('Locale testing for norecordstemplate', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            document.body.appendChild(element);
+            mentionObj = new Mention({ dataSource: [], locale: 'es', showMentionChar: true });
+            mentionObj.appendTo(element);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('ShowPopup with norecordstemplate using setCulture', (done) => {
+            setCulture('es');
+            element.value = '@';
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect((document.querySelector('.e-nodata') as HTMLElement).innerText).toEqual('Pas de');
+            done();
+        });
+    });
+
+    describe('Accessibility testing', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            document.body.appendChild(element);
+            mentionObj = new Mention({ dataSource: datasource2, showMentionChar: true });
+            mentionObj.appendTo(element);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Attributes checking for the mention and the popup elements', (done) => {
+            element.value = '@';
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect((mentionObj.popupObj.element.querySelector('ul') as HTMLElement).hasAttribute('id')).toBe(true);
+            expect((mentionObj.popupObj.element.querySelector('ul') as HTMLElement).hasAttribute('role')).toBe(true);
+            expect((mentionObj.inputElement as HTMLElement).hasAttribute('aria-owns')).toBe(true);
+            expect((mentionObj.inputElement as HTMLElement).hasAttribute('aria-activedescendant')).toBe(true);
+            done();
         });
     });
 });

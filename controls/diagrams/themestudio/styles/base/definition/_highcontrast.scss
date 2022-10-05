@@ -134,16 +134,16 @@ $msg-info-close-icon-color-alt2: $bg-base-0 !default;
 
 //App bar
 //Light
-$appbar-bg-color-alt1: $bg-base-100 !default;
-$appbar-color-alt1: $bg-base-0 !default;
+$appbar-bg-color-alt1: $bg-base-0 !default;
+$appbar-color-alt1: #fff !default;
 $appbar-border-color-alt1: $bg-base-100 !default;
-$appbar-hover-bg-color-alt1: rgba(transparent, .056) !default;
+$appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
 
 //Dark
-$appbar-bg-color-alt2: $bg-base-0 !default;
-$appbar-color-alt2: #fff !default;
-$appbar-border-color-alt2: $bg-base-0 !default;
-$appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
+$appbar-bg-color-alt2: $bg-base-100 !default;
+$appbar-color-alt2: $bg-base-0 !default;
+$appbar-border-color-alt2: $bg-base-100 !default;
+$appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 
 //shadow
 $appbar-bottom-shadow: none !default;

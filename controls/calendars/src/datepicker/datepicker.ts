@@ -525,7 +525,7 @@ export class DatePicker extends Calendar implements IInput {
 
     private createInput(): void {
         const ariaAttrs: object = {
-            'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-expanded': 'false', 
+            'aria-live': 'off', 'aria-atomic': 'true', 'aria-expanded': 'false', 
             'role': 'combobox', 'autocomplete': 'off', 'autocorrect': 'off', 
             'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
@@ -1714,7 +1714,7 @@ export class DatePicker extends Calendar implements IInput {
             super.destroy();
         }
         const ariaAttrs: object = {
-            'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-disabled': 'true', 
+            'aria-live': 'off', 'aria-atomic': 'true', 'aria-disabled': 'true', 
             'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         };

@@ -210,12 +210,14 @@ export class Toolbar {
         const tlbrLeftElement: Element = this.element.querySelector(".e-toolbar-left");
         const tlbrCenterElement: Element = this.element.querySelector(".e-toolbar-center");
         const tlbrRightElement: Element = this.element.querySelector(".e-toolbar-right");
+        const tlbrItems: Element = this.element.querySelector(".e-toolbar-items");
         const tlbrElement: Element = this.element;
         const tlbrLeftWidth: number = tlbrLeftElement ? tlbrLeftElement.clientWidth : 0;
         const tlbrCenterWidth: number = tlbrCenterElement ? tlbrCenterElement.clientWidth : 0;
         const tlbrRightWidth: number = tlbrRightElement ? tlbrRightElement.clientWidth : 0;
+        const tlbrItemsWidth: number = tlbrElement ? tlbrItems.clientWidth : 0;
         const tlbrWidth: number = tlbrElement ? tlbrElement.clientWidth : 0;
-        if (tlbrLeftWidth > tlbrWidth || tlbrCenterWidth > tlbrWidth || tlbrRightWidth > tlbrWidth) {
+        if (tlbrLeftWidth > tlbrWidth || tlbrCenterWidth > tlbrWidth || tlbrRightWidth > tlbrWidth || tlbrItemsWidth > tlbrWidth) {
             this.toolbar.refreshOverflow();
         }
     }

@@ -52,10 +52,14 @@ $sd-disabled-li-bg: $neutral-lighter !default;
 $sd-disabled-li-border-color: $neutral-lighter !default;
 $sd-disabled-font-color: $neutral-tertiary !default;
 
-$sd-active-li-bg: $neutral-light !default;
-$sd-active-li-border-color: $neutral-light !default;
-$sd-active-font-color: $neutral-light-font !default;
+$sd-focus-li-bg: $neutral-light !default;
+$sd-focus-li-border-color: $neutral-light !default;
+$sd-focus-font-color: $neutral-light-font !default;
 
 $sd-hover-li-bg: $neutral-light !default;
 $sd-hover-li-border-color: $neutral-light !default;
 $sd-hover-font-color: $neutral-light-fontalt !default;
+
+$sd-active-li-bg: $neutral-tertiary-alt !default;
+$sd-active-li-border-color: $neutral-tertiary-alt !default;
+$sd-active-font-color: $neutral-light-fontalt !default;

@@ -95,7 +95,11 @@
 
   .e-mention .e-mention-chip,
   .e-mention .e-mention-chip:hover {
+    background: $mention-chip-bg-color;
+    border-radius: $mention-chip-border-radius;
+    border: $mention-chip-border;
     color: $mention-active-font-color;
+    cursor: default;
   }
 
   .e-mention .e-mention-chip::selection {

@@ -1328,7 +1328,7 @@
               margin-right: 20px;
 
               .e-label {
-                color: $pivot-text-area-background;
+                color: $field-list-default-font-color;
                 font-family: $field-list-font-family;
                 font-size: 14px;
                 opacity: .87;
@@ -1745,7 +1745,7 @@
     }
 
     &.e-static {
-      max-height: 720px;
+      max-height: 735px;
 
       .e-field-list-container {
         .e-center-title {

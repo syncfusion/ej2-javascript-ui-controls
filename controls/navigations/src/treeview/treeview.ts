@@ -672,6 +672,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private firstTap : Element;
     private hasTemplate: boolean = false;
     private isFirstRender: boolean = false;
+    // Specifies whether the node is dropped or not 
+    private isNodeDropped: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -2275,11 +2277,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.updateCheckedProp();
         this.isAnimate = true;
         this.isInitalExpand = false;
-        if (!this.isLoaded || this.isFieldChange) {
+        if ((!this.isLoaded || this.isFieldChange) && !this.isNodeDropped) {
             let eventArgs: DataBoundEventArgs = { data: this.treeData };
             this.trigger('dataBound', eventArgs);
         }
         this.isLoaded = true;
+        this.isNodeDropped = false;
     }
 
     private doSelectionAction(): void {
@@ -3510,8 +3513,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let expanded: boolean = (currLi.getAttribute('aria-expanded') === 'true') ? true : false;
             let hasChildren: boolean = currLi.getAttribute('aria-expanded') !== null ? true : (select('.'+ EXPANDABLE, currLi) || select('.'+ COLLAPSIBLE, currLi)) != null ? true : false;
             let checked: string = null;
-            if (this.showCheckBox) {
-                checked = select('.' + CHECKBOXWRAP, currLi).getAttribute('aria-checked');
+            const checkboxElement = select('.' + CHECKBOXWRAP, currLi);
+            if (this.showCheckBox && checkboxElement) {
+                checked = checkboxElement.getAttribute('aria-checked');
             }
             return {
                 id: id, text: text, parentID: pid, selected: selected, expanded: expanded,
@@ -4010,6 +4014,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 null, level, drop));
         if (dragObj.element.id !== this.element.id) {
             dragObj.triggerEvent();
+            this.isNodeDropped = true;
+            this.fields.dataSource = this.treeData;
         }
         this.triggerEvent();
     }

@@ -12,6 +12,12 @@
         border-radius: $skeleton-border-radius;
       }
 
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
+        &.e-skeleton-text {
+          border-width: $skeleton-text-boder-width;
+        }
+      }
+
       &.e-skeleton-circle {
         border-radius: 50%;
       }

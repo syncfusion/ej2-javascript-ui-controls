@@ -157,6 +157,7 @@ export class Tooltip {
                     args.cancel = true;
                 }
             });
+            this.toolTipObj.content = argsData.content as string;
             if (!this.parent.isAdaptive && args.event.type === 'mouseover') {
                 this.currentTarget = args.target;
                 EventHandler.add(this.currentTarget, 'mousemove', this.mouseMoveHandler.bind(this));

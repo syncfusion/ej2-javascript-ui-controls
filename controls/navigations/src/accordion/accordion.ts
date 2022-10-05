@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { isVisible, closest, attributes, detach, select, addClass, append } from '@syncfusion/ej2-base';
+import { isVisible, closest, attributes, detach, select, addClass, removeClass, append } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, Complex } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper, isRippleEnabled } from '@syncfusion/ej2-base';
@@ -1462,8 +1462,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                             this.updateItem(item, index);
                         }
                         if (property === 'cssClass' && !isNOU(item)) {
-                            item.classList.remove(oldVal);
-                            item.classList.add(newVal);
+                            if (oldVal) { removeClass([item], oldVal.split(' ')); }
+                            if (newVal) { addClass([item], newVal.split(' ')); }
                         }
                         if (property === 'visible' && !isNOU(item)) {
                             if (Object(newProp.items[index])[property] === false) {

@@ -1,4 +1,4 @@
-import { KeyboardEvents, compile, Property, EventHandler, Animation, AnimationModel, KeyboardEventArgs, formatUnit, append } from '@syncfusion/ej2-base';
+import { KeyboardEvents, compile, Property, EventHandler, Animation, AnimationModel, KeyboardEventArgs, formatUnit, append, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, detach, Event, EmitType, Complex, addClass, removeClass, closest, isUndefined, getValue, NotifyPropertyChanges, Browser } from '@syncfusion/ej2-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';
@@ -56,6 +56,7 @@ export class Mention extends DropDownBase {
     private spinnerElement: HTMLElement;
     private spinnerTemplateElement: HTMLElement;
     private lineBreak: boolean;
+    private selectedElementID : string;
 
     // Mention Options
 
@@ -761,6 +762,9 @@ export class Mention extends DropDownBase {
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
         super.onActionComplete(ulElement, list, e);
         if (this.isActive) {
+            if (!isNullOrUndefined(ulElement)) {
+                attributes(ulElement, { 'id': this.inputElement.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
+            }
             let focusItem:HTMLLIElement = ulElement.querySelector('.' + dropDownBaseClasses.li);
             if (focusItem) {
                 focusItem.classList.add(dropDownBaseClasses.selected);
@@ -895,6 +899,11 @@ export class Mention extends DropDownBase {
      */
     public showPopup(): void {
         this.renderPopup();
+        attributes(this.inputElement, { 'aria-activedescendant': this.selectedElementID});
+        if(this.selectedElementID == null)
+        {
+            this.inputElement.removeAttribute('aria-activedescendant');
+        }
     }
 
     /* eslint-disable valid-jsdoc, jsdoc/require-param */
@@ -913,6 +922,8 @@ export class Mention extends DropDownBase {
             return;
         }
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
+        this.inputElement.removeAttribute('aria-owns');
+        this.inputElement.removeAttribute('aria-activedescendant');
         this.beforePopupOpen = false;
         const animModel: AnimationModel = {
             name: 'FadeOut',
@@ -971,6 +982,12 @@ export class Mention extends DropDownBase {
                 popupEle.style.visibility = 'visible';
                 if (!isNullOrUndefined(this.list)) {
                     this.unWireListEvents(); this.wireListEvents();
+                }
+                this.selectedElementID = this.selectedLI ? this.selectedLI.id : null;
+                attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options', 'aria-activedescendant': this.selectedElementID });
+                if(this.selectedElementID == null)
+                {
+                    this.inputElement.removeAttribute('aria-activedescendant');
                 }
                 const animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
                 this.beforePopupOpen = true;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.48 (2022-10-05)
+
+### Mention
+
+#### Bug Fixes
+
+- Issue with `Localization` and `Accessibility` has been resolved.
+
 ## 20.3.47 (2022-09-29)
 
 ### Mention

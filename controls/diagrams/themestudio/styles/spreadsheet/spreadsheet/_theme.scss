@@ -250,6 +250,10 @@
           @if $skin-name == 'bootstrap5' {
             color: $tbar-active-icon-color;
           }
+
+          @if $skin-name == 'bootstrap4' {
+            color: $tbar-hover-font;
+          }
         }
       }
 

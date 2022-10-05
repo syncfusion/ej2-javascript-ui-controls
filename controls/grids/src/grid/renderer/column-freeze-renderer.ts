@@ -88,7 +88,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         for (let i: number = 0, len: number = fRows.length; i < len; i++) {
             if (isModeChg && (((wrapMode === 'Content' && tHead.contains(fRows[i]))
                 || (wrapMode === 'Header' && tBody.contains(fRows[i]))) || (wrapMode === 'Header' && isContReset)) || isStackedHdr) {
-                if (frRows[i]) { frRows[i].style.height = null; }
+                if (!isNullOrUndefined(frRows) && frRows[i]) { frRows[i].style.height = null; }
                 fRows[i].style.height = null;
                 mRows[i].style.height = null;
             }

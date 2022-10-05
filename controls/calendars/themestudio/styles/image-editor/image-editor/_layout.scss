@@ -36,12 +36,6 @@
                 padding-top: 4px;
               }
             }
-
-            & .e-check {
-              @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
-                font-size: 26px !important; /* stylelint-disable-line declaration-no-important */
-              }
-            }
           }
         }
 
@@ -75,14 +69,6 @@
             & .e-icons.e-caret {
               font-size: 10px;
             }
-          }
-
-          & .e-transform {
-            font-size: $image-editor-transform-bigger-font-size;
-          }
-
-          & .e-select {
-            font-size: $image-editor-select-bigger-font-size;
           }
         }
 
@@ -121,12 +107,6 @@
               font-size: $image-editor-tbar-btn-fontsize;
               @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
                 padding-top: 4px;
-              }
-            }
-
-            & .e-check {
-              @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
-                font-size: 22px !important; /* stylelint-disable-line declaration-no-important */
               }
             }
           }
@@ -202,14 +182,6 @@
             & .e-icons.e-caret {
               font-size: 10px !important; /* stylelint-disable-line declaration-no-important */
             }
-          }
-
-          & .e-transform {
-            font-size: $image-editor-transform-font-size;
-          }
-
-          & .e-select {
-            font-size: $image-editor-select-font-size;
           }
         }
 

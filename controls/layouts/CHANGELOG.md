@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.48 (2022-10-05)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I395833` - The issue with the "Facing accessibility testing failure in the Dashboard Layout component" has been resolved.
+
 ## 20.2.46 (2022-08-30)
 
 ### Dashboard Layout

@@ -602,7 +602,7 @@ export class BasicFormulas {
         }
         const date: Date = this.parent.fromOADate(days);
         if (date.toString() !== 'Invalid Date') {
-            return date.getFullYear() + '/' + this.parent.calculateDate((date.getMonth() + 1).toString()) + '/' + this.parent.calculateDate(date.getDate().toString());
+            return this.parent.calculateDate((date.getMonth() + 1).toString()) + '/' + this.parent.calculateDate(date.getDate().toString()) + '/' + date.getFullYear();
         }
         return days.toString();
     }

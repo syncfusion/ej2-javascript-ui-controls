@@ -47,7 +47,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private dragPoint: ActivePoint = {startX: 0, startY: 0, endX: 0, endY: 0};  // updates drag start and end points in mousedown and mousemove
     private diffPoint: Point = {x: 0, y: 0};  // updates resize points
     private oldPoint: Point = {} as Point;
-    private zoomedImg: ActivePoint = {startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0}; // calculates zoomed image's points
     private objColl: SelectionPoint[] = [];  // shapes, text obj collection
     private undoRedoColl: Transition[] = [];
     private imgDataColl: Transition[] = [];  // collection of Image Data mainly used for reset state
@@ -2287,7 +2286,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private updateCanvas(): void {
-        this.zoomedImg.width = this.baseImg.width; this.zoomedImg.height = this.baseImg.height;
         this.lastX = this.baseImg.width / 2; this.lastY = this.baseImg.height / 2;
         let wrapperWidth: number;
         const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
@@ -2681,6 +2679,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private mouseDownEventHandler(e: MouseEvent & TouchEvent): void {
+        if (e.type === 'touchstart' && e.currentTarget === this.lowerCanvas && this.imgDataColl.length === 0) {
+            return;
+        }
         const ratio: Dimension = this.calcRatio();
         if (this.dragCanvas) {
             this.canvasMouseDownHandler(e);
@@ -2962,6 +2963,16 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
         this.lowerCanvas.width = this.upperCanvas.width = this.element.offsetWidth;
         this.lowerCanvas.height = this.upperCanvas.height = this.element.offsetHeight;
+        const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
+        if (!isNullOrUndefined(canvasWrapper)) {
+            canvasWrapper.style.width = this.element.offsetWidth + 'px';
+            canvasWrapper.style.height = this.element.offsetHeight + 'px';
+            if (Browser.isDevice) {
+                canvasWrapper.style.height = (parseFloat(canvasWrapper.style.height) - (2 * this.toolbarHeight)) - 3 + 'px';
+            } else {
+                canvasWrapper.style.height = (parseFloat(canvasWrapper.style.height) - this.toolbarHeight) - 3 + 'px';
+            }
+        }
         this.redrawImg();
         // eslint-disable-next-line @typescript-eslint/tslint/config
         this.lowerCanvas.toBlob(function (blob) {
@@ -2977,7 +2988,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private screenOrientation(): void {
         if (Browser.isDevice) {
             this.isScreenOriented = true;
-            this.adjustToScreen();
+            setTimeout(this.adjustToScreen.bind(this), 100);
         }
     }
 
@@ -3712,21 +3723,25 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.textBox.value = actObj.keyHistory;
                 this.textBox.style.overflow = 'hidden';
                 this.textBox.style.height = 'auto';
-                this.setTextBoxWidth();
-                this.setTextBoxHeight();
                 if (degree % 90 === 0 && degree % 180 !== 0 && degree !== 0) {
                     if (this.factor === 1) {
+                        this.textBox.style.width = (actObj.activePoint.height / ratio.height) + 'px';
                         this.textBox.style.height = (actObj.activePoint.width / ratio.width) + 'px';
                     } else {
+                        this.textBox.style.width = actObj.activePoint.height + 'px';
                         this.textBox.style.height = actObj.activePoint.width + 'px';
                     } 
                 } else {
                     if (this.factor === 1) {
+                        this.textBox.style.width = (actObj.activePoint.width / ratio.width) + 'px';
                         this.textBox.style.height = (actObj.activePoint.height / ratio.height) + 'px';
                     } else {
+                        this.textBox.style.width = actObj.activePoint.width + 'px';
                         this.textBox.style.height = actObj.activePoint.height + 'px';
                     }    
                 }
+                this.setTextBoxWidth();
+                this.setTextBoxHeight();
             } else {
                 this.applyActObj();
             }
@@ -3758,40 +3773,50 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         if (degree === 0) {
             if (flip.toLowerCase() === 'vertical') {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.height - (this.lowerCanvas.height - actObj.activePoint.endY)) / ratio.height) + 'px';
+                this.textBox.style.maxHeight = (parseFloat(this.lowerCanvas.style.maxHeight) - (parseFloat(this.lowerCanvas.style.maxHeight)
+                - parseFloat(this.textBox.style.top))) + 'px';
             }
             else {
                 textBoxTop = parseFloat(this.textBox.style.top) - parseFloat(this.lowerCanvas.style.top);
-                this.textBox.style.maxHeight = ((this.lowerCanvas.height / ratio.height) - textBoxTop) + 'px';
+                this.textBox.style.maxHeight = (parseFloat(this.lowerCanvas.style.maxHeight) - textBoxTop) + 'px';
             }
         } else if (degree === 90) {
             if (flip.toLowerCase() === 'horizontal') {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.width - actObj.activePoint.startX) / ratio.width) + 'px';
+                this.textBox.style.maxHeight = (parseFloat(this.lowerCanvas.style.maxWidth) - (parseFloat(this.textBox.style.left)
+                - parseFloat(this.lowerCanvas.style.left))) + 'px';
             }
             else {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.width - (this.lowerCanvas.width - actObj.activePoint.endX)) / ratio.width) + 'px';
+                this.textBox.style.maxHeight = (parseFloat(this.textBox.style.left)
+                - parseFloat(this.lowerCanvas.style.left)) + 'px';
             }
         } else if (degree === 180) {
             if (flip.toLowerCase() === 'vertical') {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.height - actObj.activePoint.startY) / ratio.height) + 'px';
+                textBoxTop = parseFloat(this.textBox.style.top) - parseFloat(this.lowerCanvas.style.top);
+                this.textBox.style.maxHeight = (parseFloat(this.lowerCanvas.style.maxHeight) - textBoxTop) + 'px';
             }
             else {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.height - (this.lowerCanvas.height - actObj.activePoint.endY)) / ratio.height) + 'px';
+                this.textBox.style.maxHeight = (parseFloat(this.textBox.style.top)
+                - parseFloat(this.lowerCanvas.style.top)) + 'px';
             }
         } else if (degree === 270) {
             if (flip.toLowerCase() === 'horizontal') {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.width - (this.lowerCanvas.width - actObj.activePoint.endX)) / ratio.width) + 'px';
+                this.textBox.style.maxHeight = (parseFloat(this.textBox.style.left)
+                - parseFloat(this.lowerCanvas.style.left)) + 'px';
             }
             else {
-                this.textBox.style.maxHeight = ((this.lowerCanvas.width - actObj.activePoint.startX) / ratio.width) + 'px';
+                this.textBox.style.maxHeight = parseFloat(this.lowerCanvas.style.maxWidth) - (parseFloat(this.textBox.style.left)
+                - parseFloat(this.lowerCanvas.style.left)) + 'px';
             }
         }
-        this.textBox.style.maxHeight = ((parseFloat(this.textBox.style.maxHeight) - parseFloat(this.textBox.style.fontSize) * 0.5)) * this.factor + 'px';
+        this.textBox.style.maxHeight = ((parseFloat(this.textBox.style.maxHeight) - parseFloat(this.textBox.style.fontSize) * 0.5)) + 'px';
     }
 
     private setTextBoxWidth(e?: KeyboardEvent): void {
         const ratio: Dimension = this.calcRatio();
         const text: string = this.getMaxText(true);
+        if (this.textBox.style.display === 'block') {
+            this.updateFontStyles(true);
+        } else {this.updateFontStyles(); }
         let textBoxWidth: number = (this.upperContext.measureText(text).width + (parseFloat(this.textBox.style.fontSize) / 2));
         let letterWidth: number = e ? this.upperContext.measureText(String.fromCharCode(e.which)).width : 0;
         let actObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
@@ -3817,52 +3842,52 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if ((!isNullOrUndefined(e) && parseFloat(this.textBox.style.width) < (textBoxWidth + letterWidth)) || isNullOrUndefined(e)) {
             if (degree === 0) {
                 if (flip.toLowerCase() === 'horizontal') {
-                    if (actObj.activePoint.endX - textBoxWidth - letterWidth > 0) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.width) + 'px';
+                    if ((parseFloat(this.textBox.style.left) - parseFloat(this.lowerCanvas.style.left)) - textBoxWidth - letterWidth > 0) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
                 else {
-                    if (textBoxWidth + letterWidth + actObj.activePoint.startX < this.lowerCanvas.width) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.width) + 'px';
+                    if ((parseFloat(this.lowerCanvas.style.maxWidth) - (parseFloat(this.textBox.style.left)
+                    - parseFloat(this.lowerCanvas.style.left))) > (textBoxWidth + letterWidth)) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
             } else if (degree === 90) {
                 if (flip.toLowerCase() === 'vertical') {
-                    if (actObj.activePoint.endY - textBoxWidth - letterWidth > 0) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.height) + 'px';
+                    if ((parseFloat(this.textBox.style.top) - parseFloat(this.lowerCanvas.style.top)) - textBoxWidth - letterWidth > 0) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
                 else {
-                    if (textBoxWidth + letterWidth + actObj.activePoint.startY < this.lowerCanvas.height) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.height) + 'px';
+                    if ((parseFloat(this.lowerCanvas.style.maxHeight) - (parseFloat(this.textBox.style.top)
+                    - parseFloat(this.lowerCanvas.style.top))) > (textBoxWidth + letterWidth)) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
             } else if (degree === 180) {
                 if (flip.toLowerCase() === 'horizontal') {
-                    if (textBoxWidth + letterWidth + actObj.activePoint.startX < this.lowerCanvas.width) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.width) + 'px';
+                    if ((parseFloat(this.lowerCanvas.style.maxWidth) - (parseFloat(this.textBox.style.left)
+                    - parseFloat(this.lowerCanvas.style.left))) > (textBoxWidth + letterWidth)) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
                 else {
-                    if (actObj.activePoint.endX - textBoxWidth - letterWidth > 0) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.width) + 'px';
+                    if ((parseFloat(this.textBox.style.left) - parseFloat(this.lowerCanvas.style.left)) - textBoxWidth - letterWidth > 0) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
             } else if (degree === 270) {
                 if (flip.toLowerCase() === 'vertical') {
-                    if (textBoxWidth + letterWidth + actObj.activePoint.startY < this.lowerCanvas.height) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.height) + 'px';
+                    if ((parseFloat(this.lowerCanvas.style.maxHeight) - (parseFloat(this.textBox.style.top)
+                    - parseFloat(this.lowerCanvas.style.top))) > (textBoxWidth + letterWidth)) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
                 else {
-                    if (actObj.activePoint.endY - textBoxWidth - letterWidth > 0) {
-                        this.textBox.style.width = ((textBoxWidth + letterWidth) / ratio.height) + 'px';
+                    if ((parseFloat(this.textBox.style.top) - parseFloat(this.lowerCanvas.style.top)) - textBoxWidth - letterWidth > 0) {
+                        this.textBox.style.width = (textBoxWidth + letterWidth) + 'px';
                     }
                 }
-            }
-            this.textBox.style.width = parseFloat(this.textBox.style.width) * this.factor + 'px';
-            if (isNullOrUndefined(e)) {
-                this.textBox.style.width = parseFloat(this.textBox.style.width) + parseFloat(this.textBox.style.fontSize) + 'px';
             }
         }
     }
@@ -5583,14 +5608,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
-    private updateFontStyles(): void {
+    private updateFontStyles(isTextBox?: boolean): void {
         this.upperContext.strokeStyle = this.activeObj.strokeSettings.strokeColor;
         this.upperContext.fillStyle = this.activeObj.strokeSettings.strokeColor;
         let textStyle: string = '';
         if (this.activeObj.textSettings.bold) {textStyle = 'bold '; }
         if (this.activeObj.textSettings.italic) {textStyle = 'italic '; }
         if (this.activeObj.textSettings.bold && this.activeObj.textSettings.italic) {textStyle = 'italic bold '; }
-        const fontSize: number = this.activeObj.textSettings.fontSize;
+        const fontSize: number = isTextBox ? parseFloat(this.textBox.style.fontSize) : this.activeObj.textSettings.fontSize;
         const fontFamily: string = this.textBox.style.display === 'block' ? this.textBox.style.fontFamily : this.activeObj.textSettings.fontFamily;
         this.upperContext.font = textStyle + fontSize + 'px' + ' ' + fontFamily;
     }
@@ -5708,20 +5733,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
-    private redrawSelection(isZoomed?: boolean): void {
+    private redrawSelection(): void {
         const ratio: Dimension = this.calcRatio();
-        if (isZoomed) {
-            this.activeObj.activePoint.startX = (this.lowerCanvas.width - this.zoomedImg.width) / 2;
-            this.activeObj.activePoint.startY = (this.lowerCanvas.height - this.zoomedImg.height) / 2;
-            this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + this.zoomedImg.width;
-            this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + this.zoomedImg.height;
-            this.activeObj.activePoint.width = this.zoomedImg.width; this.activeObj.activePoint.height = this.zoomedImg.height;
-        } else {
-            this.activeObj.activePoint.startX = 0; this.activeObj.activePoint.startY = 0;
-            this.activeObj.activePoint.endX = this.lowerCanvas.width; this.activeObj.activePoint.endY = this.lowerCanvas.height;
-            this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
-            this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
-        }
+        this.activeObj.activePoint.startX = 0; this.activeObj.activePoint.startY = 0;
+        this.activeObj.activePoint.endX = this.lowerCanvas.width; this.activeObj.activePoint.endY = this.lowerCanvas.height;
+        this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
+        this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
         this.updateActiveObject(ratio, this.activeObj.activePoint, this.activeObj);
         this.drawObject('duplicate', this.activeObj);
     }

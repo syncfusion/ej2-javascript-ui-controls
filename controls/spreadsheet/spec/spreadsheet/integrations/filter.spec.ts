@@ -331,11 +331,18 @@ describe('Filter ->', () => {
                 });
             });
         });
-        it('Invalid date rendering and filtering check', (done: Function) => {
+        it('Invalid date rendering and filtering check, SF-407671 -> Date filter options dialog date selecting is not proper', (done: Function) => {
             helper.edit('B12', '10/10/202');
             const cell: HTMLElement = helper.invoke('getCell', [11, 1]);
             expect(cell.classList.contains('e-right-align')).toBeFalsy();
             expect(cell.textContent).toBe('10/10/202');
+            const actionBegin: any = spreadsheet.actionBegin;
+            spreadsheet.actionBegin = (args: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    expect(args.filterModel.options.format).toBe('EEEE, MMMM d, y');
+                    spreadsheet.actionBegin = actionBegin;
+                }
+            };
             helper.invoke('selectRange', ['B1']);
             const td: HTMLTableCellElement = helper.invoke('getCell', [0, 1]);
             helper.invoke('getCell', [0, 1]).focus();

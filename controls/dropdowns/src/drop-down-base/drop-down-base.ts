@@ -640,7 +640,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
             } else {
-                this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
+                this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' :
+                this.getModuleName() === 'mention' ? 'mention' : 'dropdowns', l10nLocale, this.locale);
             }
             const content: string = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');

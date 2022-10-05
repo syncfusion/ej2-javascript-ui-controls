@@ -2860,7 +2860,7 @@
 
     & .e-validation-list {
 
-      @if $skin-name != 'FluentUI' and $skin-name != 'FluentUI-dark' and $skin-name != 'material' and $skin-name != 'material-dark' and $skin-name != 'highcontrast' {
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         width: $bigger-validation-list-width;
       }
 
@@ -2870,7 +2870,7 @@
           bottom: $bigger-validation-list-icon-bottom;
         }
 
-        @if $skin-name != 'FluentUI' and $skin-name != 'FluentUI-dark' and $skin-name != 'material' and $skin-name != 'material-dark' and $skin-name != 'tailwind' and $skin-name != 'tailwind-dark' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
           min-height: $bigger-validation-list-icon-height-width;
           min-width: $bigger-validation-list-icon-height-width;
         }

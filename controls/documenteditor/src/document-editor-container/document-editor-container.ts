@@ -16,7 +16,7 @@ import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProp
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange } from '../document-editor/base/constants';
+import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 
 /**
@@ -935,6 +935,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
         this.documentEditor.on(protectionTypeChangeEvent,this.showPropertiesPaneOnSelection,this);
         this.documentEditor.on(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks, this);
+        this.documentEditor.on(internalStyleCollectionChange, this.updateStyleCollection, this);
     }
     private unWireEvents(): void {
         if (isNullOrUndefined(this.documentEditor)) {
@@ -948,6 +949,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
         this.documentEditor.off(internalviewChangeEvent, this.onViewChange);
         this.documentEditor.off(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks);
+        this.documentEditor.off(internalStyleCollectionChange, this.updateStyleCollection);
     }
     private onCommentBegin(): void {
         if (this.toolbarModule) {
@@ -997,6 +999,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.documentEditor.resize();
 
+    }
+    private updateStyleCollection(): void {
+        if (!isNullOrUndefined(this.tableProperties) && !isNullOrUndefined(this.tableProperties.tableTextProperties) && !isNullOrUndefined(this.tableProperties.tableTextProperties.paragraph)) {
+            this.tableProperties.tableTextProperties.paragraph.updateStyleNames();
+        }
     }
     /**
      * Resizes the container component and its sub elements based on given size or client size.
@@ -1062,6 +1069,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
+        this.updateStyleCollection();
     }
     /**
      * @private

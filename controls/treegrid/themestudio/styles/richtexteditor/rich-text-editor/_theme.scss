@@ -467,7 +467,7 @@
     height: 185px;
     margin: 0 auto;
     text-align: center;
-    width: 300px;
+    width: $rte-drop-text-width;
   }
 
   .e-dialog .e-vid-uploadwrap .e-droptext {
@@ -476,7 +476,7 @@
 
   .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap .e-droptext {
     margin: 0 auto;
-    width: 250px;
+    width: $rte-drop-text-mobile-width;
   }
 
   .e-linkheader {

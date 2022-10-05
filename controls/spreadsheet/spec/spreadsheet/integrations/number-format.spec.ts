@@ -9,7 +9,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
     describe('Custom number format ->', (): void => {
-        let sheet: SheetModel;
+        let sheet: any;
         beforeAll((done: Function) => {
             model = {
                 sheets: [{ rows: [{ cells: [{ value: 'Mar-2020' }, { value: 'Apr-10' }, { value: '2020-May' }, { value: '22-jun' },
@@ -57,6 +57,9 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.invoke('updateCell', [{ value: '120' }, 'A2']);
             expect(cellEle.textContent).toBe('120');
             expect(cellEle.style.color).toBe('blue');
+            helper.invoke('updateCell', [{ value: '111111111111111111111' }, 'A4']);
+            expect(sheet.rows[3].cells[0].value).toBe(111111111111111110000);
+            expect(helper.invoke('getCell', [3, 0]).textContent).toBe('1.11111E+20');
             done();
         });
     });
@@ -210,6 +213,17 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 setCurrencyCode('USD');
                 spreadsheet.dataBind();
                 expect(cellEle.textContent).toBe('$10.00');
+                done();
+            });
+            it('SF-407064 - Scientific custom format with decimal places more than two is not working', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 1237658 }, 'B3']);
+                helper.invoke('numberFormat', ['0.000000E+00', 'B3']);
+                const cellEle: HTMLElement = helper.invoke('getCell', [2, 1]);
+                expect(cellEle.textContent).toBe('1.237658E+06');
+                helper.invoke('numberFormat', ['0.0000E+00', 'B3']);
+                expect(cellEle.textContent).toBe('1.2377E+06');
+                helper.invoke('numberFormat', ['0.000E+0', 'B3']);
+                expect(cellEle.textContent).toBe('1.238E+6');
                 done();
             });
             it('Custom formatted cell value changed while clicking on column header (Aggregate calculation updating the cell model)', (done: Function) => {

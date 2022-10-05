@@ -52,10 +52,14 @@ $sd-disabled-li-bg: $grey-white !default;
 $sd-disabled-li-border-color: $grey-cc !default;
 $sd-disabled-font-color: #000000 !default;
 
-$sd-active-li-bg: $grey-e6 !default;
-$sd-active-li-border-color: $grey-ad !default;
-$sd-active-font-color: #000000 !default;
+$sd-focus-li-bg: $grey-e6 !default;
+$sd-focus-li-border-color: $grey-ad !default;
+$sd-focus-font-color: #000000 !default;
 
 $sd-hover-li-bg: $grey-e6 !default;
 $sd-hover-li-border-color: $grey-ad !default;
 $sd-hover-font-color: #000000 !default;
+
+$sd-active-li-bg: $grey-white !default;
+$sd-active-li-border-color: $grey-cc !default;
+$sd-active-font-color: #000000 !default;

@@ -4571,19 +4571,31 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             (this as any).clearTemplate(['columnTemplate'], undefined, () => {
                 const cells: string = 'cells';
                 const rowIdx: string = 'index';
-                const rows: Element[] = this.getDataRows();
+                const isChildGrid: boolean = this.childGrid && this.element.querySelectorAll('.e-childgrid').length ? true : false;
+                const rows: Element[] | NodeListOf<Element> = isChildGrid ? this.getContentTable().querySelectorAll('.e-row') :
+                    this.getDataRows();
                 const indent: number = this.getIndentCount();
+                let childIndent: number = 0;
+                let isChildRow: boolean =  false;
                 const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
                 for (let j: number = 0; j < rows.length; j++) {
-                    const rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
+                    let rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
+                    if (isChildGrid && !rowsObj && parentsUntil(rows[j], 'e-childgrid')) {
+                        const gridObj: IGrid = (parentsUntil(rows[j], 'e-childgrid') as EJ2Intance).ej2_instances[0];
+                        rowsObj = gridObj.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
+                        childIndent  = gridObj.getIndentCount();
+                        isChildRow = true;
+                    }
                     for (let i: number = 0; i < rowsObj[cells].length; i++) {
                         const cell: Cell<Column> = rowsObj[cells][i];
                         if (cell.isTemplate) {
                             const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                            const td: Element = this.getCellFromIndex(j, i - indent);
+                            const td: Element = isChildGrid ? rows[j].children[cell.index + (isChildRow ? childIndent : indent)] :
+                                this.getCellFromIndex(j, i - indent);
                             cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
                         }
                     }
+                    isChildRow = false;
                 }
             });
         }
@@ -4781,9 +4793,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private rowObject(rows: Row<Column>[], uid: string): Row<Column> {
-        for (const row of rows) {
-            if (row.uid === uid) {
-                return row;
+        if (rows) {
+            for (const row of rows) {
+                if (row.uid === uid) {
+                    return row;
+                }
             }
         }
         return null;

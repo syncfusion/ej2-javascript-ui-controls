@@ -125,6 +125,35 @@ describe('Context-', () => {
             expect((ganttObj.flatData[10] as IGanttData).taskData[ganttObj.taskFields.id]).toBe(10);
         });
     });
+    describe('Indent and adding record -', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(selfGanttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });    
+        it('indent record', () => {
+            ganttObj.selectionModule.selectRow(8);
+            let indent: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Indent' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Below' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect((ganttObj.flatData[8] as IGanttData).childRecords.length).toBe(1);
+        });
+    });
     describe('header menu -', () => {
         beforeAll((done: Function) => {
             ganttObj = createGantt(ganttModel, done);
@@ -264,7 +293,7 @@ describe('Context-', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData.length).toBe(44);
+            expect(ganttObj.currentViewData.length).toBe(43);
         });
     });
      describe('Content menu -', () => {

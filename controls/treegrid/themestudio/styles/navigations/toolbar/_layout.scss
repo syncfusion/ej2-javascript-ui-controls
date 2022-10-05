@@ -1253,6 +1253,8 @@
           }
 
           @if $tbar-skin == 'bootstrap' {
+            line-height: 27px;
+
             &:hover,
             &:focus,
             &:active {
@@ -1260,6 +1262,8 @@
             }
           }
           @if $tbar-skin == 'bootstrap4' {
+            line-height: 27px;
+
             &:focus,
             &:active,
             &:hover {

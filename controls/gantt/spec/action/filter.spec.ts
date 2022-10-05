@@ -332,7 +332,7 @@ describe('Gantt filter support', () => {
         it('Task Name check box count', (done: Function) => {
             ganttObj.actionComplete = function (args: any): void {
               if(args.requestType === 'filterchoicerequest'){
-              expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length).toBe(32);
+              expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length).toBe(6);
               done();
               }
             }
@@ -350,8 +350,8 @@ describe('Gantt filter support', () => {
             triggerMouseEvent(element, 'click');
             let element1: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[1]
             triggerMouseEvent(element1, 'click');
-            let element2: any = document.getElementsByClassName('e-footer-content')[0].children[0];
-            triggerMouseEvent(element2, 'click');
+            let element3: any = document.getElementsByClassName("e-control e-btn e-lib e-primary e-flat")[0];
+            triggerMouseEvent(element3, 'click');
             done();
         });
     });

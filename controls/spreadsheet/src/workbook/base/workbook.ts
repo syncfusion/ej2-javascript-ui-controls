@@ -1619,7 +1619,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         if (!cell) { return ''; }
         if (cell.format && !isNullOrUndefined(cell.value)) {
             const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-                formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true, cell: cell
+                formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true, cell: cell, skipRowFill: true
             };
             this.notify(events.getFormattedCellObject, eventArgs);
             return eventArgs.formattedText as string;

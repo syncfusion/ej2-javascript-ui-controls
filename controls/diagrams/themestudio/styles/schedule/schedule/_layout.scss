@@ -2885,20 +2885,12 @@
 
     .e-vertical-view {
       .e-header-cells {
-        @if ($schedule-skin == 'FluentUI' or $schedule-skin == 'bootstrap5') {
-          height: $schedule-timezone-enable-bgr-height;
-          padding: $schedule-tbar-btn-bgr-padding;
-        }
-
         .e-header-day {
           font-size: $schedule-header-day-bgr-font-size;
         }
 
         .e-header-date {
           font-size: $schedule-header-date-bgr-font-size;
-          @if ($schedule-skin == 'FluentUI') {
-            padding-top: $schedule-more-popup-close-margin-top;
-          }
         }
       }
 

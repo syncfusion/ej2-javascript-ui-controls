@@ -542,6 +542,9 @@
                 input.dataSource = input.dataSource.dataSource.json;
                 input.value = "3-Child Task 2";
                 input.dataBind();
+                let idInput: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainerid')).ej2_instances[0];
+                idInput.value = "3";
+                idInput.dataBind();
                 let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
                 triggerMouseEvent(toolbar, 'click');
                 let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
@@ -1230,7 +1233,60 @@
             
         });
     });
-
+    describe('Split task', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: splitTasksData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    durationUnit: 'DurationUnit',
+                    segments: 'Segments',
+                },
+                durationUnit: 'Hour',
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('end date validation when remove all segments', () => {
+            ganttObj.openEditDialog(3);
+            let selectSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(4)') as HTMLElement;
+            triggerMouseEvent(selectSegment, 'click');
+        });
+        it('end date validation when remove all segments', () => {
+            let selectRow: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+            triggerMouseEvent(selectRow, 'dblclick');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.element.getElementsByClassName('e-row')[2].children[3].innerHTML).toBe('2/8/2019')
+        });
+    });
  	describe('DataManager data ', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {

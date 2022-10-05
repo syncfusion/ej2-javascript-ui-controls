@@ -1041,18 +1041,26 @@ export class TextPosition {
                         return;
                     }
                     const offset: number = span.line.getOffset(span, wordEndIndex + indexInInline);
-
-                    if ((excludeSpace || txt[wordEndIndex] !== ' ') && !endSelection && span.line.paragraph === endPosition.paragraph && offset !== endPosition.offset) {
+                    let spaceCharacter: string[] = [' ','　'];
+                    if ((excludeSpace || spaceCharacter.indexOf(txt[wordEndIndex]) === -1) && !endSelection && span.line.paragraph === endPosition.paragraph && offset !== endPosition.offset) {
                         endSelection = true;
                         endPosition.setPositionParagraph(span.line, offset);
                         return;
                     }
-                    wordEndIndex++;
-                    while (wordEndIndex < txt.length && HelperMethods.wordSplitCharacters.indexOf(txt[wordEndIndex]) !== -1) {
-                        if (txt[wordEndIndex] !== ' ' && txt[wordEndIndex] !== '　') {
+                    let isSpaceCharacter: boolean = false;
+                    if (spaceCharacter.indexOf(txt[wordEndIndex]) !== -1 &&  spaceCharacter.indexOf(txt[wordEndIndex + 1]) === -1) {
+                        isSpaceCharacter = true;
+                        wordEndIndex++;
+                    }
+                    while (wordEndIndex < txt.length && !isSpaceCharacter) {
+                        if (HelperMethods.wordSplitCharacters.indexOf(txt[wordEndIndex]) === -1) {
                             break;
                         }
                         wordEndIndex++;
+                        if (spaceCharacter.indexOf(txt[wordEndIndex]) !== -1 &&  spaceCharacter.indexOf(txt[wordEndIndex + 1]) === -1 && HelperMethods.wordSplitCharacters.indexOf(txt[wordEndIndex + 1]) !== -1) {
+                            wordEndIndex++;
+                            break;
+                        }
                     }
                     endSelection = true;
                     if (wordEndIndex < txt.length) {
@@ -1311,7 +1319,12 @@ export class TextPosition {
                             endPosition.setPositionParagraph(span.line, offset);
                         }
                     } else if (span.previousNode instanceof TextElementBox) {
-
+                        let previousNodeText: string = span.previousNode.text;
+                        if (HelperMethods.wordSplitCharacters.indexOf(span.text[0]) !== -1 && HelperMethods.wordSplitCharacters.indexOf(previousNodeText[previousNodeText.length - 1]) === -1) {
+                            let offset: number = span.line.getOffset(span, wordStartIndex);
+                            endPosition.setPositionParagraph(span.line, offset);
+                            return;
+                        }
                         this.getPreviousWordOffset(span.previousNode, selection, (span.previousNode as TextElementBox).length, type, isInField, isStarted, endSelection, endPosition);
                     } else {
                         endPosition.setPositionParagraph(span.line, span.line.getOffset(span, 0));

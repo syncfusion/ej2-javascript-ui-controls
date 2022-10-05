@@ -1902,6 +1902,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.btnObj[i].destroy();
             }
         }
+        if (!isNullOrUndefined(this.closeIconBtnObj)) {
+            this.closeIconBtnObj.destroy();
+        }
         if (!isNullOrUndefined(this.dragObj)) {
             this.dragObj.destroy();
         }

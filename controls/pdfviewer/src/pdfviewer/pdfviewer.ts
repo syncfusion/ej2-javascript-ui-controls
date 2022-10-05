@@ -6265,7 +6265,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 bounds = this.formFieldsModule.getDefaultBoundsforSign(bounds);
             }
             currentData.Bounds = bounds;
-            var fontSize: number = bounds.height / 1.25;
+            var fontSize: number = bounds.height / 1.35;
             let textWidth: number = this.formFieldsModule.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
             let widthRatio: number = 1;
             if (textWidth > bounds.width)
@@ -8122,7 +8122,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let allowServerDataBind: boolean = this.allowServerDataBinding;
         this.enableServerDataBinding(false);
         if (this.annotationModule) {
-            let module:any = this.annotationModule.textMarkupAnnotationModule;
+            let module: any = this.annotationModule.textMarkupAnnotationModule;
             const annotationSelect: number = module && module.selectTextMarkupCurrentPage;
             // eslint-disable-next-line
             let annotation: any = this.selectedItems.annotations[0];
@@ -8137,25 +8137,28 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     if (!this.viewerBase.isNewStamp && annotation && annotation.shapeAnnotationType !== 'HandWrittenSignature' && annotation.shapeAnnotationType !== 'SignatureText' && annotation.shapeAnnotationType !== 'SignatureImage') {
                         this.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
                     }
-                    this.clearSelection(this.viewerBase.activeElements.activePageID);
                 }
             }
         }
-        if(this.formDesignerModule){
+        if (this.formDesignerModule) {
             let formField: any = this.selectedItems.formFields[0];
             if (formField) {
                 if (this.formDesignerModule && formField && formField.formFieldAnnotationType) {
                     let field: IFormField = {
                         name: (formField as any).name, id: (formField as any).id, value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
-                        color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, borderColor: (formField as PdfFormFieldBaseModel).borderColor, 
+                        color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, borderColor: (formField as PdfFormFieldBaseModel).borderColor,
                         thickness: (formField as PdfFormFieldBaseModel).thickness, alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadonly, visibility: (formField as any).visibility,
-                        maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip, options: (formField as any).options, 
+                        maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip, options: (formField as any).options,
                         isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected
                     };
                     this.fireFormFieldUnselectEvent("formFieldUnselect", field, formField.pageIndex);
                 }
             }
-        } 
+        }
+        let proxy: any = this;
+        this.viewerBase.renderedPagesList.forEach(function (item) {
+            proxy.clearSelection(item);
+        });
         this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
         this.enableServerDataBinding(allowServerDataBind, true);
     }

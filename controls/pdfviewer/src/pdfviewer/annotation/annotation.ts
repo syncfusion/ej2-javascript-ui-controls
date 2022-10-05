@@ -416,7 +416,7 @@ export class Annotation {
                     // eslint-disable-next-line max-len
                     this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(annotation, 'Ink', 'delete');
                     undoElement = this.modifyInCollections(annotation, 'delete');
-                    this.updateImportAnnotationCollection(annotation, pageNumber, 'inkAnnotation');
+                    this.updateImportAnnotationCollection(annotation, pageNumber, 'signatureInkAnnotation');
                 } else {
                     undoElement = this.pdfViewer.selectedItems.annotations[0];
                     // eslint-disable-next-line max-len

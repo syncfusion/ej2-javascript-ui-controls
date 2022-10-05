@@ -2763,6 +2763,18 @@ describe('Grid Touch Selection', () => {
             gridObj.clearSelection();
         });
 
+        it('focus header checkbox, select checkall and navigate focus to down', () => {
+            gridObj.selectionSettings.persistSelection = false;
+            gridObj.selectionSettings.checkboxOnly = true;
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+            let args1: any = { action: 'downArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args1);
+        });
+
+        it('check select all datas', () => {
+            expect(gridObj.selectionModule.selectedRowIndexes.length).toBe((gridObj.dataSource as object[]).length);
+        });
+
         afterAll(() => {
             destroy(gridObj);
         });
@@ -4231,7 +4243,6 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             let rowSelecting = (args: RowSelectingEventArgs) => {
                 let rows: Row<Column>[] = gridObj.getRowsObject();
                 expect(args.rowIndex).toBe(1);
-                expect(args.rowIndexes).toBeUndefined();
                 expect(args.data).toBe(rows[args.rowIndex].data);
                 expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
                 expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
@@ -4240,7 +4251,6 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             let rowSelected = (args: RowSelectEventArgs) => {
                 let rows: Row<Column>[] = gridObj.getRowsObject();
                 expect(args.rowIndex).toBe(1);
-                expect(args.rowIndexes).toBeUndefined();
                 expect(args.data).toBe(rows[args.rowIndex].data);
                 expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
                 expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
@@ -4255,7 +4265,6 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             let rowDeselecting = (args: RowDeselectEventArgs) => {
                 let rows: Row<Column>[] = gridObj.getRowsObject();
                 expect(args.rowIndex).toBe(1);
-                expect(args.rowIndexes).toBeUndefined();
                 expect(args.data).toBe(rows[args.rowIndex].data);
                 expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
                 expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
@@ -4264,7 +4273,6 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             let rowDeselected = (args: RowDeselectEventArgs) => {
                 let rows: Row<Column>[] = gridObj.getRowsObject();
                 expect(args.rowIndex).toBe(1);
-                expect(args.rowIndexes).toBeUndefined();
                 expect(args.data).toBe(rows[args.rowIndex].data);
                 expect(args.row).toBe(gridObj.getRowByIndex(args.rowIndex));
                 expect(args.foreignKeyData).toBe(rows[args.rowIndex].foreignKeyData);
@@ -5306,6 +5314,37 @@ describe('EJ2-60999 Row selection is not updated properly inside the rowDeselect
         gridObj.rowDeselected = rowDeselected;
         (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[4].querySelector('.e-rowcell')).click();
         (gridObj.getHeaderContent().querySelectorAll('.e-headercell')[0] as HTMLElement).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-62907-Checking rowSelected event should have rowIndexes when single row is selected', () => {
+    let gridObj: Grid;
+    let rowSelected: (e?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { type: "Multiple", enableSimpleMultiRowSelection: true },
+                rowSelected: rowSelected,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('Checking rowIndexes', () => {
+        let rowSelected = (e: any) => {
+            expect(e.rowIndexes).toBeDefined();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
     });
     afterAll(() => {
         destroy(gridObj);

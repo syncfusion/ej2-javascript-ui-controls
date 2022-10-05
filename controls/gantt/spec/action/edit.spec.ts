@@ -193,7 +193,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Child',8);
             expect(ganttObj.flatData.length).toBe(13);
-            expect(ganttObj.dataSource[4].subtasks[0].subtasks.length).toBe(2);
+            expect(ganttObj.dataSource[4].subtasks[0].subtasks.length).toBe(1);
         });
 
         it('Add record as second child', () => {
@@ -201,7 +201,7 @@ describe('Gantt Edit support', () => {
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0],'Child',7);
             expect(ganttObj.flatData.length).toBe(14);
-            expect(ganttObj.dataSource[4].subtasks.length).toBe(4);
+            expect(ganttObj.dataSource[4].subtasks.length).toBe(2);
         });
 
         it('Add record below to child record', () => {

@@ -398,7 +398,7 @@ export class TrackChangesPane {
                             } else {
                                 let nextRowFormat: WRowFormat = nextRevision.range[0] as WRowFormat;
                                 changeView.appendRowToTable(nextRowFormat, j);
-                                this.revisions.push(revision);
+                                this.revisions.push(nextRevision);
                                 this.changes.add(nextRevision, changeView);
                             }
                             this.tableRevisions.add(nextRevision, groupedRevision);

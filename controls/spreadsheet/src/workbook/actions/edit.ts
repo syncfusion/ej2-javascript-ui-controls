@@ -112,11 +112,12 @@ export class WorkbookEdit {
             if (cell.formula && cell.formula.indexOf('UNIQUE') > - 1 && value === '') {
                 skipFormula = true;
             }
+            const isNotTextFormat: boolean = getTypeFromFormat(cell.format) !== 'Text';
             if (!isFormula && !skipFormula) {
                 if (cell.formula) {
                     cell.formula = '';
                 }
-                cell.value = <string>parseIntValue(value);
+                cell.value = isNotTextFormat ? <string>parseIntValue(value) : value;
             }
             const eventArgs: { [key: string]: string | number | boolean } = {
                 action: 'refreshCalculate',
@@ -126,7 +127,7 @@ export class WorkbookEdit {
                 sheetIndex: sheetIdx,
                 isFormula: isFormula
             };
-            if (getTypeFromFormat(cell.format) !== 'Text') {
+            if (isNotTextFormat) {
                 const dateEventArgs: { [key: string]: string | number } = {
                     value: value,
                     rowIndex: range[0],

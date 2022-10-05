@@ -1342,7 +1342,14 @@ export class Filter {
         for (let i: number = range[0]; i <= range[2]; i++) {
             const cell: CellModel = getCell(i, colIndex - 1, sheet);
             if (cell && cell.format) {
-                format = cell.format;
+                const type: string = getTypeFromFormat(cell.format);
+                if (type === 'ShortDate') {
+                    format = cell.format.split('m').join('M');
+                } else if (type === 'LongDate') {
+                    format = 'EEEE, MMMM d, y';
+                } else {
+                    format = cell.format;   
+                }
                 break;
             }
         }

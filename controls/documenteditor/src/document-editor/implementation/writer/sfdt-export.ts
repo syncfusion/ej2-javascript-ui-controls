@@ -633,7 +633,6 @@ export class SfdtExport {
             }
             if (element instanceof ContentControl || this.startContent || this.blockContent) {
                 this.writeInlinesContentControl(element, line, inlines, i);
-                continue;
             } else {
                 let inline: any = this.writeInline(element);
                 if (!isNullOrUndefined(inline)) {

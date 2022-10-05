@@ -3297,8 +3297,12 @@ export class Drawing {
             this.pdfViewer.clipboardData.pasteIndex = 1;
             this.pdfViewer.clipboardData.clipObject = this.copyObjects(); 
         } 
-        var isSearchboxDialogOpen = document.getElementById("pdfViewer_search_box").style.display != "none";
-        if(this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen){
+        let isSearchboxDialogOpen: boolean;
+        let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
+        if (searchBoxId) {
+            isSearchboxDialogOpen = searchBoxId.style.display !== "none";
+        }
+        if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen) {
             this.pdfViewer.clipboardData.clipObject= {};
         }         
         return this.pdfViewer.clipboardData.clipObject;
@@ -3541,8 +3545,12 @@ export class Drawing {
             this.pdfViewer.renderDrawing(undefined, index);
             this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
         }
-        var isSearchboxDialogOpen = document.getElementById("pdfViewer_search_box").style.display != "none";
-        if(this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen){
+        let isSearchboxDialogOpen: boolean;
+        let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
+        if (searchBoxId) {
+            isSearchboxDialogOpen = searchBoxId.style.display !== "none";
+        }
+        if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isPropertyDialogOpen || isSearchboxDialogOpen) {
             this.pdfViewer.clipboardData.clipObject= {};
         }  
     }

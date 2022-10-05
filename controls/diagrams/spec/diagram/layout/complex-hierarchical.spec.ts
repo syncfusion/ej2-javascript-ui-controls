@@ -4520,6 +4520,129 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
 
     });
 
+    describe('Nodes overlapping in linear arrangement ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            let nodes:NodeModel[]=[
+                {
+                    id: 'root', width: 70, height: 60, annotations: [{ content: 'root' }]
+                },
+                {
+                    id: 'rootCh1', width: 70, height: 60, annotations: [{ content: 'rootCh1' }]
+                },
+                {
+                    id: 'rootCh2', width: 70, height: 60, annotations: [{ content: 'rootCh2' }]
+                },
+                {
+                    id: 'rootCh3', width: 70, height: 60, annotations: [{ content: 'rootCh3' }]
+                },
+                {
+                    id: 'child1', width: 70, height: 60, annotations: [{ content: 'child1' }]
+                },
+                {
+                    id: 'child2', width: 70, height: 60, annotations: [{ content: 'child2' }]
+                },
+                {
+                    id: 'leaf1', width: 70, height: 60, annotations: [{ content: 'leaf1' }]
+                },
+                {
+                    id: 'leaf2', width: 70, height: 60, annotations: [{ content: 'leaf2' }]
+                },
+                {
+                id:'leaf3',width:70,height:60,annotations:[{content:'leaf3'}]
+                },
+                {
+                    id:'leaf4',width:70,height:60,annotations:[{content:'leaf4'}]
+                },
+            ]
+            let connectors:ConnectorModel[]=[
+                {
+                    id: 'con1', sourceID: 'root', targetID: 'rootCh1'
+                },
+                {
+                    id: 'con2', sourceID: 'root', targetID: 'rootCh2'
+                },
+                {
+                    id: 'con3', sourceID: 'root', targetID: 'rootCh3'
+                },
+                {
+                    id: 'con4', sourceID: 'rootCh1', targetID: 'child1'
+                },
+                {
+                    id: 'con5', sourceID: 'rootCh1', targetID: 'child2'
+                },
+                {
+                    id: 'con6', sourceID: 'rootCh2', targetID: 'child1'
+                },
+                {
+                    id: 'con7', sourceID: 'rootCh2', targetID: 'child2'
+                },
+                {
+                    id: 'con8', sourceID: 'rootCh3', targetID: 'child1'
+                },
+                {
+                    id: 'con9', sourceID: 'rootCh3', targetID: 'child2'
+                },
+                {
+                    id: 'con10', sourceID: 'child1', targetID: 'leaf1'
+                },
+                {
+                    id: 'con11', sourceID: 'child1', targetID: 'leaf2'
+                },
+                {
+                    id:'con12',sourceID:'child1',targetID:'leaf3'
+                },
+                {
+                    id:'con13',sourceID:'child1',targetID:'leaf4'
+                },
+                {
+                    id: 'con14', sourceID: 'child2', targetID: 'leaf1'
+                },
+                {
+                    id: 'con15', sourceID: 'child2', targetID: 'leaf2'
+                },
+                {
+                    id: 'con16', sourceID: 'child2', targetID: 'leaf3'
+                },
+                {
+                    id: 'con17', sourceID: 'child2', targetID: 'leaf4'
+                },
+            ];
+            
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 1000, height: 1000, 
+                 nodes:nodes,
+                connectors: connectors,
+                getConnectorDefaults: function (connector:any, diagram:any) {
+                   
+                    connector.type = 'Orthogonal';
+                    return connector;
+                },
+                layout: {
+                    type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30,
+                   
+                      orientation:'LeftToRight',arrangement:ChildArrangement.Linear 
+                    
+                },
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking node overlap ', function (done) {
+           let lastNode = diagram.nodes[diagram.nodes.length-1];
+           let lastBeforeNode = diagram.nodes[diagram.nodes.length-2];
+           expect(Math.round(lastNode.offsetX) === 385 && Math.round(lastNode.offsetY)=== 635 &&
+           Math.round(lastBeforeNode.offsetX)===385 && Math.round(lastBeforeNode.offsetY)=== 545).toBe(true);
+            done();
+        });
+    });
+
     // describe('Line routing test case 3', () => {
     //     let diagram: Diagram;
     //     let ele: HTMLElement;

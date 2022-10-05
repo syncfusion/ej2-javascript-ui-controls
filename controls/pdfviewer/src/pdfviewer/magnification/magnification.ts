@@ -1013,7 +1013,7 @@ export class Magnification {
                                         textLayer.style.display = 'none';
                                     }
                                 } else {
-                                    textLayer.style.display = 'none';
+                                    textLayer.style.display = 'block';
                                 }
                             }
                             this.pdfViewerBase.applyElementStyles(textLayer, i);

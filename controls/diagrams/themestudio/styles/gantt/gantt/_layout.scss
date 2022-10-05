@@ -1438,7 +1438,7 @@
       @if ($skin-name == 'FluentUI') {
         margin-bottom: 0;
       }
-      @if ($skin-name == 'bootstrap-dark' or $skin-name == 'fabric-dark') {
+      @if ($skin-name == 'bootstrap-dark' or $skin-name == 'fabric-dark' or $theme-name == 'material-dark') {
         color: $gantt-bigger-tooltip-button-color;
       }
     }

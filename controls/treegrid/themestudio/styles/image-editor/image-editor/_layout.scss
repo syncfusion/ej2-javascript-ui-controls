@@ -12,6 +12,13 @@
       min-height: $image-editor-bigger-tbar-height !important; /* stylelint-disable-line declaration-no-important */
 
       & .e-toolbar-items {
+        @if $skin-name == 'material' {
+          height: $image-editor-bigger-tbar-height !important; /* stylelint-disable-line declaration-no-important */
+          min-height: $image-editor-bigger-tbar-height !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+
+      & .e-toolbar-items {
         & .e-toolbar-item {
           & .e-tbar-btn.e-btn.e-tbtn-txt {
             .e-icons.e-btn-icon {
@@ -25,12 +32,17 @@
           & .e-tbar-btn.e-btn {
             .e-icons.e-btn-icon {
               font-size: $image-editor-bigger-tbar-btn-fontsize;
+              @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+                padding-top: 4px;
+              }
             }
           }
         }
 
         & .e-fill.e-template,
         & .e-stroke.e-template,
+        & .e-pen-stroke-color.e-template,
+        & .e-text-font-color.e-template,
         & .e-save.e-template {
           & .e-dropdown-btn {
             & .e-icons.e-caret {
@@ -39,10 +51,19 @@
           }
         }
 
+        & .e-text-font-color.e-template {
+          & .e-dropdown-btn {
+            & .e-icons.e-caret {
+              margin-top: -4px;
+            }
+          }
+        }
+
         & .e-dropdown-btn.e-image-popup {
           & .e-select,
           & .e-annotation,
-          & .e-transform {
+          & .e-transform,
+          & .e-save {
             font-size: $image-editor-bigger-tbar-btn-fontsize;
 
             & .e-icons.e-caret {
@@ -84,6 +105,9 @@
           & .e-tbar-btn.e-btn {
             .e-icons.e-btn-icon {
               font-size: $image-editor-tbar-btn-fontsize;
+              @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+                padding-top: 4px;
+              }
             }
           }
         }
@@ -116,15 +140,28 @@
             @if $skin-name == 'material' {
               margin-top: 7px;
             }
+            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
+              padding-top: 6px;
+            }
           }
         }
 
         & .e-fill.e-template,
         & .e-stroke.e-template,
+        & .e-pen-stroke-color.e-template,
+        & .e-text-font-color.e-template,
         & .e-save.e-template {
           & .e-dropdown-btn {
             & .e-icons.e-caret {
               font-size: $image-editor-tbar-btn-fontsize;
+            }
+          }
+        }
+
+        & .e-text-font-color.e-template {
+          & .e-dropdown-btn {
+            & .e-icons.e-caret {
+              margin-top: -4px;
             }
           }
         }
@@ -138,7 +175,8 @@
         & .e-dropdown-btn.e-image-popup {
           & .e-select,
           & .e-annotation,
-          & .e-transform {
+          & .e-transform,
+          & .e-save {
             font-size: $image-editor-tbar-btn-fontsize;
 
             & .e-icons.e-caret {

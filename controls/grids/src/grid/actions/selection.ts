@@ -407,7 +407,7 @@ export class Selection implements IAction {
                 data: selectData, rowIndex: index,
                 row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
                 previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted,
-                isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
+                isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked, rowIndexes:index
             };
             args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             this.onActionComplete(args, events.rowSelected);
@@ -3478,7 +3478,8 @@ export class Selection implements IAction {
 
     private applyDownUpKey(rowIndex?: number, cellIndex?: number): void {
         const gObj: IGrid = this.parent;
-        if (this.parent.isCheckBoxSelection && this.parent.checkAllRows === 'Check' && !this.selectionSettings.persistSelection) {
+        if (this.parent.isCheckBoxSelection && this.parent.checkAllRows === 'Check' && !this.selectionSettings.persistSelection &&
+            !this.selectionSettings.checkboxOnly) {
             this.checkSelectAllAction(false);
             this.checkedTarget = null;
         }
@@ -4026,7 +4027,12 @@ export class Selection implements IAction {
 
     private selectRowIndex(index: number): void {
         this.parent.isSelectedRowIndexUpdating = true;
-        this.parent.selectedRowIndex = index;
+        if (isNullOrUndefined(this.parent.selectedRowIndex) || this.parent.selectedRowIndex === -1) {
+            this.parent.selectedRowIndex = index;
+        }
+        else {
+            this.parent.selectedRowIndex = -1;
+        }
     }
 
     private disableInteracted(): void {

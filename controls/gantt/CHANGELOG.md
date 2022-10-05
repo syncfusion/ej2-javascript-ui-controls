@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.3.48 (2022-10-05)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I408288` - Timeline rendering is incomplete when data is rebinded issue has been fixed.
+- `#I404228` - Issue in saving data in segment has been fixed.
+- `#I406597` - Duplicate record in the data source issue has been fixed.
+- `#I405108` - Unable to customize event marker tooltip issue has been fixed.
+- `#F176879` - Unable to customize the dependency name issue has been fixed.
+
 ## 20.3.47 (2022-09-29)
 
 ### Gantt

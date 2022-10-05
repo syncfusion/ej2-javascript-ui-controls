@@ -138,6 +138,10 @@
           border-radius: 5px;
         }
 
+        @if $skin-name == 'FluentUI' or $skin-name == 'FluentUI-dark' {
+          margin-bottom: $bigger-find-tool-margin-bottom;
+        }
+
         & .e-input-group {
           width: 170px;
 
@@ -2851,6 +2855,25 @@
 
       &.e-rtl ul {
         padding-right: 0;
+      }
+    }
+
+    & .e-validation-list {
+
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        width: $bigger-validation-list-width;
+      }
+
+      & .e-ddl-icon.e-search-icon {
+
+        @if $skin-name == 'material' or $skin-name == 'material-dark' {
+          bottom: $bigger-validation-list-icon-bottom;
+        }
+
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
+          min-height: $bigger-validation-list-icon-height-width;
+          min-width: $bigger-validation-list-icon-height-width;
+        }
       }
     }
   }

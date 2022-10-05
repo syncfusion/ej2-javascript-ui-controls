@@ -177,6 +177,45 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
+  describe('EJ2-63809 - Cursor Icon for resizing disappears when we double click on the cell', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 2,
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Cell'
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Double click on primary key column', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(1,0).dispatchEvent(event);
+      expect(gridObj.grid.element.classList.contains('.e-editing')).toBe(false);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+     });
+   });
     describe('Sorting and update cell', () => {
       let gridObj: TreeGrid;
       let rows: Element[];

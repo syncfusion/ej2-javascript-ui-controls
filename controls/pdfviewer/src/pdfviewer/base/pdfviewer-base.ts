@@ -3440,11 +3440,15 @@ export class PdfViewerBase {
                     break;
                 case 86: //v key
                     // eslint-disable-next-line max-len
-                    if ((this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied) || (this.pdfViewer.formFields && this.pdfViewer.formDesigner.isShapeCopied)) {
-                        var isSearchboxDialogOpen = document.getElementById("pdfViewer_search_box").style.display != "none";
-                        if(!isSearchboxDialogOpen && !this.pdfViewer.formDesigner.isPropertyDialogOpen){
-                        this.pdfViewer.paste();
-                        this.contextMenuModule.previousAction = 'Paste';
+                    if ((this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied) || (this.pdfViewer.formFields && this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isShapeCopied)) {
+                        let isSearchboxDialogOpen: boolean;
+                        let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
+                        if (searchBoxId) {
+                            isSearchboxDialogOpen = searchBoxId.style.display !== "none";
+                        }
+                        if (!isSearchboxDialogOpen && this.pdfViewer.formDesigner && !this.pdfViewer.formDesigner.isPropertyDialogOpen) {
+                            this.pdfViewer.paste();
+                            this.contextMenuModule.previousAction = 'Paste';
                         }
                     }
                     break;
@@ -3463,7 +3467,11 @@ export class PdfViewerBase {
         }
     };
     private DeleteKeyPressed(event: KeyboardEvent): void {
-        let isSearchboxDialogOpen = document.getElementById("pdfViewer_search_box").style.display != "none";
+        let isSearchboxDialogOpen: boolean;
+        let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
+        if (searchBoxId) {
+            isSearchboxDialogOpen = searchBoxId.style.display !== "none";
+        }
         if (this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen && this.pdfViewer.designerMode && this.pdfViewer.selectedItems.formFields.length !== 0 && !isSearchboxDialogOpen) {
             this.pdfViewer.formDesignerModule.deleteFormField(this.pdfViewer.selectedItems.formFields[0].id);
         } else if (this.pdfViewer.annotation && !this.pdfViewer.designerMode) {
@@ -8937,7 +8945,7 @@ export class PdfViewerBase {
                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].signatureInkAnnotation, i);
                             for (let j: number = 0; j < annotation[i].signatureInkAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                // this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotation[i].freeTextAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotation[i].signatureInkAnnotation[j], i));
                             }
                         }
                     }
@@ -9483,6 +9491,11 @@ export class PdfViewerBase {
             for (let s: number = 0; s < annotation.freeTextAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.annotationModule.freeTextAnnotationModule.saveImportedFreeTextAnnotations(annotation.freeTextAnnotation[s], pageIndex);
+            }
+        }
+        if (annotation.signatureInkAnnotation.length !== 0) {
+            for (let s: number = 0; s < annotation.signatureInkAnnotation.length; s++) {
+                this.pdfViewer.annotationModule.inkAnnotationModule.saveImportedInkAnnotation(annotation.signatureInkAnnotation[s], pageIndex);
             }
         }
     }

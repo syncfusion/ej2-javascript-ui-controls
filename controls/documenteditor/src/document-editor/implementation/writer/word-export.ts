@@ -5037,14 +5037,18 @@ export class WordExport {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
-
-        if (!isNullOrUndefined(paragraphFormat.keepWithNext) && paragraphFormat.keepWithNext) {
+        if (!isNullOrUndefined(paragraphFormat.keepWithNext)) {
             writer.writeStartElement(undefined, 'keepNext', this.wNamespace);
+            if (!paragraphFormat.keepWithNext) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '0');
+            }
             writer.writeEndElement();
         }
-
-        if (!isNullOrUndefined(paragraphFormat.keepLinesTogether) && paragraphFormat.keepLinesTogether) {
+        if (!isNullOrUndefined(paragraphFormat.keepLinesTogether)) {
             writer.writeStartElement(undefined, 'keepLines', this.wNamespace);
+            if (!paragraphFormat.keepLinesTogether) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '0');
+            }
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(paragraphFormat.outlineLevel)) { 
@@ -5608,7 +5612,7 @@ export class WordExport {
             this.serializeRevisionStart(writer, characterFormat, undefined);
             this.serializeRevisionEnd(writer, characterFormat, undefined);
         }
-        if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
+        if (!isNullOrUndefined(characterFormat.underline)) {
             writer.writeStartElement(undefined, 'u', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, this.getUnderlineStyle(characterFormat.underline));
             writer.writeEndElement();
@@ -5677,6 +5681,8 @@ export class WordExport {
                 return 'wavyHeavy';
             case 'Words':
                 return 'words';
+            case 'None':
+                return 'none';
             default:
                 return 'dash';
         }

@@ -4776,7 +4776,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         for (const elementId of this.views) {
                             removeElement(currentObj.id + '_html_element', elementId);
                             removeElement(children[i].id + '_html_element', elementId);
-                            this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                            //EJ2-63598 - Added below code to check whether platform is Angular or not.
+                            // If angular then we do not remove the node html element wrapper to retain the HTML element in it. 
+                            let canUpdate: boolean = true;
+                            let parent: NodeModel = this.nameTable[(currentObj as Node).parentId];
+                            if ((((this as any).isAngular || (this as any).isReact ) || (this as any).isVue ) && parent && (parent as Node).isLane) {
+                                canUpdate = false;
+                            }
+                            if (canUpdate) {
+                                this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                            }
                             if ((children[i] as DiagramEventAnnotation).annotationId) {
                                 this.clearTemplate(
                                     ['annotationTemplate' + '_' + currentObj.id + ((children[i] as DiagramEventAnnotation).annotationId)]);

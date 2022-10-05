@@ -1353,10 +1353,12 @@ export class DateRangePicker extends CalendarBase {
         this.updateHeader();
     }
     private clearCalendarEvents(): void {
-        EventHandler.clearEvents(this.leftCalPrevIcon);
-        EventHandler.clearEvents(this.leftCalNextIcon);
-        EventHandler.clearEvents(this.rightCalPrevIcon);
-        EventHandler.clearEvents(this.rightCalNextIcon);
+        if (this.leftCalPrevIcon && this.leftCalNextIcon && this.rightCalPrevIcon && this.rightCalNextIcon) {
+            EventHandler.clearEvents(this.leftCalPrevIcon);
+            EventHandler.clearEvents(this.leftCalNextIcon);
+            EventHandler.clearEvents(this.rightCalPrevIcon);
+            EventHandler.clearEvents(this.rightCalNextIcon);
+        }
     }
     private updateNavIcons(): void {
         super.iconHandler();
@@ -2340,6 +2342,7 @@ export class DateRangePicker extends CalendarBase {
             }
         }
         addClass([ele], SELECTED);
+        this.calendarIconEvent();
         this.updateHeader();
         this.removeFocusedDate();
     }

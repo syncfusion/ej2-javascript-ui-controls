@@ -227,7 +227,7 @@ console.log('bottom right preview div check box testing 1');
             ctrlKey: false, shiftKey: false, which: 0
         };
         (dialog as any).handlePreviewCheckBoxAction(event);
-        dialog.destroy();
+        //dialog.destroy();
     });
     it('bottom center div check box testing', () => {
 console.log('bottom center div check box testing');
@@ -241,7 +241,7 @@ console.log('bottom center div check box testing');
             ctrlKey: false, shiftKey: false, which: 0
         };
         (dialog as any).handlePreviewCheckBoxAction(event);
-        dialog.destroy();
+        //dialog.destroy();
     });
     it('bottom left div check box testing', () => {
 console.log('bottom left div check box testing');
@@ -298,7 +298,7 @@ console.log('diagonal right preview div check box testing 2');
             ctrlKey: false, shiftKey: false, which: 0
         };
         (dialog as any).handlePreviewCheckBoxAction(event);
-        dialog.destroy();
+        //dialog.destroy();
     });
     it('diagonal left div check box testing', () => {
 console.log('diagonal left div check box testing');
@@ -312,7 +312,7 @@ console.log('diagonal left div check box testing');
             ctrlKey: false, shiftKey: false, which: 0
         };
         (dialog as any).handlePreviewCheckBoxAction(event);
-        dialog.destroy();
+        //dialog.destroy();
     });
     it('Remove events', () => {
 console.log('Remove events');
@@ -866,7 +866,7 @@ console.log('Apply Table Cell Preview Boxes index 0 testing');
         editor.editor.insertTable(2, 2);
         tablePropertiesDialog.show();
         dialog.show();
-        (dialog as any).ulelementShading.index = 0;
+        (dialog as any).ulelementShading.value = 'Cell';
         (dialog as any).applyTableCellPreviewBoxes();
         expect((dialog as any).previewDivBottomcenterContainer.style.display).toBe('none');
     });
@@ -1026,7 +1026,7 @@ console.log('Apply cell properties line style testing');
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         dialog.show();
-        (dialog as any).ulelementShading.index = 0;
+        (dialog as any).ulelementShading.value = 'Cell';
         (dialog as any).borderWidth.value = 2.66;
         (dialog as any).shadingColorPicker.value = '#000080';
         (dialog as any).applyBordersShadingsProperties();
@@ -1340,7 +1340,7 @@ describe('Borders dialog preview checkbox validation in paragraph', () => {
             ctrlKey: false, shiftKey: false, which: 0
         };
         (dialog as any).handlePreviewCheckBoxAction(event);
-        dialog.destroy();
+        //dialog.destroy();
     });
     it('bottom right preview div check box testing in paragraph', () => {
         console.log('bottom right preview div check box testing in paragraph');
@@ -1353,7 +1353,7 @@ describe('Borders dialog preview checkbox validation in paragraph', () => {
             ctrlKey: false, shiftKey: false, which: 0
         };
         (dialog as any).handlePreviewCheckBoxAction(event);
-        dialog.destroy();
+        //dialog.destroy();
     });
 });
 describe('Apply borders&shadings checkbox values testing to paragraph', () => {

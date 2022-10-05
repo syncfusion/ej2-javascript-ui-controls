@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.48 (2022-10-05)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I318072` - The issue with "Checkbox is not added to dropped node, when drop target TreeView has enabled with checkboxes in the TreeView component" has been resolved.
+
+### Accordion
+
+#### Bug Fixes
+
+- `#F177760` - An issue with adding/removing multiple CSS classes to tab items `cssClass` property has been fixed.
+
 ## 20.3.47 (2022-09-29)
 
 ### AppBar

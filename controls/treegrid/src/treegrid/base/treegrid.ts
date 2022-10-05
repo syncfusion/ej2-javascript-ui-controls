@@ -1944,12 +1944,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger(getObject('name', args), args);
     }
     private IsExpandCollapseClicked(args: RowDeselectEventArgs): void {
-        if (args['name'] ==="rowSelecting" && !isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+        if (args['name'] === 'rowSelecting' && !isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
 			|| args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell')) && (isNullOrUndefined(args['previousRowIndex']))) {
-			args.cancel = true;
+            args.cancel = true;
 			return;
 		}
-        else if(args['name'] ==="rowDeselecting" && !isNullOrUndefined(args.target) && ((!isNullOrUndefined((args.row as any)) && (!(args.row as any).length)) && (args.target.classList.contains('e-treegridexpand')
+        else if(args['name'] === 'rowDeselecting' && !isNullOrUndefined(args.target) && ((!isNullOrUndefined((args.row as any)) && (!(args.row as any).length)) && (args.target.classList.contains('e-treegridexpand')
         || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell')))) {
             args.cancel = true;
             return;

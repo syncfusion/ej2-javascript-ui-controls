@@ -1375,12 +1375,12 @@ export class LineDistribution {
                 let isSame: boolean = true;
                 for (let i: number = 0; i < newList2.length; i++) {
                     const o: string = newList2[i];
-                    for (let j: number = i; j < newList1.length; j++) {
-                        if (!(newList1[j] === o)) {
-                            isSame = false;
-                            break;
-                        }
-                    }
+                   // EJ2-63944 - Nodes overlapping in Complex hierarchical tree layout in linear arrangement.
+                   if(newList1.indexOf(o)===-1)
+                   {
+                       isSame = false;
+                       break;
+                   }
                 }
 
                 return isSame;

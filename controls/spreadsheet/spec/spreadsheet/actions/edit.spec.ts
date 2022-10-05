@@ -1,4 +1,4 @@
-import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, SheetModel, getCell } from '../../../src/index';
@@ -464,6 +464,34 @@ describe('Editing ->', () => {
                 expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('FALSE');
                 helper.triggerKeyNativeEvent(13);
                 done();
+            });
+        });
+        describe('EJ2-63515 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '123', index: 1 }] },  { cells: [{ value: '123', index: 1 }] }, { cells: [{ value: '123', index: 1 }] }, { cells: [{ value: '123', index: 1 }] }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Unexpected behavior when working with number format on sheet', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('numberFormat', ['_(* #,##0_);_(* \\\\(#,##0\\\\);_(* \\\"-\\\"_);_(@_)', 'B1:B4']);
+                helper.edit('A1', '1');
+                helper.edit('A2', '2');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('2');
+                spreadsheet.notify(onContentScroll, { scrollTop: 4000, scrollLeft: 0 });
+                setTimeout(() => {
+                    spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 0 });
+                    setTimeout(() => {
+                        helper.edit('A3', '3');
+                        helper.edit('A4', '4');
+                        expect(helper.invoke('getCell', [2, 0]).textContent).toBe('3');
+                        expect(helper.invoke('getCell', [3, 0]).textContent).toBe('4');
+                        done();
+                    }, 10);
+                }, 10);
             });
         });
     });

@@ -326,7 +326,57 @@ afterAll(() => {
             destroyGantt(ganttObj);
         }
     });
-   
+    describe('Customize Toottip with html tag for event marker', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: scheduleModeData1,
+                allowSorting: true,
+                eventMarkers: [
+                    {
+                        day: '03/10/2017',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Event Marker 1'
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                beforeTooltipRender(args: any) {
+                    if (args.args.target.classList.contains('e-event-markers')) {
+                        args.content =
+                          '<table class = "e-gantt-tooltiptable"><tbody><tr><td>StartDate</td></tr><tr><td>EndDate</td></tr></tbody></table>';
+                      }
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                disableHtmlEncode: true,
+            }, done);
+        });
+        it('event marker tooltip tag', () => {
+            let marker: HTMLElement = ganttObj.element.querySelector('#stripline0 > div') as HTMLElement;
+            triggerMouseEvent(marker, 'mouseover', 50);
+            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>StartDate</td></tr><tr><td>EndDate</td></tr></tbody></table>');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    })
 })
 
 

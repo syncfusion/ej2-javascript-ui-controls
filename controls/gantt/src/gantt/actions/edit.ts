@@ -2610,7 +2610,9 @@ export class Edit {
                 if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
                     dataSource.push(addedRecord[i].taskData);
                 } else {
-                    this.addDataInRealDataSource(dataSource, addedRecord[i].taskData, rowPosition);
+                    if (isNullOrUndefined(addedRecord[i].parentItem)) {
+                        this.addDataInRealDataSource(dataSource, addedRecord[i].taskData, rowPosition);
+                    }
                 }
             }
             this.isBreakLoop = false;

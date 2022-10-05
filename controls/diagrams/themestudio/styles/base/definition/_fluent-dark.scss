@@ -485,7 +485,7 @@ $msg-warning-close-icon-color-alt2: $white !default;
 
 //Message Info
 $msg-info-color: $white !default;
-$msg-info-bg-color: darken($cyan20, 20%) !default;
+$msg-info-bg-color: #013a3c !default;
 $msg-info-border-color: darken($cyan20, 20%) !default;
 $msg-info-color-alt1: lighten($cyan20, 10%) !default;
 $msg-info-bg-color-alt1: $transparent !default;
@@ -512,7 +512,7 @@ $appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
 
 //Dark
 $appbar-bg-color-alt2: $gray80 !default;
-$appbar-color-alt2: $gray10 !default;
+$appbar-color-alt2: $gray190 !default;
 $appbar-border-color-alt2: $gray80 !default;
 $appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 

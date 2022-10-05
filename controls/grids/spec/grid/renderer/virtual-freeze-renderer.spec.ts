@@ -479,6 +479,36 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
     });
 
+    describe('EJ2-64251-Frozen rows are not emptied even if filtering returns no record', () => {
+        let gridObj: Grid;
+        let firstCol: Column;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data1,
+                    columns: count500,
+                    allowFiltering: true,
+                    enableVirtualization: true,
+                    frozenRows: 2,
+                    height: 400
+                },done);
+        });
+
+        it('perform filter', () => {
+            let cols: Column[] = gridObj.getColumns();
+            firstCol = cols[0];
+            gridObj.filterByColumn(firstCol.field, "equal", 1);
+        });
+
+        it('check header frozen tbody emptied', () => {
+            expect(gridObj.getHeaderContent().querySelector('tbody').innerHTML).toBe('');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
     describe('Ensure reorder', () => {
         let gridObj: Grid;
         let fCol: Column;

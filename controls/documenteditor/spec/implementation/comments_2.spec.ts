@@ -41,7 +41,7 @@ describe('Comment insert, undo, redo multiple iteration', () => {
 
         let sfdt = editor.serialize();
         editor.editorHistory.undo();
-        expect(currentLine.children.length).toBe(2);
+        expect(editor.selection.start.currentWidget.children.length).toBe(2);
         let sfdt_AfterUndo = editor.serialize();
         editor.editorHistory.redo();
         expect(editor.serialize()).toBe(sfdt);

@@ -118,6 +118,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     public renderEmpty(tbody: HTMLElement): void {
         this.getTable().appendChild(tbody);
+        if (this.parent.frozenRows) {
+            this.parent.getHeaderContent().querySelector(literals.tbody).innerHTML = '';
+        }
         this.virtualEle.adjustTable(0, 0);
     }
 

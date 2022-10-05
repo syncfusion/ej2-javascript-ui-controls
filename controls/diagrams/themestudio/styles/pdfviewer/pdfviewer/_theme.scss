@@ -189,7 +189,7 @@
     width: 10%;
   }
 
-  .e-pv-gotopage-popup {
+  .e-dialog.e-pv-gotopage-popup {
     max-width: 500px;
     @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
       padding-left: 0;
@@ -3137,9 +3137,25 @@
     padding-bottom: $pv-signature-appearance-checkbox;
   }
 
-  .e-pdfviewer .e-pv-signature-window .e-footer-content .e-pv-clearbtn {
+  .e-pdfviewer .e-pv-signature-window .e-footer-content {
     float: left;
   }
+  .e-pv-signature-dialog-height .e-pv-clearbtn
+  {
+    float: left;
+    height: 30px;
+    min-height: 30px;
+  }
+  .e-pv-signature-dialog-height .e-pv-cancelbtn{
+    height: 30px;
+    min-height: 30px;
+  }
+  .e-pv-signature-dialog-height .e-pv-createbtn{
+    height: 30px;
+    min-height: 30px;
+  }
+  
+  
 
   .e-tbar-btn.e-control.e-btn.e-lib.e-icon-btn.e-pv-bold.e-pv-tbar-btn.e-tooltip.textprop-option-active,
   .e-tbar-btn.e-control.e-btn.e-lib.e-icon-btn.e-pv-italic.e-pv-tbar-btn.e-tooltip.textprop-option-active,
@@ -4070,7 +4086,7 @@
     }
   }
 
-  .e-pv-signature-dialog-blazor-height {
+  .e-dialog.e-pv-signature-dialog-blazor-height {
     height: $pv-signature-dialog-blazor-height;
     @if ($skin-name == 'FluentUI') {
       min-height: $pv-signature-dialog-height;

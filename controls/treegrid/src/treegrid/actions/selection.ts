@@ -288,9 +288,9 @@ export class Selection {
             else{
                 if (this.filteredList !== filterResult) {
                     this.filteredList = filterResult;
-                    multiFilterCheckState =true;
+                    multiFilterCheckState = true;
                 }
-                 else {
+                else {
                     multiFilterCheckState = false;
                 }
             }
@@ -310,7 +310,7 @@ export class Selection {
                     if (data[i].checkboxState === 'check') {
                         continue;
                     }
-                     if (multiFilterCheckState) {
+                    if (multiFilterCheckState) {
                         continue;
                     }
                     data[i].checkboxState = 'check';

@@ -1732,18 +1732,19 @@ export class NodeDrawingTool extends ToolBase {
                 this.drawingObject.bounds.x = this.drawingObject.bounds.x - (this.drawingObject.bounds.width/2);
                 this.drawingObject.bounds.y = this.drawingObject.bounds.y - (this.drawingObject.bounds.height/2);
                 this.commandHandler.formFieldCollection.push(this.drawingObject);
+                let drawingObject: any = this.drawingObject as PdfFormFieldBaseModel;
                 // eslint-disable-next-line max-len
                 const formField: FormFieldModel = {
-                    id: this.drawingObject.id, name: (this.drawingObject as PdfFormFieldBaseModel).name, value: (this.drawingObject as PdfFormFieldBaseModel).value,
+                    id: drawingObject.id, name: drawingObject.name, value: drawingObject.value,
                     // eslint-disable-next-line max-len
-                    type: this.drawingObject.formFieldAnnotationType as FormFieldType, isReadOnly: this.drawingObject.isReadonly, fontFamily: this.drawingObject.fontFamily,
+                    type: drawingObject.formFieldAnnotationType as FormFieldType, isReadOnly: drawingObject.isReadonly, fontFamily: drawingObject.fontFamily,
                     // eslint-disable-next-line max-len
-                    fontSize: this.drawingObject.fontSize, fontStyle: this.drawingObject.fontStyle as unknown as FontStyle, color: (this.drawingObject as PdfFormFieldBaseModel).color, backgroundColor: (this.drawingObject as PdfFormFieldBaseModel).backgroundColor,
+                    fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle as unknown as FontStyle, color: drawingObject.color, backgroundColor: drawingObject.backgroundColor,
                     // eslint-disable-next-line max-len
-                    alignment: (this.drawingObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (this.drawingObject as PdfFormFieldBaseModel).visibility, maxLength: (this.drawingObject as PdfFormFieldBaseModel).maxLength, isRequired: (this.drawingObject as PdfFormFieldBaseModel).isRequired,
+                    alignment: drawingObject.alignment as TextAlign, visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired,
                     // eslint-disable-next-line max-len
-                    isPrint: this.drawingObject.isPrint, isSelected: (this.drawingObject as PdfFormFieldBaseModel).isSelected, isChecked: (this.drawingObject as PdfFormFieldBaseModel).isChecked, tooltip: (this.drawingObject as PdfFormFieldBaseModel).tooltip, bounds: this.drawingObject.bounds as IFormFieldBound, thickness: this.drawingObject.thickness, borderColor: (this.drawingObject as PdfFormFieldBaseModel).borderColor,
-                    signatureIndicatorSettings: (this.drawingObject as PdfFormFieldBaseModel).signatureIndicatorSettings
+                    isPrint: drawingObject.isPrint, isSelected: drawingObject.isSelected, isChecked: drawingObject.isChecked, tooltip: drawingObject.tooltip, bounds: drawingObject.bounds as IFormFieldBound, thickness: drawingObject.thickness, borderColor: drawingObject.borderColor,
+                    signatureIndicatorSettings: drawingObject.signatureIndicatorSettings, pageIndex: drawingObject.pageIndex
                 };
                 this.commandHandler.formFieldCollections.push(formField);
                 // eslint-disable-next-line max-len

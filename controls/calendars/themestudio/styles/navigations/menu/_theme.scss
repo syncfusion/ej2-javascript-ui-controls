@@ -238,17 +238,11 @@
     }
 
     &.e-inherit {
-      background: inherit;
-      color: inherit;
       border: 0;
-      box-shadow: none;
 
       & .e-menu,
       & .e-menu .e-menu-item .e-menu-icon,
-      & .e-menu .e-menu-item .e-caret,
-      & .e-ul .e-menu-item .e-caret,
-      & .e-ul .e-menu-item.e-focused .e-caret,
-      & .e-ul .e-menu-item.e-selected .e-caret {
+      & .e-menu .e-menu-item .e-caret {
         color: inherit;
       }
 
@@ -257,9 +251,7 @@
       }
 
       & .e-menu .e-menu-item.e-selected,
-      & .e-menu .e-menu-item.e-focused,
-      & .e-ul .e-menu-item.e-focused,
-      & .e-ul .e-menu-item.e-selected {
+      & .e-menu .e-menu-item.e-focused {
         background: rgba(transparent, .056);
         color: inherit;
       }

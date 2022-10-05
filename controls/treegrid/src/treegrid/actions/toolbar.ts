@@ -47,8 +47,8 @@ export class Toolbar {
     }
 
     private refreshToolbar(args: RowSelectEventArgs): void {
-       const toolbarElement: Element = this.parent.grid.toolbarModule.getToolbar();
-        if(!isNullOrUndefined(toolbarElement)){
+        const toolbarElement: Element = this.parent.grid.toolbarModule.getToolbar();
+        if (!isNullOrUndefined(toolbarElement)) {
             const tObj: TreeGrid = this.parent; let indentElement: HTMLElement; let outdentElement: HTMLElement;
             const indentID: string = tObj.element.id + '_gridcontrol_indent';
             const outdentID: string = tObj.element.id + '_gridcontrol_outdent';

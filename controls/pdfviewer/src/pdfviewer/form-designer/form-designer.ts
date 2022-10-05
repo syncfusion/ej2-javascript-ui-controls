@@ -1660,7 +1660,9 @@ export class FormDesigner {
                     let selectIndex: number = (event.currentTarget as IElement).selectedOptions[j].index;
                     let oldValueIndex: number = 0;
                     if (this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex && this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.length !== 0) {
-                        oldValueIndex = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.pop();
+                        if(this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex[0] >= 0){
+                            oldValueIndex = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.pop();
+                        }
                         this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.push(oldValueIndex);
                     }
                     let oldValue = formFieldsData[i].FormField.option[oldValueIndex].itemValue;
@@ -3670,12 +3672,14 @@ export class FormDesigner {
                         if (textboxCollection && textboxCollection.length > 0) {
                             for (let i: number = 0; i < textboxCollection.length; i++) {
                                 let item: any = textboxCollection[i];
-                                if (selectedItem.isMultiline) {
-                                    this.renderMultilineText(item);
-                                } else {
-                                    this.renderTextbox(item);
+                                if (item.id === selectedItem.id) {
+                                    if (selectedItem.isMultiline) {
+                                        this.renderMultilineText(item);
+                                    } else {
+                                        this.renderTextbox(item);
+                                    }
+                                    document.getElementById(item.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(item) : this.updateFormFieldPropertiesInCollections(item);    
                                 }
-                                document.getElementById(item.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(item) : this.updateFormFieldPropertiesInCollections(item);
                             }
                         }
                     }

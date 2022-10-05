@@ -1308,7 +1308,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                 tempData.splice(0, 0, dataItem);
                 this.resetList(tempData, field, query);
             } else {
-                const tempData: string[] = [this.inputElement.value];
+                const tempData: string[] = JSON.parse(JSON.stringify(this.listData));
+                tempData.splice(0, 0, this.inputElement.value);
                 (tempData[0] as string | number) = (typeof customData === 'number' && !isNaN(parseFloat(tempData[0]))) ?
                     parseFloat(tempData[0]) : tempData[0];
                 (tempData[0]  as string | boolean) = (typeof customData === 'boolean') ?

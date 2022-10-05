@@ -194,7 +194,9 @@ export class CommentReviewPane {
             this.commentPane.updateHeight();
         }
         setTimeout(() => {
-            this.owner.resize();
+            if (this.owner) {
+                this.owner.resize();
+            }
         }, 10);
     };
 
@@ -421,14 +423,27 @@ export class CommentReviewPane {
     public layoutComments(): void {
         for (let i: number = 0; i < this.owner.documentHelper.comments.length; i++) {
             let comment: CommentElementBox = this.owner.documentHelper.comments[i];
-            if (isNullOrUndefined(comment.commentStart)
-                || isNullOrUndefined(comment.commentEnd)) {
+            if (this.isUnreferredComment(comment)) {
                 this.owner.documentHelper.comments.splice(i, 1);
                 i--;
                 continue;
             }
+            for (let j: number = 0; j < comment.replyComments.length; j++) {
+                if (this.isUnreferredComment(comment.replyComments[j])) {
+                    comment.replyComments.splice(j, 1);
+                    j--;
+                }
+            }
             this.commentPane.addComment(comment);
         }
+    }
+
+    private isUnreferredComment(comment: CommentElementBox): boolean {
+        if (isNullOrUndefined(comment.commentStart)
+            || isNullOrUndefined(comment.commentEnd)) {
+            return true;
+        }
+        return false;
     }
 
     public clear(): void {
@@ -663,6 +678,7 @@ export class CommentPane {
             if (!isNullOrUndefined(this.currentEditingComment)
                 && commentView.comment.commentId == this.currentEditingComment.comment.commentId) {
                 this.isEditMode = false;
+                this.currentEditingComment = undefined;
             }
             if (commentView.parentElement && commentView.parentElement.parentElement) {
                 commentView.parentElement.parentElement.removeChild(commentView.parentElement);

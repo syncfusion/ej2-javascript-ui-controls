@@ -15723,4 +15723,88 @@ describe('Hierarchical data binding testing', () => {
             expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
         });
     });
+    describe('Drag and drop with different TreeView functionality testing with one treeview checkbox', () => {
+        let treeObj: any;
+        let treeObj1: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        var i = 0, j =0;
+        function dsChangeFn(): void {
+            j++;
+        }
+        function dsChangeFn1(): void {
+            i++;
+        }
+        beforeEach((done: Function): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => {},
+                stopImmediatePropagation: (): void => {},
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            treeObj = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            document.body.appendChild(ele);
+            treeObj = new TreeView({ 
+                fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild", expanded: 'nodeExpanded1' },
+                allowDragAndDrop: true,
+                fullRowSelect: false,
+                dataBound: ()=> {
+                    done();
+                },
+                dataSourceChanged: dsChangeFn
+            },'#tree1');
+            let ele1: HTMLElement = createElement('div', { id: 'tree2' });
+            document.body.appendChild(ele1);
+            treeObj1 = undefined;
+            treeObj1 = new TreeView({ 
+                fields: { dataSource: hierarchicalData4, id: "nodeId", text: "nodeText", child: "nodeChild", expanded: 'nodeExpanded1'},
+                allowDragAndDrop: true,
+                fullRowSelect: false,
+                showCheckBox: true,
+                dataSourceChanged: dsChangeFn1,
+                dataBound: ()=> {
+                    done();
+                }
+            },'#tree2');
+        });
+        afterEach((): void => {
+            if (treeObj)
+                treeObj.destroy();
+            if (treeObj1)
+                treeObj1.destroy();
+            document.body.innerHTML = '';
+        });
+        it('testing with dynamic checkbox', () => {
+            expect(i).toBe(0);
+            expect(j).toBe(0);
+            debugger;
+            expect(treeObj.getTreeData().length).toBe(5);
+            expect(treeObj1.getTreeData().length).toBe(2);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj1.element.querySelectorAll('li');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
+            EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = newli[1].querySelector('.e-list-text');
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj1.element, newli[1].querySelector('.e-list-text'));
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect(newli[1].childElementCount).toBe(2);
+            expect(newli[1].children[1].childElementCount).toBe(2);
+            expect(newli[1].children[1].children[1].getAttribute('aria-level')).toBe('2');
+            expect(treeObj.getTreeData('02').length).toBe(0);
+            expect(treeObj.getTreeData().length).toBe(4);
+            expect(treeObj1.getTreeData().length).toBe(2);
+        });
+    });
 });

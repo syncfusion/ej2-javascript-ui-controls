@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## 20.3.48 (2022-10-05)
+
+- `#I406947` - Resolved cursor icon disappears while resizing after the cell editing.
+- `#I402612` - Newly added record positioned properly when no records are selected with remote data binding
+
 ## 20.2.36 (2022-06-30)
 
 ### Tree Grid

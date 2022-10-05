@@ -218,6 +218,31 @@ describe('Spreadsheet formula module ->', () => {
             expect(cellContent.indexOf('PM') > -1).toBeFalsy();
             done();
         });
+        it('Date formula', (done: Function) => {
+            helper.edit('A14', '=DATE(2022, 8, 22)');
+            const cell: CellModel = helper.getInstance().sheets[0].rows[13].cells[0];
+            expect(cell.formula).toBe('=DATE(2022, 8, 22)');
+            expect(cell.value).toBe('44795');
+            const cellEle: HTMLElement = helper.invoke('getCell', [13, 0]);
+            expect(cellEle.textContent).toBe('08/22/2022');
+            expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+            helper.invoke('updateCell', [{ formula: '=DATE(2022, 1, -1)' }, 'A14']);
+            expect(cell.formula).toBe('=DATE(2022, 1, -1)');
+            expect(cell.value).toBe('44560');
+            expect(cellEle.textContent).toBe('12/30/2021');
+            expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+            helper.invoke('updateCell', [{ formula: '=DATE(2022, -1, 1)' }, 'A14']);
+            expect(cell.formula).toBe('=DATE(2022, -1, 1)');
+            expect(cell.value).toBe('44501');
+            expect(cellEle.textContent).toBe('11/1/2021');
+            expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+            helper.invoke('updateCell', [{ formula: '=DATE(2022, -30, 1)' }, 'A14']);
+            expect(cell.formula).toBe('=DATE(2022, -30, 1)');
+            expect(cell.value).toBe('43617');
+            expect(cellEle.textContent).toBe('6/1/2019');
+            expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+            done();
+        });
     });
 
     describe('CR-Issues ->', () => {

@@ -299,7 +299,7 @@ export abstract class Widget implements IWidget {
             } else {
                 let nextContainer: Widget = undefined;
                 if (widget.containerWidget instanceof TableCellWidget) {
-                    nextContainer = widget.containerWidget.getNextSplitWidget();
+                    nextContainer = widget.containerWidget.getNextSplitCell();
                 } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget &&
                     widget.containerWidget.containerWidget.footNoteType === 'Endnote') {
                     nextContainer = widget.containerWidget.nextWidget ? widget.containerWidget.nextWidget : widget.containerWidget.nextRenderedWidget;
@@ -876,7 +876,7 @@ export abstract class BlockWidget extends Widget {
             let sectionFormat: WSectionFormat = bodyWidget.sectionFormat;
             let padding: number = 0;
             if (!isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.documentHelper) &&
-                bodyWidget.page.documentHelper.compatibilityMode !== 'Word2013' && !this.isInsideTable) {
+                bodyWidget.page.documentHelper.compatibilityMode !== 'Word2013' && !this.isInsideTable && this instanceof TableWidget) {
                 let firstRow: TableRowWidget = this.firstChild as TableRowWidget;
                 padding = (firstRow.firstChild as TableCellWidget).leftMargin + ((firstRow).lastChild as TableCellWidget).rightMargin;
             }
@@ -1519,7 +1519,7 @@ export class ParagraphWidget extends BlockWidget {
             paragraph.childWidgets.push(cloneLine);
             for (let j: number = 0; j < cloneLine.children.length; j++) {
                 let element: ElementBox = cloneLine.children[j];
-                if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                if ((element instanceof ImageElementBox && element.textWrappingStyle !== 'Inline') || element instanceof ShapeElementBox) {
                     paragraph.floatingElements.push(element);
                 }
             }
@@ -3242,6 +3242,17 @@ export class TableCellWidget extends BlockWidget {
             } while (row);
         }
         return undefined;
+    }
+    /**
+     * @private
+     */
+     public getNextSplitCell(): Widget {
+        let widget: Widget = this;
+        let index: number = this.indexInOwner;
+        if (this.containerWidget instanceof TableRowWidget) {
+            widget = this.containerWidget.childWidgets[index + 1] as Widget;
+        }
+        return widget;
     }
     /**
      * @private

@@ -190,10 +190,6 @@
       }
     }
 
-    .e-pivotcell-container {
-      pointer-events: auto;
-    }
-
     .e-stackedheadercelldiv .e-sortfilterdiv, .e-headercelldiv .e-sortfilterdiv {
       margin: $pivotgrid-vsort-column-margin !important;
     }
@@ -1003,7 +999,14 @@
           .e-icon-last {
             font-size: $pivotpager-page-icon-size;
             padding: $pivotpager-page-icon-padding;
+           
+          /* stylelint-disable */
+          @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+            margin: 0 !important;
           }
+        }
+
+        /* stylelint-enable */
 
           .e-pivotview-text-div {
             display: flex;
@@ -1037,6 +1040,9 @@
 
             .e-pagercontainer {
               margin-top: $pivotpager-page-container-marging-top;
+              @if ($pivotgrid-skin == 'material-dark') or ($pivotgrid-skin == 'material') {
+                margin: $pivotpager-page-container-marging-top 0 0 0;
+              }
 
               &.e-pivot-pager-info-container,
               &.e-pager-dropdown {
@@ -1126,6 +1132,10 @@
 
               .e-pagercontainer {
                 margin-top: 0;
+
+                @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+                  margin-top: $pivotpager-touch-page-container-marging-top;
+                }
               }
 
               .e-pivotview-row-size,
@@ -1405,6 +1415,10 @@
 
       .e-sortfilterdiv {
         float: left;
+      }
+
+      th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border) {
+        border-left-width: 1px !important;
       }
       /* stylelint-enable */
     }
@@ -1899,6 +1913,11 @@
             padding: $pivotpager-touch-page-icon-padding;
           }
 
+          .e-pivot-row-of-string-maindiv,
+          .e-pivot-column-of-string-maindiv {
+            line-height: $pivotpager-touch-single-title-line-height;
+          }
+
           .e-pivotview-row-pagerString,
           .e-pivotview-column-pagerString,
           .e-pivotview-row-size,
@@ -1943,6 +1962,10 @@
           .e-pivot-pager-column-maindiv {
             .e-pagercontainer {
               margin-top: 0;
+
+              @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+                margin-top: $pivotpager-touch-page-container-marging-top;
+              }
             }
 
             .e-pivotview-row-pagerString,

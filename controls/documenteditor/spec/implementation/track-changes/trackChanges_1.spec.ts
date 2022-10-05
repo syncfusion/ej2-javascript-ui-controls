@@ -935,3 +935,47 @@ describe('Track changes in ShapeElement validation', () => {
         expect(container.documentHelper.pages[0].bodyWidgets[0].floatingElements.length).toBe(0);
     });
 });
+describe('acceptAll and rejectAll validation with table', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableRtl: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check the empty paragraph insertion', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('hello');
+        container.editor.insertTable(2, 2);
+        container.documentHelper.selection.select('0;2;0', '0;2;0')
+        expect(container.editor.onEnter()).not.toThrowError;
+    });
+    it('acceptAll and rejectAll validation with table', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2, 2);
+        container.revisions.acceptAll();
+        expect(container.revisions.length).toBe(0);
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2, 2);
+        container.revisions.rejectAll();
+        expect(container.revisions.length).toBe(0);
+    });
+});

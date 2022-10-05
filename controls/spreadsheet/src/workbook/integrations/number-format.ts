@@ -108,6 +108,11 @@ export class WorkbookNumberFormat {
             } else if (cell.format.indexOf('@') > -1) {
                 isCustomText = true;
                 args.value = args.result = this.processCustomText(cell);
+            } else if (cell.format.includes('E+0')) {
+                if (args.format !== cell.format) {
+                    args.format = cell.format;
+                }
+                args.value = args.result = this.scientificFormat(args);
             } else if (checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).isNumber) {
                 args.value = args.result = this.processCustomNumberFormat(cell, range[0], range[1], args.td);
                 isCustomText = !isNumber(cell.value);
@@ -134,6 +139,7 @@ export class WorkbookNumberFormat {
             }
             this.parent.setUsedRange(args.rowIndex, args.colIndex);
         }
+        this.isRowFill = false;
         if (args.type === 'Custom') {
             args.formattedText = args.value === undefined || args.value === null ? '' : args.value.toString();
         } else {
@@ -567,8 +573,10 @@ export class WorkbookNumberFormat {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
             }
-            if (options.args.format === 'General' && options.fResult && options.fResult.toString().split(this.decimalSep)[0].length > 11) {
-                options.fResult = this.scientificFormat(options.args);
+            let cellVal: string | number;
+            if (options.args.format === 'General' && (cellVal = options.fResult || options.args.value) &&
+                cellVal.toString().split(this.decimalSep)[0].length > 11) {
+                options.fResult = this.scientificFormat(options.args, 5);
             }
             options.isRightAlign = true;
         }
@@ -789,10 +797,10 @@ export class WorkbookNumberFormat {
         });
     }
 
-    private scientificFormat(args: NumberFormatArgs): string {
+    private scientificFormat(args: NumberFormatArgs, prefix?: number): string {
         args.format = args.format === '' ? getFormatFromType('Scientific') : args.format;
-        const zeros: string = (args.format as string).split('+')[1];
-        const prefix: number = this.findDecimalPlaces(args.format as string, 'Scientific');
+        const zeros: string = (args.format as string).split('+')[1] || '00';
+        prefix = prefix || this.findDecimalPlaces(args.format as string, 'Scientific');
         let fResult: string = Number(args.value).toExponential(prefix);
         if (fResult.indexOf('e+') > -1) {
             fResult = fResult.split('e+')[0] + 'E+' + this.findSuffix(zeros, fResult.split('e+')[1]);

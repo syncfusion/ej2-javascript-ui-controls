@@ -8,9 +8,86 @@
 
 #### Bug Fixes
 
+- `I387270` - Issue with "importing the excel file that contain special character in sheet name" has been resolved.
+
+## 20.2.46 (2022-08-30)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I387270` - Issue with "post back occurs while clicking the button in the control" has been resolved.
+
+## 20.2.45 (2022-08-23)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I395418` - Issue with "unable to perform copy and paste actions on the textbox inside the cell template" has been resolved.
+
+## 20.2.44 (2022-08-16)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I383440` - Issue with "exception throws while applying formula reference on the wrap content cell" has been resolved.
+- `#I390638` - Issue with "exception throws while performing multi-selection along with scrolling action on the freeze pane" has been resolved.
+- `#I394857` - Issue with "typed content is not visible while performing the edit on partially viewed cell" has been resolved.
+- `#I395466` - Issue with "allow to rename and moving the sheets on protect workbook" has been resolved.
+- `#I395410`, `#I395411`, `#I395414`, `#I395416`, `#I395419`, `#I394857`, `#I395421` - Issue with "context menu and autofill option shows while disabling the cell selection" has been resolved.
+- `#I394806` - Provided new argument in the `addCustomFunction` method to add the description for the custom formula.
+- `#I392186` - Provided option to set maximum file size and maximum data count for validating the files before opening into the component.
+
+## 20.2.43 (2022-08-08)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I392958` - Issue with "exception throws while pressing the `ctrl` key in the search input on the filter popup" has been resolved.
+- `#I393391` - Issue with "cell values convert into Date type while scrolling the sheet along with cell value contain `-` in the data" has been resolved.
+
+## 20.2.40 (2022-07-26)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I392225` - Issue with "exception throws while applying large formula in the sheet" has been resolved.
+- `#I391983` - Issue with "custom sorting for multiple columns is not applied properly" has been resolved.
+- `#I345383` - Issue with "unwanted commas added in the exported sheet" has been resolved.
+- `#I391962` - Issue with "sort order is not getting properly while sorting the column" has been resolved.
+- `#I391982` - Issue with "sorting the time column without considering AM / PM" has been resolved.
+- `#I390848` - Issue with "sorting method is not working properly when active cell is not the sorting column" has been resolved.
+
+## 20.2.39 (2022-07-19)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I390848` - Issue with "sort method is not working as expected for the date type" has been resolved.
+- `#I390792` - Issue with "chart object is not updated properly in the cell model after deleting an already created chart element" has been resolved.
+- `#I390792` - Issue with "script error occurs while switching chart theme and changing chart type" has been resolved.
+- `#I391056` - Issue with "selection is not updated properly after filtering and scrolling which causes copying invalid data" has been resolved.
+- `#I390628` - Issue with "find toolbar dialog is misaligned while resizing the browser" has been resolved.
+- `#I390628` - Filtered hidden rows are considered during find action issue has been resolved.
+- `#I390638` - Issue with "exception throws while unhiding the hidden rows, after selecting a column and perform a Cut action" has been resolved.
+- `#I390638` - Issue with "exception throws while scrolling with multi selection in the freeze pane" has been resolved.
+
+## 20.2.38 (2022-07-12)
+
+### Spreadsheet
+
+#### Bug Fixes
+
 - `#I384048` - The issue of copied values being removed after saving when unique is applied is resolved.
 - `#I379174` - After importing the protected excel file, the problem of not considering the password when selecting the unprotect sheet option in the sheet tab context menu has been resolved.
 - `#I386574` - The exception thrown with font size pixel values while exporting is resolved.
+- `#I384953` - Unique formula cell value gets `#spill` error on refresh issue resolved.
+- `#F175967` -  The `addToolbarItems` method is not working for locale other than 'en-US' issue has been resolved.
 
 ## 20.2.36 (2022-06-30)
 

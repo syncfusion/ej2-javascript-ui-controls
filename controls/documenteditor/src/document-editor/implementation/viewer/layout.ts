@@ -577,7 +577,7 @@ export class Layout {
                 if (block.floatingElements.length > 0) {
                     for (let i: number = 0; i < block.floatingElements.length; i++) {
                         const element: ShapeBase = block.floatingElements[i];
-                        if (element.textWrappingStyle === 'InFrontOfText' || element.textWrappingStyle === 'Behind') {
+                        if (element.textWrappingStyle === 'InFrontOfText' || element.textWrappingStyle === 'Behind' || element.textWrappingStyle === 'Inline') {
                             continue;
                         }
                         const shapeRect: Rect = new Rect(element.x, element.y, element.width, element.height);
@@ -850,7 +850,7 @@ export class Layout {
     }
     private layoutFloatElements(paragraph: ParagraphWidget): void {
         paragraph.floatingElements.forEach((shape: ShapeBase) => {
-            if (shape instanceof ShapeBase) {
+            if (shape instanceof ShapeBase && shape.textWrappingStyle !== 'Inline') {
                 if (!this.isRelayoutOverlap) {
                     this.layoutShape(shape);
                 }
@@ -1149,6 +1149,9 @@ export class Layout {
             }
         }
         if (element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
+            if (paragraph.floatingElements.indexOf(element) === -1) {
+                paragraph.floatingElements.push(element);
+            }
             this.layoutShape(element);
         }
         // tslint:disable-next-line:max-line-length
@@ -1306,7 +1309,9 @@ export class Layout {
             if(element.line.paragraph.containerWidget instanceof HeaderFooterWidget){
                 element.line.paragraph.containerWidget.height += (this.viewer.clientActiveArea.y - previousTop);
             }
-            this.isYPositionUpdated = false;
+            if (!(element instanceof ListTextElementBox)) {
+                this.isYPositionUpdated = false;
+            }
         }
     }
 
@@ -1580,7 +1585,7 @@ export class Layout {
                         let paragraphLeftIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.leftIndent);
                         let paragarphRightIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.rightIndent);
                         firstLineIndent = ((elementBox.indexInOwner === 0 && elementBox.line.isFirstLine()) && firstLineIndent > 0) ? firstLineIndent : 0;
-                        let currTextRange: ElementBox = elementBox instanceof TextElementBox ? elementBox : null;
+                        let currTextRange: ElementBox = elementBox instanceof TextElementBox || elementBox instanceof ListTextElementBox ? elementBox : null;
                         let containerWidget: Widget = floatingItem instanceof TableWidget ? floatingItem.containerWidget : floatingItem.line.paragraph.containerWidget;
                         let isnewline: boolean = false;
                         if (elementBox.line.paragraph) {
@@ -2414,6 +2419,7 @@ export class Layout {
         }
         lineWidget.margin = new Margin(0, topMargin, 0, bottomMargin);
         lineWidget.height = topMargin + height + bottomMargin;
+        this.adjustPositionBasedOnTopAndBottom(lineWidget);
         if (isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.isInsideTable
             && paragraph.previousRenderedWidget instanceof TableWidget && paragraph.childWidgets.length == 1) {
             //Special behavior for empty cell mark after nested table, preserved with zero height by default.
@@ -2423,6 +2429,16 @@ export class Layout {
         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + lineWidget.height);
         this.wrapPosition = [];
         //Clears the previous line elements from collection.
+    }
+
+    private adjustPositionBasedOnTopAndBottom(lineWidget: LineWidget): void {
+        if (!isNullOrUndefined(lineWidget.paragraph.bodyWidget) && !isNullOrUndefined(lineWidget.paragraph.bodyWidget.page.headerWidget)
+            && lineWidget.paragraph.bodyWidget.page.headerWidget.floatingElements.length > 0
+            && lineWidget.paragraph === lineWidget.paragraph.bodyWidget.childWidgets[0] as ParagraphWidget
+            && lineWidget.indexInOwner === 0) {
+            //To check whether first para in the page overlaps with shape in Header.
+            this.checkInbetweenShapeOverlap(lineWidget, lineWidget.paragraph.bodyWidget.page.headerWidget.floatingElements);
+        }
     }
 
     private layoutListItems(paragraph: ParagraphWidget): void {
@@ -2474,6 +2490,7 @@ export class Layout {
             moveToNextPage = true;
         }
         this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
+        let previousElement: ElementBox = element;
         //Adds the text element to the line
         lineWidget.children.splice(0, 0, element);
         if (currentListLevel.followCharacter !== 'None') {
@@ -2492,6 +2509,16 @@ export class Layout {
             //Adds the tabSpace to the line
             lineWidget.children.splice(1, 0, element);
             element.line = lineWidget;
+        }
+        if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
+            !(previousElement instanceof ShapeElementBox) && !(paragraph.containerWidget instanceof TextFrame)) {
+            this.adjustPosition(previousElement, previousElement.line.paragraph.bodyWidget);
+            if (this.isYPositionUpdated) {
+                if (this.viewer.clientActiveArea.width > (previousElement.width + element.width)) {
+                    this.viewer.clientActiveArea.width -= (previousElement.width + element.width);
+                }
+                this.isYPositionUpdated = false;
+            }
         }
         if (moveToNextPage) {
             this.moveToNextPage(this.viewer, lineWidget);
@@ -3041,13 +3068,7 @@ export class Layout {
             elementBox.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
             elementBox.line = line;
         }
-        if (!isNullOrUndefined(line.paragraph.bodyWidget) && !isNullOrUndefined(line.paragraph.bodyWidget.page.headerWidget)
-            && line.paragraph.bodyWidget.page.headerWidget.floatingElements.length > 0
-            && line.paragraph === line.paragraph.bodyWidget.childWidgets[0] as ParagraphWidget
-            && line.indexInOwner === 0) {
-            //To check whether first para in the page overlaps with shape in Header.
-            this.checkInbetweenShapeOverlap(line, line.paragraph.bodyWidget.page.headerWidget.floatingElements);
-        }
+        this.adjustPositionBasedOnTopAndBottom(line);
         this.checkInbetweenShapeOverlap(line);
         if (line.isLastLine() && line.indexInOwner === 0 && line.paragraph.paragraphFormat.widowControl) {
             let previousSplitWidget: ParagraphWidget = line.paragraph.previousSplitWidget as ParagraphWidget;
@@ -3069,7 +3090,10 @@ export class Layout {
             let overlapShape: ShapeBase;
             let lineY: number = this.getLineY(line);
             let isInsideTable: boolean = line.paragraph.isInsideTable;
+            let emptyParaPosition: number = line.paragraph.y;
+            let isFloatingElementPresent: boolean = true;
             if (isNullOrUndefined(floatingElements)) {
+                isFloatingElementPresent = false;
                 floatingElements = line.paragraph.bodyWidget.floatingElements;
             }
             /* eslint:disable */
@@ -3079,7 +3103,7 @@ export class Layout {
                     return
                 }
                 let lineRect: Rect;
-                if (shape.textWrappingStyle === 'TopAndBottom' && shape instanceof ImageElementBox) {
+                if (shape.textWrappingStyle === 'TopAndBottom' && shape instanceof ImageElementBox && !line.paragraph.isEmpty()) {
                     lineRect = new Rect(line.paragraph.x, this.viewer.clientActiveArea.y, line.paragraph.width, line.children[0].height);
                 } else {
                     lineRect = new Rect(line.paragraph.x, this.viewer.clientActiveArea.y, line.paragraph.width, line.height);
@@ -3090,17 +3114,26 @@ export class Layout {
                     return;
                 }
                 let considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom');
-
+                let updatedFloatPosition: number = ((shape.y + shape.height + shape.distanceBottom) - lineY);
                 if (overlapShape && considerShape &&
                     overlapShape.y + overlapShape.height + overlapShape.distanceBottom + line.height > shape.y - shape.distanceTop &&
                     overlapShape.y - overlapShape.distanceTop < shape.y - shape.distanceTop &&
                     shape.y + shape.height + shape.distanceBottom > overlapShape.y + overlapShape.height + overlapShape.distanceBottom) {
                     overlapShape = shape;
-                    line.marginTop = ((shape.y + shape.height + shape.distanceBottom) - lineY);
+                    if (line.paragraph.isEmpty() && isFloatingElementPresent) {
+                        line.paragraph.y = emptyParaPosition;
+                        line.paragraph.y += updatedFloatPosition;
+                    } else {
+                        line.marginTop = updatedFloatPosition;
+                    }
 
                 } else if (considerShape && !overlapShape && lineRect.isIntersecting(shapeRect)) {
                     overlapShape = shape;
-                    line.marginTop = ((shape.y + shape.height + shape.distanceBottom) - lineY);
+                    if (line.paragraph.isEmpty() && isFloatingElementPresent) {
+                        line.paragraph.y += updatedFloatPosition;
+                    } else {
+                        line.marginTop = updatedFloatPosition;
+                    }
                 }
             });
             if (overlapShape) {
@@ -3333,7 +3366,7 @@ export class Layout {
             para = line.paragraph;
             while (para) {
                 (para as ParagraphWidget).floatingElements.forEach((shape: ShapeBase) => {
-                    if (block.bodyWidget.floatingElements.indexOf(shape) !== -1) {
+                    if (block.bodyWidget.floatingElements.indexOf(shape) !== -1 && shape.textWrappingStyle !== 'Inline') {
                         block.bodyWidget.floatingElements.splice(block.bodyWidget.floatingElements.indexOf(shape), 1);
                         line.paragraph.bodyWidget.floatingElements.push(shape);
                     }
@@ -3355,7 +3388,7 @@ export class Layout {
         if (paragarph.floatingElements.length > 0) {
             for (let x: number = 0; x < paragarph.floatingElements.length; x++) {
                 if (add) {
-                    if (body.floatingElements.indexOf(paragarph.floatingElements[x]) === -1) {
+                    if (body.floatingElements.indexOf(paragarph.floatingElements[x]) === -1 && paragarph.floatingElements[x].textWrappingStyle !== 'Inline') {
                         body.floatingElements.push(paragarph.floatingElements[x]);
                     }
                 } else {
@@ -6674,7 +6707,9 @@ export class Layout {
                     this.viewer.owner.editorModule.updateWholeListItems(currentParagraph);
                 }
                 this.viewer.updateClientAreaForBlock(curretBlock, true);
+                this.isRelayout = true;
                 this.documentHelper.layout.layoutBlock(curretBlock, 0);
+                this.isRelayout = false;
                 this.viewer.updateClientAreaForBlock(curretBlock, false);
                 if (!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget) {
                     if (bodyWidget.containerWidget.footNoteType === 'Footnote') {
@@ -7461,11 +7496,23 @@ export class Layout {
                 if (widget.floatingElements.length > 0) {
                     for (let k: number = 0; k < widget.floatingElements.length; k++) {
                         let shape: ShapeBase = widget.floatingElements[k];
-                        let position: Point = this.getFloatingItemPoints(shape);
-                        shape.y = position.y;
-                        shape.x = position.x;
+                        let topMargin: number = 0;
+                        if (shape instanceof ShapeElementBox && shape.textWrappingStyle === 'Inline') {
+                            let lineIndex: number = shape.line.indexInOwner;
+                            let lineHeight: number = 0;
+                            topMargin = shape.textFrame.marginTop as number;
+                            for (let k: number = 0; k < lineIndex; k++) {
+                                lineHeight += (widget.childWidgets[k] as LineWidget).height as number;
+                            }
+                            shape.y = widget.y + lineHeight;
+                        }
+                        else {
+                            let position: Point = this.getFloatingItemPoints(shape);
+                            shape.y = position.y;
+                            shape.x = position.x;
+                        }
                         if (shape instanceof ShapeElementBox) {
-                            this.updateChildLocationForCellOrShape(shape.y, shape as ShapeElementBox);
+                            this.updateChildLocationForCellOrShape(shape.y + topMargin, shape as ShapeElementBox);
                         }
                     }
                 }
@@ -8285,7 +8332,7 @@ export class Layout {
             }
             if (lastBlock instanceof ParagraphWidget && lastBlock.floatingElements.length > 0) {
                 for (let m: number = 0; m < lastBlock.floatingElements.length; m++) {
-                    if (body.floatingElements.indexOf(lastBlock.floatingElements[m]) !== -1) {
+                    if (body.floatingElements.indexOf(lastBlock.floatingElements[m]) !== -1 && lastBlock.floatingElements[m].textWrappingStyle !== 'Inline') {
                         body.floatingElements.splice(body.floatingElements.indexOf(lastBlock.floatingElements[m]), 1);
                         nextBody.floatingElements.push(lastBlock.floatingElements[m]);
                     }

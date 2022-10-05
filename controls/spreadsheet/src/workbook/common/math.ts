@@ -168,6 +168,7 @@ export function toDate(
     }
     if (text !== '#DIV/0!' && !dObj.dateObj && new Date(text).toString() !== 'Invalid Date') {
         dObj.dateObj = new Date(text);
+        dObj.type = 'date';
     }
     return dObj;
 }

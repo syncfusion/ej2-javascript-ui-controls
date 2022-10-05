@@ -1267,9 +1267,7 @@ export class SfdtReader {
                 shape.line = lineWidget;
                 this.checkAndApplyRevision(inline, shape);
                 lineWidget.children.push(shape);
-                if (shape.textWrappingStyle !== 'Inline') {
-                    paragraph.floatingElements.push(shape);
-                }
+                paragraph.floatingElements.push(shape);
             } else if (inline.hasOwnProperty('contentControlProperties')) {
                 let inlineStartContentControl: ContentControl = new ContentControl('Inline');
                 let inlineEndContentControl: ContentControl = new ContentControl('Inline');

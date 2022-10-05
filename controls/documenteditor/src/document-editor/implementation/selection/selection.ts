@@ -2430,6 +2430,55 @@ export class Selection {
         }
         this.checkForCursorVisibility();
     }
+    /**
+    * @private
+    * @returns {void}
+    */
+    public handlePageUpPageDownKey(isPageDown: boolean, shiftKey: boolean): void {
+        let offsetX: number = this.end.location.x;
+        let offsetY: number = this.end.location.y;
+        let page: Page = this.end.paragraph.bodyWidget.page;
+        let pageTop: number = this.getPageTop(page);
+        let previousScrollTop: number = this.documentHelper.viewerContainer.scrollTop;
+        offsetY = (offsetY * this.documentHelper.zoomFactor) + (pageTop - previousScrollTop);
+        offsetX = (offsetX * this.documentHelper.zoomFactor) + page.boundingRectangle.x;
+        if (isPageDown) {
+            this.documentHelper.viewerContainer.scrollTop += this.documentHelper.visibleBounds.height;
+        }
+        else {
+            this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
+        }
+        let isSameScrollTop: boolean = false;
+        if (previousScrollTop === this.documentHelper.viewerContainer.scrollTop) {
+            isSameScrollTop = true;
+        }
+        if (shiftKey) {
+            this.documentHelper.skipScrollToPosition = true;
+        }
+        setTimeout(() => {
+            if (isSameScrollTop) {
+                if (!shiftKey) {
+                    if (isPageDown)
+                        this.moveToDocumentEnd();
+                    else
+                        this.moveToDocumentStart();
+                }
+                else {
+                    let position: TextPosition;
+                    if (isPageDown) {
+                        position = this.getDocumentEnd();
+                    }
+                    else {
+                        position = this.getDocumentStart();
+                    }
+                    this.end.setPositionForLineWidget(position.currentWidget, position.offset);
+                    this.fireSelectionChanged(true);
+                }
+            } else {
+                this.select({ x: offsetX, y: offsetY, extend: shiftKey });
+            }
+        }, 0);
+    }
     // returns current field in FormFill mode
     private getFormFieldInFormFillMode(): FieldElementBox {
         const currentStart: TextPosition = this.owner.selection.start;
@@ -9490,6 +9539,14 @@ export class Selection {
             }
         } else if (shift && !ctrl && !alt) {
             switch (key) {
+                case 33:
+                    event.preventDefault();
+                    this.handlePageUpPageDownKey(false, shift);
+                    break;
+                case 34:
+                    event.preventDefault();
+                    this.handlePageUpPageDownKey(true, shift);
+                    break;
                 case 35:
                     this.handleShiftEndKey();
                     event.preventDefault();
@@ -9552,11 +9609,11 @@ export class Selection {
                 //     break;  
                 case 33:
                     event.preventDefault();
-                    this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
+                    this.handlePageUpPageDownKey(false,shift);
                     break;
                 case 34:
                     event.preventDefault();
-                    this.documentHelper.viewerContainer.scrollTop += this.documentHelper.visibleBounds.height;
+                    this.handlePageUpPageDownKey(true,shift);
                     break;
                 case 35:
                     this.handleEndKey();

@@ -3283,10 +3283,15 @@ describe("Accordion Testing", () => {
             accordion.dataBind();
             expect(accordion.items[0].cssClass).toEqual('testingClass1');
             expect(ele.children[0].classList.contains('testingClass1')).toEqual(true);
-            accordion.items[1].cssClass = 'testingClass2';
+            accordion.items[1].cssClass = 'testclass1 testclass2';
             accordion.dataBind();
-            expect(accordion.items[1].cssClass).toEqual('testingClass2');
-            expect(ele.children[1].classList.contains('testingClass2')).toEqual(true);
+            expect(accordion.items[1].cssClass).toEqual('testclass1 testclass2');
+            expect(ele.children[1].classList.contains('testclass1')).toEqual(true);
+            expect(ele.children[1].classList.contains('testclass2')).toEqual(true);
+            accordion.items[1].cssClass = 'testingClass3';
+            accordion.dataBind();
+            expect(accordion.items[1].cssClass).toEqual('testingClass3');
+            expect(ele.children[1].classList.contains('testingClass3')).toEqual(true);
         });
         it("Items - iconCss property change testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');

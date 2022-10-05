@@ -114,7 +114,7 @@ export class EditRender {
             }
             // eslint-disable-next-line
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
-            if (col.getFreezeTableName() === 'movable' && gObj.editSettings.mode === 'Normal') {
+            if (fForm && col.getFreezeTableName() === 'movable' && gObj.editSettings.mode === 'Normal') {
                 cell = fForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
             } else if (frForm && col.getFreezeTableName() === literals.frozenRight && gObj.editSettings.mode === 'Normal') {
                 cell = frForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
