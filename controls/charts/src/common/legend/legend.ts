@@ -137,10 +137,10 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Option to customize the padding between legend items.
      *
-     * @default 20
+     * @default null
      */
 
-     @Property(20)
+     @Property(null)
      public itemPadding: number;
 
     /**
@@ -423,7 +423,7 @@ export class BaseLegend {
     private bulletChart: BulletChart;
     protected isRtlEnable: boolean;
     protected isReverse: boolean;
-
+    protected itemPadding: number;
     /**
      * Constructor for the dateTime module.
      *
@@ -466,6 +466,7 @@ export class BaseLegend {
         this.getPosition(legend.position, availableSize);
         this.legendBounds = new Rect(rect.x, rect.y, 0, 0);
         this.isVertical = (this.position === 'Left' || this.position === 'Right');
+        this.itemPadding = this.legend.itemPadding ? this.legend.itemPadding : this.isVertical ? this.legend.padding : 20 ;
         if (this.isVertical) {
             this.legendBounds.height = stringToNumber(
                 legend.height, availableSize.height - (rect.y - this.chart.margin.top)) || rect.height;
@@ -710,7 +711,7 @@ export class BaseLegend {
         let requireLegendBounds: Rect = new Rect(0, 0, 0, 0);
         const firstLegend: number = this.findFirstLegendPosition(this.legendCollections);
         const padding: number = legend.padding;
-        const itemPadding: number = this.isBulletChartControl ? legend.padding : legend.itemPadding;
+        this.itemPadding = this.isBulletChartControl ? legend.padding : this.itemPadding;
         const isPaging: boolean = legend.enablePages;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
         const upArrowHeight: number = this.isPaging && !legend.enablePages && this.isVertical ? this.pageButtonSize : 0;
@@ -729,7 +730,7 @@ export class BaseLegend {
                         pageCount++;                        
                         rowHeights = 0;
                     }
-                    rowHeights += (this.rowHeights[i] + padding);
+                    rowHeights += (this.rowHeights[i] + (this.isVertical ?  this.itemPadding : padding));
                   }
                  this.pageHeights[pageCount - 1] = rowHeights  + titleHeight;
                  this.totalPages = pageCount;
@@ -771,7 +772,7 @@ export class BaseLegend {
             );
             const anchor: string = (chart as Chart).isRtlEnabled || (chart as Chart).enableRtl ? 'end' : 'start';
             const textOptions: TextOption = new TextOption('', start.x, start.y, anchor);
-            const textPadding: number = legend.shapePadding + itemPadding + legend.shapeWidth;
+            const textPadding: number = legend.shapePadding + this.itemPadding + legend.shapeWidth;
             //  initialization for totalPages legend click totalpage again calculate
             this.totalPages = this.totalPages = (this.isAccChartControl || this.isChartControl || this.isBulletChartControl || this.isStockChartControl) ? this.totalPages : 0;
             this.pageXCollections = [];

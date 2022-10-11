@@ -797,7 +797,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         const loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this, theme: this.theme };
         this.trigger('load', loadEventData, () => {
             this.theme = this.theme;
-            this.themeStyle = getThemeColor(this.theme);
+            this.themeStyle = getThemeColor(this.theme, false);
             this.storeDataSource();
             this.drawSVG();
             this.renderTitle();

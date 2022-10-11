@@ -422,7 +422,7 @@ $msg-icon-color: $gray60 !default;
 $msg-icon-color-alt1: $gray60 !default;
 $msg-icon-color-alt2: $gray190 !default;
 
-$msg-close-icon-color: $gray160 !default;
+$msg-close-icon-color: $icon-color !default;
 $msg-close-icon-color-alt1: $icon-color !default;
 $msg-close-icon-color-alt2: $gray190 !default;
 
@@ -441,7 +441,7 @@ $msg-danger-icon-color: #f1707b !default;
 $msg-danger-icon-color-alt1: #e2777e !default;
 $msg-danger-icon-color-alt2: $white !default;
 
-$msg-danger-close-icon-color: $gray160 !default;
+$msg-danger-close-icon-color: $icon-color !default;
 $msg-danger-close-icon-color-alt1: $icon-color !default;
 $msg-danger-close-icon-color-alt2: $white !default;
 
@@ -460,7 +460,7 @@ $msg-success-icon-color: #92c353 !default;
 $msg-success-icon-color-alt1: #86e277 !default;
 $msg-success-icon-color-alt2: $white !default;
 
-$msg-success-close-icon-color: $gray160 !default;
+$msg-success-close-icon-color: $icon-color !default;
 $msg-success-close-icon-color-alt1: $icon-color !default;
 $msg-success-close-icon-color-alt2: $white !default;
 
@@ -479,13 +479,13 @@ $msg-warning-icon-color: $gray60 !default;
 $msg-warning-icon-color-alt1: $orangeyellow10 !default;
 $msg-warning-icon-color-alt2: $white !default;
 
-$msg-warning-close-icon-color: $gray160 !default;
+$msg-warning-close-icon-color: $icon-color !default;
 $msg-warning-close-icon-color-alt1: $icon-color !default;
 $msg-warning-close-icon-color-alt2: $white !default;
 
 //Message Info
 $msg-info-color: $white !default;
-$msg-info-bg-color: darken($cyan20, 20%) !default;
+$msg-info-bg-color: #013a3c !default;
 $msg-info-border-color: darken($cyan20, 20%) !default;
 $msg-info-color-alt1: lighten($cyan20, 10%) !default;
 $msg-info-bg-color-alt1: $transparent !default;
@@ -498,7 +498,7 @@ $msg-info-icon-color: $content-text-color-alt3 !default;
 $msg-info-icon-color-alt1: lighten($cyan20, 10%) !default;
 $msg-info-icon-color-alt2: $white !default;
 
-$msg-info-close-icon-color: $gray160 !default;
+$msg-info-close-icon-color: $icon-color !default;
 $msg-info-close-icon-color-alt1: $icon-color !default;
 $msg-info-close-icon-color-alt2: $white !default;
 
@@ -512,7 +512,7 @@ $appbar-hover-bg-color-alt1: rgba(255, 255, 255, .08) !default;
 
 //Dark
 $appbar-bg-color-alt2: $gray80 !default;
-$appbar-color-alt2: $gray10 !default;
+$appbar-color-alt2: $gray190 !default;
 $appbar-border-color-alt2: $gray80 !default;
 $appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 

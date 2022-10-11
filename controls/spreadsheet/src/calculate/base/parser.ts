@@ -280,7 +280,7 @@ export class Parser {
                         form = form + formula[i];
                         form = form.split('++').join('+').split('+-').join('-').split('-+').join('-');
                     }
-                    if (formula[i] === '/' || formula[i] === '*') {
+                    if (formula[i] === '/' || formula[i] === '*' || formula[i] === '^') {
                         form = form + formula[i];
                     }
                     i = i + 1;

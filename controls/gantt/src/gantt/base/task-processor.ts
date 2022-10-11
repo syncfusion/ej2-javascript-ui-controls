@@ -1403,7 +1403,9 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue(dataMapping.id, ganttProperties.taskId, ganttData);
             }
             if (dataMapping.name) {
-                this.parent.setRecordValue('taskData.' + dataMapping.name, ganttProperties.taskName, ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.name, ganttProperties.taskName, ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.name, ganttProperties.taskName, ganttData);
             }
             if (dataMapping.startDate) {
@@ -1419,7 +1421,9 @@ export class TaskProcessor extends DateProcessor {
                 data[dataMapping.durationUnit] = ganttProperties.durationUnit;
             }
             if (dataMapping.progress) {
-                this.parent.setRecordValue('taskData.' + dataMapping.progress, ganttProperties.progress, ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.progress, ganttProperties.progress, ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.progress, ganttProperties.progress, ganttData);
             }
             if (dataMapping.baselineStartDate) {
@@ -1429,15 +1433,21 @@ export class TaskProcessor extends DateProcessor {
                 this.setRecordDate(ganttData, ganttProperties.baselineEndDate, dataMapping.baselineEndDate);
             }
             if (dataMapping.notes) {
-                this.parent.setRecordValue('taskData.' + dataMapping.notes, ganttProperties.notes, ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.notes, ganttProperties.notes, ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.notes, ganttProperties.notes, ganttData);
             }
             if (dataMapping.cssClass) {
-                this.parent.setRecordValue('taskData.' + dataMapping.cssClass, ganttProperties.cssClass, ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.cssClass, ganttProperties.cssClass, ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.cssClass, ganttProperties.cssClass, ganttData);
             }
             if (dataMapping.indicators) {
-                this.parent.setRecordValue('taskData.' + dataMapping.indicators, ganttProperties.indicators, ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.indicators, ganttProperties.indicators, ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.indicators, ganttProperties.indicators, ganttData);
             }
             if (dataMapping.parentID) {
@@ -1446,13 +1456,17 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue(dataMapping.parentID, ganttProperties.parentId, ganttData);
             }
             if (dataMapping.work) {
-                this.parent.setRecordValue(
-                    'taskData.' + dataMapping.work,
-                    this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue(
+                        'taskData.' + dataMapping.work,
+                        this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.work, ganttProperties.work, ganttData);
             }
             if (dataMapping.type) {
-                this.parent.setRecordValue('taskData.' + dataMapping.type, ganttProperties.taskType, ganttData);
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.type, ganttProperties.taskType, ganttData);
+                }
                 this.parent.setRecordValue(dataMapping.type, ganttProperties.taskType, ganttData);
             }
         }

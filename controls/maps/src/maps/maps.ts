@@ -2189,7 +2189,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     const propertyName : string = !isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
                     && isNaN(shapeData[i]['properties'][popertyNameArray[j]]) ?
                         shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
-                    const shapeName : string = !isNullOrUndefined(name) ? name.toLowerCase() : name;
+                    const shapeName : string = !isNullOrUndefined(name) && typeof name === 'string' ? name.toLowerCase() : name;
                     let k: number;
                     if (propertyName === shapeName) {
                         if (!isNullOrUndefined(this.layers[layerIndex].shapeSettings.colorValuePath)) {

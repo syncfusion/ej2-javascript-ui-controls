@@ -816,7 +816,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     private setTheme(): void {
         /*! Set theme for accumulation chart */
-        this.themeStyle = getThemeColor(this.theme);
+        this.themeStyle = getThemeColor(this.theme, false);
     }
     /**
      * To render the accumulation chart elements

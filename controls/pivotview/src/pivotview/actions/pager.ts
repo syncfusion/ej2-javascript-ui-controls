@@ -1,7 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { createElement, remove, select, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
+import { createElement, remove, select, EventHandler, MouseEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Pager as GridPager } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { PagerSettingsModel } from '../base/pivotview-model';
@@ -73,7 +73,7 @@ export class Pager {
       let pagerElement: HTMLElement = createElement('div', {
         id: this.parent.element.id + 'pivot-pager',
         className: cls.GRID_PAGER + ' ' + (((this.parent.isAdaptive || tableWidth < 650) ? cls.DEVICE : '') + ' ' + (this.parent.enableRtl ? cls.RTL : '') + ' ' + (this.parent.pagerSettings.position === 'Top' ? ' ' + cls.GRID_PAGER_TOP : ' ' + cls.GRID_PAGER_BOTTOM)
-        + ' ' + ((pagerOptions.enableCompactView || tableWidth < 400) ? cls.COMPACT_VIEW : '')),
+          + ' ' + ((pagerOptions.enableCompactView || tableWidth < 400) ? cls.COMPACT_VIEW : '')),
         styles: 'width:' + (this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()) + 'px'
       });
       if (this.parent.showFieldList && select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) && pagerOptions.position === 'Top') {
@@ -95,82 +95,84 @@ export class Pager {
       });
       this.pager.isVue = (this.parent as any).isVue;
       this.pager.appendTo('#' + this.parent.element.id + 'pivot-pager');
-      if (pagerOptions.showRowPager) {
-        if (!pagerOptions.enableCompactView && tableWidth > 400) {
-          this.rowPagerTextBox = new NumericTextBox({
-            min: 1,
-            max: this.parent.engineModule.rowPageCount,
-            showSpinButton: false,
-            format: '#',
-            validateDecimalOnType: true,
-            decimals: 0,
-            strictMode: true,
-            value: this.parent.pageSettings.currentRowPage,
-            enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale,
-            width:  tableWidth < 669 ? '50px' : '64px',
-            change: this.rowPageChange.bind(this),
-            cssClass: this.parent.cssClass
-          });
-          this.rowPagerTextBox.appendTo('#' + this.parent.element.id + '_row_textbox');
-        }
-        if (pagerOptions.showRowPageSize) {
-          let rowPages: number[] = this.parent.pagerSettings.rowPageSizes.slice(0);
-          if (this.parent.pagerSettings.rowPageSizes.indexOf(this.parent.pageSettings.rowPageSize) === -1) {
-            rowPages.push(this.parent.pageSettings.rowPageSize);
-            rowPages.sort(function (a, b) { return a - b; });
+      if (isNullOrUndefined(pagerOptions.template)) {
+        if (pagerOptions.showRowPager) {
+          if (!pagerOptions.enableCompactView && tableWidth > 400) {
+            this.rowPagerTextBox = new NumericTextBox({
+              min: 1,
+              max: this.parent.engineModule.rowPageCount,
+              showSpinButton: false,
+              format: '#',
+              validateDecimalOnType: true,
+              decimals: 0,
+              strictMode: true,
+              value: this.parent.pageSettings.currentRowPage,
+              enableRtl: this.parent.enableRtl,
+              locale: this.parent.locale,
+              width: tableWidth < 669 ? '50px' : '64px',
+              change: this.rowPageChange.bind(this),
+              cssClass: this.parent.cssClass
+            });
+            this.rowPagerTextBox.appendTo('#' + this.parent.element.id + '_row_textbox');
           }
-          this.rowPageSizeDropDown = new DropDownList({
-            dataSource: rowPages,
-            value: this.parent.pageSettings.rowPageSize,
-            enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale,
-            change: this.rowPageSizeChange.bind(this),
-            popupHeight: '300px',
-            popupWidth: '100%',
-            width: '64px',
-            cssClass: this.parent.cssClass
-          });
-          this.rowPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'row' + '_size_list');
-        }
-      }
-      if (pagerOptions.showColumnPager) {
-        if (!pagerOptions.enableCompactView && tableWidth > 400) {
-          this.columnPagerTextBox = new NumericTextBox({
-            min: 1,
-            max: this.parent.engineModule.columnPageCount,
-            showSpinButton: false,
-            format: '#',
-            validateDecimalOnType: true,
-            decimals: 0,
-            strictMode: true,
-            value: this.parent.pageSettings.currentColumnPage,
-            enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale,
-            width: tableWidth < 669 ? '50px' : '64px',
-            change: this.columnPageChange.bind(this),
-            cssClass: this.parent.cssClass
-          });
-          this.columnPagerTextBox.appendTo('#' + this.parent.element.id + '_column_textbox');
-        }
-        if (pagerOptions.showColumnPageSize) {
-          let columnPages: number[] = this.parent.pagerSettings.columnPageSizes.slice(0);
-          if (this.parent.pagerSettings.columnPageSizes.indexOf(this.parent.pageSettings.columnPageSize) === -1) {
-            columnPages.push(this.parent.pageSettings.columnPageSize);
-            columnPages.sort(function (a, b) { return a - b; });
+          if (pagerOptions.showRowPageSize) {
+            let rowPages: number[] = this.parent.pagerSettings.rowPageSizes.slice(0);
+            if (this.parent.pagerSettings.rowPageSizes.indexOf(this.parent.pageSettings.rowPageSize) === -1) {
+              rowPages.push(this.parent.pageSettings.rowPageSize);
+              rowPages.sort(function (a, b) { return a - b; });
+            }
+            this.rowPageSizeDropDown = new DropDownList({
+              dataSource: rowPages,
+              value: this.parent.pageSettings.rowPageSize,
+              enableRtl: this.parent.enableRtl,
+              locale: this.parent.locale,
+              change: this.rowPageSizeChange.bind(this),
+              popupHeight: '300px',
+              popupWidth: '100%',
+              width: '64px',
+              cssClass: this.parent.cssClass
+            });
+            this.rowPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'row' + '_size_list');
           }
-          this.columnPageSizeDropDown = new DropDownList({
-            dataSource: columnPages,
-            value: this.parent.pageSettings.columnPageSize,
-            enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale,
-            change: this.columnPageSizeChange.bind(this),
-            popupHeight: '300px',
-            popupWidth: '100%',
-            width: '64px',
-            cssClass: this.parent.cssClass
-          });
-          this.columnPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'column' + '_size_list');
+        }
+        if (pagerOptions.showColumnPager) {
+          if (!pagerOptions.enableCompactView && tableWidth > 400) {
+            this.columnPagerTextBox = new NumericTextBox({
+              min: 1,
+              max: this.parent.engineModule.columnPageCount,
+              showSpinButton: false,
+              format: '#',
+              validateDecimalOnType: true,
+              decimals: 0,
+              strictMode: true,
+              value: this.parent.pageSettings.currentColumnPage,
+              enableRtl: this.parent.enableRtl,
+              locale: this.parent.locale,
+              width: tableWidth < 669 ? '50px' : '64px',
+              change: this.columnPageChange.bind(this),
+              cssClass: this.parent.cssClass
+            });
+            this.columnPagerTextBox.appendTo('#' + this.parent.element.id + '_column_textbox');
+          }
+          if (pagerOptions.showColumnPageSize) {
+            let columnPages: number[] = this.parent.pagerSettings.columnPageSizes.slice(0);
+            if (this.parent.pagerSettings.columnPageSizes.indexOf(this.parent.pageSettings.columnPageSize) === -1) {
+              columnPages.push(this.parent.pageSettings.columnPageSize);
+              columnPages.sort(function (a, b) { return a - b; });
+            }
+            this.columnPageSizeDropDown = new DropDownList({
+              dataSource: columnPages,
+              value: this.parent.pageSettings.columnPageSize,
+              enableRtl: this.parent.enableRtl,
+              locale: this.parent.locale,
+              change: this.columnPageSizeChange.bind(this),
+              popupHeight: '300px',
+              popupWidth: '100%',
+              width: '64px',
+              cssClass: this.parent.cssClass
+            });
+            this.columnPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'column' + '_size_list');
+          }
         }
       }
       this.unWireEvent();

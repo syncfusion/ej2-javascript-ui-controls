@@ -6,12 +6,18 @@ $ddl-list-border-color: rgba($black, .15) !default;
 $ddl-line-height: 48px !default;
 $ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: $white !default;
+$mention-gradient-color: $white !default;
+$mention-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
+$mention-chip-bg-color: $gray-200 !default;
+$mention-chip-border-radius: 2px !default;
+$mention-chip-border: none !default;
 $ddl-list-bg-color: $white !default;
 $ddl-list-header-bg-color: $white !default;
 $ddl-list-tap-color: transparent !default;
 $ddl-list-default-font-color: $gray-900 !default;
 $ddl-list-active-border-color: $white !default;
 $ddl-list-active-font-color: $primary-font !default;
+$mention-active-font-color: $primary !default;
 $ddl-list-active-bg-color: $primary !default;
 $ddl-list-hover-bg-color: darken($gray-100, 2%) !default;
 $ddl-list-hover-border-color: $white !default;
@@ -89,4 +95,3 @@ $ddl-group-list-item-text-intent: 0 !default;
     stroke-width: 1px;
   }
 }
- 

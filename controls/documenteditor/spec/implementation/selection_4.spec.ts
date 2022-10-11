@@ -1110,3 +1110,43 @@ describe('Selection inside rectangle shape validation', () => {
         expect((((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as any).textFrame.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(2);
     });
 });
+describe('Selection using shift + up validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    let imageResizer: ImageResizer;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableRtl: true, enableImageResizer: true });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        imageResizer = editor.imageResizerModule;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        imageResizer.destroy();
+        imageResizer = undefined;
+        documentHelper = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Selection using shift + up validation', () => {
+        editor.editor.insertText('hello');
+        editor.editor.onEnter();
+        editor.editor.insertText('world');
+        editor.selection.select('0;0;5', '0;0;5');
+        editor.selection.handleShiftUpKey();
+        editor.editor.delete();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+    });
+});

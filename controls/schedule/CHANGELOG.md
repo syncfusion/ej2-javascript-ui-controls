@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.3.48 (2022-10-05)
+## 20.3.49 (2022-10-11)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I407566` - An issue with Importing exported ICS file with the edited recurrence event causes issue while editing the recurrence event has been fixed.
+
+## 20.3.47 (2022-09-29)
 
 ### Schedule
 

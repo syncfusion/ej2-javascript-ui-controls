@@ -209,6 +209,116 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     public width: string;
 
     /**
+     * Gets or sets the background color of the component.
+     * The background color of the component that accepts hex value, rgb and text (like 'red'). The default value is ''.
+     *
+     * @default ''
+     * @private
+     */
+    @Property('')
+    public backgroundColor: string;
+
+    /**
+     * Gets or sets the background image for the component.
+     * An image that used to fill the background of the component. The default value is ''.
+     *
+     * @default ''
+     * @private
+     */
+    @Property('')
+    public backgroundImage: string;
+
+    /**
+     * Gets or sets whether to prevent the interaction in signature component.
+     * True, if the signature component is read only state where the user interaction is prevented. The default value is false.
+     *
+     * @default false
+     * @private
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or sets whether to save the signature along with Background Color and background Image while saving.
+     * True, if signature component to save with background. The default value is true.
+     *
+     * @default true
+     * @private
+     */
+    @Property(true)
+    public saveWithBackground: boolean;
+ 
+    /**
+     * Gets or sets the stroke color of the signature.
+     * The color of the signature stroke that accepts hex value, rgb and text (like 'red'). The default value is "#000000".
+     *
+     * @default '#000000'
+     * @private
+     */
+    @Property('#000000')
+    public strokeColor: string;
+ 
+    /**
+     * Gets or sets the minimum stroke width for signature.
+     * The signature component calculates stroke width based on Velocity, MinStrokeWidth and MaxStrokeWidth.
+     * The minimum width of stroke. The default value is 0.5.
+     *
+     * @default 0.5
+     * @private
+     */
+    @Property(0.5)
+    public minStrokeWidth: number;
+ 
+    /**
+     * Gets or sets the maximum stroke width for signature.
+     * The signature component calculates stroke width based on Velocity, MinStrokeWidth and MaxStrokeWidth.
+     * The maximum width of stroke. The default value is 2.0.
+     *
+     * @default 2
+     * @private
+     */
+    @Property(2)
+    public maxStrokeWidth: number;
+ 
+    /**
+     * Gets or sets the velocity to calculate the stroke thickness based on the pressure of the contact on the digitizer surface.
+     * The Signature component calculates stroke thickness based on Velocity, MinStrokeWidth and MaxStrokeWidth.
+     * The default value is 0.7.
+     *
+     * @default 0.7
+     * @private
+     */
+    @Property(0.7)
+    public velocity: number;
+ 
+    /**
+     * Specifies the Signature in RTL mode that displays the content in the right-to-left direction.
+     *
+     * @default false
+     * @private
+     */
+    @Property(false)
+    public enableRtl: boolean;
+ 
+    /**
+     * Gets or sets whether to persist component's state between page reloads.
+     * True, if the component's state persistence is enabled. The default value is false.
+     * Component's property will be stored in browser local storage to persist component's state when page reloads.
+     *
+     * @default false
+     * @private
+     */
+    @Property(false)
+    public enablePersistence: boolean;
+
+    /**
+     * Gets or sets the last signature url to maintain the persist state.
+     *
+     * @private
+     */
+    public signatureValue: string;
+
+    /**
      * Triggers before an image is saved.
      *
      * @event beforeSave
@@ -7197,6 +7307,137 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+    }
+
+    /**
+     * To check whether the undo collection is empty or not.
+     *
+     * @returns {boolean}.
+     * @private
+     */
+    public canUndo(): boolean {
+        return super.canUndo();
+    }
+
+    /**
+     * To check whether the redo collection is empty or not.
+     *
+     * @returns {boolean}.
+     * @private
+     */
+    public canRedo(): boolean {
+        return super.canRedo();
+    }
+
+    /**
+     * Erases all the signature strokes signed by user.
+     *
+     * @returns {void}.
+     * @private
+     */
+    public clear(): void {
+        super.clear();
+    }
+
+    /**
+     * To draw the signature based on the given text, with the font family and font size.
+     *
+     * @param {string} text - specify text to be drawn as signature.
+     * @param {string} fontFamily - specify font family of a signature.
+     * @param {number} fontSize - specify font size of a signature.
+     *
+     * @returns {void}.
+     * @private
+     */
+    public draw(text: string, fontFamily?: string, fontSize?: number): void {
+        super.draw(text, fontFamily, fontSize);
+    }
+
+    /**
+     * To get the signature as Blob.
+     *
+     * @param {string} url - specify the url/base 64 string to get blob of the signature.
+     * @returns {Blob}.
+     * @private
+     */
+    public getBlob(url: string): Blob {
+        return super.getBlob(url);
+    }
+
+    /**
+     * To check whether the signature is empty or not.
+     *
+     * @returns {boolean}.
+     * @private
+     */
+    public isEmpty(): boolean {
+        return super.isEmpty();
+    }
+
+    /**
+     * To load the signature with the given base 64 string, height and width.
+     *
+     * @param {string} signature - specify the url/base 64 string to be drawn as signature.
+     * @param {number} width - specify the width of the loaded signature image.
+     * @param {number} height - specify the height of the loaded signature image.
+     * @returns {void}.
+     * @private
+     */
+    public load(signature: string, width?: number, height?: number): void {
+        super.load(signature, width, height);
+    }
+
+    /**
+     * Undo the last user action.
+     *
+     * @returns {void}.
+     * @private
+     */
+    public undo(): void {
+        super.undo();
+    }
+
+    /**
+     * Redo the last user action.
+     *
+     * @returns {void}.
+     * @private
+     */
+    public redo(): void {
+        super.redo();
+    }
+
+    /**
+     * To save the signature with the given file type and file name.
+     *
+     * @param {SignatureFileType} type - specify type of the file to be saved a signature.
+     * @param {string} fileName - specify name of the file to be saved a signature.
+     *
+     * @returns {void}.
+     * @private
+     */
+    public save(type?: FileType, fileName?: string): void {
+        super.save(type, fileName);
+    }
+
+    /**
+     * To save the signature as Blob.
+     *
+     * @returns {Blob}.
+     * @private
+     */
+    public saveAsBlob(): Blob {
+        return super.saveAsBlob();
+    }
+
+    /**
+     * Returns the persistence data for component.
+     *
+     * @returns any.
+     * @private
+     */
+    public getLocalData(): any {
+        return super.getLocalData();
     }
 }
 

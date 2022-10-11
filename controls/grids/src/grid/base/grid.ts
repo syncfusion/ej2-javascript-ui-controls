@@ -2819,6 +2819,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             CommandColumnAria: 'is Command column column header ',
             DialogEdit: 'Dialog edit',
             ClipBoard: 'clipboard',
+            AscendingText: 'Ascending',
+            DescendingText: 'Descending',
+            NoneText: 'None'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',

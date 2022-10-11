@@ -1,4 +1,4 @@
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @include export-module('chip-layout') {
   .e-chip-list {
     display: flex;
@@ -115,7 +115,6 @@
         overflow: hidden;
         width: $chip-delete-icon-size;
       }
-
     }
 
     .e-chip.e-outline {
@@ -356,7 +355,6 @@
       .trailing-icon-url {
         margin: $chip-touch-rtl-delete-icon-margin;
       }
-
     }
   }
 }

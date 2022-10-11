@@ -2,10 +2,10 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ChildArrangement, ConnectionPointOrigin, DiagramTools, NodeConstraints, ConnectorConstraints  } from '../../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { BasicShapeModel, NativeModel, NodeModel } from '../../../src/diagram/objects/node-model';
+import { BasicShapeModel, BpmnShapeModel, NativeModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing } from '../../../src/index';
+import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing, Canvas } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
@@ -2872,3 +2872,95 @@ describe('Property Change event Order commands issue', () => {
     });
 
 }); 
+
+describe('BPMN text annotation not dragged properly issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramorder' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'bpmn', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    dataObject: { collection: false, type: 'Input' },
+                    annotations: [
+                        { id: 'bottom', angle: 120, length: 150, text: 'Bottom' }
+                    ]
+                } as BpmnShapeModel,
+            },
+            {
+                id: 'swimlane',
+                shape: {
+                    orientation: 'Horizontal',
+                    type: 'SwimLane',
+                    header: {
+                        annotation: { content: 'Header' },
+                        height: 50, style: { fill: "red", fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, height: 50,
+                                style: { fill: "red", fontSize: 11 }
+                            },
+                            style: { fill: "blue" },
+                            width: 140,
+                            children: [
+                                {
+                                    id: 'bpmntext', width: 100, height: 100, margin: { left: 100, top: 20},
+                                    shape: {
+                                        type: 'Bpmn', shape: 'Event',
+                                        dataObject: { collection: false, type: 'Input' },
+                                        annotations: [
+                                            { id: 'bottom', angle: 120, length: 150, text: 'Bottom' }
+                                        ]
+                                    } as BpmnShapeModel,
+                                },
+                            ]
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 200,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 500, offsetY: 300,
+                height: 250, width: 650
+            },
+        ];
+        diagram = new Diagram({
+            width: '100%', height: 1300, nodes: nodes
+        });
+
+
+        diagram.appendTo('#diagramorder');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether BPMN text node update properly while drag the swimlane', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.nodes[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 500, 220);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 500 + 15, 220);
+        mouseEvents.mouseUpEvent(diagramCanvas, 500 + 15, 220);
+        let node: NodeModel = diagram.getObject('bpmntext');
+        expect(Math.ceil((node.wrapper.children[0] as Canvas).children[4].offsetX) === 231).toBe(true);
+        expect(Math.ceil((node.wrapper.children[0] as Canvas).children[4].offsetY) === 438).toBe(true);
+        done();
+    });
+
+});

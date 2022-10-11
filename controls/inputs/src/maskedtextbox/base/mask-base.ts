@@ -50,8 +50,8 @@ interface MaskFocusEventArgs extends BaseEventArgs {
  */
 export function createMask(): void {
     attributes(this.element, {
-        'role': 'textbox', 'autocomplete': 'off', 'autocorrect': 'off', 'autocapitalize': 'off',
-        'spellcheck': 'false', 'aria-live': 'assertive', 'aria-valuenow': ''
+        'role': 'textbox', 'autocomplete': 'off', 'autocapitalize': 'off',
+        'spellcheck': 'false', 'aria-live': 'assertive'
     });
     if (this.mask) {
         const splitMask: string[] = this.mask.split(']');
@@ -743,7 +743,6 @@ function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);
-    attributes(this.element, { 'aria-valuenow': this.element.value });
 }
 
 function maskInputKeyUpHandler(event: KeyboardEvent): void {

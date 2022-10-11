@@ -35,10 +35,10 @@ export class DataLabel {
         for (let i: number = 0; i < dataSource.length; i++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data: any = dataSource[i];
-            const dataShapePathValue : string = !isNullOrUndefined(data[shapeDataPath]) && isNaN(data[shapeDataPath]) ?
-                data[shapeDataPath].toLowerCase() : data[shapeDataPath];
-            shapeName = !isNullOrUndefined(shapeName) ? shapeName.toString() : shapeName;
-            shapeNameValue = !isNullOrUndefined(shapeName) ? shapeName.toLowerCase() : shapeName;
+            const dataShapePathValue: string = !isNullOrUndefined(data[shapeDataPath]) && isNaN(data[shapeDataPath]) &&
+                typeof data[shapeDataPath] === 'string' ? data[shapeDataPath].toLowerCase() : data[shapeDataPath];
+            shapeName = !isNullOrUndefined(shapeName) && typeof shapeName === 'string' ? shapeName.toString() : shapeName;
+            shapeNameValue = !isNullOrUndefined(shapeName) && typeof shapeName === 'string' ? shapeName.toLowerCase() : shapeName;
             if ((dataShapePathValue) === shapeNameValue) {
                 text = data;
                 break;

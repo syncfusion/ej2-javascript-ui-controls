@@ -831,6 +831,39 @@ describe('Popup # ', () => {
             document.body.style.margin ="8px";
         });
     });
+
+    describe(" EJ2-64385 - unwire event should be called even when destroyed with calling hide method", function() {
+        var popEle = createElement('div',{id:"posPopup"});
+        var popObj:any;
+        var eventStatus:boolean=false;
+        var popupunwirecscrollevent: any;
+
+        it("unwire event should be called even when destroyed with calling hide method ", function() {
+            popObj = new Popup(popEle,{
+                position:{X:'left', Y:'bottom'}
+            },
+            );
+            popupunwirecscrollevent = popObj.unwireScrollEvents;
+            popObj.unwireScrollEvents = function(){
+                eventStatus=!eventStatus; 
+            };
+            popObj.show();
+
+            popObj.destroy();
+            expect(eventStatus).toEqual(true);
+            eventStatus=false;
+        });
+
+        afterEach(function() {
+            if(popObj){
+                popObj.destroy();
+            }
+            document.body.innerHTML = "";
+            document.body.style.height ="";
+            document.body.style.width ="";
+            document.body.style.margin ="8px";
+        });
+    });
     describe("isElementOnViewport method test", function() {
         var popObj:any, flexContainer:HTMLElement;
         beforeEach(function() {            

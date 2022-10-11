@@ -1428,7 +1428,12 @@ export class TextPosition {
         if ((this.selection.start.paragraph !== this.selection.end.paragraph
             && this.selection.end.offset !== this.selection.getStartOffset(this.selection.start.paragraph)) ||
             (this.documentHelper.isSelectionChangedOnMouseMoved && this.selection.isParagraphFirstLine(this.selection.end.currentWidget)
-                && this.selection.end.offset === this.selection.getStartOffset(this.selection.start.paragraph))) {
+                && this.selection.end.offset === this.selection.getStartOffset(this.selection.start.paragraph))
+            || (((isNullOrUndefined(this.selection.start.paragraph.previousRenderedWidget)
+                && this.selection.start.paragraph === this.selection.end.paragraph
+                && this.selection.end.offset === this.selection.getStartOffset(this.selection.end.paragraph))
+                || (this.selection.start.paragraph !== this.selection.end.paragraph))
+                && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset() && this.selection.start.currentWidget.isLastLine())) {
             isSelectParaMark = true;
         }
         // To select Paragraph mark similar to MS WORD

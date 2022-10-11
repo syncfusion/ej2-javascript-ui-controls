@@ -102,11 +102,12 @@ export function toDate(
     const defaultDateFormats: Object = IntlBase.getDependables(cldrData, locale, null).dateObject;
     const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
+    const cellValue: Date | string | number = text;
     if (typeof text === 'string') {
         text = text.toUpperCase();
     }
     if (format) {
-        dObj.dateObj = intl.parseDate(text as string, { format: format });
+        dObj.dateObj = intl.parseDate(cellValue as string, { format: format });
         if (dObj.dateObj) {
             dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
             dObj.isCustom = true;

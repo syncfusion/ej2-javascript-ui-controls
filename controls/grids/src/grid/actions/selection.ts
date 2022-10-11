@@ -2191,11 +2191,12 @@ export class Selection implements IAction {
         } else {
             this.mUPTarget = null;
         }
+        const closeRowCell: Element = closest(e.target as Element, ".e-rowcell");
         if (this.isDragged && !this.isAutoFillSel && this.selectionSettings.mode === 'Cell' &&
-            (e.target as Element).classList.contains(literals.rowCell)) {
+            closeRowCell && closeRowCell.classList.contains(literals.rowCell)) {
             const target: Element = e.target as Element;
-            const rowIndex: number = parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10);
-            const cellIndex: number = parseInt(target.getAttribute(literals.dataColIndex), 10);
+            const rowIndex: number = parseInt(closeRowCell.parentElement.getAttribute(literals.dataRowIndex), 10);
+            const cellIndex: number = parseInt(closeRowCell.getAttribute(literals.dataColIndex), 10);
             this.isDragged = false;
             this.clearCellSelection();
             this.selectCellsByRange(

@@ -529,7 +529,7 @@ export class Axis extends ChildProperty<Axis> {
         }
         if (labels && labels.length > 0) {
             for (let i: number = min; i <= max; i = i + interval) {
-                const value: string = labels[i] ? labels[i].toString() : i.toString();
+                const value: string = !isNullOrUndefined(labels[i]) ? labels[i].toString() : i.toString();
                 this.axisLabels.push(value);
             }
         } else {

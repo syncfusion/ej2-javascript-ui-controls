@@ -758,7 +758,70 @@ export let exportData: Object[] = [
         ]
     }
 ];
-
+export let crData: Object[] = [
+    {
+        startDate: '2022-08-12T00:00:00.000Z',
+        estimatedCompletionDate: '2022-08-18T00:00:00.000Z',
+        name: 'Product Concept',
+        runningId: 9668,
+        dependency: '9661FS',
+        duration: 5,
+        progress: 2,
+        child: [
+            {
+                startDate: '2022-08-12T00:00:00.000Z',
+                estimatedCompletionDate: '2022-08-13T00:00:00.000Z',
+                name: 'Defining the product and its usage',
+                runningId: 9672,
+                duration: 0,
+                progress: 0,
+                child: [],
+            },
+            {
+                startDate: '2022-08-13T00:00:00.000Z',
+                estimatedCompletionDate: '2022-08-14T00:00:00.000Z',
+                name: 'Defining target audience',
+                runningId: 9673,
+                dependency: '9672FS',
+                duration: 0,
+                progress: 0,
+                child: [],
+            },
+            {
+                actualStartDate: '2022-09-19T11:44:16.877Z',
+                actualCompletionDate: '2022-09-19T11:46:52.436Z',
+                startDate: '2022-08-14T00:00:00.000Z',
+                estimatedCompletionDate: '2022-08-15T00:00:00.000Z',
+                name: 'Prepare product sketch and notes',
+                runningId: 9676,
+                dependency: '9673FS',
+                duration: 0,
+                progress: 7,
+                child: [],
+            },
+            {
+                startDate: '2022-08-15T00:00:00.000Z',
+                estimatedCompletionDate: '2022-08-16T00:00:00.000Z',
+                name: 'Concept Approval',
+                runningId: 9675,
+                dependency: '9676FS',
+                duration: 0,
+                progress: 0,
+                child: [],
+            },
+            {
+                startDate: '2022-08-16T00:00:00.000Z',
+                estimatedCompletionDate: '2022-08-18T00:00:00.000Z',
+                name: 'Market Research',
+                runningId: 9740,
+                dependency: '9675FS',
+                duration: 1,
+                progress: 0,
+                child: [],
+            },
+        ],
+    }
+];
 
 export let projectData1: Object[] = [
     {

@@ -108,7 +108,7 @@ export interface LegendSettingsModel {
     /**
      * Option to customize the padding between legend items.
      *
-     * @default 20
+     * @default null
      */
 
     itemPadding?: number;

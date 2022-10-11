@@ -1,4 +1,5 @@
 @include export-module('tab-theme') {
+
   /*! tab theme */
   .e-tab {
     background: $tab-bg-color;
@@ -31,7 +32,7 @@
           }
         }
 
-        &[style*= 'overflow: hidden'] {
+        &[style *= 'overflow: hidden'] {
           border: 0;
         }
       }
@@ -297,7 +298,6 @@
         }
         border: 0;
 
-
         .e-nav-arrow {
           @if $tab-skin != 'FluentUI' {
             color: $tab-nav-icon-color;
@@ -528,11 +528,11 @@
 
         @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tab-skin == 'bootstrap5' {
 
-          &[style*= 'overflow: hidden'] {
+          &[style *= 'overflow: hidden'] {
             border: 0;
           }
 
-          &[style*= 'overflow: hidden'] .e-toolbar-items {
+          &[style *= 'overflow: hidden'] .e-toolbar-items {
             border-bottom: 0;
             border-top: $tab-items-border;
           }
@@ -953,7 +953,6 @@
           .e-tab-wrap {
             &:hover {
               @if $tab-skin == 'bootstrap4' or $tab-skin == 'bootstrap5' {
-
                 background: $tab-active-bg-color;
 
                 .e-tab-text,
@@ -1256,7 +1255,7 @@
                 @if $tab-skin == 'bootstrap5' {
                   .e-tab-text,
                   .e-close-icon {
-                    color:  $tab-active-text-color;
+                    color: $tab-active-text-color;
                   }
                 }
 
@@ -1545,7 +1544,6 @@
               }
             }
           }
-
         }
 
         .e-hor-nav:not(.e-expended-nav),
@@ -1904,7 +1902,7 @@
               @if $tab-skin == 'bootstrap4' or $tab-skin == 'bootstrap5' {
                 border: 1px solid $tab-hover-border-color;
                 border-radius: $tab-top-active-item-border-radius;
-            }
+              }
             }
 
             .e-tab-wrap:focus,

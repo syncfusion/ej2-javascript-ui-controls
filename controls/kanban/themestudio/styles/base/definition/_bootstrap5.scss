@@ -375,7 +375,7 @@ $msg-danger-color-alt2: $white !default;
 $msg-danger-bg-color-alt2: $red !default;
 $msg-danger-border-color-alt2: $red !default;
 
-$msg-danger-icon-color: $red !default;
+$msg-danger-icon-color: #842029 !default;
 $msg-danger-icon-color-alt1: $red !default;
 $msg-danger-icon-color-alt2: $white !default;
 
@@ -408,7 +408,7 @@ $msg-warning-bg-color: tint-color($warning, 80%) !default;
 $msg-warning-border-color: #ffecb5 !default;
 $msg-warning-color-alt1: #866500 !default;
 $msg-warning-bg-color-alt1: $transparent !default;
-$msg-warning-border-color-alt1: $yellow !default;
+$msg-warning-border-color-alt1: #866500 !default;
 $msg-warning-color-alt2: $gray-900 !default;
 $msg-warning-bg-color-alt2: $yellow !default;
 $msg-warning-border-color-alt2: $yellow !default;

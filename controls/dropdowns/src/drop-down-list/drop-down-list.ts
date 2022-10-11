@@ -487,6 +487,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected clearAll(e?: MouseEvent | KeyboardEventArgs | TouchEvent, properties?: DropDownListModel): void {
+        this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
         if (isNullOrUndefined(properties) || (!isNullOrUndefined(properties) &&
             (isNullOrUndefined(properties.dataSource) ||
                 (!(properties.dataSource instanceof DataManager) && properties.dataSource.length === 0)))) {
@@ -1835,7 +1836,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.initRemoteRender = false;
                 if (this.value && this.dataSource instanceof DataManager) {
                     const checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
-                    const checkVal: boolean = list.some((x: {[key: string]: boolean | string | number}) => x[checkField] === this.value);
+                    const fieldValue: string[] = this.fields.value.split('.');
+                    const checkVal: boolean = list.some((x: {[key: string]: boolean | string | number}) => isNullOrUndefined(x[checkField]) && fieldValue.length > 1 ? this.checkFieldValue(x, fieldValue) === this.value : x[checkField] === this.value);
                     if (!checkVal) {
                         this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value)))
                             .then((e: Object) => {
@@ -1882,6 +1884,14 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.renderPopup(e);
             }
         }
+    }
+
+    private checkFieldValue(list: {[key: string]: boolean | string | number}, fieldValue: string[]) {
+        let checkField: any = list;
+        fieldValue.forEach((value: string) => {
+            checkField = checkField[value]
+        });
+       return checkField;
     }
 
     private updateActionCompleteDataValues(ulElement: HTMLElement, list: { [key: string]: Object }[]) : void {

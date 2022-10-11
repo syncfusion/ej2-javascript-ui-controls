@@ -691,7 +691,14 @@ export class GanttTreeGrid {
     }
 
     private updateScrollTop(args: object): void {
-        this.treeGridElement.querySelector('.e-content').scrollTop = getValue('top', args);
+	let newScrollTop: number;
+        if (getValue('top', args) > (this.parent.flatData.length * this.parent.rowHeight)) {
+            newScrollTop = getValue('top', args) - document.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'];
+        }
+        else {
+            newScrollTop = getValue('top', args);
+        }
+        this.treeGridElement.querySelector('.e-content').scrollTop = newScrollTop;
         this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;
     }
     private treeGridClickHandler(e: PointerEvent): void {

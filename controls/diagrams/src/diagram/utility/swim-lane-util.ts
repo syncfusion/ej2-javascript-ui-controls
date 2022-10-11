@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Diagram } from '../diagram';
-import { NodeModel, LaneModel, PhaseModel, SwimLaneModel } from '../objects/node-model';
+import { NodeModel, LaneModel, PhaseModel, SwimLaneModel, BpmnShapeModel } from '../objects/node-model';
 import { Node, Shape, SwimLane } from '../objects/node';
 import { GridPanel, GridCell, GridRow, RowDefinition, ColumnDefinition } from '../core/containers/grid';
 import { Lane, Phase } from '../objects/node';
@@ -541,6 +541,10 @@ export function arrangeChildNodesInSwimLane(diagram: Diagram, obj: NodeModel): v
                 node.offsetY = lanes[i].height;
                 diagram.initObject(node as Node);
                 diagram.nodes.push(node);
+                // EJ2-63939 - Check whether the lane child is BPMN text node or not
+                if(node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
+                    (obj as Node).isTextNode = true;
+                }
                 canvas = node.wrapper;
                 if (orientation) {
                     for (k = columnValue; k < col; k++) {
@@ -1032,7 +1036,7 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
         const laneIndex: number = (count !== undefined) ? count : shape.lanes.length;
         index += laneIndex;
         args = {
-            element: laneObj, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
+            element: laneObj, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(diagram.diagramActions), state: 'Changing', type: 'Addition', cancel: false, laneIndex: laneIndex
         };
         diagram.triggerEvent(DiagramEvent.collectionChange, args);
         if (!args.cancel) {
@@ -1063,7 +1067,7 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
                 shape.lanes.push(laneObj);
             }
             args = {
-                element: laneObj, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
+                element: laneObj, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(diagram.diagramActions), state: 'Changed', type: 'Addition', cancel: false, laneIndex: laneIndex
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
@@ -1787,7 +1791,7 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
             const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
             laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
             args = {
-                element: lane, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
+                element: lane, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(diagram.diagramActions), state: 'Changing', type: 'Removal', cancel: false, laneIndex: laneIndex
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             if (!args.cancel) {
@@ -1830,7 +1834,7 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                     grid.removeColumn(index);
                 }
                 args = {
-                    element: lane, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(this.diagram.diagramActions), state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
+                    element: lane, cause: diagram.diagramActions, diagramAction : diagram.getDiagramAction(diagram.diagramActions), state: 'Changed', type: 'Removal', cancel: false, laneIndex: laneIndex
                 };
                 diagram.triggerEvent(DiagramEvent.collectionChange, args);
                 swimLane.width = swimLane.wrapper.width = grid.width;

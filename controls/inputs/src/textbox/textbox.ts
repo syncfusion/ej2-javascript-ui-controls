@@ -757,7 +757,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.respectiveElement.value = this.respectiveElement.defaultValue;
         this.respectiveElement.classList.remove('e-input');
-        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+        this.removeAttributes(['aria-disabled', 'aria-readonly', 'aria-labelledby']);
         if (!isNullOrUndefined(this.textboxWrapper)) {
             this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
             detach(this.textboxWrapper.container);

@@ -1,10 +1,9 @@
-
 /*! component's default definitions and variables */
 $skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: $border-radius !default;
 $card-box-shadow: none !default;
-$card-action-btn-txt-transform: none !default;;
+$card-action-btn-txt-transform: none !default;
 $card-bg-color: $default-bg-color !default;
 $card-focus-bg-color: $default-bg-color !default;
 $card-hover-bg-color: $default-bg-color !default;
@@ -95,14 +94,13 @@ $card-image-title-bigger-font: 24px !default;
 $card-action-btn-bigger-icon-width: 24px !default;
 $card-action-btn-bigger-icon-height: 24px !default;
 
-
 //color
 
-$card-brdr-size: 1px  !default;
+$card-brdr-size: 1px !default;
 $card-brdr-type: solid !default;
 $card-brdr-color: $default-border-color !default;
 $card-sep-margin: 16px 0 !default;
-$card-sep-brdr-size: 1px  !default;
+$card-sep-brdr-size: 1px !default;
 $card-sep-brdr-type: solid !default;
 $card-sep-brdr-color: $default-border-color !default;
 $card-image-title-color: $default-font-color !default;
@@ -124,6 +122,7 @@ $card-header-txt-title-color: $default-font-color !default;
 $card-header-txt-subtitle-color: $default-font-color !default;
 $card-content-font-color: $card-header-txt-subtitle-color !default;
 $card-action-btn-icon-color: $default-font-color !default;
+
 /*! component's theme wise override material-definitions and variables */
 $skin-name: 'highcontrast' !default;
 $card-img-brdr-radious: 50% !default;
@@ -173,7 +172,6 @@ $card-image-title-font: 17px !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
 
-
 // Touch
 
 $card-bigger-lheight: 45px !default;
@@ -209,14 +207,13 @@ $card-image-title-bigger-font: 17px !default;
 $card-action-btn-bigger-icon-width: 24px !default;
 $card-action-btn-bigger-icon-height: 24px !default;
 
-
 // color
 
 $card-bg-color: $bg-base-0 !default;
-$card-brdr-size: 1px  !default;
+$card-brdr-size: 1px !default;
 $card-brdr-type: solid !default;
 $card-brdr-color: $border-default !default;
-$card-sep-brdr-size: 1px  !default;
+$card-sep-brdr-size: 1px !default;
 $card-sep-brdr-type: solid !default;
 $card-sep-brdr-color: $border-default !default;
 $card-image-title-color: $content-font !default;

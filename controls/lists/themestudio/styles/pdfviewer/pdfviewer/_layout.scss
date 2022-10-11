@@ -1,6 +1,7 @@
 @include export-module('pdfviewer-layout') {
+
   /*! component layout */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-pdfviewer {
     .e-pv-viewer-container {
       border-style: $pv-viewer-border-style;

@@ -192,7 +192,10 @@ export class PdfTimeline {
         const rectPen: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
         const rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
         graphics.drawRectangle(rectPen, rectBrush, x, y, pixelToPoint(width), pixelToPoint(height));
-        const font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
+        let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
+        if (ganttStyle.font) {
+            font = ganttStyle.font;
+        }
         const textBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
         const pLeft: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
         const pTop: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;

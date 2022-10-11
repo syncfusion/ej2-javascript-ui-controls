@@ -2589,9 +2589,9 @@ export interface SelectEventArgs extends BaseEventArgs, SelectedItem {
     /**
      * It is used to check whether the element is checked or not.
      */
-    isChecked?: boolean;    
+    isChecked?: boolean;
     /**
-     * Cancels the item selection if the value is true.
+     * Cancels the item selection if the value is true 
      */
     cancel: boolean;
 }

@@ -1,5 +1,5 @@
 @include export-module('listbox-layout') {
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-listbox-wrapper,
   .e-listbox-container {
     -webkit-overflow-scrolling: touch;
@@ -16,16 +16,16 @@
 
     &.e-listboxtool-container .e-list-wrap {
       @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
-        width: calc(100% - 16%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 16%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
-        width: calc(100% - 14%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 14%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'fabric' {
-        width: calc(100% - 14%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 14%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'highcontrast' {
-        width: calc(100% - 13%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 13%) !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -398,15 +398,6 @@
     }
   }
 
-  // Blazor listbox class
-  .e-listboxtool-container .e-left {
-    flex-direction: row-reverse;
-  }
-
-  .e-listboxtool-wrapper .e-left {
-    flex-direction: column-reverse;
-  }
-
   .e-rtl.e-listboxtool-wrapper,
   .e-rtl.e-listboxtool-container {
     &.e-right {
@@ -432,13 +423,13 @@
 
     &.e-listboxtool-container .e-list-wrap {
       @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
-        width: calc(100% - 20%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 20%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
-        width: calc(100% - 15%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 15%) !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
-        width: calc(100% - 17%) !important; // sass-lint:disable-line no-important
+        width: calc(100% - 17%) !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 

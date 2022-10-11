@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress } from "../../../src/index";
+import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell } from "../../../src/index";
 import { L10n } from '@syncfusion/ej2-base';
 
 describe('Insert & Delete ->', () => {
@@ -1243,6 +1243,31 @@ describe('Insert & Delete ->', () => {
                     expect(sheet.rows[10].cells[3].formula).toEqual('=SUM(D2:D10)');
                     expect(sheet.rows[10].cells[3].value).toEqual(145);
                     expect(helper.invoke('getCell', [10, 3]).textContent).toEqual('145');
+                    done();
+                });
+            });
+        });
+        describe('EJ2-64171 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '3' }, { formula: '=SUM(A1:C1)' }, { formula: '=SUM(C1:A1)' }] },  { cells: [{ value: '2'}] }, { cells: [{ value: '3' }] }, { cells: [{ formula: '=SUM(A1:A3)' }] }, { cells: [{ formula: '=SUM(A3:A1)' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Reverse ranges used in formulas not works properly while inserting rows', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertRow(2, 2);
+                spreadsheet.insertColumn(2, 2);
+                setTimeout(function () {
+                    expect(getCell(4, 0, helper.getInstance().sheets[0]).formula).toBe('=SUM(A1:A4)');
+                    expect(helper.invoke('getCell', [4, 0]).textContent).toBe('6');
+                    expect(getCell(5, 0, helper.getInstance().sheets[0]).formula).toBe('=SUM(A4:A1)');
+                    expect(helper.invoke('getCell', [5, 0]).textContent).toBe('6');
+                    expect(getCell(0, 4, helper.getInstance().sheets[0]).formula).toBe('=SUM(A1:D1)');
+                    expect(helper.invoke('getCell', [0, 4]).textContent).toBe('6');
+                    expect(getCell(0, 5, helper.getInstance().sheets[0]).formula).toBe('=SUM(D1:A1)');
+                    expect(helper.invoke('getCell', [0, 5]).textContent).toBe('6');
                     done();
                 });
             });

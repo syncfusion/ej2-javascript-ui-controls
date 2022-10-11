@@ -1732,7 +1732,9 @@ export class Render {
                                 format: cCnt === 0 ? '' : (isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt].actualText] : singleValueFormat),
                                 allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                 allowResizing: this.parent.gridSettings.allowResizing,
-                                visible: true
+                                visible: true,
+                                textAlign: this.parent.enableRtl ? 'Left' : 'Right',
+                                headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                             };
                         } else if (headerSplit[cCnt]) {
                             colSpan = (colField[cCnt] && colField[cCnt].type === 'grand sum' &&

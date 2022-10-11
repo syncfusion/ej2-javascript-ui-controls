@@ -1893,6 +1893,7 @@ export class PdfViewerBase {
         if (formFieldsModule) {
             formFieldsModule.readOnlyCollection = [];
             formFieldsModule.signatureFieldCollection = [];
+            formFieldsModule.renderedPageList = [];
             formFieldsModule.currentTarget = null;
         }
         if (signatureModule) {
@@ -5302,7 +5303,6 @@ export class PdfViewerBase {
                     pageCanvas.style.marginLeft = 'auto';
                     pageCanvas.style.marginRight = 'auto';
                 }
-                pageCanvas.alt = this.pdfViewer.element.id + '_page_' + pageNumber;
                 pageDiv.appendChild(pageCanvas);
             }
             if (this.pdfViewer.annotationModule && this.pdfViewer.annotation) {

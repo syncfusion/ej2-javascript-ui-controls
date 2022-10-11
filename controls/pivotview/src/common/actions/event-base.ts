@@ -548,7 +548,7 @@ export class EventBase {
         }
         let modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (let member of members) {
-            let memberName: string = this.parent.isDateField ? member.formattedText : member.actualText.toString();
+            let memberName: string = engineModule.formatFields[fieldName] ? member.formattedText : member.actualText.toString();
             /* eslint-disable */
             let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': member.actualText.toString() };
             let obj: { [key: string]: Object } = {

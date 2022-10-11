@@ -1,4 +1,4 @@
-// sass-lint:disable-all
+/* stylelint-disable */
 $ddt-skin-name: 'material' !default;
 $ddt-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 0px rgba(0, 0, 0, 0.14), 0 3px 14px 0px rgba(0, 0, 0, 0.12) !default;
 $ddt-close-icon-min-height: 22px !default;
@@ -47,7 +47,7 @@ $ddt-popup-background-color: $grey-white !default;
 $ddt-popup-border-color: transparent !default;
 $ddt-chip-close:  rgba($grey-light-font, .54) !default;
 $ddt-chip-font-color:  rgba($grey-light-font, .87) !default;
-$ddt-chip-hover-bg-color: darken($grey-300, 4%) !default;;
+$ddt-chip-hover-bg-color: darken($grey-300, 4%) !default;
 $ddt-filled-chip-bg-color: darken($grey-300, 7%) !default;
 $ddt-chip-hover-font-color: rgba($grey-light-font, .87) !default;
 $ddt-nodata-font-color: $grey-black !default;

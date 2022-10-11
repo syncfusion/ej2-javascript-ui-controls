@@ -1,4 +1,5 @@
-  @include export-module('pager-theme') {
+@include export-module('pager-theme') {
+
   /*! Pager theme */
   #{&}.e-pager {
     background-color: $pager-bg-color;
@@ -123,7 +124,6 @@
         color: $pager-mhover-color;
         opacity: $pager-content-opacity;
       }
-
     }
 
     &.e-rtl {
@@ -147,7 +147,6 @@
       & .e-nextpagedisabled {
         border-left-color: $pager-border-color;
       }
-
     }
-}
+  }
 }

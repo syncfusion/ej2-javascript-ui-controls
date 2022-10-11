@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.49 (2022-10-11)
+
+### Tree Grid
+
+#### Bug fixes
+
+- `#FB33879`, `#FB33758` - Virtualization works properly with remote data binding
+- `#I385208` - Row Drag and Drop works properly between the tree grids when items are collapsed.
+
 ## 20.3.48 (2022-10-05)
+
+### Tree Grid
+
+#### Bug fixes
 
 - `#I406947` - Resolved cursor icon disappears while resizing after the cell editing.
 - `#I402612` - Newly added record positioned properly when no records are selected with remote data binding

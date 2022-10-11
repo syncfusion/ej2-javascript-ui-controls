@@ -7639,9 +7639,50 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let absoluteLength:number= centerPoint as number * totalLength;
             let position: PointModel =this.commandHandler.getPointAtLength(absoluteLength,totalPoints,0);
             finalPoint = { cx: position.x , cy: position.y  };
-            this.applyMarginBezier(obj, finalPoint);
+            this.applyMarginBezier(obj, finalPoint); 
+            // EJ2-64114 -Horizontal and Vertical alignment not applied properly for the bezier connector annotation  
+            this.applyAlignment(obj,finalPoint);
+
         }
         return finalPoint;
+    }
+    /**
+     * Apply alignment to bezier annotation
+     * @param obj 
+     * @param finalPoint 
+     */
+    private applyAlignment(obj:ConnectorModel | NodeModel,finalPoint:any){      
+        for (let i: number = 0; i < obj.wrapper.children.length; i++) {
+            if (obj.wrapper && obj.wrapper.children[i] instanceof TextElement) {
+                let child:DiagramElement = obj.wrapper.children[i];
+                switch (child.horizontalAlignment) {
+                case 'Auto':
+                case 'Left':
+                    finalPoint.cx = child.inversedAlignment ? finalPoint.cx : (finalPoint.cx- child.desiredSize.width);
+                    break;
+                case 'Stretch':
+                case 'Center':
+                    finalPoint.cx -= child.desiredSize.width * child.pivot.x;
+                    break;
+                case 'Right':
+                    finalPoint.cx = child.inversedAlignment ? (finalPoint.cx - child.desiredSize.width) : finalPoint.cx;
+                    break;
+                }
+                switch (child.verticalAlignment) {
+                case 'Auto':
+                case 'Top':
+                    finalPoint.cy = child.inversedAlignment ? finalPoint.cy : (finalPoint.cy - child.desiredSize.height);
+                    break;
+                case 'Stretch':
+                case 'Center':
+                    finalPoint.cy -= child.desiredSize.height * child.pivot.y;
+                    break;
+                case 'Bottom':
+                    finalPoint.cy = child.inversedAlignment ? (finalPoint.cy - child.desiredSize.height) : finalPoint.cy;
+                    break;
+                }
+            }
+        }
     }
 
  //(EJ2-62683) Method used to get total points in bezier connector
@@ -9772,6 +9813,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updateDiagramObject(actualObject as NodeModel, true);
                     } else {
                         this.updateDiagramObject(actualObject as NodeModel);
+                        // EJ2-63939 - Added below code to provide drag support for the bpmn text annotation while drag the swimlane
+                        if(this.bpmnModule !== undefined && (actualObject as NodeModel).shape.type === 'SwimLane' && (actualObject as Node).isTextNode) {
+                            let swimlane: NodeModel = actualObject as NodeModel;
+                            for (let i: number = 0 ; i < (swimlane.shape as SwimLaneModel).lanes.length ; i++) {
+                                // EJ2-63939 - Get the lane from swimlane 
+                                let lane: LaneModel = (swimlane.shape as SwimLaneModel).lanes[i];
+                                for (let j: number = 0 ;j < lane.children.length ; j++) {
+                                    let children: NodeModel = lane.children[j];
+                                    // EJ2-63939 - Check whether the swimlane children type is BPMN or not. 
+                                    if(children.shape.type === 'Bpmn') {
+                                        this.bpmnModule.updateTextAnnotationProp(children as Node, { offsetX: (children.offsetX), offsetY: (children.offsetY) } as Node, this, true);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 if (!isLayout && updateConnector) {

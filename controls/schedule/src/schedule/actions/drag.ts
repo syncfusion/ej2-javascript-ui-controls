@@ -513,7 +513,7 @@ export class DragAndDrop extends ActionBase {
         const eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
         const td: HTMLElement = closest((<HTMLTableCellElement>e.target), 'td') as HTMLElement;
-        if (this.parent.currentView === 'TimelineYear' && !td.classList.contains('e-work-cells')) {
+        if (this.parent.currentView === 'TimelineYear' && (!td.classList.contains(cls.WORK_CELLS_CLASS) || td.classList.contains(cls.OTHERMONTH_CLASS))) {
             return;
         }
         const dragStart: Date = this.parent.getDateFromElement(td);

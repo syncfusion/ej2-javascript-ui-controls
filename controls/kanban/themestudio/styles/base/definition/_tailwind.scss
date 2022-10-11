@@ -338,10 +338,10 @@ $diagram-palette-hover-background: $content-bg-color-hover !default;
 //Message Default
 $msg-color: $cool-gray-900 !default;
 $msg-bg-color: $cool-gray-100 !default;
-$msg-border-color: $cool-gray-200 !default;
+$msg-border-color: $cool-gray-400 !default;
 $msg-color-alt1: $cool-gray-900 !default;
 $msg-bg-color-alt1: $transparent !default;
-$msg-border-color-alt1: $cool-gray-200 !default;
+$msg-border-color-alt1: $cool-gray-400 !default;
 $msg-color-alt2: $cool-gray-900 !default;
 $msg-bg-color-alt2: $cool-gray-400 !default;
 $msg-border-color-alt2: $cool-gray-400 !default;
@@ -376,7 +376,7 @@ $msg-danger-close-icon-color-alt2: $white !default;
 //Message success
 $msg-success-color: $green-700 !default;
 $msg-success-bg-color: $green-50 !default;
-$msg-success-border-color: $green-100 !default;
+$msg-success-border-color: $green-700 !default;
 $msg-success-color-alt1: $green-700 !default;
 $msg-success-bg-color-alt1: $transparent !default;
 $msg-success-border-color-alt1: $green-700 !default;
@@ -414,7 +414,7 @@ $msg-warning-close-icon-color-alt2: $white !default;
 //Message Info
 $msg-info-color: $cyan-700 !default;
 $msg-info-bg-color: $cyan-50 !default;
-$msg-info-border-color: $cyan-100 !default;
+$msg-info-border-color: $cyan-700 !default;
 $msg-info-color-alt1: $cyan-700 !default;
 $msg-info-bg-color-alt1: $transparent !default;
 $msg-info-border-color-alt1: $cyan-700 !default;

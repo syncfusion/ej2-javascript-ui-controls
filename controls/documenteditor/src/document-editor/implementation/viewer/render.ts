@@ -570,7 +570,13 @@ export class Renderer {
             return (paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget).margin.bottom;
         } else {
             let widget: LineWidget = paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget;
-            return (widget.children[widget.children.length - 1] as ElementBox).margin.bottom;
+            let bottomMargin: number = 0;
+            if (widget.children.length > 0) {
+                bottomMargin = (widget.children[widget.children.length - 1] as ElementBox).margin.bottom as number;
+            } else if (!isNullOrUndefined(widget.margin)) {
+                bottomMargin = widget.margin.bottom;
+            }
+            return bottomMargin;
         }
     }
 

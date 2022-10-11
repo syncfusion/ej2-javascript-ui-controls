@@ -432,6 +432,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private initialize(): void {
         this.formatPosition();
         addClass([this.element], ROOT);
+        this.element.setAttribute('tabindex', '0');
     }
 
     private formatPosition(): void {
@@ -1243,6 +1244,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (!isNullOrUndefined(this.target)) {
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
             for (const target of targetList) {
+                target.setAttribute('tabindex', '0');
                 EventHandler.add(target, 'focus', this.targetHover, this);
             }
         } else {
@@ -1266,6 +1268,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.mouseTrail && this.openDelay === 0) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
             }
+            target.setAttribute("tabindex", "0");
         }
     }
     /**
@@ -1305,6 +1308,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (!isNullOrUndefined(this.target)) {
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
             for (const target of targetList) {
+                target.removeAttribute('tabindex');
                 EventHandler.remove(target, 'focus', this.targetHover);
             }
         } else {
@@ -1330,6 +1334,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.mouseTrail) {
             EventHandler.remove(target, 'mousemove touchstart mouseenter', this.onMouseMove);
         }
+        target.removeAttribute("tabindex");
     }
     private findTarget(): HTMLElement {
         const target: HTMLElement = select('[data-tooltip-id= "' + this.ctrlId + '_content"]', document) as HTMLElement;

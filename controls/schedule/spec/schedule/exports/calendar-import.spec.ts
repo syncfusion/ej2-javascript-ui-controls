@@ -9,6 +9,7 @@ import {
 import { createSchedule, destroy } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, ICalendarImport);
 
@@ -504,6 +505,33 @@ describe('ICS calendar import', () => {
             subjectElement.value = 'event';
             const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
+        });
+
+        it('EJ2-64169 - Update recurrence entire series after importing an recurrence event with recurrence exception', () => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment')[3].querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('My_event');
+                expect(schObj.element.querySelectorAll('.e-recurrence-icon').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-recurrence-edit-icon').length).toEqual(0);
+            };
+            expect(schObj.element.querySelector('.e-appointment').querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('My_event');
+            expect(schObj.element.querySelectorAll('.e-appointment')[3].querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('My_event_exception');
+            expect(schObj.element.querySelectorAll('.e-recurrence-icon').length).toEqual(4);
+            expect(schObj.element.querySelectorAll('.e-recurrence-edit-icon').length).toEqual(1);
+            (schObj.element.querySelectorAll('.e-appointment')[3] as HTMLElement).click();
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-edit')).click();
+            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            (alertDialog.querySelector('.e-quick-dialog-series-event') as HTMLElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            (alertDialog.querySelector('.e-quick-alertok') as HTMLElement).click();
+        });
+
+        it('EJ2-64169 - Checking for Uid value in events data for imported appointments', () => {
+            expect(schObj.eventsData.length).toEqual(5);
+            expect(schObj.eventsData.filter((data: Record<string, any>) => !isNullOrUndefined(data.UID)).length).toBe(0);
         });
     });
 

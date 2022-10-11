@@ -93,6 +93,9 @@ export namespace Input {
              || parent.classList.contains('e-filled')) {
                 parent.classList.add('e-input-focus');
             }
+            setTimeout(() => {
+                Input.calculateWidth(args.element, parent);
+            }, 80);
         });
         args.element.addEventListener('blur', function() : void {
             const parent: HTMLElement = getParentNode(this);
@@ -100,6 +103,9 @@ export namespace Input {
              || parent.classList.contains('e-filled')) {
                 parent.classList.remove('e-input-focus');
             }
+            setTimeout(() => {
+                Input.calculateWidth(args.element, parent);
+            }, 80);
         });
         args.element.addEventListener('input', () : void => {
             checkInputValue(floatType, args.element as HTMLInputElement);
@@ -383,9 +389,7 @@ export namespace Input {
     export function setValue(value: string, element: HTMLInputElement | HTMLTextAreaElement,
                              floatLabelType ?: string, clearButton?: boolean): void {
         element.value = value;
-        if (isNullOrUndefined(element.getAttribute('value'))) {
-            calculateWidth(element, element.parentElement);
-        }
+        calculateWidth(element, element.parentElement);
         if ((!isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {
             validateLabel(element, floatLabelType);
         }
@@ -424,7 +428,7 @@ export namespace Input {
             addClass(elements, cssClass.split(' '));
         }
     }
-
+    
     /**
      * Set the width to the placeholder when it overflows on the button such as spinbutton, clearbutton, icon etc
      * ```
@@ -487,10 +491,9 @@ export namespace Input {
             }
         } else {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-                attributes(element, { 'placeholder': placeholder, 'aria-placeholder':  placeholder});
+                attributes(element, { 'placeholder': placeholder});
             } else {
                 element.removeAttribute('placeholder');
-                element.removeAttribute('aria-placeholder');
             }
         }
     }
@@ -691,8 +694,7 @@ export namespace Input {
         }
         checkFloatLabelType(type, input.parentElement);
     }
-
-     /**
+    /**
      * Create the span inside the label and add the label text into the span textcontent
      * ```
      * E.g : Input.createSpanElement(inputObject, makeElement);

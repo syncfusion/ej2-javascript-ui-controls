@@ -1052,7 +1052,7 @@ export class ListBox extends DropDownBase {
         if (this.listData.length === 0) {
             this.l10nUpdate();
         }
-        this.value = null;
+        this.value = [];
         this.updateToolBarState();
     }
     /**

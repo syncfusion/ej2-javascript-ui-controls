@@ -160,8 +160,9 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
 }
 /** @private */
 // tslint:disable-next-line:max-func-body-length
-export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyle {
+export function getThemeColor(theme: ChartTheme | AccumulationTheme, canvas: boolean): IThemeStyle {
     let style: IThemeStyle;
+    const darkBackground: string = theme === 'MaterialDark' ? '#383838' : (theme === 'FabricDark' ? '#242424' : '#1b1b1b');
     switch (theme as string) {
     case 'HighContrastLight':
     case 'Highcontrast':
@@ -176,7 +177,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             minorTickLine: '#969696',
             chartTitle: '#ffffff',
             legendLabel: '#ffffff',
-            background: 'transparent',
+            background: canvas ? '#000000' : 'transparent',
             areaBorder: '#ffffff',
             errorBar: '#ffffff',
             crosshairLine: '#ffffff',
@@ -205,7 +206,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             minorTickLine: ' #4A4848',
             chartTitle: '#ffffff',
             legendLabel: '#DADADA',
-            background: 'transparent',
+            background: canvas ? darkBackground : 'transparent',
             areaBorder: ' #9A9A9A',
             errorBar: '#ffffff',
             crosshairLine: '#F4F4F4',
@@ -226,7 +227,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
         style = {
             axisLabel: '#212529', axisTitle: '#212529', axisLine: '#CED4DA', majorGridLine: '#CED4DA',
             minorGridLine: '#DEE2E6', majorTickLine: '#ADB5BD', minorTickLine: '#CED4DA', chartTitle: '#212529', legendLabel: '#212529',
-            background: 'transparent', areaBorder: '#DEE2E6', errorBar: '#000000', crosshairLine: '#6C757D', crosshairFill: '#495057',
+            background: canvas ? '#FFFFFF' : 'transparent', areaBorder: '#DEE2E6', errorBar: '#000000', crosshairLine: '#6C757D', crosshairFill: '#495057',
             crosshairLabel: '#FFFFFF', tooltipFill: '#020202', tooltipBoldLabel: 'rgba(255,255,255)',
             tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: null,
             selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057', tabColor: 'rgb(102, 175, 233)'
@@ -242,7 +243,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
         minorTickLine: ' #D1D5DB',
         chartTitle: '#374151',
         legendLabel: '#374151',
-        background: 'transparent',
+        background: canvas ? 'rgba(255,255,255, 0.0)' : 'transparent',
         areaBorder: ' #E5E7EB',
         errorBar: '#374151',
         crosshairLine: '#1F2937',
@@ -269,7 +270,7 @@ case 'TailwindDark':
         minorTickLine: ' #4B5563',
         chartTitle: '#D1D5DB',
         legendLabel: '#D1D5DB',
-        background: 'transparent',
+        background: canvas ? '#1f2937' : 'transparent',
         areaBorder: ' #374151',
         errorBar: '#ffffff',
         crosshairLine: '#9CA3AF',
@@ -297,7 +298,7 @@ case 'TailwindDark':
             minorTickLine: ' #D1D5DB',
             chartTitle: '#343A40',
             legendLabel: '#343A40',
-            background: 'transparent',
+            background: canvas ? '#FFFFFF' : 'transparent',
             areaBorder: ' #DEE2E6',
             errorBar: '#1F2937',
             crosshairLine: '#1F2937',
@@ -325,7 +326,7 @@ case 'TailwindDark':
             minorTickLine: ' #495057',
             chartTitle: '#E9ECEF',
             legendLabel: '#E9ECEF',
-            background: 'transparent',
+            background: canvas ? '#212529' : 'transparent',
             areaBorder: ' #444C54',
             errorBar: '#ADB5BD',
             crosshairLine: '#ADB5BD',
@@ -353,7 +354,7 @@ case 'TailwindDark':
             minorTickLine: ' #D2D0CE',
             chartTitle: '#201F1E',
             legendLabel: '#323130',
-            background: 'transparent',
+            background: canvas ? '#FFFFFF' : 'transparent',
             areaBorder: '#EDEBE9',
             errorBar: '#A19F9D',
             crosshairLine: '#A19F9D',
@@ -381,7 +382,7 @@ case 'TailwindDark':
             minorTickLine: '#3B3A39',
             chartTitle: '#F3F2F1',
             legendLabel: '#D2D0CE',
-            background: 'transparent',
+            background: canvas ? '#383838' : 'transparent',
             areaBorder: '#414040',
             errorBar: '#D2D0CE',
             crosshairLine: '#D2D0CE',
@@ -409,7 +410,7 @@ case 'TailwindDark':
             minorTickLine: '#d6d6d6',
             chartTitle: '#424242',
             legendLabel: '#353535',
-            background: 'transparent',
+            background: canvas ? '#FFFFFF' : 'transparent',
             areaBorder: 'Gray',
             errorBar: '#000000',
             crosshairLine: '#4f4f4f',

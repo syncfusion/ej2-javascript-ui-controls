@@ -110,10 +110,10 @@ import { LocationModel } from "../../common";
     /**
      * Option to customize the padding between legend items.
      *
-     * @default 20
+     * @default null
      */
 
-     @Property(20)
+     @Property(null)
      public itemPadding: number;
 
     /**
@@ -351,7 +351,6 @@ export class StockLegend extends BaseLegend {
     public getLegendBounds(availableSize: Size, legendBound: Rect, legend: StockChartLegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBound);
         const padding: number = legend.padding;
-        const itemPadding: number = legend.itemPadding;
         this.isTitle = legend.title ? true : false;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
         let extraWidth: number = 0;
@@ -401,7 +400,7 @@ export class StockLegend extends BaseLegend {
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
             if (legendOption.render) {
                 render = true;
-                legend_Width = shapePadding + shapeWidth + legendOption.textSize.width + (!this.isVertical ? (i==0) ? padding : itemPadding : padding);
+                legend_Width = shapePadding + shapeWidth + legendOption.textSize.width + (!this.isVertical ? (i==0) ? padding : this.itemPadding : padding);
                 row_Width = row_Width + legend_Width;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
@@ -414,7 +413,7 @@ export class StockLegend extends BaseLegend {
                     }
                     row_Width = this.isVertical ? 0 : legend_Width;
                     row_Count++;
-                    column_Height = (row_Count * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
+                    column_Height = (row_Count * (this.maxItemHeight + (this.isVertical ? this.itemPadding : padding))) + padding + titleSpace + verticalArrowSpace;
                 }
             }
         }
@@ -444,17 +443,17 @@ export class StockLegend extends BaseLegend {
         rect: Rect, count: number, firstLegend: number): void {
         const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
         const padding: number = this.legend.padding;
-        if ((previousBound + (legendOptions.textSize.width + textPadding - this.legend.itemPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
+        if ((previousBound + (legendOptions.textSize.width + textPadding - this.itemPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
             this.isVertical) {
             legendOptions.location.x = start.x;
             legendOptions.location.y = (count === firstLegend) ? prevLegend.location.y :
-                prevLegend.location.y + this.maxItemHeight + padding;
+                prevLegend.location.y + this.maxItemHeight + (this.isVertical ? this.itemPadding : padding);
         } else {
             legendOptions.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             legendOptions.location.y = prevLegend.location.y;
         }
         const availwidth: number = (this.legendBounds.width + this.legendBounds.x) - (legendOptions.location.x +
-            textPadding - this.legend.itemPadding - this.legend.shapeWidth / 2);
+            textPadding - this.itemPadding - this.legend.shapeWidth / 2);
         legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle);
     }
     /** @private */

@@ -88,7 +88,10 @@
   & .e-selected-btn {
     background: $image-editor-icon-sel-bg-color !important; /* stylelint-disable-line declaration-no-important */
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
-      color: $secondary-text-color-focus;
+      color: $secondary-text-color-focus !important; /* stylelint-disable-line declaration-no-important */
+    }
+    @if $skin-name == 'bootstrap4' {
+      color: $drop-down-btn-selected-color !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

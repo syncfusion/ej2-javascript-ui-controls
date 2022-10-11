@@ -13,7 +13,6 @@ $fe-grid-row-fc-ie-box-shadow: inset 1px 1px 0 0 #66afe9, inset 1px -1px 0 0 #66
 $fe-grid-row-lc-ie-box-shadow: inset -1px 1px 0 0 #66afe9, inset -1px -1px 0 0 #66afe9 !default;
 $fe-img-box-shadow: 0 1px 3px 1px rgba(0, 0, 0, .05) !default;
 
-
 $fe-big-bc-font-size: $text-sm !default;
 $fe-big-bc-icon-font-size: 10px !default;
 $fe-big-lg-text-font-size: $text-sm !default;
@@ -175,7 +174,7 @@ $fe-grid-empty-min-width: 200px !default;
 
 $fe-grid-empty-content-font-size: $text-sm !default;
 $fe-grid-empty-content-margin: 0 auto !default;
-$fe-grid-empty-content-padding: 8px 0 8px 0  !default;
+$fe-grid-empty-content-padding: 8px 0 8px 0 !default;
 $fe-grid-empty-content-text-align: center !default;
 
 $fe-grid-empty-icon-height: 52px !default;
@@ -239,7 +238,7 @@ $fe-checkbox-bg-color: $primary !default;
 $fe-drop-border-color: $primary !default;
 $fe-up-list-border-color: $border-light !default;
 $fe-clone-bg-color: $content-bg-color-alt2 !default;
-$fe-clone-border-color: none !default ;
+$fe-clone-border-color: none !default;
 $fe-clone-count-border-color: $primary-text-color !default;
 $fe-clone-count-font-color: $primary-text-color !default;
 $fe-clone-count-bg-color: $primary !default;

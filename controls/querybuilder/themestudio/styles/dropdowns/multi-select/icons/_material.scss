@@ -24,7 +24,7 @@
     content: '';
   }
 
-  .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       height: 38px;
       margin-top: -38px;
@@ -34,7 +34,7 @@
     }
   }
 
-  .e-multiselect.e-filled  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       height: 38px;
       margin-top: -35px;
@@ -44,23 +44,23 @@
     }
   }
 
-  .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       right: 52px;
     }
   }
 
-  .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       right: 52px;
     }
   }
 
-  .e-bigger.e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-bigger.e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-bigger .e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-small .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       height: 38px;
       margin-top: -55px;
@@ -70,21 +70,21 @@
     }
   }
 
-  .e-bigger.e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger.e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger .e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger.e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger.e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger .e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-bigger.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       right: 48px;
     }
   }
 
-  .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-bigger .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       height: 54px;
       margin-top: -55px;
@@ -94,15 +94,15 @@
     }
   }
 
-  .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       right: 60px;
     }
   }
 
-  .e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+  .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       height: 34px;
       margin-top: -35px;
@@ -112,17 +112,17 @@
     }
   }
 
-  .e-small.e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       right: 48px;
     }
   }
 
-  .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
   .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
   .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
@@ -161,36 +161,36 @@
     }
   }
 
-  .e-rtl.e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl.e-bigger .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl .e-bigger.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl .e-bigger .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-bigger .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-bigger .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl.e-bigger.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl.e-bigger .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl .e-bigger.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl .e-bigger .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger .e-rtl.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-bigger .e-rtl .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       left: 60px;
       right: auto;
     }
   }
 
-  .e-rtl.e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl.e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl .e-small.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-rtl .e-small .e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-small .e-rtl.e-multiselect.e-outline  .e-multi-select-wrapper .e-chips-close.e-close-hooker,
-  .e-small .e-rtl .e-multiselect.e-outline  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl.e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl.e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl .e-small.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-rtl .e-small .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-rtl.e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
-  .e-small .e-rtl .e-multiselect.e-filled  .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+  .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
     @if $ddl-multiselect-skin-name == 'material' {
       left: 48px;
       right: auto;
@@ -492,7 +492,6 @@
       width: $ddl-multiselect-filled-chip-clear-icon-size-small;
     }
   }
-
 
   .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
   .e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,

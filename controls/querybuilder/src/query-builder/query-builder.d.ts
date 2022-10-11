@@ -572,7 +572,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private updateRules;
     private filterRules;
     private ruleValueUpdate;
-    private validatValue;
+    private validateValue;
     private getFormat;
     private findGroupByIdx;
     /**

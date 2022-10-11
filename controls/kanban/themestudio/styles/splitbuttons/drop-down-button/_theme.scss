@@ -54,26 +54,6 @@
         border-bottom-color: $drop-down-btn-li-border-color;
       }
     }
-
-    &.e-inherit {
-      background: inherit;
-      color: inherit;
-
-      & ul {
-        & .e-item {
-
-          &:hover,
-          &.e-focused {
-            background: rgba(transparent, .056);
-            color: inherit;
-          }
-
-          & .e-menu-icon {
-            color: inherit;
-          }
-        }
-      }
-    }
   }
 
   .e-dropdown-btn,
@@ -93,12 +73,6 @@
         box-shadow: none;
         color: inherit;
       }
-    }
-  }
-
-  .e-bigger {
-    .e-dropdown-popup.e-inherit ul {
-      background: inherit;
     }
   }
 }

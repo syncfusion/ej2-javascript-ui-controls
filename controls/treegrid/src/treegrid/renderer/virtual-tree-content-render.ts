@@ -111,7 +111,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent[action]('data-ready', this.onDataReady, this);
             this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
             this.fn = () => {
-                this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs), this.onEnteredAction());
+                this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs), this.onEnteredAction(), this.parent);
                 this.parent.off('content-ready', this.fn);
             };
             this.parent.addEventListener('dataBound', this.dataBoundEvent.bind(this));
@@ -453,7 +453,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
         }
         if (((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
-            || (upScroll)) || (scrollArgs.direction === 'right' || scrollArgs.direction === 'left')) {
+            || (upScroll)) || (scrollArgs.direction === 'right' || scrollArgs.direction === 'left') ||
+            ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent))) {
             const viewInfo: VirtualInfo = this.currentInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.previousInfo = viewInfo;
             this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
@@ -562,20 +564,20 @@ export class TreeInterSectionObserver extends InterSectionObserver {
     private newPos: number = 0;
     private lastPos: number = 0;
     private timer: number = 0;
-    public observes(callback: Function, onEnterCallback: Function): void {
+    public observes(callback: Function, onEnterCallback: Function, instance: IGrid): void {
         const containerRect: string = 'containerRect';
         super[containerRect] = getValue('options', this).container.getBoundingClientRect();
-        EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback), this);
+        EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback, instance), this);
         if (getValue('options', this).movableContainer) {
             const movableContainerRect: string = 'movableContainerRect';
             super[movableContainerRect] = getValue('options', this).movableContainer.getBoundingClientRect();
-            EventHandler.add(getValue('options', this).movableContainer, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback), this);
+            EventHandler.add(getValue('options', this).movableContainer, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback, instance), this);
         }
     }
     private clear(): void {
         this.lastPos = null;
     }
-    private virtualScrollHandlers(callback: Function, onEnterCallback: Function) : Function {
+    private virtualScrollHandlers(callback: Function, onEnterCallback: Function, instance: IGrid) : Function {
         const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
         const options: string = 'options'; const movableEle: string = 'movableEle';
         const element: string = 'element'; const fromWheel: string = 'fromWheel';
@@ -621,12 +623,18 @@ export class TreeInterSectionObserver extends InterSectionObserver {
             }
 
             if (check) {
-                let fn: Function = debounced100;
+                let fn: Function = debounced50;
                 if (current.axis === 'X') {
-                    fn = debounced50;
                     fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
                         focusElement: document.activeElement});
-                } else {
+                }
+                else {
+                    if ((instance.dataSource instanceof DataManager && (instance.dataSource as DataManager).dataSource.url !== undefined
+                    && !(instance.dataSource as DataManager).dataSource.offline && (instance.dataSource as DataManager).dataSource.url !== '') || isCountRequired(instance)) { 
+                        fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                            focusElement: document.activeElement});
+                    } 
+                    else
                     callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
                         focusElement: document.activeElement});
                 }

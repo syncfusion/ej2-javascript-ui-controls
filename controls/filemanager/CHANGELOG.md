@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.49 (2022-10-11)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I391031` - The issue with "Column header in the Details view within the File Manager is not accessible via the Tab keyboard" has been resolved.
+
 ## 20.3.47 (2022-09-29)
 
 ### File Manager

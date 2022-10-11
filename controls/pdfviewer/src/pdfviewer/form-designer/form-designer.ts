@@ -1682,7 +1682,7 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+        this.updateFormFieldSessions();
     }
     private dropdownChange(event: Event) {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
@@ -1717,7 +1717,7 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+        this.updateFormFieldSessions();
     }
 
     private setCheckBoxState(event: Event) {
@@ -1787,7 +1787,7 @@ export class FormDesigner {
                     }
                 }
                 this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+                this.updateFormFieldSessions();
             }
         }
     }
@@ -1843,7 +1843,7 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+        this.updateFormFieldSessions();
     }
 
     private getTextboxValue(event: Event): void {
@@ -1873,10 +1873,17 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+        this.updateFormFieldSessions();
     }
     private inputElementClick(event: any): void {
         event.target.focus();
+    }
+    private updateFormFieldSessions(): void {
+        let fieldData = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        let formFieldsDatas = JSON.parse(fieldData);
+        if (this.pdfViewer.formFieldCollection.length === formFieldsDatas.length) {
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+        }
     }
     
     /**
@@ -5888,17 +5895,18 @@ export class FormDesigner {
                 (inputElement as any).parentElement.style.cursor = 'default';
                 (inputElement as any).parentElement.style.backgroundColor = 'transparent';
             }
+            else if (selectedItem.formFieldAnnotationType === "SignatureField" || selectedItem.formFieldAnnotationType === "InitialField") {
+                (inputElement as any).parentElement.style.backgroundColor = 'transparent';
+            }
             else {
                 inputElement.style.cursor = 'default';
                 inputElement.style.backgroundColor = 'transparent';
             }
         } else {
             (inputElement as HTMLInputElement).disabled = false;
-            if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+            if (selectedItem.formFieldAnnotationType === 'RadioButton' || selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {
                 (inputElement as any).parentElement.style.backgroundColor = selectedItem.backgroundColor;
-            } else if (selectedItem.formFieldAnnotationType == "SignatureField" || selectedItem.formFieldAnnotationType == "InitialField") {
-                inputElement.style.backgroundColor = 'transparent';
-            } else {
+            }else {
                 inputElement.style.backgroundColor = selectedItem.backgroundColor;
             }
         }
@@ -5914,7 +5922,13 @@ export class FormDesigner {
             }
         } else {
             (inputElement as HTMLInputElement).required = false;
-            inputElement.style.borderWidth = selectedItem.thickness;
+            if (selectedItem.formFieldAnnotationType === "SignatureField" || selectedItem.formFieldAnnotationType === "InitialField") {
+                let thickness: number = selectedItem.thickness === 0 ? 1 : selectedItem.thickness;
+                inputElement.style.borderWidth = thickness;
+            }
+            else{
+                inputElement.style.borderWidth = selectedItem.thickness;
+            }              
             inputElement.style.borderColor = selectedItem.borderColor;
             if (selectedItem.formFieldAnnotationType === 'RadioButton') {
                 (inputElement as any).parentElement.style.boxShadow = selectedItem.borderColor + ' 0px 0px 0px ' + selectedItem.thickness + 'px';

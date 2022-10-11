@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.3.49 (2022-10-11)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I397894` - The issue with "when using custom template variant the anchor that triggers the tooltip when hover is unable to receive keyboard focus" has been resolved.
+
+## 20.3.48 (2022-10-05)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I387601` - Now, when you call the destroy method to destroy the Dialog control, it properly destroys the close icons instance.
+
 ## 20.2.49 (2022-09-13)
 
 ### Dialog

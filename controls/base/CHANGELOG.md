@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 20.3.48 (2022-10-05)
+## 20.3.49 (2022-10-11)
+
+### Common
+
+#### Bug Fixes
+
+- `#SF395268`, `#SF395314` - The issue "Drag area is not getting properly when setting a value for `margin-top`" has been resolved.
+
+## 20.3.47 (2022-09-29)
+
+### Common
+
+#### Bug Fixes
+
+- The issue with the "React template element is not getting in the Grid `queryCellInfo` event" has been resolved.
+
+## 20.3.47 (2022-09-29)
 
 ### Common
 

@@ -1514,7 +1514,7 @@ describe('ColorPicker', () => {
             ele = element.nextElementSibling;
             expect(ele.classList.contains('e-color-palette')).toBeTruthy();
             expect(ele.children[0].classList.contains('e-palette')).toBeTruthy();
-            expect(ele.children[0].children[0].getAttribute('role')).toBe('presentation');
+            expect(ele.children[0].children[0].getAttribute('role')).toBe('row');
         });
     });
 

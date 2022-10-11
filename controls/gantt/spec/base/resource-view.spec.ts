@@ -1197,4 +1197,83 @@ describe('Resource view with persistence', () => {
         ganttObj.keyboardModule.keyAction(args);
     });
     });
+     describe('Add record in resource view without child mapping', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [],
+            resources: resourceCollection,
+            viewType: 'ResourceView',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            showOverAllocation: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resources', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            splitterSettings: { columnIndex: 3 },
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+            ganttObj.openAddDialog();
+            let resourceTab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            resourceTab.selectedItem = 2;
+        });
+        it('Add new record', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'add') {
+                    expect(ganttObj.currentViewData[0].taskData['Children'].length).toBe(1);
+                }
+            };
+            ganttObj.dataBind();
+            let resourceCheckbox1: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            triggerMouseEvent(resourceCheckbox1, 'click')
+            let saveButton: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveButton, 'click');
+        });
+    });
 });

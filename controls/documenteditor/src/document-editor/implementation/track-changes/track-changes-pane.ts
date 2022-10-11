@@ -307,9 +307,12 @@ export class TrackChangesPane {
             this.menuDropDownButton.items[1].text = this.locale.getConstant('Reject all') + ' ' + revisionType +
                 ' ' + this.locale.getConstant('By').toLowerCase() + ' ' + this.selectedUser;
         }
-        if (this.owner.documentHelper.isTrackedOnlyMode) {
+        if (this.owner.documentHelper.isDocumentProtected) {
             this.menuDropDownButton.disabled = true;
-        }    
+        }
+        else {
+            this.menuDropDownButton.disabled = false;
+        }   
     }
 
     private sortCollectionToDisplay(): void {
@@ -355,12 +358,14 @@ export class TrackChangesPane {
     public isUpdateTrackChanges(revisionCount: number): boolean {
         let isUpdate: boolean = false;
         let isNoChangeDiv: boolean = false;
-        if (this.changesInfoDiv.childNodes.length === 1 && (this.changesInfoDiv.childNodes[0] as HTMLDivElement).className == 'e-de-tc-no-chng') {
-            isNoChangeDiv = true;
-        }
-        else {
-            if (revisionCount !== this.changesInfoDiv.childNodes.length) {
-                isUpdate = true;
+        if (!isNullOrUndefined(this.changesInfoDiv)) {
+            if (this.changesInfoDiv.childNodes.length === 1 && (this.changesInfoDiv.childNodes[0] as HTMLDivElement).className == 'e-de-tc-no-chng') {
+                isNoChangeDiv = true;
+            }
+            else {
+                if (revisionCount !== this.changesInfoDiv.childNodes.length) {
+                    isUpdate = true;
+                }
             }
         }
         if (isNoChangeDiv || revisionCount > 0) {
@@ -375,7 +380,7 @@ export class TrackChangesPane {
             this.removeAllChanges();
             if (!this.enableButtons && !this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.add('e-de-overlay');
-            } else if (this.menuoptionEle.classList.contains('e-de-overlay')) {
+            } else if (this.menuoptionEle.classList.contains('e-de-overlay') && !this.owner.documentHelper.isDocumentProtected) {
                 this.menuoptionEle.classList.remove('e-de-overlay');
             }
             this.isChangesTabVisible = true;

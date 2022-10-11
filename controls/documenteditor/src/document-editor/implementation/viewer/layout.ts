@@ -251,7 +251,7 @@ export class Layout {
                 && !block.tableFormat.allowAutoFit) {
                 block.calculateGrid();
             }
-            this.viewer.updateClientAreaForBlock(block, true);
+            this.viewer.updateClientAreaForBlock(block, true, undefined, true);
             nextBlock = this.layoutBlock(block, index);
             index = 0;
             this.viewer.updateClientAreaForBlock(block, false);

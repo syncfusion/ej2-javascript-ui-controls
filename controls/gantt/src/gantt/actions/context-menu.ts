@@ -524,7 +524,9 @@ export class ContextMenu {
     private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
         const firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
-        addClass([firstMenuItem], 'e-focused');
+        if(!isNullOrUndefined(firstMenuItem)){
+            addClass([firstMenuItem], 'e-focused');
+            }
     }
 
     private getMenuItems(): ContextMenuItemModel[] {

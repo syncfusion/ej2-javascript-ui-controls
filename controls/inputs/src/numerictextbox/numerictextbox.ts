@@ -626,13 +626,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private spinBtnCreation(): void {
         this.spinDown = Input.appendSpan(SPINICON + ' ' + SPINDOWN, this.container, this.createElement);
         attributes(this.spinDown, {
-            'title': this.l10n.getConstant('decrementTitle'),
-            'aria-label': this.l10n.getConstant('decrementTitle')
+            'title': this.l10n.getConstant('decrementTitle')
         });
         this.spinUp = Input.appendSpan(SPINICON + ' ' + SPINUP, this.container, this.createElement);
         attributes(this.spinUp, {
-            'title': this.l10n.getConstant('incrementTitle'),
-            'aria-label': this.l10n.getConstant('incrementTitle')
+            'title': this.l10n.getConstant('incrementTitle')
         });
         this.wireSpinBtnEvents();
     }
@@ -655,7 +653,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             }
         }
         this.setProperties({ min: this.min > this.max ? this.max : this.min }, true);
-        attributes(this.element, { 'aria-valuemin': this.min.toString(), 'aria-valuemax': this.max.toString() });
+        if (this.min !== -(Number.MAX_VALUE)){
+            attributes(this.element, { 'aria-valuemin': this.min.toString()});
+        }
+        if (this.max !== (Number.MAX_VALUE)) {
+            attributes(this.element, { 'aria-valuemax': this.max.toString() });
+        }
     }
 
     private formattedValue(decimals: number, value: number): string {
@@ -1390,9 +1393,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             detach(this.spinDown);
         }
         const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
-            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
-            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+            'aria-disabled', 'autocapitalize','spellcheck', 'aria-autocomplete', 'tabindex', 
+            'aria-valuemin', 'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
         for (let i: number = 0; i < attrArray.length; i++) {
             this.element.removeAttribute(attrArray[i]);
         }

@@ -20,8 +20,11 @@ $ddl-chip-padding: 0 6px 0 8px !default;
 $ddl-chip-close-top: 0 !default;
 $ddl-chip-close-left: 0 !default;
 $ddl-chip-close-margin: 0 0 0 !default;
+$ddl-chip-close-rtl-margin: 0 0 0 !default;
 $ddl-chip-close-square: 14px !default;
+$ddl-chip-close-width: 14px !default;
 $ddl-chip-hooker-square: 24px !default;
+$ddl-chip-hooker-width: 24px !default;
 $ddl-chip-close-font: 14px !default;
 $ddl-chip-height: 24px !default;
 $ddl-chip-mobile-height: 30px !default;
@@ -116,17 +119,20 @@ $ddl-multiselect-filled-input-min-height: 39px !default;
 $ddl-multiselect-filled-float-input-chip-clear-icon-size: 12px !default;
 $ddl-multiselect-filled-chip-clear-icon-size: 14px !default;
 $multiselect-disable-font-color: $content-text-color-alt1 !default;
+
 // Small size
 $ddl-select-all-height-small: 26px !default;
 $ddl-small-chip-height: 20px !default;
 $ddl-chip-small-font-size: 12px !default;
 $ddl-small-chip-close-square: 12px !default;
+$ddl-small-chip-close-width: 12px !default;
 $ddl-small-chip-close-font: 12px !default;
 $ddl-control-small-height: 24px !default;
 $ddl-small-input-height: 24px !default;
 $ddl-delim-small-font-size: 12px !default;
 $ddl-small-closer-margin-top: -2em !default;
 $ddl-chip-close-hooker-small-left: 0 !default;
+$ddl-chip-close-hooker-small-bigger-left: 0 !default;
 $ddl-delimviewheight-small: 24px !default;
 $ddl-multiselect-filled-input-min-height-small: 32px !default;
 $ddl-multiselect-filled-float-input-min-height-small: 22px !default;
@@ -139,12 +145,14 @@ $ddl-multiselect-filled-float-input-min-height-bigger: 36px !default;
 $ddl-multiselect-filled-floatlabel-fontsize-bigger: 12px !default;
 $ddl-bigger-chip-close-font: 14px !default;
 $ddl-bigger-chip-close-square: 14px !default;
+$ddl-bigger-chip-close-width: 14px !default;
 
 // Touch Small size
 $ddl-select-all-height-bigger-small: 40px !default;
 $ddl-bigger-small-chip-height: 26px !default;
 $ddl-chip-bigger-small-font-size: 13px !default;
 $ddl-bigger-small-chip-close-square: 14px !default;
+$ddl-bigger-small-chip-close-width: 14px !default;
 $ddl-bigger-small-chip-close-font: 14px !default;
 $ddl-control-bigger-small-height: 28px !default;
 $ddl-bigger-small-input-height: 32px !default;
@@ -207,7 +215,7 @@ $ddl-close-down-icon-left: 35px !default;
     width: $ddl-chip-hooker-square;
   }
 
-  .e-multi-select-wrapper .e-searcher input[type='text'] {
+  .e-multi-select-wrapper .e-searcher input[type = 'text'] {
     color: $content-text-color;
     height: 100%;
   }
@@ -216,4 +224,3 @@ $ddl-close-down-icon-left: 35px !default;
     border-left-width: 0;
   }
 }
-  

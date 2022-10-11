@@ -1180,9 +1180,12 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       gridObj.filterByColumn("progress", "greaterthan", "40");
     });
     it('Check the selected Records when remove the single column alone', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.getCheckedRecords().length == 5).toBe(true);
+        done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
       gridObj.removeFilteredColsByField("taskID");
-      expect(gridObj.getCheckedRecords().length == 5).toBe(true);
-      done();
     });
     afterAll(() => {
       destroy(gridObj);

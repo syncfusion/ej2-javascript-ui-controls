@@ -370,6 +370,7 @@ export class DragAndDrop {
             if (!target || target.tagName !== 'TABLE') {
                 element.style.width = parseInt(dimensions.width.toString()) + 'px';
             }
+            element.style.left = (element.parentElement.getBoundingClientRect().left - 15) + 'px';
         });
     }
 

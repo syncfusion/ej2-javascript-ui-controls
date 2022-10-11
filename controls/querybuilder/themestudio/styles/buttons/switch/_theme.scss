@@ -1,8 +1,9 @@
 @include export-module('switch-theme') {
+
   /*! switch theme */
   .e-switch-wrapper,
   .e-css.e-switch-wrapper {
-    // sass-lint:disable no-vendor-prefixes
+    /* stylelint-disable property-no-vendor-prefix */
     -webkit-tap-highlight-color: transparent;
 
     & .e-switch-off {
@@ -139,7 +140,7 @@
             background-color: $switch-handle-disabled-bg-color;
           }
         }
-    }
+      }
     }
 
     &:hover {
@@ -167,7 +168,7 @@
           background-color: $switch-handle-hover-bg-color;
         }
       }
-      }
+    }
 
     &:not(.e-switch-disabled):hover {
       & .e-switch-handle:not(.e-switch-active) {
@@ -198,7 +199,7 @@
       & .e-ripple-check.e-ripple-container {
         background-color: $switch-ripple-bg-color;
       }
-      }
+    }
 
     &.e-active,
     &:active {
@@ -223,7 +224,7 @@
       & .e-ripple-check.e-ripple-container {
         background-color: $switch-ripple-bg-color;
       }
-      }
+    }
 
     &.e-rtl {
       &.e-focus {
@@ -306,7 +307,7 @@
             background-color: $switch-handle-hover-bg-color;
           }
         }
-    }
+      }
 
       &.e-switch-disabled {
         & .e-switch-inner .e-switch-on {
@@ -325,8 +326,8 @@
           @if $skin-name == 'bootstrap4' {
             background-color: $switch-inner-active-bg;
             border-color: $switch-inner-active-bg;
-            }
           }
+        }
 
         & .e-switch-inner .e-switch-off {
           @if $skin-name == 'bootstrap4' {
@@ -400,7 +401,7 @@
             background-color: $switch-handle-disabled-bg-color;
           }
         }
-        }
+      }
     }
 
     & .e-switch {
@@ -415,8 +416,8 @@
           & .e-switch-inner.e-switch-active {
             background-color: $switch-small-disabled-rtl-active-bg-color;
           }
-         }
         }
+      }
     }
-}
+  }
 }

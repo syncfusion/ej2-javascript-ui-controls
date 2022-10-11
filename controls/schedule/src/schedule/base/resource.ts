@@ -358,7 +358,8 @@ export class ResourceBase {
                 child: 'resourceChild'
             },
             nodeTemplate: this.parent.resourceHeaderTemplate,
-            nodeClicked: this.resourceClick.bind(this)
+            nodeClicked: this.resourceClick.bind(this),
+            created: this.resourceTreeCreated.bind(this)
         });
         this.treeViewObj.appendTo(resourceTree);
         this.treeViewObj.expandAll();
@@ -374,6 +375,13 @@ export class ResourceBase {
                 cls.WRAPPER_CONTAINER_CLASS : cls.TABLE_CONTAINER_CLASS)) as HTMLElement
         });
         this.parent.on(events.documentClick, this.documentClick, this);
+    }
+
+    private resourceTreeCreated(): void {
+        if ((this as any).parent.portals) {
+            (this as any).parent.portals = (this as any).parent.portals.concat((this.treeViewObj as any).portals);
+            this.parent.renderTemplates();
+        }
     }
 
     private generateTreeData(isTimeLine?: boolean): ResourceDetails[] | TdData[] {
@@ -976,6 +984,10 @@ export class ResourceBase {
     public destroy(): void {
         this.parent.off(events.documentClick, this.documentClick);
         if (this.treeViewObj) {
+            if ((this.treeViewObj as any).portals && (this.treeViewObj as any).portals.length > 0) {
+                const treeViewTemplates: string[] = (this.treeViewObj as any).portals.map((x: any) => x.propName);
+                this.parent.resetTemplates(treeViewTemplates);
+            }
             this.treeViewObj.destroy();
             this.treeViewObj = null;
         }

@@ -31,7 +31,7 @@ import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
 import {
     HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType,
-    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType, CompatibilityMode
+    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType, CompatibilityMode, TextWrappingStyle
 } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
@@ -3840,7 +3840,11 @@ export abstract class LayoutViewer {
     public updateClientAreaForTextWrap(area: Rect): void {
         this.clientActiveArea = new Rect(area.x, area.y, area.width, area.height);
     }
-
+    private updateBoundsBasedOnTextWrap(bottom: number) {
+        let diff: number = bottom - this.clientActiveArea.y;
+        this.clientActiveArea.y = bottom;
+        this.clientActiveArea.height = this.clientActiveArea.height - diff;
+    }
     public updateClientAreaByWidget(widget: ParagraphWidget): void {
         this.clientArea.x = widget.x;
         this.clientArea.y = widget.y;
@@ -3852,7 +3856,7 @@ export abstract class LayoutViewer {
         widget.y = area.y;
         widget.width = area.width;
     }
-    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[]): void {
+    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[], updateYPosition?: boolean): void {
         let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
         let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
         let bidi: boolean = block.bidi;
@@ -3908,6 +3912,9 @@ export abstract class LayoutViewer {
                 width = this.clientArea.width - (leftIndent + HelperMethods.convertPointToPixel(block.rightIndent));
                 this.clientActiveArea.x = this.clientArea.x = this.clientArea.x + (bidi ? rightIndent : leftIndent);
                 this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
+                if (updateYPosition) {
+                    this.updateParagraphYPositionBasedonTextWrap(block as ParagraphWidget, new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height));
+                }
             }
         } else {
             // Clears table left for table with right or center alignment.
@@ -3931,7 +3938,237 @@ export abstract class LayoutViewer {
         this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
     }
+    private updateParagraphYPositionBasedonTextWrap(block: BlockWidget, rect: Rect): void {
+        let bodyWidget: BlockContainer = block.bodyWidget;
+        let clientLayoutArea: Rect = this.clientActiveArea;
+        if (bodyWidget && bodyWidget.floatingElements.length > 0 && block instanceof ParagraphWidget && !(block.containerWidget instanceof TextFrame)
+            && !block.isInsideTable && !(block.containerWidget instanceof FootNoteWidget)) {
+            let isWord2013: boolean = this.documentHelper.compatibilityMode === 'Word2013';
+            let paragraph = block as ParagraphWidget;
+            let isEmptyPara: boolean = paragraph.isEmpty();
+            //Update Layout area based on text wrap
+            if (((!paragraph.isInHeaderFooter || paragraph.isInsideTable)
+                || isWord2013)) {
+                let yposition = rect.y;
+                // As per Microsoft Word behavior, need to update bottom position of first inline item to floating item bottom,
+                // when first inline item of page intersects in-between two adjacent floating items parallel in vertical
+                // for Word document lower than Microsoft Word 2013 version.
+                // To do: Currently this behavior handled for bottom position update based on Y position,
+                // need to handle this behavior for bottom position update based on X position in UpdateParagraphXPositionBasedOnTextWrap method.
+                let isFirstItemBottomPositionUpdated: boolean = false;
+                //Need to handle sorting floating items.
+                // Sort based on Y position
+                bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
+                // Sort based on X position
+                bodyWidget.floatingElements.sort(function (a, b) { return a.x - b.x; });
+                let previousItem: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
+                for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+                    let floatingItem: ShapeBase | TableWidget = bodyWidget.floatingElements[i];
+                    let isInsideHeaderFooter: boolean = false;
+                    if (floatingItem instanceof ShapeBase) {
+                        isInsideHeaderFooter = floatingItem.paragraph.isInHeaderFooter;
+                    } else {
+                        isInsideHeaderFooter = floatingItem.bodyWidget instanceof HeaderFooterWidget ? true : false;
+                    }
+                    if (paragraph.isInsideTable) {
+                        if (floatingItem instanceof TableWidget && !floatingItem.isInsideTable) {
+                            continue;
+                        }
+                    }
+                    let textWrappingBounds: Rect = this.getTextWrappingBound(floatingItem);
+                    let textWrappingStyle: TextWrappingStyle = floatingItem instanceof TableWidget ? 'Square' : floatingItem.textWrappingStyle;
+                    let textWrappingType: string = floatingItem instanceof TableWidget ? 'Both' : floatingItem.textWrappingType;
 
+                    let minimumWidthRequired: number = 24;
+                    if (!(clientLayoutArea.x > (textWrappingBounds.right + minimumWidthRequired) || clientLayoutArea.right < textWrappingBounds.x - minimumWidthRequired)) {
+                        if ((((rect.y + paragraph.height > textWrappingBounds.y || isFirstItemBottomPositionUpdated)
+                            && rect.y < (textWrappingBounds.bottom))) && textWrappingStyle !== 'Inline'
+                            && textWrappingStyle !== 'TopAndBottom' && textWrappingStyle !== 'InFrontOfText'
+                            && textWrappingStyle !== 'Behind') {
+                            let rightIndent: number = 0;
+                            let paragarphRightIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.rightIndent);
+                            let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+                            firstLineIndent = ((!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine()) && firstLineIndent > 0) ? firstLineIndent : 0;
+                            if (rect.x >= textWrappingBounds.x && textWrappingType !== 'Left') {
+                                rightIndent = paragarphRightIndent;
+                            }
+                            // Gets the value from right indent when it is negative, otherwise sets the value as zero.
+                            rightIndent = rightIndent < 0 ? rightIndent : 0;
+                            if (rect.x < textWrappingBounds.x && rect.x > textWrappingBounds.x && textWrappingType !== 'Left') {
+                                if (rect.right > textWrappingBounds.x) {
+                                    rect.width = rect.width - (rect.right - textWrappingBounds.right);
+                                }
+                                if (rect.width < minimumWidthRequired) {
+                                    //Skip to wrap the immediate paragraph of floating table based on corresponding floating table. 
+                                    if (isWord2013 || !((floatingItem instanceof TableWidget) && previousItem === floatingItem)) {
+                                        this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                        rect = this.clientActiveArea;
+                                    }
+                                    if ((!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine() || isEmptyPara) && isWord2013 ? true : !isInsideHeaderFooter) {
+                                        paragraph.y = this.clientActiveArea.y;
+                                    }
+                                }
+                                else {
+                                    rect.x = textWrappingBounds.right;
+                                }
+                            }
+                            else if (rect.x >= textWrappingBounds.x && rect.x < textWrappingBounds.right) {
+                                rect.width = rect.width - (textWrappingBounds.right - rect.x) - rightIndent;
+                                //checks minimum width
+                                if (rect.width < minimumWidthRequired || isFirstItemBottomPositionUpdated) {
+                                    rect.width = this.clientActiveArea.right - textWrappingBounds.right - rightIndent;
+                                    let isPositionsUpdated: boolean = false;
+                                    if (rect.width < minimumWidthRequired || isFirstItemBottomPositionUpdated) {
+                                        // If left side of floating item has minimum width to layout the paragraph, then find the minimum bottom among the floating items to the left side of current floating item.
+                                        // Then update the Y position to that bottom.
+                                        if (this.clientActiveArea.x + minimumWidthRequired < textWrappingBounds.x) {
+                                            let tempBounds: Rect = this.getIntersectingItemBounds(bodyWidget.floatingElements, floatingItem, yposition);
+                                            if (!isNullOrUndefined(tempBounds) && tempBounds.bottom <= textWrappingBounds.bottom) {
+                                                this.updateBoundsBasedOnTextWrap(tempBounds.bottom);
+                                                rect = this.clientActiveArea;
+                                                isPositionsUpdated = true;
+                                                //When we update the client area to the bottom of floating item, we also need to updtae the X position. 
+                                                //To-Do: Some more X position updating cases also need to handle.
+                                                paragraph.x = tempBounds.x;
+                                            }
+                                        }
+                                        // Skip to wrap the immediate paragraph of floating table based on corresponding floating table.
+                                        if ((isWord2013) && !isPositionsUpdated) {
+                                            this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                            rect = this.clientActiveArea;
+                                        }
+                                        if ((!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine() || isEmptyPara) && isWord2013 ? true : !isInsideHeaderFooter) {
+                                            paragraph.y = this.clientActiveArea.y;
+                                        }
+                                    }
+                                    else {
+                                        rect.x = textWrappingBounds.right;
+                                    }
+                                }
+                                else {
+                                    rect.x = textWrappingBounds.right;
+                                }
+                            }
+                            else if (textWrappingBounds.x > rect.x && rect.right > textWrappingBounds.x) {
+                                rect.width = textWrappingBounds.x - rect.x;
+                                //checks minimum width
+                                if (rect.width < minimumWidthRequired) {
+                                    rect.width = this.clientActiveArea.right - textWrappingBounds.right - rightIndent;
+                                    if (rect.width < minimumWidthRequired) {
+                                        //Skip to wrap the immediate paragraph of floating table based on corresponding floating table. 
+                                        if (isWord2013 || !((floatingItem instanceof TableWidget) && previousItem === floatingItem)) {
+                                            this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                            rect = this.clientActiveArea;
+                                        }
+                                        if ((!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine() || isEmptyPara) && isWord2013 ? true : !isInsideHeaderFooter) {
+                                            paragraph.y = this.clientActiveArea.y;
+                                        }
+                                    }
+                                    else {
+                                        rect.x = textWrappingBounds.right;
+                                    }
+                                }
+                            }
+                        }
+                        else if ((bodyWidget.floatingElements.length > 0 && ((rect.y >= textWrappingBounds.y && rect.y < (textWrappingBounds.bottom))
+                            || ((rect.y + paragraph.height >= textWrappingBounds.y) && (rect.y + paragraph.height < (textWrappingBounds.bottom))))
+                            && textWrappingStyle === 'TopAndBottom')) {
+                            //Skip to wrap the immediate paragraph of floating table based on corresponding floating table. 
+                            if (isWord2013 || !((floatingItem instanceof TableWidget) && previousItem === floatingItem)) {
+                                this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                // Sets true to update bottom position of first inline item in page
+                                // when this item's bottom position already updated based on previous floating item.
+                                if (!isWord2013 && (!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine() || isEmptyPara)) {
+                                    isFirstItemBottomPositionUpdated = true;
+                                }
+                            }
+                            if ((!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine() || isEmptyPara) && isWord2013 ? true : !isInsideHeaderFooter) {
+                                paragraph.y = this.clientActiveArea.y;
+                            }
+                        }
+                    }
+                }
+                //Update the wrapping difference value.
+                // if (isFirstItem && yValue < rect.Y) {
+                //     (m_lcOperator as Layouter).WrappingDifference = (float)(rect.Y - (m_lcOperator as Layouter).PageTopMargin);
+                // }
+            }
+        }
+    }
+    private getIntersectingItemBounds(floatingElements: (ShapeBase | TableWidget)[], intersectedfloatingItem: ShapeBase | TableWidget, yPosition: number): Rect {
+        let floatingItem: ShapeBase | TableWidget = this.getMinBottomFloatingItem(floatingElements, this.getIntersectingFloatingItems(floatingElements, intersectedfloatingItem, yPosition));
+
+        if (!isNullOrUndefined(floatingItem)) {
+            let floatingItemBound: Rect = this.getTextWrappingBound(floatingItem);
+            return floatingItemBound;
+        }
+        return undefined;
+    }
+    private getMinBottomFloatingItem(floatingElements: (ShapeBase | TableWidget)[], fItems: (ShapeBase | TableWidget)[]): ShapeBase | TableWidget {
+        let minBottomItemIndex: number = -1;
+        let minBottom: number = Number.MAX_VALUE;
+        let skippedCount: number = 0;
+        // Sort based on X position
+        floatingElements.sort(function (a, b) { return a.x - b.x; });
+        for (let i: number = 0; i < fItems.length; i++) {
+            let floatingItem: ShapeBase | TableWidget = floatingElements[i];
+            let item: Rect = this.getTextWrappingBound(floatingItem);
+            if (minBottom > item.bottom) {
+                // Need to ignore if floating items preserved in same frame.
+                if (floatingItem && fItems.indexOf(floatingItem) + 1 < fItems.length) {
+                    skippedCount++;
+                }
+                else {
+                    minBottom = item.bottom;
+                    minBottomItemIndex = fItems.indexOf(floatingItem);
+                }
+            }
+        }
+        //If floating item which has minimum bottom is first item (no items preserved left side of this item).
+        //Then return current item Other cases need to handle.
+        return minBottomItemIndex - skippedCount == 0 ? fItems[minBottomItemIndex] : null;
+    }
+    private getIntersectingFloatingItems(floatingElements: (ShapeBase | TableWidget)[], intersectedfloatingItem: ShapeBase | TableWidget, yPosition: number): (ShapeBase | TableWidget)[] {
+        let fItems: (ShapeBase | TableWidget)[] = [];
+        //Get all the items which preserved left side of the current floating item.
+        for (let i: number = 0; i < floatingElements.length; i++) {
+            {
+                let floatingItem: ShapeBase | TableWidget = floatingElements[i];
+                let itemTextWrapBound: Rect = this.getTextWrappingBound(floatingItem);
+                let intersectItemTextWrapBound: Rect = this.getTextWrappingBound(intersectedfloatingItem);
+                if (yPosition <= itemTextWrapBound.bottom
+                    && intersectItemTextWrapBound.bottom >= itemTextWrapBound.bottom
+                    && itemTextWrapBound.right > this.clientActiveArea.x
+                    && itemTextWrapBound.x < intersectItemTextWrapBound.x)
+                    fItems.push(floatingItem);
+            }
+        }
+        return fItems;
+    }
+    private getTextWrappingBound(floatingItem: ShapeBase | TableWidget): Rect {
+        let distanceLeft: number = 0;
+        let distanceTop: number = 0;
+        let distanceRight: number = 0;
+        let distanceBottom: number = 0;
+        let width: number = 0;
+        if (floatingItem instanceof ShapeBase) {
+            distanceLeft = floatingItem.distanceLeft;
+            distanceTop = floatingItem.distanceTop;
+            distanceRight = floatingItem.distanceRight;
+            distanceBottom = floatingItem.distanceBottom;
+            width = floatingItem.width;
+        } else {
+            width = floatingItem.getTableCellWidth();
+            distanceLeft = floatingItem.positioning.distanceLeft;
+            distanceTop = floatingItem.positioning.distanceTop;
+            distanceRight = floatingItem.positioning.distanceRight;
+            distanceBottom = floatingItem.positioning.distanceBottom;
+        }
+        let textWrappingBounds: Rect = new Rect(floatingItem.x - distanceLeft, floatingItem.y - distanceTop,
+            width + distanceLeft + distanceRight,
+            floatingItem.height + distanceTop + distanceBottom);
+        return textWrappingBounds;
+    }
     private tableAlignmentForBidi(block: TableWidget, bidi: boolean): TableAlignment {
         let tableAlignment: TableAlignment = block.tableFormat.tableAlignment;
         if (bidi) {

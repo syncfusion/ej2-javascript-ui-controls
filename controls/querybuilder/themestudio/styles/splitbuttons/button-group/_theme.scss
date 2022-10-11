@@ -1,7 +1,7 @@
 @import 'ej2-buttons/styles/button/mixin.scss';
 @import 'group-button-mixin.scss';
 @include export-module('button-group-theme') {
-// sass-lint:disable-all
+/* stylelint-disable */
   .e-btn-group,
   .e-css.e-btn-group {
     &:not(.e-outline) {

@@ -135,14 +135,6 @@ describe('Render rowtemplate', () => {
         expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
         done();
     });
-    it('onpropertychange alt id', function (done: Function) {
-        dataBound = (args?: Object): void => {
-            expect((gridObj.getRows()[0].getElementsByClassName('photo')[0] as HTMLElement).innerText == "RobertKing").toBe(true);
-            done();
-        }
-        gridObj.dataBound = dataBound;
-        gridObj.rowTemplate = altrowtemplate;
-    });
         afterAll(() => {
         destroy(gridObj);
       });

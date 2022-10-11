@@ -1,4 +1,4 @@
-//default 
+//default
 $skin-name: 'material';
 $theme: 'Material';
 $spin-overlay-background: rgba($grey-black, .4);
@@ -21,6 +21,7 @@ $spin-tailwind-stroke-width: 4.5;
 $spin-boot5-stroke-color: $accent;
 $spin-tailwind-arc-color: $accent;
 $spin-tailwind-stroke-color: rgba($accent, .4);
+
 //enddefault
 //dimensions
 @mixin boot5-spinner-rotate {
@@ -43,8 +44,7 @@ $spin-tailwind-stroke-color: rgba($accent, .4);
   animation: material-spinner-rotate .75s linear infinite;
 }
 
-
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @keyframes material-spinner-rotate {
   0% {
     -webkit-transform: rotate(0deg);
@@ -57,7 +57,6 @@ $spin-tailwind-stroke-color: rgba($accent, .4);
   }
 }
 
-// sass-lint:disable no-vendor-prefixes
 @keyframes fabric-spinner-rotate {
   0% {
     -webkit-transform: rotate(0deg);
@@ -69,4 +68,5 @@ $spin-tailwind-stroke-color: rgba($accent, .4);
     transform: rotate(360deg);
   }
 }
+
 //enddefault

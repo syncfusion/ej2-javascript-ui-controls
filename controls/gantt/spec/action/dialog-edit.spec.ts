@@ -3,7 +3,7 @@
  */
  import { getValue, L10n } from '@syncfusion/ej2-base';
  import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
- import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData} from '../base/data-source.spec';
+ import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData} from '../base/data-source.spec';
  import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
  import { DropDownList } from '@syncfusion/ej2-dropdowns';
  import { DataManager } from '@syncfusion/ej2-data';
@@ -2086,6 +2086,56 @@
             triggerMouseEvent(saveRecord, 'click');
             expect(getValue('taskType', ganttObj.flatData[1])).toBe('task');
         });
-    });	 	 
+    });
+    describe('Cr Data source error', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: crData,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                taskFields: {
+                    id: 'runningId',
+                    name: 'name',
+                    dependency: 'dependency',
+                    baselineStartDate: 'actualStartDate',
+                    baselineEndDate: 'actualCompletionDate',
+                    startDate: 'startDate',
+                    endDate: 'estimatedCompletionDate',
+                    duration: 'duration',
+                    expandState: 'expandState',
+                    progress: 'progress',
+                    child: 'child',
+                },
+                queryCellInfo :(args)  => {
+                    if (args.column.field == 'progress' && args.data.hasChildRecords) {
+                         args.cell.innerText = args.data.taskData.progress.toString();
+                       }
+                  },
+                projectStartDate: new Date('08/01/2022'),
+                projectEndDate: new Date('10/28/2022'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: true
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('changing inner html value', () => {
+            expect(document.getElementsByClassName('e-rowcell e-ellipsistooltip')[5].innerHTML).toBe('2')
+        });
+    });	 	 	 
  });
  

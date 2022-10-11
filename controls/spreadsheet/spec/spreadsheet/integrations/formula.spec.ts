@@ -329,7 +329,7 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
-        describe('I288646, I296410, I305593, I314883 ->', () => {
+        describe('I288646, I296410, I305593, I314883, EJ2-63933 ->', () => {
             const model: SpreadsheetModel = { sheets: [{ rows: [{ cells: [{  value: '10' }, { value: '20' }, { index: 8, formula: '=H1' }] }, { cells: [{ formula: '=ROUNDUP(10.6)' },
             { index: 4, formula: '=INT(10.2)' }, { formula: '=SUMPRODUCT(A1:B1)' }, { index: 8, formula: '=H2' }] }] }] };
             beforeAll((done: Function) => {
@@ -359,6 +359,22 @@ describe('Spreadsheet formula module ->', () => {
                     expect(document.querySelectorAll('.e-dialog').length).toBe(0);
                     done();
                 });
+            });
+
+            it('Calculation issue while applying the formula =(B2+B3)^2', (done: Function) => {
+                helper.edit('B2', '1');
+                helper.edit('B3', '5.00%');
+                helper.edit('B4', '=(B2+B3)^2');
+                helper.edit('B5', '=(B2+B3)^(1/3)');
+                helper.edit('B6', '=POWER((B2+B3),2)');
+                helper.edit('B7', '=POWER((B2+B3),1/3)');
+                helper.edit('B8', '=(3^2)^(2)');
+                expect(helper.invoke('getCell', [3, 1]).textContent).toBe('1.1025');
+                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('1.016396');
+                expect(helper.invoke('getCell', [5, 1]).textContent).toBe('1.1025');
+                expect(helper.invoke('getCell', [6, 1]).textContent).toBe('1.016396');
+                expect(helper.invoke('getCell', [7, 1]).textContent).toBe('81');
+                done();
             });
 
             // it('Formula dependent cell not updated after destroy', (done: Function) => {

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.49 (2022-10-11)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I409839` - Issue with "Script error thrown while drag and drop after removed the item from listbox using removeItem method" has been resolved.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#I409074` - The issue "Previous value not updated properly in change event argument when we clear the value" has been resolved.
+
 ## 20.3.48 (2022-10-05)
 
 ### Mention

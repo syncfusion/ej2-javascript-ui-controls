@@ -257,10 +257,10 @@ export class AxisHelper {
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.textStyle.textAlignment === 'Near') {
                 x = lableRect.x - ((!axis.isInversed) ?
-                    (elementSize.width / 2) : (lableRect.width + (elementSize.width / 2)));
+                (elementSize.width / 2) : (lableRect.width + (elementSize.width / 2)));
             } else if (axis.textStyle.textAlignment === 'Far') {
                 x = lableRect.x + ((!axis.isInversed) ?
-                    (lableRect.width - elementSize.width) : -(elementSize.width));
+                   (lableRect.width - elementSize.width) : -(elementSize.width));
             }
             if (axis.labelIntersectAction === 'Trim') {
                 x = (!axis.isInversed) ? (x >= lableRect.x ? x : lableRect.x) : (x > (lableStrtX - interval) ? x : (lableStrtX - interval));

@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 20.3.49 (2022-10-11)
+
+### Accordion
+
+#### Bug Fixes
+
+- `SF-397894` - An issue with incorrect aria attributes in accordion has been fixed.
+
+## 20.3.47 (2022-10-11)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I397894` - The issue with "using tab index as `0`​ on the container of Sidebar component" has been resolved.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I408315` - Script error thrown in `insertBefore` method While items not available in menu items has been fixed.
+
 ## 20.3.48 (2022-10-05)
 
 ### TreeView

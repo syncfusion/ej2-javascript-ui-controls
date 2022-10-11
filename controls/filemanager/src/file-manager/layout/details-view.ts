@@ -1319,6 +1319,7 @@ export class DetailsView {
 
     /* istanbul ignore next */
     // eslint:disable-next-line
+    actionDivert : boolean = false;
     private keyupHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         e.preventDefault();
@@ -1389,8 +1390,14 @@ export class DetailsView {
                     this.gridObj.selectRow(0);
                 } else if (this.gridObj.selectedRowIndex !== -1 && e.action === 'tab') {
                     return;
-                } else {
+                } 
+                else if(!this.actionDivert){
+                    this.addHeaderFocus();
+                    this.actionDivert = true;
+                }
+                else {
                     this.addFocus(0);
+                    this.actionDivert = false;
                 }
             }
             break;
@@ -1664,6 +1671,19 @@ export class DetailsView {
         }
     }
 
+    private addHeaderFocus() : void {
+        const treeFocus: HTMLElement = select('.e-row', this.element);
+        this.gridObj.element.setAttribute('tabindex', '-1');
+        const nameFocus: HTMLElement = select('th.e-fe-grid-name', this.element);
+        nameFocus.setAttribute('tabindex', '0');
+        nameFocus.focus();
+        addClass([nameFocus], [CLS.FOCUS, CLS.FOCUSED]);
+        treeFocus.setAttribute('tabindex', '0');
+        if (treeFocus.tabIndex === 0 && nameFocus.tabIndex === 0) {
+            removeClass([treeFocus], [CLS.FOCUS, CLS.FOCUSED]);
+        }
+    }
+    
     private getFocusedItem(): Element {
         return select('.' + CLS.FOCUSED, this.element);
     }

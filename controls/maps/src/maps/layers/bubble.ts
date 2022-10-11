@@ -68,9 +68,9 @@ export class Bubble {
             let shape: any = layerData[i];
             shape = shape['property'];
             const shapePath: string = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
-            const shapeDataLayerPathValue : string = !isNullOrUndefined(shapeData[layer.shapeDataPath]) &&
-            isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
-            const shapePathValue : string =  !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
+            const shapeDataLayerPathValue: string = !isNullOrUndefined(shapeData[layer.shapeDataPath]) &&
+                isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
+            const shapePathValue: string = !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
                 ? shape[shapePath].toLowerCase() : shape[shapePath];
             if (shapeDataLayerPathValue === shapePathValue && (layerData[i].type !== 'LineString' && layerData[i].type !== 'MultiLineString' && layerData[i]['type'] !== 'Point' && layerData[i]['type'] !== 'MultiPoint')) {
                 if (!layerData[i]['_isMultiPolygon']) {

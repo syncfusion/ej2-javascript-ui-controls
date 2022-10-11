@@ -3752,7 +3752,9 @@ export class Gantt extends Component<HTMLElement>
         if (isNullOrUndefined(index)) {
             record = this.getRecordByID(id.toString());
             chartRow = this.getRowByID(id);
-            rowIndex = getValue('rowIndex', chartRow);
+            if (!isNullOrUndefined(chartRow)) {
+                rowIndex = getValue('rowIndex', chartRow);
+            }
         } else if (!isNullOrUndefined(index)) {
             chartRow = this.getRowByIndex(index);
             rowIndex = getValue('rowIndex', chartRow);

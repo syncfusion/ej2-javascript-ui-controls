@@ -322,7 +322,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         const wrapper: HTMLElement = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
         this.element.parentNode.insertBefore(wrapper, this.element);
         wrapper.appendChild(this.element);
-        attributes(this.element, { 'tabindex': '-1', 'spellcheck': 'false' });
+        attributes(this.element, { 'tabindex': '-1', 'spellcheck': 'false', 'aria-label': 'colorpicker' });
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         let value: string = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
@@ -527,7 +527,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private appendPalette(colors: string[], key: string, refEle?: HTMLElement): void {
-        const palette: HTMLElement = this.createElement('div', { className: PALETTES, attrs: { 'tabindex': '0' } });
+        const palette: HTMLElement = this.createElement('div', { className: PALETTES, attrs: { 'tabindex': '0', 'role': 'grid' } });
         if (refEle) {
             refEle.appendChild(palette);
         } else {
@@ -537,7 +537,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         for (let i: number = 0, len: number = colors.length; i < len; i++) {
             if (i === 0 || i % this.columns === 0) {
                 row = this.createElement('div', {
-                    className: 'e-row', attrs: { 'role': 'presentation' }
+                    className: 'e-row', attrs: { 'role': 'row' }
                 });
                 palette.appendChild(row);
             }

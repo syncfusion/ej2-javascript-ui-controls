@@ -1,4 +1,4 @@
-//default 
+//default
 $tbar-skin: 'bootstrap' !default;
 $tbar-default-bg: $grey-darker !default;
 $tbar-items-default-bg: $tbar-default-bg !default;
@@ -69,7 +69,7 @@ $tbar-pressed-border: transparent !default;
 $tbar-btn-border: none !default;
 
 $tbar-nav-pressed-box-shadow: inset 0 4px 5px rgba($grey-base, .35) !default;
-$tbar-pop-box-shadow:  0 6px 12px rgba(0 , 0 , 0 , .175) !default;
+$tbar-pop-box-shadow:  0 6px 12px rgba(0, 0, 0, .175) !default;
 $tbar-pop-radius: 4px !default;
 $tbar-item-pop-bg-color: transparent !default;
 $tbar-radius: 4px !default;
@@ -122,11 +122,11 @@ $tbar-item-nrml-padding: 4px 2.5px !default;
 $tbar-item-nrml-minwidth: 30px !default;
 
 $tbar-separator-bgr-height: calc(100% - 12px) !default;
-$tbar-separator-bgr-mrgn: 6px 6px  !default;
-$tbar-separator-nrml-mrgn: 5.5px 6px  !default;
+$tbar-separator-bgr-mrgn: 6px 6px !default;
+$tbar-separator-nrml-mrgn: 5.5px 6px !default;
 $tbar-btn-bgr-padding: 1px 7px !default;
 $tbar-btn-bgr-focus-padding: 0 6px !default;
-$tbar-btn-nrml-padding: 1px 2.5px  !default;
+$tbar-btn-nrml-padding: 1px 2.5px !default;
 $tbar-icons-bgr-font-size: 14px !default;
 $tbar-multirow-items-mrgn-bigger: 15px !default;
 $tbar-multirow-items-mrgn-small: 15px !default;
@@ -139,4 +139,5 @@ $tbar-multirow-item-mrgn: 0 !default;
 @mixin tbar-btn-animation-after {
   content: '';
 }
+
 //enddefault

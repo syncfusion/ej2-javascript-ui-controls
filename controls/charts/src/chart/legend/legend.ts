@@ -172,7 +172,6 @@ export class Legend extends BaseLegend {
         this.columnHeights = [];
         this.pageHeights = [];
         const padding: number = legend.padding;
-        const itemPadding: number = legend.itemPadding;
         const titlePosition: LegendTitlePosition = legend.titlePosition;
         let extraHeight: number = 0;
         let legendOption : LegendOptions;
@@ -224,7 +223,7 @@ export class Legend extends BaseLegend {
             shapePadding = legendOption.text ? legend.shapePadding : 0;
             if (legendOption.render && legendOption.text) {
                 render = true;
-                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + (!this.isVertical ? (i==0) ? padding : itemPadding : padding);
+                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + (!this.isVertical ? (i==0) ? padding : this.itemPadding : padding);
                 rowWidth = rowWidth + legendWidth;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
@@ -245,7 +244,7 @@ export class Legend extends BaseLegend {
                 const len = (rowCount > 0 ? (rowCount -1) : 0);
                 this.rowHeights[len]= Math.max((this.rowHeights[len] ? this.rowHeights[len] :0), legendOption.textSize.height);
                // this.maxItemHeight = Math.max(this.maxItemHeight, legendOption.textSize.height);
-               this.columnHeights[columnCount] = (this.columnHeights[columnCount] ? this.columnHeights[columnCount] : 0) + legendOption.textSize.height + padding;     
+               this.columnHeights[columnCount] = (this.columnHeights[columnCount] ? this.columnHeights[columnCount] : 0) + legendOption.textSize.height + (this.isVertical ? (i==0) ? padding : this.itemPadding : padding);     
                columnCount++;
             }                
         }
@@ -297,19 +296,19 @@ export class Legend extends BaseLegend {
         const padding: number = this.legend.padding;
         const textWidth: number =  textPadding + (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : prevLegend.textSize.width);
         const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
-        if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding - this.legend.itemPadding, rect) || this.isVertical) {
+        if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding - this.itemPadding, rect) || this.isVertical) {
             legendOption.location.x = start.x;
             if (count !== firstLegend)
               this.chartRowCount++;
             legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
-                prevLegend.location.y + (this.isVertical ? prevLegend.textSize.height : this.rowHeights[(this.chartRowCount - 2)]) + padding;
+                prevLegend.location.y + (this.isVertical ? prevLegend.textSize.height : this.rowHeights[(this.chartRowCount - 2)]) + (this.isVertical ? this.itemPadding : padding);
               
         } else {
             legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             legendOption.location.y = prevLegend.location.y;
         }
         let availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
-            textPadding - this.legend.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.legend.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x; 
+            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x; 
         availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) :availwidth;
             if (this.legend.textOverflow == "Ellipsis" && this.legend.textWrap == "Normal") {           
                 legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);

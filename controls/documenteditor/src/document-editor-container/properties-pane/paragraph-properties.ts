@@ -564,6 +564,9 @@ export class Paragraph {
         this.showHiddenMarks.addEventListener('click', (): void => {
             this.container.documentEditorSettings.showHiddenMarks = !this.container.documentEditorSettings.showHiddenMarks;
             this.toggleHiddenMarks();
+            setTimeout((): void => {
+                this.documentEditor.focusIn();
+            }, 30);
         });
         this.decreaseIndent.addEventListener('click', (): void => {
             this.decreaseIndentAction();
@@ -883,6 +886,7 @@ export class Paragraph {
             } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Justify') {
                 classList(this.justify, ['e-btn-toggle'], []);
             }
+            this.toggleHiddenMarks();
         }
         this.setLineSpacing();
         this.isRetrieving = false;

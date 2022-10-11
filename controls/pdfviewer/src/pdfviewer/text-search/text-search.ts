@@ -46,6 +46,10 @@ export class TextSearch {
     private searchCollection: Array<{ [key: string]: object }[]> = new Array();
     private searchedPages: number[] = [];
     private isPrevSearch: boolean = false;
+    /**
+     * @private
+     */
+    public searchTextDivzIndex: string = "-1";
     // eslint-disable-next-line
     private tempElementStorage: Array<{ [key: string]: string }> = new Array();
     /**
@@ -926,6 +930,7 @@ export class TextSearch {
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchColor === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.searchColor;
             }
             const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
+            textDiv.style.zIndex = this.searchTextDivzIndex;
             if (textLayer) {
                 textLayer.appendChild(textDiv);
             }
@@ -946,6 +951,7 @@ export class TextSearch {
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchColor === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.searchColor;
             }
             const textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
+            textDiv.style.zIndex = this.searchTextDivzIndex;
             if (textLayer) {
                 textLayer.appendChild(textDiv);
             }

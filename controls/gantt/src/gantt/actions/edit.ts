@@ -2480,6 +2480,9 @@ export class Edit {
             }
             /*Child collection update*/
             parentItem.childRecords.splice(childIndex, 0, record);
+            if (!this.parent.taskFields.child) {
+                this.parent.taskFields.child = 'Children';
+            }
             if ((this.parent.dataSource instanceof DataManager &&
                 isNullOrUndefined(parentItem.taskData[this.parent.taskFields.parentID])) ||
                  !isNullOrUndefined(this.parent.dataSource)) {

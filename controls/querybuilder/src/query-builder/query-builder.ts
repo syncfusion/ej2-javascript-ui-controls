@@ -1115,7 +1115,7 @@
                          validateRule = (this.selectedColumn as ColumnsModel).validation;
                      }
                  } else {
-                     dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field .e-control') as HTMLElement, 'dropdownlist');
+                     dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdownlist');
                      this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
                      validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
                  }
@@ -1147,7 +1147,7 @@
                                  if (elem.className.indexOf('e-tooltip') < 0) {
                                      this.renderToolTip(elem as HTMLElement);
                                  }
-                             } else if (valElem[j].parentElement.className.indexOf('e-tooltip') < 0) {
+                             } else if (valElem[j].parentElement.className.indexOf('e-tooltip') < 0 && valElem[j].className.indexOf('e-tooltip') < 0) {
                                  this.renderToolTip(valElem[j].parentElement);
                              }
                              j++;
@@ -1445,6 +1445,9 @@
          let eventsArgs: ChangeEventArgs;
          const rules: RuleModel = this.getParentGroup(grpElem);
          let ruleElem: Element = closest(element, '.e-rule-container'); let index: number = 0;
+         if(this.allowValidation) {
+            this.validateValue(rules, ruleElem);
+         } 
          while (ruleElem && ruleElem.previousElementSibling !== null) {
              ruleElem = ruleElem.previousElementSibling;
              index++;
@@ -1602,7 +1605,9 @@
          ddl.value = itemData.value;
          const customArgs: DropDownChangeEventArgs = {element: ddl.element, value: itemData.value, isInteracted: true,
              previousItemData: this.prevItemData, previousItem: null, item: item, itemData: itemData, event: null, e: null };
-         this.changeField(customArgs);
+         if(ddl.previousValue !== ddl.value) {
+            this.changeField(customArgs);
+         }    
          this.isFieldChange = false;
      }
  
@@ -2576,7 +2581,7 @@
                  }
              }
              if (isRender) {
-                 this.validatValue(rule, closest(target, '.e-rule-container'));
+                 this.validateValue(rule, closest(target, '.e-rule-container'));
                  this.destroyControls(target);
              }
              itemData.template = column.template;
@@ -2903,7 +2908,7 @@
                      }
                  }
              }
-             this.validatValue(rule, ruleElem, index);
+             this.validateValue(rule, ruleElem, index);
          } else {
              if (target.className.indexOf('e-datepicker') > -1) {
                  if (arrOperator.indexOf(oper) > -1) {
@@ -2919,7 +2924,7 @@
              }
          }
      }
-     private validatValue(rule: RuleModel, ruleElem: Element, index?: number): void {
+     private validateValue(rule: RuleModel, ruleElem: Element, index?: number): void {
          if (!isNullOrUndefined(index)) {
              rule = rule.rules[index];
          }
@@ -4784,11 +4789,11 @@
                          } else if (parser[j - 1][0] === 'String') {
                              rule.value = strVal; rule.type = 'string';
                          } else if (operator.indexOf('between') > -1 && parser[j - 1][0] === 'Conditions') {
-                             if (strVal.length !== 0) {
+                            if (strVal.length !== 0) {
                                 rule.value = strVal; rule.type = 'string';
-                             } else {
+                            } else {
                                 rule.value = numVal; rule.type = 'number';
-                             }
+                            }
                          }
                          numVal = []; strVal = []; rule.type = this.getTypeFromColumn(rule);
                      }

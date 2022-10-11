@@ -359,7 +359,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (!isNullOrUndefined(classELement || this.targetEle)) {
             addClass([classELement || this.targetEle], [MAINCONTENTANIMATION]);
         }
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : null;
         if (!this.enableDock && this.type !== 'Auto') {
             addClass([this.element], [VISIBILITY]);
         }
@@ -369,7 +369,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.enableDock) {
             addClass([this.element], DOCKER);
         }
+        if(!isNullOrUndefined(this.tabIndex)) {
         this.element.setAttribute('tabindex', this.tabIndex);
+        }
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();
         } else if (!this.isOpen) {

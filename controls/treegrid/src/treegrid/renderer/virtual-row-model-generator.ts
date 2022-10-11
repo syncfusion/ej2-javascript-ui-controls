@@ -38,7 +38,11 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         const info: VirtualInfo = this.getDataInfo();
         if (!isNullOrUndefined(notifyArgs.virtualInfo)) {
             if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
-                notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
+                if (!((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
+                && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent))
+                || notifyArgs.virtualInfo.blockIndexes.length === 1) { 
+                    notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
+                }
             } else {
                 notifyArgs.virtualInfo.blockIndexes = this.getBlockIndexes(notifyArgs.virtualInfo.page);
             }

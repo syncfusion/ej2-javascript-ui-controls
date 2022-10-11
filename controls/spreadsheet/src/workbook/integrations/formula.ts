@@ -6,7 +6,7 @@ import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
-import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula } from '../common/index';
+import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
 
 
 /**
@@ -767,7 +767,7 @@ export class WorkbookFormula {
 
     private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, otherSheet?: boolean,
         formulaSheet?: SheetModel): void {
-        let ref: string; let pVal: string; let index: number[]; let updated: boolean;
+        let ref: string; let pVal: string; let index: number[]; let updated: boolean; let range: number[];
         if (cell.formula && cell.formula.includes('UNIQUE')) {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
@@ -789,8 +789,9 @@ export class WorkbookFormula {
                 }
                 index = getRangeIndexes(ref);
                 updated = this.parent.updateRangeOnInsertDelete(args, index);
+                range = getSwapRange(index);
                 if (updated) {
-                    formulaArr[i] = index[2] < index[0] || index[3] < index[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref]
+                    formulaArr[i] = range[2] < range[0] || range[3] < range[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref]
                         : getAddress();
                 }
             }

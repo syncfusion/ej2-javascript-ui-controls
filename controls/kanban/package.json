@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-kanban",
-	"version": "19.10.6",
+	"version": "20.3.47",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-kanban.umd.min.js",

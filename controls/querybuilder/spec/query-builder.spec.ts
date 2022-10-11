@@ -3052,6 +3052,50 @@ describe('QueryBuilder', () => {
             expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
         });
 
+        it('EJ2-62285 - Date type Between value not render properly while use setRulesFromSql method', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'EmployeeID', type: 'number' },
+                { field: 'FirstName', label: 'FirstName', type: 'string' },
+                { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
+                { field: 'Title', label: 'Title', type: 'string' },
+                { 
+                    field: 'HireDate', label: 'HireDate',
+                    operators: [
+                      {
+                        key: 'Greater Than',
+                        value: 'greaterthan',
+                      },
+                      {
+                        key: 'Greater Than Or Equal',
+                        value: 'greaterthanorequal',
+                      },
+                      {
+                        key: 'Less Than',
+                        value: 'lessthan',
+                      },
+                      {
+                        key: 'Less Than Or Equal',
+                        value: 'lessthanorequal',
+                      },
+                      {
+                        key: 'Between',
+                        value: 'between',
+                      },
+                    ] ,type: 'date', format: 'dd/MM/yyyy' 
+                },
+                { field: 'Country', label: 'Country', type: 'string' },
+                { field: 'City', label: 'City', type: 'string' }
+            ];
+            
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                enableRtl: true,
+                columns: customFieldData
+            }, '#querybuilder');
+            queryBuilder.setRulesFromSql("FirstName = 'Keerthi' AND HireDate BETWEEN '01/08/2022' AND '05/08/2022' AND Country = 'Erode'");
+            expect(queryBuilder.rule.rules[1].value).toEqual(['01/08/2022', '05/08/2022']);
+        });
+        
         it('EJ2-61503 - Value template not destroy properly when we use complex data source', () => {
             let dateTemplate: TemplateColumn = {
                 create: () => {
@@ -3148,50 +3192,6 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.rule.rules[0].value).toEqual("");
         });
 
-        it('EJ2-62285 - Date type Between value not render properly while use setRulesFromSql method', () => {
-            let customFieldData: ColumnsModel[] = [
-                { field: 'EmployeeID', label: 'EmployeeID', type: 'number' },
-                { field: 'FirstName', label: 'FirstName', type: 'string' },
-                { field: 'TitleOfCourtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'] },
-                { field: 'Title', label: 'Title', type: 'string' },
-                { 
-                    field: 'HireDate', label: 'HireDate',
-                    operators: [
-                      {
-                        key: 'Greater Than',
-                        value: 'greaterthan',
-                      },
-                      {
-                        key: 'Greater Than Or Equal',
-                        value: 'greaterthanorequal',
-                      },
-                      {
-                        key: 'Less Than',
-                        value: 'lessthan',
-                      },
-                      {
-                        key: 'Less Than Or Equal',
-                        value: 'lessthanorequal',
-                      },
-                      {
-                        key: 'Between',
-                        value: 'between',
-                      },
-                    ] ,type: 'date', format: 'dd/MM/yyyy' 
-                },
-                { field: 'Country', label: 'Country', type: 'string' },
-                { field: 'City', label: 'City', type: 'string' }
-            ];
-            
-            queryBuilder = new QueryBuilder({
-                dataSource: employeeData,
-                enableRtl: true,
-                columns: customFieldData
-            }, '#querybuilder');
-            queryBuilder.setRulesFromSql("FirstName = 'Keerthi' AND HireDate BETWEEN '01/08/2022' AND '05/08/2022' AND Country = 'Erode'");
-            expect(queryBuilder.rule.rules[1].value).toEqual(['01/08/2022', '05/08/2022']);
-        });
-
         it('EJ2-62916 - Custom operator not set properly when we set one field is a prefix of other field as number', () => {
             var customField = [
                 {
@@ -3223,7 +3223,7 @@ describe('QueryBuilder', () => {
             expect(items1.length).toEqual(2);
             expect(queryBuilder.rule.rules[0].operator).toEqual('in');
         });
-
+        
         it('EJ2-62949 - Rule template rendering issue when add group/condition', () => {
             let customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate:'#template' },

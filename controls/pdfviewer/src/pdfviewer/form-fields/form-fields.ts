@@ -47,7 +47,11 @@ export class FormFields {
     private formFieldsData: any;
     private rotateAngle: number;
     private selectedIndex: number[] = [];
-
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public renderedPageList: number[] = [];
     /**
      * @param viewer
      * @param base
@@ -67,7 +71,15 @@ export class FormFields {
         this.maxTabIndex = 0;
         this.minTabIndex = -1;
         // eslint-disable-next-line
-        this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (this.renderedPageList.indexOf(pageIndex) !== -1) {
+            this.data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+            if (!this.data) {
+                this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+            }
+        }
+        else {
+            this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        }
         if (this.data) {
             // eslint-disable-next-line
             this.formFieldsData = JSON.parse(this.data);
@@ -82,6 +94,9 @@ export class FormFields {
                         count = parseInt(formField.FieldName.split('_')[1]);
                         flag = true;
                     }
+                }
+                if(this.renderedPageList.indexOf(pageIndex) === -1){
+                    this.renderedPageList.push(pageIndex);
                 }
                 for (let i: number = 0; i < this.formFieldsData.length; i++) {
                     // eslint-disable-next-line

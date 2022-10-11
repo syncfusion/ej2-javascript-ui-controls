@@ -584,10 +584,12 @@
   }
 
   .e-daterangepicker.e-popup.e-popup-expand.e-control.e-lib.e-device.e-popup-open {
+    @if $skin-name == 'material' {
     min-height:100%;
     min-width: 100%;
     height:100%;
     width:100%;
+    }
 }
 }
 
@@ -601,8 +603,9 @@
   background-size: 250px 40px;
   min-height: 40px;
 }
-.e-daterangepick-mob-popup-wrap {
 
+.e-daterangepick-mob-popup-wrap {
+ @if $skin-name == 'material' {
     #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
 
         .e-calendar,
@@ -639,16 +642,18 @@
 
             table {
                 height: 100%;
+                border-spacing: 0px 30px;
             }
         }
     }
+  }
 
 }
 
 
 @media screen and (orientation: landscape) {
     .e-daterangepick-mob-popup-wrap {
-
+     @if $skin-name == 'material' {
         #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
             .e-range-header {
                 float: left;
@@ -702,6 +707,9 @@
 
             .e-content.e-month {
                 height: 80%;
+                table {
+                  border-spacing: unset;
+              }
             }
 
             .e-header {
@@ -726,7 +734,26 @@
 }
 
         }
+
+        #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand.e-rtl {
+          .e-content.e-year {
+            .e-end-date.e-selected.e-range-hover {
+             border-radius: 40% 0 0 40% ;
+            }
+            .e-start-date.e-selected.e-range-hover
+            {
+              border-radius: 0 40% 40% 0 ;
+            }
+          }
+          .e-content.e-month {
+            .e-end-date.e-selected.e-range-hover
+            {
+            border-radius: 40% 0 0 40%;
+            }
+          }
+        }
     }
+}
 }
 
 .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {

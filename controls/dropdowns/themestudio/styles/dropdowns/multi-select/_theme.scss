@@ -311,6 +311,10 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   left: $ddl-chip-close-hooker-small-left;
 }
 
+.e-small.e-bigger .e-multi-select-wrapper .e-close-hooker::before {
+  left: $ddl-chip-close-hooker-small-bigger-left;
+}
+
 .e-small .e-multi-select-wrapper .e-down-icon .e-close-hooker::before {
   @if $ddl-multiselect-skin-name == 'FluentUI' {
     left: $ddl-small-down-icon-left;

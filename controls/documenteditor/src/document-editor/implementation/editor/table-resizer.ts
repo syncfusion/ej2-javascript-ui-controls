@@ -356,7 +356,7 @@ export class TableResizer {
             selectionFlag = this.resizeColumnWithSelection(selection, table, dragValue);
         }
         if (!selectionFlag) {
-            this.owner.isLayoutEnabled = true;
+            this.updateGridValue(table, true);
             return;
         }
         if (this.resizerPosition === 0) {

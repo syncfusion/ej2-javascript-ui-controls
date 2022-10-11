@@ -1402,6 +1402,7 @@ export class FreeTextAnnotation {
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
                 // eslint-disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
+                customData: this.pdfViewer.annotation.getCustomData(annotation),
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock
             };
             return annot;

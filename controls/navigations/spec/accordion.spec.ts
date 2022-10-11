@@ -452,10 +452,8 @@ describe("Accordion Testing", () => {
 
         it("EJ2-51850 - Accessibility validation error in Accordion", () => {
             let ele: HTMLElement = document.getElementById("accordion");
-            expect(ele.children[0].getAttribute('aria-expanded')).toBe('true');
-            expect(ele.children[0].getAttribute('role')).toBe('row');
-            expect(ele.children[1].getAttribute('role')).toBe('row');
-            expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-expanded')).toBe('true');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-expanded')).toBe('false');
         });
     });
     describe("Accordion Item expanded Property testing with Fade animation", () => {
@@ -906,7 +904,6 @@ describe("Accordion Testing", () => {
                 }, ele);
             accordion.expandMode = 'Single';
             accordion.dataBind();
-            expect(ele.getAttribute('aria-multiselectable')).toBe('false');
         });
         it("Accordion OnProperty Change in ExpandMode Property", () => {
             let ele: HTMLElement = document.getElementById("accordion");
@@ -918,10 +915,8 @@ describe("Accordion Testing", () => {
                         { header: "Item2", content: "Content of Item2" }
                     ]
                 }, ele);
-            expect(ele.getAttribute('aria-multiselectable')).toBe('false');
             accordion.expandMode = 'Multiple';
             accordion.dataBind();
-            expect(ele.getAttribute('aria-multiselectable')).toBe('true');
         });
         it("Accordion Onproperty Change testing for header text", () => {
             let ele: HTMLElement = document.getElementById("accordion");
@@ -3081,20 +3076,15 @@ describe("Accordion Testing", () => {
                         { header: "Item3", content: "Content of Item3" }
                     ]
                 }, ele);
-            expect(ele.getAttribute('aria-disabled')).toBe('false');
-            expect(ele.getAttribute('role')).toBe('presentation');
-            expect(ele.getAttribute('aria-multiselectable')).toBe('true');
             expect(ele.children[0].firstElementChild.getAttribute('aria-disabled')).toBe('false');
-            expect(ele.children[0].getAttribute('aria-expanded')).toBe('false');
             expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toEqual(null);
-            expect(ele.children[0].firstElementChild.getAttribute('aria-label')).toBe('collapsed');
-            expect(ele.children[0].children[0].getAttribute('role')).toBe('heading');
-            expect(ele.children[1].children[0].getAttribute('role')).toBe('heading');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-expanded')).toBe('false');
+            expect(ele.children[0].children[0].getAttribute('role')).toBe('button');
+            expect(ele.children[1].children[0].getAttribute('role')).toBe('button');
             expect(ele.children[1].children[0].getAttribute('aria-controls')).toBe(null);
             expect(ele.children[1].firstElementChild.getAttribute('aria-disabled')).toBe('false');
-            expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
             expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toEqual(null);
-            expect(ele.children[1].firstElementChild.getAttribute('aria-label')).toBe('collapsed');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-expanded')).toBe('false');
             expect(ele.children[0].children[0].getAttribute('tabindex')).toBe('0');
             expect(ele.children[1].children[0].getAttribute('tabindex')).toBe('0');
             expect(ele.children[2].children[0].getAttribute('tabindex')).toBe('0');
@@ -3194,7 +3184,6 @@ describe("Accordion Testing", () => {
         let accordion: Accordion;
         afterEach((): void => {
             let ele: HTMLElement = document.getElementById('accordion');
-            expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
             expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toEqual(null);
             expect(ele.children[1].children[1].getAttribute('aria-hidden')).toBe('true');
             if (accordion) {
@@ -3224,12 +3213,10 @@ describe("Accordion Testing", () => {
         });
         it("Accordion Aria Attributes with ExpandItem Public method", (done: Function) => {
             let ele: HTMLElement = document.getElementById('accordion');
-            expect(ele.children[0].getAttribute('aria-expanded')).toBe('true');
             expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toEqual(null);
-            expect(ele.children[0].firstElementChild.getAttribute('aria-label')).toBe('expanded');
-            expect(ele.children[1].getAttribute('aria-expanded')).toBe('true');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-expanded')).toBe('true');
             expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toEqual(null);
-            expect(ele.children[1].firstElementChild.getAttribute('aria-label')).toBe('expanded');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-expanded')).toBe('true');
             expect(ele.children[1].children[1].getAttribute('aria-hidden')).toBe('false');
             expect(ele.children[0].children[1].getAttribute('aria-hidden')).toBe('false');
             (<HTMLElement>ele.children[1].children[0]).click();

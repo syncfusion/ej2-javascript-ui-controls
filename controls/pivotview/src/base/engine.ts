@@ -167,6 +167,7 @@ export class PivotEngine {
     private isValueHasAdvancedAggregate: boolean = false;
     private rawIndexObject: INumberIndex = {};
     private valueSortHeaderText: string;
+    private valueAxisFields: IValueFields = {};
     /* eslint-disable  */
     private isEditing: Boolean = false;
     /** @hidden */
@@ -295,6 +296,9 @@ export class PivotEngine {
             this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
             this.fieldMapping = dataSource.fieldMapping ? dataSource.fieldMapping : [];
+            for (let value of this.values) {
+                this.valueAxisFields[value.name] = value;
+            }
             fields = this.getGroupData(this.data as IDataSet[]);
             for (let i: number = 0; i < this.fields.length; i++) {
                 this.fieldKeys[this.fields[i]] = dataSource.type === 'CSV' ? i : this.fields[i];
@@ -680,7 +684,7 @@ export class PivotEngine {
                                     break;
                                 } else if (axis[i].name.indexOf(fieldName) > -1) {
                                     let axisField: string = groupFields[axis[i].name];
-                                    let currentField: IFieldOptions = axis.filter((axisField: IFieldOptions) => {return axisField.name === fieldName})[0];
+                                    let currentField: IFieldOptions = axis.filter((axisField: IFieldOptions) => { return axisField.name === fieldName })[0];
                                     let currentFieldCaption: string = (currentField.caption.indexOf(' (') !== -1 && currentField.caption.indexOf(')') !== -1) ? currentField.caption.slice(currentField.caption.indexOf('(') + 1, currentField.caption.length - 1) : currentField.caption;
                                     axis[i].caption = (this.localeObj ? this.localeObj.getConstant(axisField) : currentField) + ' (' + currentFieldCaption + ')';
                                 }
@@ -1289,8 +1293,8 @@ export class PivotEngine {
                 // if (!isNullOrUndefined(mkey)) {
                 if (!isDataAvail) {
                     let fKey: string = mkey;
-                    let formattedValue: IAxisSet = (this.pageSettings && !(this.formatFields[key] &&
-                        (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
+                    let formattedValue: IAxisSet = (this.pageSettings && (this.formatFields[key] &&
+                        !this.valueAxisFields[key])) ? this.getFormattedValue(mkey, key) : ({
                             formattedText: mkey === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(mkey)) :
                                 mkey === undefined ? (this.localeObj ? (key in this.groupingFields) ?
                                     this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
@@ -1298,7 +1302,7 @@ export class PivotEngine {
                                         this.localeObj.getConstant('null') : String(mkey)) : mkey === undefined ? (this.localeObj ?
                                             (key in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
                                                 this.localeObj.getConstant('undefined') : String(mkey)) : mkey
-                        }) : this.getFormattedValue(mkey, key);
+                        });
                     if (formattedValue.formattedText) {
                         fKey = formattedValue.formattedText;
                     }
@@ -3043,7 +3047,7 @@ export class PivotEngine {
                     this.fieldFilterMem[fieldName].memberObj[headerValue] === headerValue) {
                     continue;
                 }
-                let formattedValue: IAxisSet = isDateType ? {
+                let formattedValue: IAxisSet = isDateType || this.formatFields[fieldName] ? {
                     actualText: headerValue,
                     formattedText: childrens.dateMember[memInd - 1].formattedText,
                     dateText: childrens.dateMember[memInd - 1].actualText

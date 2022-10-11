@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+## 20.3.49 (2022-10-11)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I383934` - Now shared tooltip is rendering properly for all points.
+
 ## 20.3.48 (2022-10-05)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I409365` - Now canvas chart is working proper on legend click.
+
+### Bullet Chart
+
+#### Bug Fixes
+
+- `#I400763` - Now Bulletchart axis labels are aligned properly for all fontsize.
+
+## 20.3.47 (2022-09-29)
 
 ### Chart
 

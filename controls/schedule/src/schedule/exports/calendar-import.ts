@@ -142,16 +142,20 @@ export class ICalendarImport {
                         // eslint-disable-next-line no-prototype-builtins
                         if (data[i].hasOwnProperty(fields.recurrenceID)) {
                             const exdate: string = data[i][fields.recurrenceID] as string;
+                            data[i][fields.id] = this.parent.eventBase.generateGuid();
                             data[i][fields.recurrenceID] = id;
                             data[i][fields.recurrenceException] = null;
                             parentObj[fields.recurrenceException] = (isNullOrUndefined(parentObj[fields.recurrenceException])) ?
                                 exdate : parentObj[fields.recurrenceException] + ',' + exdate;
+                            delete data[i][uId];
                             appoint.push(data[i]);
                         }
                     }
+                    delete parentObj[uId];
                     appoint.push(parentObj);
                     // eslint-disable-next-line no-prototype-builtins
                 } else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
+                    delete eventObj[uId];
                     appoint.push(eventObj);
                 }
             }

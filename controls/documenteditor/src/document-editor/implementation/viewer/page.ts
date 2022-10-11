@@ -2754,11 +2754,7 @@ export class TableRowWidget extends BlockWidget {
                 prevOffset += ownerTable.getCellStartOffset(cell);
             }
             if (index < this.childWidgets.length) {
-                let preferredWidth: number = cell.cellFormat.cellWidth;
-                if (preferredWidth === 0) {
-                    preferredWidth = cell.cellFormat.preferredWidth;
-                }
-                width = ownerTable.getCellWidth(preferredWidth, cell.cellFormat.preferredWidthType, containerWidth, null);
+                width = ownerTable.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, containerWidth, null);
             } else {
                 width = ownerTable.getCellWidth(rowFormat.gridAfterWidth, rowFormat.gridAfterWidthType, containerWidth, null);
             }

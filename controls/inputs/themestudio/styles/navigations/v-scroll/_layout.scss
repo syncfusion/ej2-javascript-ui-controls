@@ -1,4 +1,5 @@
 @include export-module('v-scroll') {
+
   /*! v-scroll layout */
 
   .e-bigger #{&}.e-vscroll,
@@ -10,7 +11,7 @@
 
     .e-icons {
       font-size: 18px;
-     }
+    }
 
     &.e-rtl .e-scroll-overlay.e-scroll-down-overlay {
       left: $vscroll-nav-bgr-width;
@@ -55,7 +56,7 @@
           }
         }
       }
-   }
+    }
 
     &:not(.e-scroll-device) {
       padding: $vscroll-nrml-padding;
@@ -102,7 +103,6 @@
       display: inline-block;
       height: auto;
       position: relative;
-      touch-action: none;
       width: 100%;
 
       > * {

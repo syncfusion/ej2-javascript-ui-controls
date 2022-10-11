@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 20.3.48 (2022-10-05)
+## 20.3.49 (2022-10-11)
 
 ### Heatmap
 
 #### Bug Fixes
 
-- `#I389024` - The `textAlignment` property in the `textStyle` of `xAxis` and `yAxis` will now work properly.
+- `#I408948` - The zero value label in the x- and y-axes will now appear correctly.
 
 ## 18.4.30 (2020-12-17)
 

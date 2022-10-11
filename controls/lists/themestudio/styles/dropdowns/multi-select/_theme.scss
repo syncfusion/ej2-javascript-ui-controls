@@ -14,19 +14,19 @@
   box-sizing: border-box;
 }
 
-// sass-lint:disable no-vendor-prefixes
-.e-multi-select-wrapper .e-chips>.e-chipcontent {
+/* stylelint-disable property-no-vendor-prefix */
+.e-multi-select-wrapper .e-chips > .e-chipcontent {
   -webkit-text-fill-color: $ddl-chip-font-color;
   color: $ddl-chip-font-color;
   font-family: $ddl-chip-font-family;
   font-size: $ddl-chip-font-size;
 }
 
-.e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent {
+.e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent {
   color: $ddl-sel-chip-font-color;
 }
 
-.e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent:hover {
+.e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent:hover {
   color: $ddl-sel-chip-hover-font-color;
 }
 
@@ -40,7 +40,7 @@
   background-color: $ddl-chip-hover-bg-color;
 }
 
-.e-multi-select-wrapper .e-chips>.e-chipcontent:hover {
+.e-multi-select-wrapper .e-chips > .e-chipcontent:hover {
   color: $ddl-chip-hover-font-color;
 }
 
@@ -93,7 +93,6 @@
   border-color: transparent;
   color: $ddl-multi-list-default-font-color;
 }
-
 
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-dropdownbase .e-list-item.e-active,
 #{&}.e-popup.e-multi-select-list-wrapper.e-checkbox .e-dropdownbase .e-list-item.e-active.e-hover {
@@ -203,23 +202,19 @@
   border: $ddl-popup-normal-border-width solid transparent;
 }
 
-// sass-lint:disable no-vendor-prefixes
-.e-multi-select-wrapper input.e-dropdownbase:-moz-placeholder {
+.e-multi-select-wrapper input.e-dropdownbase:-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
   color: $ddl-input-placeholder;
 }
 
-// sass-lint:disable no-vendor-prefixes
-.e-multi-select-wrapper input.e-dropdownbase::-moz-placeholder {
+.e-multi-select-wrapper input.e-dropdownbase::-moz-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
   color: $ddl-input-placeholder;
 }
 
-// sass-lint:disable no-vendor-prefixes
-.e-multi-select-wrapper input.e-dropdownbase:-ms-input-placeholder {
+.e-multi-select-wrapper input.e-dropdownbase:-ms-input-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
   color: $ddl-input-placeholder;
 }
 
-// sass-lint:disable no-vendor-prefixes
-.e-multi-select-wrapper input.e-dropdownbase::-webkit-input-placeholder {
+.e-multi-select-wrapper input.e-dropdownbase::-webkit-input-placeholder {/* stylelint-disable-line selector-no-vendor-prefix */
   color: $ddl-input-placeholder;
 }
 
@@ -300,7 +295,7 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   height: $ddl-small-chip-height;
 }
 
-.e-small .e-multi-select-wrapper .e-chips>.e-chipcontent {
+.e-small .e-multi-select-wrapper .e-chips > .e-chipcontent {
   font-size: $ddl-chip-small-font-size;
 }
 
@@ -316,6 +311,10 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   left: $ddl-chip-close-hooker-small-left;
 }
 
+.e-small.e-bigger .e-multi-select-wrapper .e-close-hooker::before {
+  left: $ddl-chip-close-hooker-small-bigger-left;
+}
+
 .e-small .e-multi-select-wrapper .e-down-icon .e-close-hooker::before {
   @if $ddl-multiselect-skin-name == 'FluentUI' {
     left: $ddl-small-down-icon-left;
@@ -327,7 +326,7 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   height: $ddl-bigger-small-chip-height;
 }
 
-.e-bigger.e-small .e-multi-select-wrapper .e-chips>.e-chipcontent {
+.e-bigger.e-small .e-multi-select-wrapper .e-chips > .e-chipcontent {
   font-size: $ddl-chip-bigger-small-font-size;
 }
 
@@ -386,15 +385,15 @@ e-ddl.e-popup.e-multi-select-list-wrapper.e-multiselct-group.e-checkbox .e-list-
   }
 }
 
-.e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent,
-.e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent {
+.e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent,
+.e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent {
   @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-font-color;
   }
 }
 
-.e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent:hover,
-.e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected>.e-chipcontent:hover {
+.e-multiselect.e-outline .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent:hover,
+.e-multiselect.e-filled .e-multi-select-wrapper .e-chips.e-chip-selected > .e-chipcontent:hover {
   @if $ddl-multiselect-skin-name == 'material' {
     color: $ddl-chip-font-color;
   }

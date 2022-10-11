@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 20.3.48 (2022-10-05)
+## 20.3.49 (2022-10-11)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I408673` - Data labels will now render properly when the values from `shapeDataPath` and `shapePropertyPath` are numbers.
+
+## 20.3.47 (2022-09-29)
 
 ### Maps
 

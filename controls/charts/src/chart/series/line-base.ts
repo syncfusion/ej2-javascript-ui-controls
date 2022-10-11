@@ -44,6 +44,7 @@ export class LineBase {
         let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
         let xVal: number = 0;
         let yVal: number = 0;
+        series.xData = [];
         for (const currentPoint of seriesPoints) {
             currentPoint.symbolLocations = [];
             xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
@@ -61,6 +62,7 @@ export class LineBase {
                 continue;
             } else {
                 tempPoints2.push(tempPoint);
+                series.xData.push(tempPoint.xValue);
             }
         }
         return tempPoints2;

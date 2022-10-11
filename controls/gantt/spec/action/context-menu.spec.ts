@@ -4,6 +4,13 @@ import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuIt
 import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
+import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
+let contextMenuItems: (string | ContextMenuItemModel)[] = ['AutoFitAll', 'AutoFit', 'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
+        'SortAscending', 'SortDescending', 'Add', 'DeleteDependency', 'Convert',
+        { text: 'Collapse the Row', target: '.e-content', id: 'collapserow' } as ContextMenuItemModel,
+        { text: 'Expand the Row', target: '.e-content', id: 'expandrow' } as ContextMenuItemModel,
+        { text: 'Hide Column', target: '.e-gridheader', id: 'hidecols' } as ContextMenuItemModel,
+    ];
 interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
  }
@@ -1242,5 +1249,82 @@ describe('Context-', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 500);
         });
+    });
+    describe('Custom context menu items', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+    taskFields: {
+        id: 'TaskID',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        duration: 'Duration',
+        progress: 'Progress',
+        dependency:'Predecessor',
+        child: 'subtasks'
+    },
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true
+    },
+    enableContextMenu: true,
+    allowSorting: true,
+    allowResizing: true,
+    contextMenuItems: contextMenuItems as ContextMenuItem[],
+    contextMenuClick: (args?: ContextMenuClickEventArgs) => {
+      
+        let record = args.rowData;
+        if (args.item.id === 'collapserow') {
+            ganttObj.collapseByID(Number(record.ganttProperties.taskId));
+        }
+        if (args.item.id === 'expandrow') {
+            ganttObj.expandByID(Number(record.ganttProperties.taskId));
+        }
+        if (args.item.id === 'hidecols') {
+            ganttObj.hideColumn(args.column.headerText);
+        }
+    },
+    contextMenuOpen: (args?: ContextMenuOpenEventArgs) => {
+        args.disableItems = [
+            'Task Information',
+            'Delete Task',
+            'Add',
+            'Delete Dependency',
+            'Convert',
+            'Indent',
+            'Outdent',
+            'Collapse the Row',
+      
+          ];
+        let record = args.rowData;
+        if (args.type !== 'Header') {
+            if (!record.hasChildRecords) {
+                args.hideItems.push('Collapse the Row');
+                args.hideItems.push('Expand the Row');
+            } else {
+                if(record.expanded){
+                    args.hideItems.push("Expand the Row");
+                } else {
+                    args.hideItems.push("Collapse the Row");
+                }
+            }
+        }
+    }
+    }, done);
+        });
+       afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+        it('Empty', (done: Function) => {
+            expect(true).toBeTruthy();
+            done();
+        });    
     });
 });

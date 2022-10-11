@@ -2045,6 +2045,52 @@ describe('Hyperlink Link target',()=>{
     });
 });
 
+describe('Bezier annotation alignment is not working properly',()=>{
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'BezAnnotationAlignment' });
+        document.body.appendChild(ele);
+        let connectors:ConnectorModel[] = [
+            {
+                id: 'connector1',type:'Bezier', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 300, y: 300 },
+                 annotations: [ {content: 'annot1',horizontalAlignment:'Center',verticalAlignment:'Bottom'}]
+            },
+        ];
+        diagram = new Diagram({
+            width:1000,height:1000,connectors:connectors
+        });
+        diagram.appendTo('#BezAnnotationAlignment');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking bezier annotation alignment at initial rendering',(done:Function)=>{
+        let connector = diagram.connectors[0];
+        expect(Math.round(connector.wrapper.children[3].bounds.x) === 175 && 
+        Math.round(connector.wrapper.children[3].bounds.y) === 231).toBe(true);
+        done();
+    });
+    it('Checking bezier annotation alignment after changing it at runtime',(done:Function)=>{
+        let connector = diagram.connectors[0];
+        connector.annotations[0].horizontalAlignment = 'Right';
+        connector.annotations[0].verticalAlignment = 'Top';
+        diagram.dataBind();
+        expect(Math.round(connector.wrapper.children[3].bounds.x) === 155 && 
+        Math.round(connector.wrapper.children[3].bounds.y) === 246).toBe(true);
+        done();
+    });
+
+});
+
 describe('Checking annotation', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -5544,5 +5590,7 @@ describe('Checking annotation', () => {
         expect(check).toEqual(true);
         done();
     });
+
+
 });
 

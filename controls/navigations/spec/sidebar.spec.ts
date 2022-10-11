@@ -198,7 +198,8 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({}, ele);
-        expect(sidebar.element.getAttribute('tabindex') === '0').toBe(true);
+        // expect(sidebar.element.getAttribute('tabindex') === '0').toBe(true);
+        expect(sidebar.element.getAttribute('tabindex') === null).toBe(true);
     });
     it('while give tab index to the sidebar component', () => {
         let ele: HTMLElement = document.getElementById("sidebar");

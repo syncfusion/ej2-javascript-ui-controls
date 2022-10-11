@@ -2142,10 +2142,11 @@ export class Legend {
                 const shapeData: any = layerData[i];
                 const dataPathValue: string = (dataPath.indexOf('.') > -1 ) ? getValueFromObject(data, dataPath) : data[dataPath];
                 const shapePath: string = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
-                const dataPathValueCase : string | number = !isNullOrUndefined(dataPathValue)
-                    ? dataPathValue.toLowerCase() : dataPathValue;
-                const shapeDataValueCase : string = !isNullOrUndefined(shapeData['properties'][shapePath])
-                && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapeData['properties'][shapePath];
+                const dataPathValueCase: string | number = !isNullOrUndefined(dataPathValue) &&
+                    typeof dataPathValue === 'string' ? dataPathValue.toLowerCase() : dataPathValue;
+                const shapeDataValueCase: string = !isNullOrUndefined(shapeData['properties'][shapePath])
+                    && isNaN(shapeData['properties'][shapePath]) ?
+                    shapeData['properties'][shapePath].toLowerCase() : shapeData['properties'][shapePath];
                 if (shapeDataValueCase === dataPathValueCase) {
                     if (shapeData['geometry']['type'] != 'MultiPoint') {
                         legendData.push({

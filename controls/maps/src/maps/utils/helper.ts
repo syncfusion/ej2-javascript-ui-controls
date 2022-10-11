@@ -1791,7 +1791,7 @@ export function checkShapeDataFields(dataSource: any[], properties: any, dataPat
                 dataSource[i][dataPath]);
             const shapePath: string = checkPropertyPath(shapeDataPath, propertyPath, properties);
             const shapeDataPathValue: string = !isNullOrUndefined(shapeDataPath) && isNaN(properties[shapePath])
-                ? shapeDataPath.toLowerCase() : shapeDataPath;
+                ? (typeof shapeDataPath === 'string' ? shapeDataPath.toLowerCase() : shapeDataPath) : shapeDataPath;
             const propertiesShapePathValue: string = !isNullOrUndefined(properties[shapePath]) && isNaN(properties[shapePath])
                 ? properties[shapePath].toLowerCase() : properties[shapePath];
             if (shapeDataPathValue === propertiesShapePathValue) {
@@ -1816,7 +1816,8 @@ export function checkPropertyPath(shapeData: string, shapePropertyPath: string |
             const properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
                 shapePropertyPath : [shapePropertyPath]) as string[];
             for (let i: number = 0; i < properties.length; i++) {
-                const shapeDataValue: string = !isNullOrUndefined(shapeData) ? shapeData.toLowerCase() : shapeData;
+                const shapeDataValue: string = !isNullOrUndefined(shapeData) && typeof shapeData === 'string' ?
+                    shapeData.toLowerCase() : shapeData;
                 const shapePropertiesValue: string = !isNullOrUndefined(shape[properties[i]])
                     && isNaN(shape[properties[i]])
                     ? shape[properties[i]].toLowerCase() : shape[properties[i]];

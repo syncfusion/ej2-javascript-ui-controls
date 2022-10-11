@@ -118,8 +118,10 @@ export class WStyles {
         for (const value of this.collection) {
             if ((value as WStyle).name === name) {
                 returnStyle = value;
-                if (!isNullOrUndefined(type) && (value as WStyle).type === type) {
-                    returnStyle = value;
+                if (!isNullOrUndefined(type)) {
+                    if ((value as WStyle).type !== type) {
+                        returnStyle = undefined;
+                    }
                 }
             }
         }

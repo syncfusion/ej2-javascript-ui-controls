@@ -241,6 +241,23 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cellEle.textContent).toBe('(Amount ');
                 done();
             });
+            it('SF-399272 -> MMM d, yyyy - ddd and MMM d, yyyy ddd custom date format', (done: Function) => {
+                helper.invoke('numberFormat', ['MMM d, yyyy - ddd', 'A15']);
+                helper.invoke('updateCell', [{ value: 'Feb 14, 2014 - Fri' }, 'A15']);
+                const cell: CellModel = helper.getInstance().sheets[0].rows[14].cells[0];
+                expect(cell.value).toBe('41684');
+                expect(cell.format).toBe('MMM d, yyyy - ddd');
+                const cellEle: HTMLElement = helper.invoke('getCell', [14, 0]);
+                expect(cellEle.textContent).toBe('Feb 14, 2014 - Fri');
+                expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+                helper.invoke('numberFormat', ['MMM d, yyyy ddd', 'A15']);
+                helper.invoke('updateCell', [{ value: 'Aug 22, 1994 Mon' }, 'A15']);
+                expect(cell.value).toBe('34568');
+                expect(cell.format).toBe('MMM d, yyyy ddd');
+                expect(cellEle.textContent).toBe('Aug 22, 1994 Mon');
+                expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+                done();
+            });
         });
     });
 

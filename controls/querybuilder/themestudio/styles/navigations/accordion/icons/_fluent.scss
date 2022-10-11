@@ -1,5 +1,5 @@
-
 @include export-module('accordion-fluent-icons') {
+
   /*! accordion icons */
   #{&}.e-accordion {
 
@@ -12,7 +12,6 @@
       &.e-expand-icon {
         transform: rotate(-180deg);
       }
-  }
+    }
   }
 }
-  

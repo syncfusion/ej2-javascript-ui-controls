@@ -2490,6 +2490,8 @@ export class Node extends NodeBase implements IElement {
     /** @private */
     public isPhase: boolean = false;
     /** @private */
+    public isTextNode: boolean = false;
+    /** @private */
     public get actualSize(): Size {
         if (this.wrapper !== null) {
             return this.wrapper.actualSize;

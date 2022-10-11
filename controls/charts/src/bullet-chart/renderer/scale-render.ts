@@ -235,12 +235,12 @@ export class ScaleGroup {
     }
 
     private drawcategory(lPointX: number, lPointY: number, categoryValue: string): TextOption {
-        let defaultValueHeight: number = 6;
+        let fontsize: number = parseInt(this.bulletChart.categoryLabelStyle.size);
         const categoryOptions: TextOption = {
             'id': '',
             'anchor': 'middle',
             'x': lPointX,
-            'y': lPointY + (defaultValueHeight / 2 + this.bulletChart.valueHeight / 2),
+            'y': lPointY + (fontsize / 4 + this.bulletChart.valueHeight / 2),
             'transform': '',
             'text': categoryValue,
             'baseLine': '',

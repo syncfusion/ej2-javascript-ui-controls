@@ -135,10 +135,14 @@ export class InkAnnotation {
         }
     }
     private linePath(x: number, y: number): void {
-        this.outputString += 'L' + x + ',' + y + ' ';
+        if (!isNullOrUndefined(x) && !isNullOrUndefined(y)) {
+            this.outputString += 'L' + x + ',' + y + ' ';
+        }
     }
     private movePath(x: number, y: number): void {
-        this.outputString += 'M' + x + ',' + y + ' ';
+        if (!isNullOrUndefined(x) && !isNullOrUndefined(y)) {
+            this.outputString += 'M' + x + ',' + y + ' ';
+        }
     }
     /**
      * @param pageNumber

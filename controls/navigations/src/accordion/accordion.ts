@@ -432,9 +432,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
         ele.classList.remove(CLS_ACRDN_ROOT);
         ele.removeAttribute('style');
-        ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach((attrb: string): void => {
-            this.element.removeAttribute(attrb);
-        });
+        this.element.removeAttribute('data-ripple');
         if (!this.isNested && isRippleEnabled) {
             this.removeRippleEffect();
         }
@@ -482,18 +480,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const width: Str = formatUnit(this.width);
         const height: Str = formatUnit(this.height);
         setStyle(this.element, { 'width': width, 'height': height });
-        const ariaAttr: { [key: string]: Str } = {
-            'aria-disabled': 'false', 'role': 'presentation', 'aria-multiselectable': 'true'
-        };
         if (isNOU(this.initExpand)) {
             this.initExpand = [];
         }
         if (this.expandedIndices.length > 0) {
             this.initExpand = this.expandedIndices;
-        }
-        attributes(this.element, ariaAttr);
-        if (this.expandMode === 'Single') {
-            this.element.setAttribute('aria-multiselectable', 'false');
         }
     }
     private renderControl(): void {
@@ -794,18 +785,15 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     private headerEleGenerate(): HTEle {
         const header: HTEle = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
-        const items: Object[] = this.getItems();
         const ariaAttr: { [key: string]: Str } = {
-            'tabindex': '0', 'role': 'heading', 'aria-label': 'collapsed',
-            'aria-disabled': 'false', 'aria-level': items.length.toString()
+            'tabindex': '0', 'role': 'button', 'aria-disabled': 'false', 'aria-expanded': 'false'
         };
         attributes(header, ariaAttr);
         return header;
     }
     private renderInnerItem(item: AccordionItemModel, index: number): HTEle {
         const innerEle: HTEle = this.createElement('div', {
-            className: CLS_ITEM, id: item.id || getUniqueID('acrdn_item'),
-            attrs: { 'aria-expanded': 'false', 'role': 'row' }
+            className: CLS_ITEM, id: item.id || getUniqueID('acrdn_item')
         });
         if (this.headerTemplate) {
             const ctnEle: HTEle = this.headerEleGenerate();
@@ -946,7 +934,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         const content: Element = select('.' + CLS_CONTENT, itemEle);
         header.setAttribute('aria-controls', content.id);
         content.setAttribute('aria-labelledby', header.id);
-        content.setAttribute('role', 'definition');
+        content.setAttribute('role', 'region');
     }
     private contentRendering(index: number): HTEle {
         const itemcnt: HTEle = this.createElement('div', { className: CLS_CONTENT + ' ' + CLS_CTNHIDE, id: getUniqueID('acrdn_panel') });
@@ -1040,8 +1028,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (progress === 'end') {
             this.add(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'false');
-            attributes(trgtItemEle, { 'aria-expanded': 'true' });
-            attributes(trgt.previousElementSibling, { 'aria-label': 'expanded' });
+            attributes(trgt.previousElementSibling, { 'aria-expanded': 'true' });
             icon.classList.remove(CLS_TOGANIMATE);
             this.trigger('expanded', eventArgs);
         }
@@ -1153,8 +1140,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             icon.classList.remove(CLS_TOGANIMATE);
             this.remove(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'true');
-            attributes(trgtItemEle, { 'aria-expanded': 'false' });
-            attributes(trgt.previousElementSibling, { 'aria-label': 'collapsed' });
+            attributes(trgt.previousElementSibling, { 'aria-expanded': 'false' });
             this.trigger('expanded', eventArgs);
         }
     }
@@ -1166,14 +1152,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     protected getModuleName(): string {
         return 'accordion';
-    }
-    private itemAttribUpdate(): void {
-        const items: Object[] = this.getItems();
-        const itemEle: HTEle[] = this.getItemElements();
-        const itemLen: number = items.length;
-        itemEle.forEach((ele: HTEle): void => {
-            select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
-        });
     }
     private getItems(): Object[] {
         let items: AccordionItemModel[] | Object[];
@@ -1212,7 +1190,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 }
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
-                this.itemAttribUpdate();
                 this.expandedIndices = [];
                 this.expandedItemRefresh(ele);
                 if (addItem && (addItem as AccordionItemModel).expanded) {
@@ -1252,7 +1229,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.restoreContent(index);
         detach(ele);
         items.splice(index, 1);
-        this.itemAttribUpdate();
         this.expandedIndices = [];
         this.expandedItemRefresh(this.element);
     }
@@ -1521,13 +1497,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 setStyle(this.element, { 'width': formatUnit(newProp.width) });
                 break;
             case 'expandMode':
-                if (newProp.expandMode === 'Single') {
-                    this.element.setAttribute('aria-multiselectable', 'false');
-                    if (this.expandedIndices.length > 1) {
-                        this.expandItem(false);
-                    }
-                } else {
-                    this.element.setAttribute('aria-multiselectable', 'true');
+                if (newProp.expandMode === 'Single' && this.expandedIndices.length > 1) {
+                    this.expandItem(false);
                 }
                 break;
             }

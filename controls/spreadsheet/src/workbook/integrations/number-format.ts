@@ -1,6 +1,7 @@
 import { getRangeIndexes, NumberFormatType, getCellAddress, updateCell } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
-import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, L10n, IntlBase } from '@syncfusion/ej2-base';
+import { cldrData } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFormatCheckArgs, rowFillHandler } from '../common/index';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
 import { setCellFormat, getTextSpace, NumberFormatArgs, isCustomDateTime, SetCellFormatArgs } from './../index';
@@ -192,7 +193,13 @@ export class WorkbookNumberFormat {
 
     private processCustomDate(args: NumberFormatArgs, cell: CellModel): string {
         let dateValue: Date = intToDate(parseFloat(cell.value));
-        if (isNaN(Number(dateValue))) {
+        let isLongCustomDate: boolean;
+        const checkLongCustomDate: Function = (): boolean => {
+            const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
+            const months: Object = formats.months['stand-alone'] && formats.months['stand-alone'].abbreviated;
+            return months && !!Object.keys(months).find((key: string) => cell.value.toString().includes(months[key]));
+        };
+        if (isNaN(Number(dateValue)) && !(isLongCustomDate = cell.value && checkLongCustomDate())) {
             return cell.value || '';
         }
         let type: string;
@@ -200,7 +207,7 @@ export class WorkbookNumberFormat {
         const intl: Internationalization = new Internationalization();
         const formatDateTime: Function = (checkDate?: boolean): string => {
             let isValidDate: boolean;
-            if (cell.value.toString().includes('/') || cell.value.toString().includes('-')) {
+            if (cell.value.toString().includes('/') || cell.value.toString().includes('-') || isLongCustomDate) {
                 dateValue = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell).dateObj;
                 if (isValidDate = dateValue && dateValue.toString() !== 'Invalid Date') {
                     if (dateValue.getFullYear() < 1900) {
@@ -231,10 +238,16 @@ export class WorkbookNumberFormat {
         }
         if (cell.format.indexOf('d') > -1) {
             type = 'date';
-            const charLength: number = cell.format.match(/d/g).length;
-            if (charLength > 2) {
-                custFormat = cell.format.split('d').join('E');
+            // Split the format with ' ' for replacing d with E only for a day of the week in the MMM d, yyyy ddd format
+            const formatArr: string[] = custFormat.split(' ');
+            let dayMatchStr: RegExpMatchArray;
+            for (let formatIdx: number = 0; formatIdx < formatArr.length; formatIdx++) {
+                dayMatchStr = formatArr[formatIdx].match(/d/g);
+                if (dayMatchStr && dayMatchStr.length > 2) {
+                    formatArr[formatIdx] = formatArr[formatIdx].split('d').join('E');
+                }
             }
+            custFormat = formatArr.join(' ');
         }
         if (cell.format.indexOf('m') > -1) {
             if (cell.format.indexOf('s') > -1 || cell.format.indexOf('h') > -1) {
@@ -900,7 +913,9 @@ export class WorkbookNumberFormat {
             dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
             const inputMonth: string = dateArr[1].substring(0,3);
             if (firstVal = !Number(dateArr[0]) && months.find((month: string) => dateArr[0].includes(month))) {
-                updateSecValue(dateArr[1]);
+                if (!dateArr[0].includes(',')) { // Added ',' checking to skip updating for the MMM d, yyyy ddd format.
+                    updateSecValue(dateArr[1]);
+                }
             } else if (firstVal = !Number(dateArr[1]) && months.find((month: string) => inputMonth.includes(month))) {
                 updateSecValue(dateArr[0]);
             } else if (dateArr[0] && Number(dateArr[0]) <= 12 && Number(dateArr[1])) {

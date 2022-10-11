@@ -2,49 +2,32 @@
 
 ## [Unreleased]
 
-## 20.2.48 (2022-09-06)
+## 20.3.49 (2022-10-11)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#I399576` - Issue with Custom operator not set properly when we set one field is a prefix of other field as number in query builder has been fixed.
-- `#I375472` - Issue with Change event not trigger for changing field for default column to rule template column in query builder has been fixed.
+- `#I408658` - Issue with Value getting removed while closing fields Dropdown without change the value when we set rule property of query builder has been fixed
+- `#I408324` - Issue with Script errors throwing in validating query builder fields while double click has been fixed.
 
-## 20.2.46 (2022-08-30)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I394878` - Issue with Date type Between value not render properly while using `setRulesFromSql` method has been fixed.
-
-## 20.2.43 (2022-08-08)
+## 20.3.47 (2022-09-29)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I391922` - Issue with Show Buttons option in query builder has been fixed.
-
-## 20.2.40 (2022-07-26)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I375472` - Issue with Rule template default rendered while add condition/group in query builder, if first column as rule template has been fixed.
-- `#I388333` - Issue with Value template not destroy properly when we use complex data source in query builder has been fixed.
-
-## 20.2.36 (2022-06-30)
+- `#I399576` - Issue with Custom operator not set properly when we set one field is a prefix of other field as number in query builder has been fixed.
+- `#I375472` - Issue with Change event not trigger for changing field for default column to rule template column in query builder has been fixed.
+- `#I394878` - Issue with Date type Between value not render properly while using `setRulesFromSql` method has been fixed
 
 ### QueryBuilder
 
 #### Bug Fixes
 
-- Issue with Dynamically changing the columns with complex data source of query builder has been fixed.
-
-- `I379818` - Issue with Getting change event as undefined for fields having custom value template of query builder has been fixed.
+- `#I375472` Issue with Rule template default rendered while add condition/group in query builder, if first column as rule template has been fixed.
+- `#I388333` Issue with Value template not destroy properly when we use complex data source in query builder has been fixed.
 
 ## 19.3.45 (2021-10-12)
 

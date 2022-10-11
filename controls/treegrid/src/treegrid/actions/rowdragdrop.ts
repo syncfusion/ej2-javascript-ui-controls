@@ -1146,7 +1146,11 @@ export class RowDD {
         }
         length = record.childRecords.length;
         for (let i: number = 0; i < length; i++) {
-            currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, tObj);
+            if (!this.isMultipleGrid) {
+                currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, tObj);
+	    } else {
+                currentRecord = record.childRecords[i];
+	    }
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
             setValue ('uniqueIDCollection.' + currentRecord.uniqueID, currentRecord, this.parent);
@@ -1168,7 +1172,11 @@ export class RowDD {
         }
         length = record.childRecords.length;
         for (let i: number = 0; i < length; i++) {
-            currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, this.parent);
+            if (!this.isMultipleGrid) {
+                currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, this.parent);
+            } else {
+                currentRecord = record.childRecords[i];
+            }
             let parentData: ITreeData;
             if (record.parentItem) {
                 parentData = getParentData(this.parent, record.parentItem.uniqueID);

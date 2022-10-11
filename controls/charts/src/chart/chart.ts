@@ -3599,7 +3599,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private setTheme(): void {
         /*! Set theme */
-        this.themeStyle = getThemeColor(this.theme);
+        this.themeStyle = getThemeColor(this.theme, this.enableCanvas);
 
         let style: HTMLStyleElement = document.createElement('style');
         style.setAttribute('id', (<HTMLElement>this.element).id + "Keyboard_chart_focus");

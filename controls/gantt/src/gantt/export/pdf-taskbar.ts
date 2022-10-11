@@ -131,7 +131,10 @@ export class PdfGanttTaskbarCollection {
         }
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
         //Draw Taskbar
-        const font: PdfFont = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
+        let font: PdfFont = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
+        if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+            font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+        }
         const fontColor: PdfPen = null;
         const fontBrush: PdfBrush = new PdfSolidBrush(this.progressFontColor);
         const progressFormat: PdfStringFormat = new PdfStringFormat();
@@ -290,7 +293,10 @@ export class PdfGanttTaskbarCollection {
         if (detail.startPoint <= left && left < detail.endPoint &&
             !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
             const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
-            const font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+            let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+            if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+                font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+            }
             const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
             const point: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
             const size: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
@@ -342,7 +348,10 @@ export class PdfGanttTaskbarCollection {
             if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
                 && !this.leftTaskLabel.isCompleted) {
                 const result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
-                const font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+                    font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+                }
                 const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
                 const rightLabelpoint: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
                 const rightLabelSize: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
@@ -368,7 +377,10 @@ export class PdfGanttTaskbarCollection {
         }
     }
     private getWidth(value: string, width: number, height: number): PdfStringLayoutResult {
-        const font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+        let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+        if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+            font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+        }
         const layouter: PdfStringLayouter = new PdfStringLayouter();
         const progressFormat: PdfStringFormat = new PdfStringFormat();
         progressFormat.alignment = PdfTextAlignment.Left;

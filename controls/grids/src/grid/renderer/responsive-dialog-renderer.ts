@@ -1,7 +1,7 @@
 import { IAction, IGrid, ResponsiveDialogArgs, KeyboardEventArgs, NotifyArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { EventHandler, remove } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { parentsUntil, addBiggerDialog, addRemoveEventListener } from '../base/util';
 import { Column } from '../models/column';
 import * as events from '../base/constant';
@@ -166,7 +166,12 @@ export class ResponsiveDialogRenderer implements IAction {
                         cssClass: this.parent.cssClass ? 'e-ressortbutton' + ' ' + this.parent.cssClass : 'e-ressortbutton'
                     });
                     btnObj.appendTo(button);
-                    button.innerHTML = index > -1 ? this.parent.sortSettings.columns[index].direction : 'None';
+                    let buttonInnerText : string;
+                    if ((!isNullOrUndefined (this.parent.sortSettings.columns[index]))) {
+                        buttonInnerText = (this.parent.sortSettings.columns[index].direction === 'Ascending') ?
+                            this.parent.localeObj.getConstant('AscendingText') : this.parent.localeObj.getConstant('DescendingText');
+                    }
+                    button.innerHTML = index > -1 ? buttonInnerText : this.parent.localeObj.getConstant('NoneText');
                     button.onclick = (e: MouseEvent) => {
                         this.sortButtonClickHandler(e.target as Element);
                     };
@@ -201,8 +206,12 @@ export class ResponsiveDialogRenderer implements IAction {
                 this.resetSortButtons(target);
             }
             const txt: string = target.textContent;
-            const direction: string = txt === 'None' ? 'Ascending' : txt === 'Ascending' ? 'Descending' : 'None';
-            target.innerHTML = direction;
+            const directionTxt: string = txt === this.parent.localeObj.getConstant('NoneText') ? this.parent.localeObj.getConstant('AscendingText')
+                : txt === this.parent.localeObj.getConstant('AscendingText') ? this.parent.localeObj.getConstant('DescendingText')
+                    : this.parent.localeObj.getConstant('NoneText');
+            const direction: string = directionTxt === this.parent.localeObj.getConstant('AscendingText') ? 'Ascending'
+                : directionTxt === this.parent.localeObj.getConstant('DescendingText') ? 'Descending' : 'None';
+            target.innerHTML = directionTxt;
             this.setSortedCols(field, direction);
         }
     }

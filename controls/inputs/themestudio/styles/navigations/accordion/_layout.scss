@@ -1,4 +1,5 @@
 @include export-module('accordion-layout') {
+
   /*! accordion layout */
   .e-bigger .e-accordion,
   .e-accordion.e-bigger {
@@ -130,9 +131,8 @@
 
           .e-acrdn-header-icon {
             padding: 0 0 0 $acrdn-bgr-header-icon-padding;
+          }
         }
-
-       }
       }
     }
   }
@@ -184,7 +184,7 @@
       @if $acrdn-skin == 'bootstrap' {
         .e-acrdn-panel.e-nested .e-acrdn-item.e-select {
           margin: 2px;
-       }
+        }
       }
 
       > .e-acrdn-header .e-acrdn-header-content {
@@ -197,7 +197,6 @@
         > .e-acrdn-header .e-acrdn-header-content {
           font-weight: $acrdn-slct-header-font-weight;
         }
-
       }
 
       &.e-overlay {
@@ -236,7 +235,7 @@
               }
             }
           }
-       }
+        }
       }
 
       .e-acrdn-header {
@@ -409,9 +408,9 @@
 
           .e-acrdn-header-icon {
             padding: 0 0 0 $acrdn-nrml-header-icon-padding;
-         }
-       }
+          }
+        }
       }
     }
-}
+  }
 }

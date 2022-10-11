@@ -80,8 +80,7 @@ $calendar-box-shadow: none !default;
 $calendar-bigger-today-button-height: 48px !default;
 $calendar-normal-today-button-height: 36px !default;
 
-
-//  year decade view 
+//  year decade view
 
 //color
 $calendar-yeardecade-bg-color: none !default;
@@ -106,7 +105,7 @@ $calendar-bigger-yeardecade-header-padding: 0 0 10px !default;
 $calendar-other-decade-cell-color: rgba($grey-light-font, .65) !default;
 $calendar-decade-title-left-margin-style: 15px !default;
 
-// end year decade 
+// end year decade
 
 //other months
 $calendar-other-month-display-style: inline-block !default;
@@ -126,13 +125,13 @@ $calendar-icon-line-height: 16px !default;
 $calendar-bigger-icon-size: 40px !default;
 $calendar-normal-icon-size: 36px !default;
 $calendar-spanicon-font-weight-style: normal !default;
+
 //pending
 $calendar-icon-font-size-style: 16px !default;
 $calendar-bigger-icon-font-size: 18px !default;
 $calendar-week-number-font-weight: 500 !default;
 
-
-// td styles 
+// td styles
 
 //color
 $calendar-light-font: $grey-light-font !default;
@@ -167,7 +166,7 @@ $calendar-focused-date-bg-style: $grey-e6 !default;
 $calendar-disable-font-weight-style: normal !default;
 $calendar-border-radius: 4px !default;
 
-// end td styles 
+// end td styles
 
 //today date
 $calendar-today-bg-style: none !default;
@@ -175,6 +174,7 @@ $calendar-today-bg-hover-color: $grey-white !default;
 $calendar-today-box-shadow: inset 1px 0 $brand-primary, inset 0 1px $brand-primary, inset -1px 0 $brand-primary, inset 0 -1px $brand-primary !default;
 $calendar-today-border-color: none !default;
 $calendar-selected-border-color: none !default;
+
 //pending
 $calendar-today-color: $grey-light-font !default;
 $calendar-today-focused-font-color: $grey-light-font !default;

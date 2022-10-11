@@ -2638,3 +2638,37 @@ describe('Resolve the table insertion in 2003 compatibilityMode', () => {
 		expect(editor.editor.insertTable(2, 2)).not.toThrowError;
 	});
 });
+describe('Curly braces preservation', () => {
+	let editor: DocumentEditor = undefined;
+	beforeAll(() => {
+		document.body.innerHTML = '';
+		let ele: HTMLElement = createElement('div', { id: 'container' });
+		document.body.appendChild(ele);
+		editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableWordExport: true, enableSfdtExport: true, height: "800px" });
+		editor = new DocumentEditor({ isReadOnly: false, height: "800px" });
+		editor.enableAllModules();
+		(editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+		(editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+		(editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+		(editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+		editor.appendTo('#container');
+	});
+	afterAll((done) => {
+		editor.destroy();
+		document.body.removeChild(document.getElementById('container'));
+		editor = undefined;
+		document.body.innerHTML = '';
+		setTimeout(() => {
+			done();
+		}, 1000);
+	});
+	it('Curly braces preservation', () => {
+		console.log('Curly braces preservation');
+		editor.openBlank();
+		editor.documentHelper.selection.paragraphFormat.bidi = true;
+		editor.documentHelper.selection.characterFormat.bidi = true;
+		editor.editor.insertText('{بليبلثقلثقل}');
+		expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0].characterFormat.bidi).toBe(true);
+		expect(editor.documentHelper.selection.startOffset).toBe('0;0;13');
+	});
+});

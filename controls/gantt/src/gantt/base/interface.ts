@@ -1,7 +1,7 @@
 import { PdfTreeGridCell } from './../export/pdf-base/pdf-grid-table';
 import { PdfBorders } from './../export/pdf-base/pdf-borders';
 import { ColumnModel } from './../models/column';
-import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
 import {
     ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType
 } from './enum';
@@ -908,16 +908,28 @@ export interface ITaskbarStyle {
 }
 
 export interface IGanttStyle {
+    /** Defines the columnHeader style. */
     columnHeader?: PdfGanttCellStyle;
+    /** Defines the font family. */
     fontFamily?: PdfFontFamily;
+    /** Defines the cell style. */
     cell?: PdfGanttCellStyle;
+    /** Defines the taskbar style. */
     taskbar?: ITaskbarStyle;
+    /** Defines the font style. */
     label?: PdfGanttCellStyle;
+    /** Defines the timeline style. */
     timeline?: PdfGanttCellStyle;
+    /** Defines the chart line color. */
     chartGridLineColor?: PdfColor;
+    /** Defines the connector line color. */
     connectorLineColor?: PdfColor;
+    /** Defines the critical connector line color. */
     criticalConnectorLineColor?: PdfColor;
+    /** Defines the footer format. */
     footer?: PdfGanttCellStyle;
+    /** Defines the font of the theme. */
+    font?: PdfTrueTypeFont;
 }
 
 export interface PdfQueryTimelineCellInfoEventArgs {

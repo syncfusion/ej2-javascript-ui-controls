@@ -200,7 +200,11 @@ export class Render {
             if (args.cell.querySelector('.e-treecell') != null) {
                 args.cell.querySelector('.e-treecell').innerHTML = summaryData;
             } else {
-                args.cell.innerHTML = summaryData;
+                if (args.column.template) {
+                    args.cell.innerHTML = null;
+                }
+                else
+                    args.cell.innerHTML = summaryData;
             }
         }
         if (isNullOrUndefined(this.parent.rowTemplate)) {

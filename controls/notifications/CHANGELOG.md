@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 20.3.48 (2022-10-05)
+## 20.3.47 (2022-09-29)
 
 ### Message `Preview`
 
@@ -15,6 +15,14 @@ The Message component has an option to display the messages with severity by dif
 - **Visibility** - Provides an option to show or hide the message.
 
 - **Template** - Provides an option to customize the content of the message.
+
+### Skeleton `Preview`
+
+The Skeleton is a placeholder that animates a shimmer effect to let users know that the page's content is currently loading. In other words, it simulates the layout of page content while loading the actual content.
+
+- **Rendering** - The Skeleton component can be rendered as Circle, Square, Text, and Rectangle shapes.
+
+- **Effects** - Supports wave, fade, and pulse shimmer effects.
 
 ## 20.1.61 (2022-06-21)
 

@@ -1359,7 +1359,7 @@ export class BpmnDiagrams {
 
 
     /** @private */
-    public updateTextAnnotationProp(actualObject: Node, oldObject: Node, diagram: Diagram): void {
+    public updateTextAnnotationProp(actualObject: Node, oldObject: Node, diagram: Diagram, isChild?: boolean): void {
         if (actualObject.shape.type === 'Bpmn') {
             const annotation: BpmnAnnotationModel = (actualObject.shape as BpmnShape).annotations;
             if (annotation && annotation.length > 0) {
@@ -1373,9 +1373,10 @@ export class BpmnDiagrams {
                             const direction: string = getPortDirection(
                                 connector.targetPoint, actualObject.wrapper.bounds, actualObject.wrapper.bounds, false);
                             let position: PointModel = connector.sourcePoint;
+                            // EJ2-63939 - If it is swimlane children node means we take the offsetX from the wrapper. 
                             position = {
-                                x: connector.sourcePoint.x + actualObject.offsetX - (oldObject.offsetX),
-                                y: connector.sourcePoint.y + actualObject.offsetY - (oldObject.offsetY)
+                                x: connector.sourcePoint.x + (isChild ? actualObject.wrapper.offsetX : actualObject.offsetX) - (oldObject.offsetX),
+                                y: connector.sourcePoint.y + (isChild ? actualObject.wrapper.offsetY : actualObject.offsetY) - (oldObject.offsetY)
                             };
                             position = Point.transform(
                                 position,

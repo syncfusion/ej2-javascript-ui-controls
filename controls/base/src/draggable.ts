@@ -739,11 +739,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let draEleLeft: number;
         if (this.dragArea) {
             this.dragLimit.top = this.clone ? this.dragLimit.top : 0;
-            draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
-            draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
+            draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - this.borderWidth.top);
+            draEleLeft = (left - iLeft) < 0 ? this.dragLimit.left : (left - this.borderWidth.left);
         } else {
-            draEleTop = top - iTop;
-            draEleLeft = left - iLeft;
+            draEleTop = top - this.borderWidth.top;
+            draEleLeft = left - this.borderWidth.left;
         }
         let marginTop: number = parseFloat(getComputedStyle(this.element).marginTop);
         // when drag-element has margin-top
@@ -773,6 +773,13 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
+
+        if (this.dragArea) {
+            let helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
+                    + parseFloat(styles.marginBottom));
+            draEleTop = (draEleTop + helperHeight) > this.dragLimit.bottom ? (this.dragLimit.bottom - helperHeight) : draEleTop;
+        }
+        
         /* istanbul ignore next */
         // if(this.eleTop > 0) {
         //      draEleTop += this.eleTop;
@@ -835,16 +842,16 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     private getScrollPosition(nodeEle: HTMLElement, draEleTop: number): void {
         if (nodeEle && nodeEle === document.scrollingElement) {
-            if ((nodeEle.clientHeight - nodeEle.getBoundingClientRect().top - this.helperElement.clientHeight) < draEleTop
-                && nodeEle.getBoundingClientRect().height > draEleTop) {
+            if ((nodeEle.clientHeight + document.scrollingElement.scrollTop - this.helperElement.clientHeight) < draEleTop
+                && nodeEle.getBoundingClientRect().height + this.parentClientRect.top > draEleTop) {
                 nodeEle.scrollTop += this.helperElement.clientHeight;
-            }else if (nodeEle.scrollHeight - nodeEle.clientHeight  > draEleTop) {
+            }else if (nodeEle.scrollTop > draEleTop - this.helperElement.clientHeight) {
                 nodeEle.scrollTop -= this.helperElement.clientHeight;
             }
         }else if (nodeEle && nodeEle !== document.scrollingElement) {
-            if ((nodeEle.clientHeight + nodeEle.getBoundingClientRect().top - this.helperElement.clientHeight) < draEleTop) {
+            if ((nodeEle.clientHeight + nodeEle.getBoundingClientRect().top - this.helperElement.clientHeight + document.scrollingElement.scrollTop - this.borderWidth.top - this.borderWidth.bottom) <= draEleTop) {
                 nodeEle.scrollTop += this.helperElement.clientHeight;
-            }else if (nodeEle.getBoundingClientRect().top  > (draEleTop - this.helperElement.clientHeight)) {
+            }else if (nodeEle.getBoundingClientRect().top  > (draEleTop - this.helperElement.clientHeight - document.scrollingElement.scrollTop)) {
                 nodeEle.scrollTop -= this.helperElement.clientHeight;
             }
         }
@@ -952,7 +959,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (ele) {
             let elementArea: ClientRect = ele.getBoundingClientRect();
             eleWidthBound = ele.scrollWidth ? ele.scrollWidth : elementArea.right - elementArea.left;
-            eleHeightBound = ele.scrollHeight ? ele.scrollHeight : elementArea.bottom - elementArea.top;
+            eleHeightBound = ele.scrollHeight ? (this.dragArea && this.helperElement.classList.contains('e-treeview')) ? ele.clientHeight : ele.scrollHeight : elementArea.bottom - elementArea.top;
             let keys: string[] = ['Top', 'Left', 'Bottom', 'Right'];
             let styles: any = getComputedStyle(ele);
             for (let i: number = 0; i < keys.length; i++) {
@@ -963,7 +970,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 (<any>this.borderWidth)[lowerKey] = isNaN(parseFloat(tborder)) ? 0 : parseFloat(tborder);
                 (<any>this.padding)[lowerKey] = isNaN(parseFloat(tpadding)) ? 0 : parseFloat(tpadding);
             }
-            top = elementArea.top;
+            top = elementArea.top + document.scrollingElement.scrollTop;
             left = elementArea.left;
             this.dragLimit.left = left + this.borderWidth.left + this.padding.left;
             this.dragLimit.top = ele.offsetTop + this.borderWidth.top + this.padding.top;

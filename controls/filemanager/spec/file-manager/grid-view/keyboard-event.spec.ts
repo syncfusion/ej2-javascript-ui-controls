@@ -323,6 +323,7 @@ describe('FileManager control Grid view', () => {
         });
         it('end key testing', () => {
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            let name: any = document.querySelector('th.e-fe-grid-name');
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
             keyboardEventArgs.action = 'end';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
@@ -335,7 +336,29 @@ describe('FileManager control Grid view', () => {
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
             keyboardEventArgs.action = 'ctrlHome';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(li[0].classList.contains('e-focused')).toBe(true);
+            expect(name.classList.contains('e-focused')).toBe(true);
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
+            keyboardEventArgs.action = 'end';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-focused')).toBe(false);
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
+        });
+        it('end key true testing', () => {
+            feObj.detailsviewModule.parent.hasId = true;
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
+            keyboardEventArgs.action = 'end';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
+            feObj.detailsviewModule.gridObj.selectionModule.selectRowsByRange(0, 1);
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
+            expect(li[1].getAttribute('aria-selected')).toBe('true');
+            keyboardEventArgs.action = 'end';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
+            keyboardEventArgs.action = 'ctrlHome';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-focused')).toBe(false);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
             keyboardEventArgs.action = 'end';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
@@ -364,6 +387,29 @@ describe('FileManager control Grid view', () => {
             expect(li[li.length - 1].classList.contains('e-focused')).toBe(false);
             expect(li[0].getAttribute('aria-selected')).toBe('true');
         });
+        it('home key true testing', () => {
+            feObj.detailsviewModule.parent.hasId = true;
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            keyboardEventArgs.action = 'home';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[0].getAttribute('aria-selected')).toBe('true');
+            feObj.detailsviewModule.gridObj.selectionModule.selectRowsByRange(li.length - 1, li.length - 2);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
+            keyboardEventArgs.action = 'home';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[0].getAttribute('aria-selected')).toBe('true');
+            expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
+            keyboardEventArgs.action = 'ctrlHome';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[li.length - 1].classList.contains('e-focused')).toBe(true);
+            expect(li[0].getAttribute('aria-selected')).toBe('true');
+            keyboardEventArgs.action = 'home';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(li[li.length - 1].classList.contains('e-focused')).toBe(true);
+            expect(li[0].getAttribute('aria-selected')).toBe('true');
+        });
         it('control+end key testing', () => {
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
             expect(li[li.length - 1].classList.contains('e-focused')).toBe(false);
@@ -384,12 +430,13 @@ describe('FileManager control Grid view', () => {
         });
         it('control+home key testing', () => {
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            let name: any = document.querySelector('th.e-fe-grid-name');
             expect(li[0].classList.contains('e-focused')).toBe(false);
             keyboardEventArgs.action = 'ctrlHome';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(li[0].classList.contains('e-focused')).toBe(true);
+            expect(name.classList.contains('e-focused')).toBe(true);
             feObj.detailsviewModule.gridObj.selectionModule.selectRow(li.length - 1);
-            expect(li[0].classList.contains('e-focused')).toBe(false);
+            expect(name.classList.contains('e-focused')).toBe(false);
             keyboardEventArgs.action = 'ctrlHome';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
@@ -1125,10 +1172,14 @@ describe('FileManager control Grid view', () => {
         });
 
         it('tab key testing', function () {
-            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            let li: any = document.getElementById('file_grid').querySelector('th.e-fe-grid-name');
             keyboardEventArgs.action = 'tab';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(li[0].classList.contains('e-focused')).toBe(true);
+            expect(li.classList.contains('e-focused')).toBe(true);
+            let grid: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            expect(grid[0].classList.contains('e-focused')).toBe(true);
+            expect(li.classList.contains('e-focused')).toBe(false);
         });
 
         it('ctrl + A key testing', () => {
@@ -1146,6 +1197,58 @@ describe('FileManager control Grid view', () => {
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
             expect(document.querySelector(".e-headercell .e-frame").classList.contains('e-check')).toBe(true);
             expect(gridContent.scrollTop).toBe(20);
+        });
+
+        it('alt + enter key testing', () => {
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            let folderName: any = li[0].querySelector('.e-fe-grid-name').innerText;
+            keyboardEventArgs.action = 'altEnter';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            let popupContent: any = document.querySelector('.e-popup');
+            expect(popupContent.querySelector('.e-dlg-header').innerText).toBe("Upload Files");
+        });
+
+        it('shift + delete key testing', () => {
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            feObj.detailsviewModule.gridObj.selectRow(0);
+            keyboardEventArgs.action = 'shiftdel';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            var deletePopup: any = document.getElementById('file_dialog');
+            var deleteOption = deletePopup.querySelector('.e-footer-content').querySelector('.e-btn').innerText;
+            expect(deleteOption).toBe("YES");
+            li[0].remove();
+        });
+
+        it('delete key testing', () => {
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            feObj.detailsviewModule.gridObj.selectRow(0);
+            keyboardEventArgs.action = 'del';
+            feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            var deletePopup: any = document.getElementById('file_dialog');
+            var deleteOption = deletePopup.querySelector('.e-footer-content').querySelector('.e-btn').innerText;
+            expect(deleteOption).toBe("YES");
+            li[0].remove();
+        });
+
+        it('getRecords method testing', () => {
+            feObj.detailsviewModule.parent.isFiltered = true;
+            feObj.detailsviewModule.getRecords('ids');
+            expect(feObj.detailsviewModule.parent.breadcrumbbarModule.searchObj.element.value).toBe("");
+            feObj.detailsviewModule.parent.hasId = true;
+        });
+
+        it('moveFunction method testing', () => {
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            keyboardEventArgs.action = 'moveDown';
+            feObj.detailsviewModule.moveFunction(li, keyboardEventArgs, li.length-1);
+            feObj.detailsviewModule.gridObj.selectRow(li.length-1);
+        });
+
+        it('ctrlMoveFunction method testing', () => {
+            let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            keyboardEventArgs.action = 'moveDown';
+            feObj.detailsviewModule.ctrlMoveFunction(li, keyboardEventArgs, li.length-1);
+            feObj.detailsviewModule.gridObj.selectRow(li.length-1);
         });
     });
 });

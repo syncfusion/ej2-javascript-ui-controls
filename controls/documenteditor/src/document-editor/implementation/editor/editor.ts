@@ -1798,6 +1798,9 @@ export class Editor {
         if (copy) {
             insertFormat.copyFormat(format);
         }
+        if (!isNullOrUndefined(sFormat.bidi) && format.bidi !== sFormat.bidi) {
+            insertFormat.bidi = sFormat.bidi;
+        }
         if (!isNullOrUndefined(sFormat.bold) && format.bold !== sFormat.bold) {
             insertFormat.bold = sFormat.bold;
         }
@@ -1976,7 +1979,7 @@ export class Editor {
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(insertPosition.paragraph.characterFormat, true);
                 span.characterFormat.copyFormat(insertFormat);
                 span.text = text;
-                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl;
+                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || insertFormat.bidi;
                 span.characterFormat.bidi = isBidi;
                 span.isRightToLeft = isBidi;
                 span.line = (insertPosition.paragraph as ParagraphWidget).childWidgets[0] as LineWidget;
@@ -2017,7 +2020,7 @@ export class Editor {
                 }
                 // Todo: compare selection format
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(inline.characterFormat, true);
-                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl;
+                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || insertFormat.bidi;
                 let insertLangId: number = this.documentHelper.textHelper.getRtlLanguage(text).id;
                 let inlineLangId: number = 0;
                 let isRtl: boolean = false;
