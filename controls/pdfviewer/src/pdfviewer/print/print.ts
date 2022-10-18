@@ -12,6 +12,8 @@ export class Print {
     private pdfViewerBase: PdfViewerBase;
     private printViewerContainer: HTMLElement;
     private printCanvas: HTMLCanvasElement;
+    private printHeight: number = 1056;
+    private printWidth: number = 816 ;
     /**
      * @private
      */
@@ -153,13 +155,8 @@ export class Print {
                 proxy.printCanvas.style.width = pageWidth + 'px';
                 proxy.printCanvas.style.height = pageHeight + 'px';
                 const printScaleValue: number = 2;
-                if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
-                    proxy.printCanvas.height = pageWidth * printScaleValue * window.devicePixelRatio;
-                    proxy.printCanvas.width = pageHeight * printScaleValue * window.devicePixelRatio;
-                } else {
-                    proxy.printCanvas.height = pageHeight * printScaleValue * window.devicePixelRatio;
-                    proxy.printCanvas.width = pageWidth * printScaleValue * window.devicePixelRatio;
-                }
+                proxy.printCanvas.height = proxy.printHeight * printScaleValue * window.devicePixelRatio;
+                proxy.printCanvas.width = proxy.printWidth * printScaleValue * window.devicePixelRatio;
                 const context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
                 const pageImage: HTMLImageElement = new Image();
                 const annotationImage: HTMLImageElement = new Image();
@@ -350,9 +347,9 @@ export class Print {
             element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createSignatureDialog(this.pdfViewer, signatureField, null, true));
             this.pdfViewer.formDesignerModule.disableSignatureClickEvent = false;
         } else if (currentData.formFieldAnnotationType === "DropdownList") {
-            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createDropDownList(element, signatureField));
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createDropDownList(element, signatureField,true));
         } else if (currentData.formFieldAnnotationType === "ListBox") {
-            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createListBox(element, signatureField));
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createListBox(element, signatureField,true));
         } else {
             element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createInputElement(currentData.formFieldAnnotationType, signatureField, null, true));
         }
@@ -440,26 +437,20 @@ export class Print {
             printDocument = this.printWindow.document;
         }
         for (let i: number = 0; i < this.printViewerContainer.children.length; i++) {
-            const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
-            const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
-            let printHeight: number = pageHeight;
-            let printWidth: number = pageWidth - 1;
-            if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
-                printHeight = pageWidth;
-                printWidth = pageHeight;
-            }
             // eslint-disable-next-line max-len
             const canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
-            printDocument.write('<div style="margin:0mm;width:' + printWidth.toString() + 'px;height:' + printHeight.toString() + 'px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:' + printWidth.toString() + 'px;height:' + printHeight.toString() + 'px;z-index:2"></div></div>');
+            printDocument.write('<div style="margin:0mm;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;z-index:2"></div></div>');
             if (this.pdfViewer.formFieldsModule || this.pdfViewer.formDesignerModule) {
+                const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
+                const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
                 var heightRatio: number;
                 var widthRatio: number;
                 if ((pageHeight < pageWidth) && this.pdfViewer.enablePrintRotation) {
-                    heightRatio = pageHeight / pageWidth;
-                    widthRatio = pageWidth / pageHeight;
+                    heightRatio = pageHeight / this.printWidth;
+                    widthRatio = pageWidth / this.printHeight;
                 } else {
-                    heightRatio = 1;
-                    widthRatio = 1;
+                    heightRatio = pageHeight / this.printHeight;
+                    widthRatio = pageWidth / this.printWidth;
                 }
                 this.renderFieldsForPrint(i, heightRatio, widthRatio);
             }
@@ -470,14 +461,14 @@ export class Print {
                     printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; width:100% }'
                         + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
                         + ' img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; }'
-                        + ' div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + printWidth.toString() + 'px ' + printHeight.toString() + 'px; }</style></head><body><center class="loader">');
+                        + ' div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body><center class="loader">');
                 }
                 else {
                     printDocument.write('<!DOCTYPE html>');
                     printDocument.write('<html><head>'
                         + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
                         + 'img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; } '
-                        + 'div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + printWidth.toString() + 'px ' + printHeight.toString() + 'px; }</style></head><body><center>');
+                        + 'div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body><center>');
                 }
             }
         }

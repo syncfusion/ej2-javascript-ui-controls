@@ -596,3 +596,94 @@ describe('Check the revision count in trackChange pane', () => {
         expect(viewChange.changesCount.innerHTML).toBe('Changes 1 of 1');
     });
 });
+
+//https://syncfusion.atlassian.net/browse/EJ2-62841
+describe('To check script error on accept all and reject all option in review pane', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('To check script error on accept all option in review pane', () => {
+        console.log('To check script error on  accept all option in review pane');
+        container.openBlank();
+        container.editor.insertText('Hello world');
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.editor.insertText('Adventure');
+        container.selection.moveToPreviousParagraph();
+        container.selection.moveToPreviousParagraph();
+        container.selection.moveToParagraphEnd();
+        container.selection.moveToPreviousCharacter();
+        container.editor.handleCtrlBackKey();
+        expect(() => { container.revisions.acceptAll();}).not.toThrowError();
+    });
+    it('To check script error on reject all option in review pane', () => {
+        console.log('To check script error on  reject all option in review pane');
+        container.openBlank();
+        container.editor.insertText('Hello world');
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.editor.insertText('Adventure');
+        container.selection.moveToPreviousParagraph();
+        container.selection.moveToPreviousParagraph();
+        container.selection.moveToParagraphEnd();
+        container.selection.moveToPreviousCharacter();
+        container.editor.handleCtrlBackKey();
+        expect(() => { container.revisions.rejectAll();}).not.toThrowError();
+    });
+});
+describe('Check switching Match destination formatting while enable Track chnages', () => {
+    let container: DocumentEditor;
+    var pasteString = '{"sections":[{"blocks":[{"characterFormat":{"bold":true,"italic":true,"underline":"Single","strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#ED7D31FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"Normal","bidi":false,"contextualSpacing":false},"inlines":[{"text":"Source format","characterFormat":{"bold":true,"italic":true,"underline":"Single","strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#ED7D31FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":35.400001525878906,"formatting":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false}';
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check block length after paste and change MergeWithExistingFormatting', () => {
+        console.log('Check block length after paste and change MergeWithExistingFormatting');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('Syncfusion');
+        container.selection.moveToParagraphStart();
+        container.editor.handleEnterKey();
+        container.selection.handleUpKey();
+        container.editor.paste(pasteString);
+        container.editor.applyPasteOptions('MergeWithExistingFormatting');
+        expect(container.editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+    });
+});

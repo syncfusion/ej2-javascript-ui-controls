@@ -224,6 +224,8 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cellEle.textContent).toBe('1.2377E+06');
                 helper.invoke('numberFormat', ['0.000E+0', 'B3']);
                 expect(cellEle.textContent).toBe('1.238E+6');
+                helper.invoke('numberFormat', ['0.000E+0', 'B5']);
+                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('');
                 done();
             });
             it('Custom formatted cell value changed while clicking on column header (Aggregate calculation updating the cell model)', (done: Function) => {

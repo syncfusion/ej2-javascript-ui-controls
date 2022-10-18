@@ -1,7 +1,7 @@
 import { getRangeIndexes, ChartModel, inRange, checkRange } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell } from '../base/index';
 import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
-import { closest, isNullOrUndefined, getComponent, isUndefined } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 import { Chart } from '@syncfusion/ej2-charts';
 
 /**
@@ -39,7 +39,7 @@ export class WorkbookChart {
     }
 
     private setChartHandler(args: {
-        chart: ChartModel[], isInitCell?: boolean, isUndoRedo?: boolean, isIdAvailabe?: boolean, isCut?: boolean,
+        chart: ChartModel[], isInitCell?: boolean, isUndoRedo?: boolean, isCut?: boolean,
         isPaste?: boolean, dataSheetIdx?: number, range?: string
     }): void {
         let i: number = 0;
@@ -52,17 +52,14 @@ export class WorkbookChart {
                 if (args.isCut === false) {
                     if (document.getElementById(args.chart[i].id)) {
                         chart[i] = {
-                            range: chart[i].range, id: 'e_spreadsheet_chart_' + this.parent.chartCount,
+                            range: chart[i].range, id: getUniqueID('e_spreadsheet_chart'),
                             isSeriesInRows: chart[i].isSeriesInRows, theme: chart[i].theme, type: chart[i].type
                         };
-                        chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
-                        args.isIdAvailabe = false;
                     }
                 }
                 if (document.getElementById(args.chart[i].id)) {
                     return;
                 }
-                let idAvailable: boolean = isNullOrUndefined(args.isIdAvailabe) ? true : args.isIdAvailabe;
                 chart[i].theme = chart[i].theme || 'Material';
                 chart[i].type = chart[i].type || 'Line';
                 chart[i].isSeriesInRows = chart[i].isSeriesInRows || false;
@@ -71,19 +68,15 @@ export class WorkbookChart {
                     chart[i].range = this.parent.getActiveSheet().name + '!' + chart[i].range;
                 }
                 if (isNullOrUndefined(chart[i].id)) {
-                    chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
-                    idAvailable = false;
+                    chart[i].id = getUniqueID('e_spreadsheet_chart');
                 }
                 chart[i].height = chart[i].height || 290;
                 chart[i].width = chart[i].width || 480;
                 this.parent.notify(initiateChart, {
-                    option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, triggerEvent: args.isUndoRedo,
+                    option: chart[i], isInitCell: args.isInitCell, triggerEvent: args.isUndoRedo,
                     dataSheetIdx: args.dataSheetIdx, range: args.range, isPaste: args.isPaste
                 });
                 this.parent.chartColl.push(chart[i]);
-                if (!idAvailable) {
-                    this.parent.chartCount++;
-                }
                 if (!args.isInitCell || args.isPaste) {
                     const sheetIdx: number = (chart[i].range && chart[i].range.indexOf('!') > 0) ?
                         getSheetIndex(this.parent, chart[i].range.split('!')[0]) : this.parent.activeSheetIndex;
@@ -159,7 +152,7 @@ export class WorkbookChart {
             const chartEle: HTMLElement = document.getElementById(this.parent.chartColl[idx].id);
             if (overlayEle && chartEle && closest(chartEle, '.' + overlayEle.classList[1]) === overlayEle) {
                 this.parent.notify(initiateChart, {
-                    option: this.parent.chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
+                    option: this.parent.chartColl[idx], isRefresh: true
                 });
             }
         }

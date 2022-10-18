@@ -1370,7 +1370,6 @@ describe('Chart Control', () =>{
                         enableSelectionZooming: true,
                         enableScrollbar: true
                     },
-                    enableAutoIntervalOnBothAxis: true,
                     width: '800',
                     height: '450'
                 },
@@ -1390,7 +1389,7 @@ describe('Chart Control', () =>{
             text = document.getElementById('chartContainer0_AxisLabel_0');
             expect(text.textContent == '4.5').toBe(true);
             text = document.getElementById('chartContainer1_AxisLabel_1');
-            expect(text.textContent == '0.2').toBe(true);
+            expect(text.textContent == '2').toBe(true);
 
         });
         it('Checking axis in Zoom mode Y', () => {
@@ -1398,9 +1397,9 @@ describe('Chart Control', () =>{
             chartEle.zoomSettings = { mode: 'Y' };
             chartEle.dataBind();
             text = document.getElementById('chartContainer0_AxisLabel_0');
-            expect(text.textContent == '2.500').toBe(true);
+            expect(text.textContent == '4.5').toBe(true);
             text = document.getElementById('chartContainer1_AxisLabel_1');
-            expect(text.textContent == '1.250').toBe(true);
+            expect(text.textContent == '9.5').toBe(true);
 
         });
     });

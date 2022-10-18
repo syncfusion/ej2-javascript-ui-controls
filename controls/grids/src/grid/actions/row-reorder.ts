@@ -110,6 +110,11 @@ export class RowDD {
 
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         const gObj: IGrid = this.parent;
+        if (gObj.element.classList.contains('e-childgrid')) {
+            const parentGrid: Element = this.getParentGrid(gObj.element);
+            parentGrid.appendChild(e.dragElement);
+            gObj.element.appendChild(gObj.createElement('div', { className: 'e-drag-ref'}));
+        }
         document.body.classList.add('e-prevent-select');
         if (document.getElementsByClassName('e-griddragarea').length) {
             return;
@@ -134,6 +139,20 @@ export class RowDD {
         }
     }
 
+    private getParentGrid(childGrid: Element): Element {
+        let parentGrid: Element = childGrid;
+        let parentGridObtained: boolean = false;
+        while (!parentGridObtained) {
+            if ((<EJ2Intance>parentGrid).ej2_instances[0].parentDetails) {
+                parentGrid = document.getElementById((<EJ2Intance>parentGrid).ej2_instances[0].parentDetails.parentID);
+            }
+            if (!parentGrid.classList.contains('e-childgrid')) {
+                parentGridObtained = true;
+            }
+        }
+        return parentGrid;
+    }
+
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
         const gObj: IGrid = this.parent;
         this.isDropGrid = this.parent;
@@ -145,7 +164,11 @@ export class RowDD {
                 this.istargetGrid = this.parent.rowDropSettings.targetID === parentsUntil(e.target, 'e-grid').id;
             }
         }
-        const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        if (gObj.element.classList.contains('e-childgrid')) {
+            const parentGrid: Element = this.getParentGrid(gObj.element);
+            cloneElement = parentGrid.querySelector('.e-cloneproperties') as HTMLElement;
+        }
         const target: Element = this.getElementFromPosition(cloneElement, e.event);
         classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur', 'e-movecur', 'e-grabcur']);
 
@@ -169,8 +192,10 @@ export class RowDD {
                 this.startedRow.getAttribute('data-rowindex'), 10);
 
         if (gObj.rowDropSettings.targetID) {
+            const dragParentElement: Element = document.querySelector('.e-drag-ref');
             if (!parentsUntil(target, 'e-grid') ||
-                parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
+                parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id || (dragParentElement
+                && parentsUntil(dragParentElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id)) {
                 classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
             } else {
                 classList(cloneElement, ['e-grabcur'], ['e-notallowedcur']);
@@ -713,7 +738,11 @@ export class RowDD {
 
     private moveDragRows(e: { target: HTMLElement, event: MouseEventArgs }, startedRow: HTMLTableRowElement, targetRow: HTMLTableRowElement)
         : void {
-        const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        if (this.parent.element.classList.contains('e-childgrid')) {
+            const parentGrid: Element = this.getParentGrid(this.parent.element);
+            cloneElement = parentGrid.querySelector('.e-cloneproperties') as HTMLElement;
+        }
         const element: HTMLTableRowElement = closestElement(e.target, 'tr') as HTMLTableRowElement;
         if (parentsUntil(element, 'e-grid') &&
             (parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id || this.istargetGrid)) {
@@ -853,14 +882,21 @@ export class RowDD {
             const targetRow: HTMLTableRowElement = closestElement(e.target, 'tr') as HTMLTableRowElement;
             let srcControl: IGrid;
             let currentIndex: number;
+            const dragParentElement: Element = document.querySelector('.e-drag-ref');
             if ((e.droppedElement.querySelector('tr').getAttribute('single-dragrow') !== 'true' &&
-                e.droppedElement.parentElement.id === gObj.element.id)
+                (e.droppedElement.parentElement.id === gObj.element.id || (dragParentElement
+                && dragParentElement.parentElement.id === gObj.element.id)))
                 || (e.droppedElement.querySelector('tr').getAttribute('single-dragrow') === 'true' &&
                     e.droppedElement.parentElement.id !== gObj.element.id)) {
                 return;
             }
             if (e.droppedElement.parentElement.id !== gObj.element.id) {
-                srcControl = (<EJ2Intance>e.droppedElement.parentElement).ej2_instances[0];
+                if (dragParentElement) {
+                    srcControl = (<EJ2Intance>dragParentElement.parentElement).ej2_instances[0];
+                    remove(dragParentElement);
+                } else {
+                    srcControl = (<EJ2Intance>e.droppedElement.parentElement).ej2_instances[0];
+                }
             } else if (this.isSingleRowDragDrop || e.droppedElement.querySelector('tr').getAttribute('single-dragrow') === 'true') {
                 this.singleRowDrop(e);
                 return;

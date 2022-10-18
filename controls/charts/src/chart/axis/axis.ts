@@ -1152,51 +1152,6 @@ export class Axis extends ChildProperty<Axis> {
     }
 
     /**
-     * Calculate range for x and y axis after zoom.
-     *
-     * @returns {void}
-     * @private
-     */
-    public calculateAxisRange(size: Size, chart: Chart): void {
-        if (chart.enableAutoIntervalOnBothAxis) {
-            if (this.orientation === 'Horizontal' && chart.zoomSettings.mode === 'X') {
-                for (let i: number = 0; i < this.series.length; i++) {
-                    const yValue: number[] = [];
-                    for (const points of this.series[i].visiblePoints) {
-                        if ((points.xValue > this.visibleRange.min) && (points.xValue < this.visibleRange.max)) {
-                            yValue.push(points.yValue);
-                        }
-                    }
-                    for (const axis of chart.axisCollections) {
-                        if (axis.orientation === 'Vertical' && !isNullOrUndefined(axis.series[i])) {
-                            axis.series[i].yMin = Math.min(...yValue);
-                            axis.series[i].yMax = Math.max(...yValue);
-                            axis.baseModule.calculateRangeAndInterval(size, axis);
-                        }
-                    }
-                }
-            }
-            if (this.orientation === 'Vertical' && chart.zoomSettings.mode === 'Y') {
-                for (let i: number = 0; i < this.series.length; i++) {
-                    const xValue: number[] = [];
-                    for (const points of this.series[i].visiblePoints) {
-                        if ((points.yValue > this.visibleRange.min) && (points.yValue < this.visibleRange.max)) {
-                            xValue.push(points.xValue);
-                        }
-                    }
-                    for (const axis of chart.axisCollections) {
-                        if (axis.orientation === 'Horizontal' && !isNullOrUndefined(axis.series[i])) {
-                            axis.series[i].xMin = Math.min(...xValue);
-                            axis.series[i].xMax = Math.max(...xValue);
-                            axis.baseModule.calculateRangeAndInterval(size, axis);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Triggers the event.
      *
      * @returns {void}

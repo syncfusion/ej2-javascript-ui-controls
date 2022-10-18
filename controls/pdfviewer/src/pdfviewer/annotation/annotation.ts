@@ -1042,25 +1042,25 @@ export class Annotation {
     // To get the annotation type to update the document Annotation collections
     private getTypeOfAnnotation(annotation: any): any {
         let annotationType;
-        if (annotation.id.toLowerCase() === "shape") {
+        if (annotation.id && annotation.id.toLowerCase() === "shape") {
             annotationType = "shapeAnnotation"
         }
-        else if (annotation.id.toLowerCase() === "measure") {
+        else if (annotation.id && annotation.id.toLowerCase() === "measure") {
             annotationType = "measureShapeAnnotation";
         }
-        else if (annotation.id.toLowerCase() === "freetext") {
+        else if (annotation.id && annotation.id.toLowerCase() === "freetext") {
             annotationType = "freeTextAnnotation";
         }
-        else if (annotation.shapeAnnotationType.toLowerCase() === "textmarkup") {
+        else if (annotation.shapeAnnotationType && annotation.shapeAnnotationType.toLowerCase() === "textmarkup") {
             annotationType = "textMarkupAnnotation";
         }
-        else if (annotation.shapeAnnotationType.toLowerCase() === "stamp") {
+        else if (annotation.shapeAnnotationType && annotation.shapeAnnotationType.toLowerCase() === "stamp") {
             annotationType = "stampAnnotations";
         }
-        else if (annotation.shapeAnnotationType.toLowerCase() === "ink") {
+        else if (annotation.shapeAnnotationType && annotation.shapeAnnotationType.toLowerCase() === "ink") {
             annotationType = "signatureInkAnnotation";
         }
-        else if (annotation.shapeAnnotationType.toLowerCase() === "sticky") {
+        else if (annotation.shapeAnnotationType && annotation.shapeAnnotationType.toLowerCase() === "sticky") {
             annotationType = "stickyNotesAnnotation";
         }                    
         return annotationType;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### Heatmap
+
+#### Bug Fixes
+
+- `#I408948` - The zero value label in the y-axis will now appear correctly.
+
 ## 20.3.49 (2022-10-11)
 
 ### Heatmap

@@ -16,7 +16,7 @@ describe('Collaborative Editing ->', () => {
                     if (args.action !== 'gotoSheet') {
                         const copiedArgs: any = JSON.parse(JSON.stringify(args));
                         if (args.action === 'insertImage' || args.action === 'deleteImage' || args.action === 'imageRefresh' || args.action === 'insertChart' || args.action === 'deleteChart') {
-                            copiedArgs.eventArgs.id = copiedArgs.eventArgs.id.split('1')[0] + '2';
+                            copiedArgs.eventArgs.id = copiedArgs.eventArgs.id.substring(0, copiedArgs.eventArgs.id.lastIndexOf('_') + 1) + '2';
                         }
                         helper2.getInstance().updateAction(copiedArgs);
                     }
@@ -826,7 +826,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Chart Delete', (done: Function) => {
-            helper.getInstance().spreadsheetChartModule.deleteChart({ id: 'e_spreadsheet_chart_1_overlay' });
+            helper.getInstance().spreadsheetChartModule.deleteChart({ id: getCell(5, 3, helper.invoke('getActiveSheet')).chart[0].id + '_overlay' });
             setTimeout(() => {
                 expect(getCell(5, 3, sheets2[0]).chart.length).toBe(0);
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
@@ -836,6 +836,7 @@ describe('Collaborative Editing ->', () => {
         });
 
         it('Chart Delete - Undo & Redo', (done: Function) => {
+            helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
                 expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192}');

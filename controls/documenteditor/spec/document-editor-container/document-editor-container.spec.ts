@@ -811,3 +811,20 @@ describe('Apply Numbered List', () => {
         expect(elementWidth).toBe(line.children[0].width + line.children[1].width);
     });
 });
+
+describe('Show/Hide properties pane tooltip validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ showPropertiesPane: false });
+        container.appendTo(element);
+    });
+    it('Show/Hide properties pane tooltip validation', () => {
+    console.log('Show/Hide properties pane tooltip validation');
+        let element : HTMLButtonElement= container.toolbarContainer.childNodes[1].childNodes[0] as HTMLButtonElement;
+        expect(element.title).toBe('Show properties pane');
+    });
+});

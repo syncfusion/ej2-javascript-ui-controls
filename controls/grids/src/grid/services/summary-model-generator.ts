@@ -51,13 +51,13 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
 
     public getColumns(start?: number, end?: number): Column[] {
         const columns: Column[] = [];
+        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid)) {
+            columns.push(new Column({}));
+        }
         if (this.parent.allowGrouping) {
             for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
                 columns.push(new Column({}));
             }
-        }
-        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid)) {
-            columns.push(new Column({}));
         }
         if (this.parent.isRowDragable() && !start) {
             columns.push(new Column({}));
@@ -105,7 +105,8 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
                     values[i],
                     summaryRow,
                     i >= indentLength ? this.getCellType() :
-                        i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent,
+                        i === 0 && this.parent.childGrid ? CellType.DetailFooterIntent :
+                         CellType.Indent,
                     indents[i], isDetailGridAlone));
         }
 

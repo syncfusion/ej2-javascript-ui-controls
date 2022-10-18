@@ -556,11 +556,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public chartColl: ChartModel[] = [];
 
-    /**
-     * @hidden
-     */
-    public chartCount: number = 1;
-
     /** @hidden */
     public formulaRefCell: string;
 

@@ -1790,6 +1790,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     module: "MaskedDateTime"
                 });
             }
+        if (closest(this.element, 'form')) {
+            let element: Element = this.element;
+            let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
     private clear(event: MouseEvent): void {
         this.setProperties({ value: null }, true);

@@ -510,6 +510,25 @@ describe('Spreadsheet sorting module ->', () => {
                     });
                 },10);
             });
+            it('EJ2-64739 - Custom number formatted values are not displayed after sorting', (done: Function) => {
+                helper.invoke('selectRange', ['F2:F11']);
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_sorting-popup .e-item').click();
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const rows: any[] = helper.getInstance().sheets[0].rows;
+                        expect(rows[1].cells[5].value).toBe(200);
+                        expect(helper.invoke('getCell', [1, 5]).textContent).toBe('200');
+                        expect(rows[5].cells[5].value).toBe(300);
+                        expect(helper.invoke('getCell', [5, 5]).textContent).toBe('300');
+                        expect(rows[7].cells[5].value).toBe(500);
+                        expect(helper.invoke('getCell', [7, 5]).textContent).toBe('500');
+                        expect(rows[10].cells[5].value).toBe(1210);
+                        expect(helper.invoke('getCell', [10, 5]).textContent).toBe('1210');
+                        done();
+                    });
+                });
+            });
         });
         describe('EJ2-53804->', () => {
             beforeEach((done: Function) => {

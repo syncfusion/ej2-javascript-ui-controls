@@ -273,7 +273,6 @@ export class DateTime extends NiceInterval {
         const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
         if ((isZoomSet(axis)) && !isLazyLoad) {
             axis.calculateVisibleRangeOnZooming(size);
-            axis.calculateAxisRange(size, this.chart);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
                 : axis.visibleRange.interval;

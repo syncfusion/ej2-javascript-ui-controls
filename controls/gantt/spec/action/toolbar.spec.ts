@@ -832,4 +832,58 @@ describe('Gantt toolbar support', () => {
             expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('06/28/2022 08:00');
         });
     });
+    describe('Gantt toolbar action', () => {
+        Gantt.Inject(Edit, Toolbar, Selection, Filter);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowSelection: true,
+                    allowFiltering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                        segments: 'Segments'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Select search value and delete', () => {
+            ganttObj.selectionModule.selectRow(2);
+            ganttObj.isAdaptive = true;
+            ganttObj.dataBind();
+            ganttObj.searchSettings.key = '';
+            let searchbar: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbar'));
+            searchbar.value = 'check';
+            searchbar.focus();
+            searchbar.select();
+            let args: any = { action: 'delete',target:searchbar};
+            ganttObj.keyboardModule.keyAction(args);
+            expect (ganttObj.currentViewData.length).toBe(41)
+        });
+    });
 });

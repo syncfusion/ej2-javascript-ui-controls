@@ -333,5 +333,206 @@ describe('Custom Binding', () => {
 		  destroy(gridObj);
 		});
 	  });
+
+    describe('EJ2-64609 - Expand icon is not showing properly while using the custom binding', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let dataSource = [
+        {
+          taskID: 1,
+          taskName: 'Planning',
+          startDate: '2017-02-02T22:00:00.000Z',
+          endDate: '2017-02-06T22:00:00.000Z',
+          progress: 100,
+          duration: 5,
+          priority: 'Normal',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 1,
+          hasChild: true,
+          parentItem: null,
+        },
+        {
+          taskID: 6,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: true,
+          parentItem: null,
+        },
+        {
+          taskID: 9,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: false,
+          parentItem: 6,
+        },
+        {
+          taskID: 10,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: false,
+          parentItem: 6,
+        },
+        {
+          taskID: 11,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: true,
+          parentItem: 6,
+        },
+        {
+          taskID: 12,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: false,
+          parentItem: 11,
+        },
+        {
+          taskID: 13,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: false,
+          parentItem: 11,
+        },
+        {
+          taskID: 14,
+          taskName: 'Design',
+          startDate: '2017-02-09T22:00:00.000Z',
+          endDate: '2017-02-13T22:00:00.000Z',
+          duration: 3,
+          progress: 86,
+          priority: 'High',
+          approved: false,
+          designation: 'Vice President',
+          employeeID: 6,
+          hasChild: true,
+          parentItem: 11,
+        },
+        {
+          taskID: 15,
+          taskName: 'Implementation Phase',
+          startDate: '2017-02-16T22:00:00.000Z',
+          endDate: '2017-02-26T22:00:00.000Z',
+          priority: 'Normal',
+          approved: false,
+          duration: 11,
+          progress: 66,
+          designation: 'Vice President',
+          employeeID: 12,
+          hasChild: true,
+          parentItem: null,
+        },
+      ];
+      let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+      beforeAll((done: Function) => {
+        document.body.appendChild(elem);
+        gridObj = new TreeGrid(
+        {
+          dataSource: { result: [], count: 0 },
+          idMapping: 'taskID',
+          hasChildMapping: 'hasChild',
+          parentIdMapping: 'parentItem',
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 70, textAlign: 'Right' },
+            {
+              field: 'taskName',
+              headerText: 'Task Name',
+              width: 200,
+              textAlign: 'Left',
+            },
+            {
+              field: 'startDate',
+              headerText: 'Start Date',
+              width: 90,
+              textAlign: 'Right',
+              type: 'date',
+              format: 'yMd',
+            },
+            {
+              field: 'endDate',
+              headerText: 'End Date',
+              width: 90,
+              textAlign: 'Right',
+              type: 'date',
+              format: 'yMd',
+            },
+            {
+              field: 'duration',
+              headerText: 'Duration',
+              width: 80,
+              textAlign: 'Right',
+            },
+            {
+              field: 'progress',
+              headerText: 'Progress',
+              width: 80,
+              textAlign: 'Right',
+            },
+            { field: 'priority', headerText: 'Priority', width: 90 },
+          ],
+        }
+        );
+        gridObj.appendTo('#Grid');
+        done();
+      });
+      it('Binding dataSource after some delay', (done: Function) => {
+          setTimeout(done, 1000);
+          gridObj.dataSource = { result: dataSource, count: 9 };
+          gridObj.dataBind();
+          done();
+      });
+      it('Collapse testing for second parent record', () => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-treegridexpand').length === 1).toBe(true);
+        rows = gridObj.getRows();
+        gridObj.collapseRow(rows[1] as HTMLTableRowElement);
+        expect(gridObj.getRows()[1].getElementsByClassName('e-treegridcollapse').length === 1).toBe(true);
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+      });
   });
   

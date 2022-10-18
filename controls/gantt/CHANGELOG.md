@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I409097` - Deleting record when search text is selected issue has been fixed.
+- `#I404228` - Saving record even when in edited state issue has been fixed.
+- `#I413093` -  Pdf export is not working in latest version issue has been fixed.
+
 ## 20.3.49 (2022-10-11)
 
 ### Gantt

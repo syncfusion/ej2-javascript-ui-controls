@@ -93,32 +93,34 @@ export class WorkbookNumberFormat {
             this.currentRange = getCellAddress(range[0], range[1]);
             if (cell.format.indexOf(';') > -1) {
                 if (cell.format.indexOf('<') > -1 || cell.format.indexOf('>') > -1) {
-                    args.value = args.result = this.processCustomConditions(cell);
+                    args.result = this.processCustomConditions(cell);
                 } else {
-                    args.value = args.result = this.processCustomAccounting(
-                        cell, range[0], range[1], args.td, currencySymbol, args.skipRowFill);
+                    args.result = this.processCustomAccounting(cell, range[0], range[1], args.td, currencySymbol, args.skipRowFill);
                     isCustomText = (!isNumber(cell.value) || cell.format && cell.format.indexOf('@') > -1) ? true : false;
                 }
                 cell.format = orgFormat;
             } else if (isCustomDateTime(cell, true)) {
                 args.result = this.processCustomDate(args, cell);
                 isCustomText = args.result === '';
-                args.value = args.result = args.result|| cell.value;
+                args.result = args.result|| cell.value;
             } else if (cell.format.indexOf('/') > -1) {
-                args.value = args.result = this.processCustomFraction(cell);
+                args.result = this.processCustomFraction(cell);
             } else if (cell.format.indexOf('@') > -1) {
                 isCustomText = true;
-                args.value = args.result = this.processCustomText(cell);
-            } else if (cell.format.includes('E+0')) {
+                args.result = this.processCustomText(cell);
+            } else if (cell.format.includes('E+0') && isNumber(fResult)) {
                 if (args.format !== cell.format) {
                     args.format = cell.format;
                 }
-                args.value = args.result = this.scientificFormat(args);
+                args.result = this.scientificFormat(args);
             } else if (checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep).isNumber) {
-                args.value = args.result = this.processCustomNumberFormat(cell, range[0], range[1], args.td);
+                args.result = this.processCustomNumberFormat(cell, range[0], range[1], args.td);
                 isCustomText = !isNumber(cell.value);
             } else {
-                isCustomText = true;
+                isCustomText = args.dataUpdate = true;
+            }
+            if (!args.dataUpdate) {
+                args.value = args.result;
             }
             if (isCustomText) {
                 args.isRightAlign = false;

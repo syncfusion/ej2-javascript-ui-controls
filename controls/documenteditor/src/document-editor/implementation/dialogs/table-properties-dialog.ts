@@ -330,7 +330,6 @@ export class TablePropertiesDialog {
      * @returns {void}
      */
     public calculateGridValue(table: TableWidget): void {
-        table.calculateGrid();
         table.isGridUpdated = false;
         table.buildTableColumns();
         table.isGridUpdated = true;

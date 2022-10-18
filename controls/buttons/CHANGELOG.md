@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I382543` - The issue with "Checkbox value not update properly while using edit template of grid" has been resolved.
+
 ## 20.3.49 (2022-10-11)
 
 ### Floating Action Button `Preview`

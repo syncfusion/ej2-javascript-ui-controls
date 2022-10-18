@@ -187,6 +187,13 @@ export interface PredicateModel {
      */
     isForeignKey?: boolean;
 
+    /**
+     * Defines the condition to add the new predicates on existing predicate with "and"/"or" operator.
+     * 
+     * @default ''
+     */
+    condition?: string;
+
 }
 
 /**

@@ -43,7 +43,7 @@ describe('ImageEditor', () => {
                 imageEditor.applyActObj();
                 expect(imageEditor.objColl.length).toEqual(2);
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                 expect(imageEditor.activeObj.shape).toEqual('line');
                 imageEditor.rotate(90);
@@ -56,7 +56,7 @@ describe('ImageEditor', () => {
                 imageEditor.applyActObj();
                 expect(imageEditor.objColl.length).toEqual(6);
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                 expect(imageEditor.activeObj.shape).toEqual('line');
                 imageEditor.rotate(90);
@@ -90,7 +90,7 @@ describe('ImageEditor', () => {
                 imageEditor.drawRectangle(200, 250, 300, 200, 15, 'red', 'green');
                 expect(imageEditor.activeObj.shape).toEqual('rectangle');
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                 expect(imageEditor.activeObj.shape).toEqual('line');
                 imageEditor.applyActObj();
@@ -109,7 +109,7 @@ describe('ImageEditor', () => {
                 imageEditor.drawRectangle(200, 250, 300, 200, 15, 'red', 'green');
                 expect(imageEditor.activeObj.shape).toEqual('rectangle');
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                 expect(imageEditor.activeObj.shape).toEqual('line');
                 imageEditor.flip('Horizontal');
@@ -133,7 +133,7 @@ describe('ImageEditor', () => {
                 imageEditor.drawRectangle(200, 250, 300, 200, 15, 'red', 'green');
                 expect(imageEditor.activeObj.shape).toEqual('rectangle');
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                 expect(imageEditor.activeObj.shape).toEqual('line');
                 imageEditor.applyActObj();
@@ -148,7 +148,7 @@ describe('ImageEditor', () => {
                 imageEditor.drawRectangle(200, 250, 300, 200, 15, 'red', 'green');
                 expect(imageEditor.activeObj.shape).toEqual('rectangle');
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                 expect(imageEditor.activeObj.shape).toEqual('line');
                 imageEditor.zoom(-.1);
@@ -219,7 +219,7 @@ describe('ImageEditor', () => {
                 imageEditor.applyCurrActObj();
                 expect(imageEditor.objColl.length === 1);
                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                expect(imageEditor.activeObj.shape).toEqual('circle');
+                expect(imageEditor.activeObj.shape).toEqual('ellipse');
                 imageEditor.redrawActObj();
                 imageEditor.lowerCanvas.style.maxWidth = '800px';
                 imageEditor.lowerCanvas.style.maxHeight = '500px';

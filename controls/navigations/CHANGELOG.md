@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I413061` - The issue with "Keyboard navigation not working properly when we open context menu using open method" has been resolved.
+
 ## 20.3.49 (2022-10-11)
 
 ### Accordion

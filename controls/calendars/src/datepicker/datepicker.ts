@@ -891,6 +891,12 @@ export class DatePicker extends Calendar implements IInput {
                 module: "MaskedDateTime"
             });
         }
+        if (closest(this.element, 'form')) {
+            let element: Element = this.element;
+            let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
 
 

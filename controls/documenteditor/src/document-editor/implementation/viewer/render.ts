@@ -477,6 +477,7 @@ export class Renderer {
         let startY: number = 0;
         let endX: number = 0;
         let endY: number = 0;
+        let lineWidth: number = 0;
         let firstLine: LineWidget = paragraphWidet.firstChild as LineWidget;
         let lastLine: LineWidget = paragraphWidet.lastChild as LineWidget;
         let canRenderParagraphBorders: BorderRenderInfo = this.documentHelper.canRenderBorder(paragraphWidet);
@@ -495,7 +496,8 @@ export class Renderer {
             if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
                 endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
             }
-            this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, leftBorder.lineWidth, leftBorder.lineStyle);
+            lineWidth = HelperMethods.convertPointToPixel(leftBorder.lineWidth);
+            this.renderSingleBorder(leftBorder.color, startX, startY, endX, endY, lineWidth, leftBorder.lineStyle);
         }
         if (topBorder.lineStyle !== 'None' && firstLine.isFirstLine() && !canRenderParagraphBorders.skipTopBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
@@ -508,7 +510,8 @@ export class Renderer {
             if (rightBorder.lineStyle !== 'None') {
                 endX += HelperMethods.convertPointToPixel(rightBorder.space);
             }
-            this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, topBorder.lineWidth, topBorder.lineStyle);
+            lineWidth = HelperMethods.convertPointToPixel(topBorder.lineWidth);
+            this.renderSingleBorder(topBorder.color, startX, startY, endX, endY, lineWidth, topBorder.lineStyle);
         }
         if (rightBorder.lineStyle !== 'None') {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet) + this.getContainerWidth(paragraphWidet, page) + HelperMethods.convertPointToPixel(rightBorder.space);
@@ -526,7 +529,8 @@ export class Renderer {
             if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
                 endY = (endY + HelperMethods.convertPointToPixel(bottomBorder.lineWidth + bottomBorder.space)) - this.getBottomMargin(paragraphWidet);
             }
-            this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, rightBorder.lineWidth, rightBorder.lineStyle);
+            lineWidth = HelperMethods.convertPointToPixel(rightBorder.lineWidth);
+            this.renderSingleBorder(rightBorder.color, startX, startY, endX, endY, lineWidth, rightBorder.lineStyle);
         }
         if (bottomBorder.lineStyle !== 'None' && lastLine.isLastLine() && !canRenderParagraphBorders.skipBottomBorder) {
             startX = this.documentHelper.getParagraphLeftPosition(paragraphWidet);
@@ -539,7 +543,8 @@ export class Renderer {
             if (rightBorder.lineStyle !== 'None') {
                 endX += HelperMethods.convertPointToPixel(rightBorder.space);
             }
-            this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, bottomBorder.lineWidth, bottomBorder.lineStyle);
+            lineWidth = HelperMethods.convertPointToPixel(bottomBorder.lineWidth);
+            this.renderSingleBorder(bottomBorder.color, startX, startY, endX, endY, lineWidth, bottomBorder.lineStyle);
         }
     }
     private getContainerWidth(paraWidget: ParagraphWidget, page: Page): any {
@@ -1931,44 +1936,61 @@ export class Renderer {
         //Render foreground color
         if (cellFormat.shading.hasValue('foregroundColor') && cellFormat.shading.textureStyle !== 'TextureNone') {
             this.pageContext.beginPath();
-            if (cellFormat.shading.foregroundColor !== 'empty') {
-                this.pageContext.fillStyle = this.drawTextureStyle(cellFormat.shading.textureStyle, HelperMethods.getColor(cellFormat.shading.foregroundColor), HelperMethods.getColor(cellFormat.shading.backgroundColor));
+                this.pageContext.fillStyle = this.drawTextureStyle(cellFormat.shading.textureStyle, HelperMethods.getColor(cellFormat.shading.foregroundColor), HelperMethods.getColor(cellFormat.shading.backgroundColor), cellFormat.shading.foregroundColor === 'empty', cellFormat.shading.backgroundColor === 'empty');
                 //Width is increased twice since left and right line width is reduced in cell rendering which is required for background rendering.
                 this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width + (lineWidth * 2)), this.getScaledValue(height));
                 this.pageContext.closePath();
-            }
         }    
         
     }
-    private drawTextureStyle(textureStyle: TextureStyle, foreColor: string, backColor: string): string {
+    private drawTextureStyle(textureStyle: TextureStyle, foreColor: string, backColor: string, isForeColorEmpty: boolean, isBackColorEmpty: boolean): string {
+        if (isBackColorEmpty) {
+            backColor = '#ffffff';
+        }
+        if (isForeColorEmpty) {
+            foreColor = '#000000';
+        }
         if (textureStyle.indexOf('Percent') > -1) {
             let text: string = textureStyle.replace("Texture", "").replace("Percent", "").replace("Pt", ".");
             let percent: number = parseInt(text);
-            return this.getForeColor(foreColor, backColor, percent);
+            return this.getForeColor(foreColor, backColor, percent, isForeColorEmpty, isBackColorEmpty);
         }
         if(textureStyle === 'TextureSolid') {
             return foreColor;
         }
         return '#FFFFFF';
     }
-    private getForeColor(foreColor: string, backColor: string, percent: number): string {
+    private getForeColor(foreColor: string, backColor: string, percent: number, isForeColorEmpty: boolean, isBackColorEmpty: boolean): string {
         let r: number = 0;
         let g: number = 0;
         let b: number = 0;
         let foreColorRgb: WColor = HelperMethods.convertHexToRgb(foreColor);
         let backColorRgb: WColor = HelperMethods.convertHexToRgb(backColor);
-        r = this.getColorValue(foreColorRgb.r, backColorRgb.r, percent);
-        g = this.getColorValue(foreColorRgb.g, backColorRgb.g, percent);
-        b = this.getColorValue(foreColorRgb.b, backColorRgb.b, percent);
+        r = this.getColorValue(foreColorRgb.r, backColorRgb.r, percent, isForeColorEmpty, isBackColorEmpty);
+        g = this.getColorValue(foreColorRgb.g, backColorRgb.g, percent, isForeColorEmpty, isBackColorEmpty);
+        b = this.getColorValue(foreColorRgb.b, backColorRgb.b, percent, isForeColorEmpty, isBackColorEmpty);
         return ('#' + HelperMethods.convertRgbToHex(r) + HelperMethods.convertRgbToHex(g) + HelperMethods.convertRgbToHex(b));
     }
-    private getColorValue(foreColorValue: number, backColorValue: number, percent: number): number {
+    private getColorValue(foreColorValue: number, backColorValue: number, percent: number, isForeColorEmpty: boolean, isBackColorEmpty: boolean): number {
         let colorValue: number = 0;
         if (percent == 100) {
             colorValue = foreColorValue;
         }
         else {
-            colorValue = backColorValue + Math.round(foreColorValue * (percent / 100)) - Math.round(backColorValue * (percent / 100));
+            if (isForeColorEmpty) {
+                if (isBackColorEmpty) {
+                    colorValue = Math.round(255 * (1 - percent / 100));
+                } else {
+                    colorValue = Math.round(backColorValue * (1 - percent / 100));
+                }
+            }
+            else {
+                if (isBackColorEmpty) {
+                    colorValue = Math.round(foreColorValue * (percent / 100));
+                } else {
+                    colorValue = backColorValue + Math.round(foreColorValue * (percent / 100)) - Math.round(backColorValue * (percent / 100));
+                }
+            }
         }
         return colorValue;
     }
@@ -2014,6 +2036,9 @@ export class Renderer {
             if (revisionInfo[i].type === 'Deletion' || revisionInfo[i].type === 'MoveFrom') {
                 return revisionInfo[i].color;
             }
+        }
+        if (revisionInfo.length > 0) {
+            return revisionInfo[0].color;
         }
         return undefined;
 

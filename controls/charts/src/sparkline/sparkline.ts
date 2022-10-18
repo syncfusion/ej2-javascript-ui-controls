@@ -319,8 +319,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     public svgObject: Element;
     /** @private */
-    public isDevice: Boolean = Browser.isDevice;
-    /** @private */
     public intervalDivs: number[] = [10, 5, 2, 1];
     /** @private */
     public isTouch: Boolean;

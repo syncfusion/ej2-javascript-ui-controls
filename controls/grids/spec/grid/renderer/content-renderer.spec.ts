@@ -167,3 +167,40 @@ describe('Content renderer module', () => {
     });
 
 });
+
+describe('EJ2-62873 - customAttribute - Row height is not set properly in the grid when having frozen column and enable virtualization', () => {
+    let gridObj: Grid;
+    var css = '.e-attr { height: 38.5px; }',
+    head = document.head || document.getElementsByTagName('head')[0],
+    style = document.createElement('style');
+    head.appendChild(style);
+    if ((style as any).styleSheet){
+    // This is required for IE8 and below.
+        (style as any).styleSheet.cssText = css;
+    } else {
+        (style as any).appendChild(document.createTextNode(css));
+    }
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                enableVirtualization: true,
+                columns: [
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10,isFrozen: true },
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', customAttributes: { class: "e-attr" }, minWidth: 10 },
+                    { field: 'Freight', width: 125, minWidth: 10 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                ]
+            }, done);
+    });
+  
+    it('Ensure Rows Height', () => {
+    let fContent: HTMLElement = gridObj.element.querySelector('.e-frozencontent').querySelector('table').rows[0];
+    let mContent: HTMLElement = gridObj.element.querySelector('.e-movablecontent').querySelector('table').rows[0];
+    expect(mContent.offsetHeight).toBe(fContent.offsetHeight);
+    });
+   
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

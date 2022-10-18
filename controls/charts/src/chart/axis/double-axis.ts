@@ -70,7 +70,7 @@ export class Double {
      * @private
      */
     public isAutoIntervalOnBothAxis(axis: Axis): boolean {
-        if (((axis.zoomFactor < 1 || axis.zoomPosition > 0) && this.chart.enableAutoIntervalOnBothAxis)) {
+        if (((axis.zoomFactor < 1 || axis.zoomPosition > 0) && axis.enableAutoIntervalOnZooming)) {
             return false;
         }
         else {
@@ -308,8 +308,7 @@ export class Double {
             const isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
             if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
                 axis.calculateVisibleRangeOnZooming(size);
-                axis.calculateAxisRange(size, this.chart);
-                axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
+                axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                     this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
                     : axis.visibleRange.interval;
             }

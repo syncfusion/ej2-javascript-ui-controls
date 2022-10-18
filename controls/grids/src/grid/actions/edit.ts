@@ -1138,7 +1138,8 @@ export class Edit implements IAction {
         if (!customForm && (frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             const getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
-            getEditCell.style.position = 'relative';
+            getEditCell.style.position = this.parent.currentViewData.length === 0 && closest(element, '.' + literals.movableContent) ?
+                'absolute' : 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
                 (closest(element, '.' + literals.frozenContent) || closest(element, '.' + literals.frozenHeader))
@@ -1155,7 +1156,13 @@ export class Edit implements IAction {
             }
         }
         if (!validationForBottomRowPos && isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
-            gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
+            const contentDiv: HTMLElement = this.parent.getContent().querySelector('.e-content');
+            if (frzCols && this.parent.currentViewData.length === 0 && contentDiv.scrollTop === 0) {
+                contentDiv.scrollTop = div.offsetHeight + arrow.scrollHeight;
+            }
+            else {
+                gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
+            }
         }
         const lineHeight: number = parseInt(
             document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10

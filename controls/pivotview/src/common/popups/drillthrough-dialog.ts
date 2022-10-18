@@ -515,6 +515,7 @@ export class DrillThroughDialog {
         }
         for (let len: number = 0; len < this.parent.dataSourceSettings.fieldMapping.length; len++) {
             if (this.parent.dataSourceSettings.fieldMapping[len].name === key &&
+                this.parent.dataSourceSettings.fieldMapping[len].dataType &&
                 this.parent.dataSourceSettings.fieldMapping[len].dataType.indexOf('date') > -1) {
                 return true;
             }

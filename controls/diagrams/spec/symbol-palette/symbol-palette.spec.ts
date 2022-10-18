@@ -7,7 +7,7 @@ import { Path, Node, BpmnShape } from '../../src/diagram/objects/node';
 
 import { BpmnDiagrams } from '../../src/diagram/objects/bpmn';
 import { Connector } from '../../src/diagram/objects/connector';
-import { NodeModel } from '../../src/diagram/objects/node-model';
+import { HeaderModel, LaneModel, NodeModel, SwimLaneModel } from '../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../src/diagram/objects/connector-model';
 import { NodeConstraints, SelectorConstraints, PortVisibility, PortConstraints } from '../../src/diagram/enum/enum';
 import { UndoRedo } from '../../src/diagram/objects/undo-redo'
@@ -17,7 +17,7 @@ import {
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
-import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index'; 
+import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel, ShapeStyleModel, cloneObject } from '../../src/diagram/index'; 
 import { BpmnShapeModel, BpmnSubProcessModel } from "../../src/index";
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
@@ -1320,6 +1320,206 @@ describe('Symbol Palette', () => {
             }, 1000);
         });
     });
+
+    describe('Adding lane at runtime from palette', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let swimlaneShapes: NodeModel[] = [
+            {
+                id: 'stackCanvas2',
+                shape: {
+                    type: 'SwimLane',
+                    lanes: [
+                        {
+                            id: 'lane1',
+                            style: { strokeColor: 'black' }, height: 150, width: 60,
+                            header: { width: 50, height: 50, style: { strokeColor: 'black', fontSize: 11 } },
+                        }
+                    ],
+                    orientation: 'Vertical', isLane: true
+                },
+                height: 140,previewSize:{height:200,width:200},dragSize:{height:200,width:200} ,
+                width: 60,
+                // style: { fill: '#f5f5f5' },
+                offsetX: 300,
+                offsetY: 300,
+            }
+        ];
+
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'AddLaneIssue', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramAddLaneIssue', styles: 'width:50%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+
+            diagram = new Diagram({
+                width: '70%', height: 500,nodes:swimlaneShapes
+            });
+            diagram.appendTo('#diagramAddLaneIssue');
+
+            var palettes:PaletteModel[] = [
+
+                {
+                    id: 'swimlaneShapes', expanded: true, symbols: [
+                        {
+                            id: 'stackCanvas2',
+                            shape: {
+                                type: 'SwimLane',
+                                lanes: [
+                                    {
+                                        id: 'lane1',
+                                        style: { strokeColor: 'black' }, height: 150, width: 60,
+                                        header: { width: 50, height: 50, style: { strokeColor: 'black', fontSize: 11 } },
+                                    }
+                                ],
+                                orientation: 'Vertical', isLane: true
+                            },
+                            height: 140,previewSize:{height:200,width:200},dragSize:{height:200,width:200} ,
+                            width: 60,
+                            // style: { fill: '#f5f5f5' },
+                            offsetX: 70,
+                            offsetY: 30,
+                        }
+                    ], title: 'Swimlane shapes'
+                }
+            ];
+
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: palettes,
+                symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 },
+                enableSearch: true,
+                symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+                getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
+                    return { fit: true };
+                }
+            });
+            palette.appendTo('#AddLaneIssue');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+
+        it('Checking lanes length after adding it from palette', (done: Function) => {
+
+            setTimeout(function () {
+                palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                    let clonedElement: HTMLElement; let diagramElement: any;
+                    let position: PointModel = palette['getMousePosition'](e.sender);
+                    let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                    let symbols: IElement = palette.symbolTable[target['id']];
+                    palette['selectedSymbols'] = symbols;
+                    if (symbols !== undefined) {
+                        clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                        clonedElement.setAttribute('paletteId', palette.element.id);
+                    }
+                    return clonedElement;
+                };
+                palette.getPersistData();
+                let events = new MouseEvents();
+                let element = (document.getElementById('stackCanvas2_container').getBoundingClientRect());;
+                events.mouseDownEvent(palette.element, element.left + palette.element.offsetLeft, element.top + palette.element.offsetTop, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 40 + palette.element.offsetLeft, element.top + palette.element.offsetLeft, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 60, element.top, false, false);
+                events.mouseMoveEvent(diagram.element, 200, 200, false, false);
+                events.mouseMoveEvent(diagram.element, 250, 270 - diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 250, 270 - 5 - diagram.element.offsetTop, false, false);
+                events.mouseUpEvent(diagram.element, 250, 270 - 10 - diagram.element.offsetTop, false, false);
+                events.clickEvent(diagram.element, 250, 270 - 10 - diagram.element.offsetTop, false, false);
+                expect((diagram.selectedItems.nodes[0].shape as SwimLaneModel).lanes.length===2).toBe(true);
+                done();
+            }, 1000);
+        });
+
+        it('Adding lane using InsertLaneBefore',(done:Function)=>{
+            diagram.select([diagram.nodes[6]]);
+                if (diagram.selectedItems.nodes.length > 0 && (diagram.selectedItems.nodes[0] as Node).isLane) {
+                    let index: number;
+                    let node: Node = diagram.selectedItems.nodes[0] as Node;
+                    let swimlane: NodeModel = diagram.getObject((diagram.selectedItems.nodes[0] as Node).parentId);
+                    let shape: SwimLaneModel = swimlane.shape as SwimLaneModel;
+                    let existingLane: LaneModel = cloneObject(shape.lanes[0]);
+    
+                    let newLane: LaneModel = {
+                        id: randomId(),
+                        header: {
+                            width: existingLane.header.width, height: existingLane.header.height,
+                            style: existingLane.header.style as ShapeStyleModel
+                        } as HeaderModel,
+                        style: existingLane.style as ShapeStyleModel,
+                        height: existingLane.height, width: existingLane.width,
+                    } as LaneModel;
+    
+                    if (shape.orientation === 'Horizontal') {
+                        let exclude = 0;
+                        exclude += (shape.header) ? 1 : 0;
+                        exclude += (shape.phases.length) ? 1 : 0;
+                        index = node.rowIndex - exclude;
+                        newLane.header.width = existingLane.header.width;
+                        newLane.header.height = existingLane.height;
+                    } else {
+                        index = node.columnIndex - 1;
+                        newLane.header.width = existingLane.width;
+                        newLane.header.height = existingLane.header.height;
+                    }
+                
+                        diagram.addLanes(swimlane, [newLane], index);
+                    diagram.clearSelection();
+                }
+
+                expect(diagram.nodes.length === 9 && diagram.nodes[diagram.nodes.length-1].columnIndex === 1).toBe(true);
+                done();
+        });
+
+        it('Adding lane using InsertLaneAfter',(done:Function)=>{
+            diagram.select([diagram.nodes[8]]);
+                if (diagram.selectedItems.nodes.length > 0 && (diagram.selectedItems.nodes[0] as Node).isLane) {
+                    let index: number;
+                    let node: Node = diagram.selectedItems.nodes[0] as Node;
+                    let swimlane: NodeModel = diagram.getObject((diagram.selectedItems.nodes[0] as Node).parentId);
+                    let shape: SwimLaneModel = swimlane.shape as SwimLaneModel;
+                    let existingLane: LaneModel = cloneObject(shape.lanes[0]);
+    
+                    let newLane: LaneModel = {
+                        id: randomId(),
+                        header: {
+                            width: existingLane.header.width, height: existingLane.header.height,
+                            style: existingLane.header.style as ShapeStyleModel
+                        } as HeaderModel,
+                        style: existingLane.style as ShapeStyleModel,
+                        height: existingLane.height, width: existingLane.width,
+                    } as LaneModel;
+    
+                    if (shape.orientation === 'Horizontal') {
+                        let exclude = 0;
+                        exclude += (shape.header) ? 1 : 0;
+                        exclude += (shape.phases.length) ? 1 : 0;
+                        index = node.rowIndex - exclude;
+                        newLane.header.width = existingLane.header.width;
+                        newLane.header.height = existingLane.height;
+                    } else {
+                        index = node.columnIndex - 1;
+                        newLane.header.width = existingLane.width;
+                        newLane.header.height = existingLane.header.height;
+                    }
+                
+                    diagram.addLanes(swimlane, [newLane], index+1);
+                    diagram.clearSelection();
+                }
+
+                expect(diagram.nodes.length === 11 && diagram.nodes[diagram.nodes.length-1].columnIndex === 2).toBe(true);
+                done();
+        });
+    });
+
     describe('Testing symbol palette with connector source and target point as same', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;

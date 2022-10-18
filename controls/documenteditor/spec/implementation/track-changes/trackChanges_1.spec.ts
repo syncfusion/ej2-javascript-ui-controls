@@ -979,3 +979,31 @@ describe('acceptAll and rejectAll validation with table', () => {
         expect(container.revisions.length).toBe(0);
     });
 });
+let revisionTest: any = {"sections":[{"blocks":[{"inlines":[{"text":"Multiple user insertion test","revisionIds":["7c350428-5852-4dab-af9e-b0fc3ca0d8b4","5c7a7027-2155-4e15-af5f-f5442085b626"]}]},{"inlines":[{"text":"Different user Insertion and Deletion test","revisionIds":["deff8324-3c12-4fdf-b43c-038b4f2dee50","a8700c18-9ab6-4674-9394-3d38e1774fa0"]}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"Arabic","columns":{"column":[{"width":468.0,"space":36.0}],"numberOfColumns":1,"equalWidth":true}}}],"fontSubstitutionTable":{"Latha":"Latha"},"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Arial","localeId":1033,"localeIdEastAsia":1033,"localeIdBidi":1025},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"Revision","next":"Revision","paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"}}],"revisions":[{"author":"Johnson","date":"2022-10-12T19:25:00Z","revisionType":"Insertion","revisionId":"7c350428-5852-4dab-af9e-b0fc3ca0d8b4"},{"author":"Thamizhselvan Varadharajan","date":"2022-10-12T19:23:00Z","revisionType":"Insertion","revisionId":"5c7a7027-2155-4e15-af5f-f5442085b626"},{"author":"Thamizhselvan Varadharajan","date":"2022-10-12T19:25:00Z","revisionType":"Deletion","revisionId":"deff8324-3c12-4fdf-b43c-038b4f2dee50"},{"author":"Johnson","date":"2022-10-12T19:04:00Z","revisionType":"Insertion","revisionId":"a8700c18-9ab6-4674-9394-3d38e1774fa0"}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013"};
+describe('Multiple User insertion and Deletion Validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableRtl: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Two different User insertion and deletion test', () => {
+        expect(container.open(revisionTest)).not.toThrowError;
+    });
+});

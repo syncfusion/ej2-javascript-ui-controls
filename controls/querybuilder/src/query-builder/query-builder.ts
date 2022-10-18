@@ -1119,7 +1119,7 @@
                      this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
                      validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
                  }
-                 fieldElem = tempElem.querySelector('.e-rule-field .e-control');
+                 fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
                  if (validateRule && validateRule.isRequired) {
                      while (indexElem && indexElem.previousElementSibling !== null) {
                          indexElem = indexElem.previousElementSibling;

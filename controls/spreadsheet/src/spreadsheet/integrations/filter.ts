@@ -394,7 +394,7 @@ export class Filter {
         range[1] = range[3] = cell[1];
         const field: string = getColumnHeaderText(cell[1] + 1);
         const selectedCell: CellModel = getCell(cell[0], cell[1], sheet);
-        let cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell);
+        let cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell, cell[0], cell[1]);
         if (isNumber(<string>cellVal) && !(selectedCell.format && selectedCell.format === '@')) {
             cellVal = parseFloat(<string>cellVal);
         }

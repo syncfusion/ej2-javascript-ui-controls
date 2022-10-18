@@ -68,6 +68,7 @@ export class TextSelection {
     private topStoreRight: { [key: string]: Object } = null;
     private isTextSearched: boolean = false;
     private isSelectionStartTriggered: boolean = false;
+    private allTextContent : any = "";
     /**
      * @param pdfViewer
      * @param pdfViewerBase
@@ -1069,7 +1070,7 @@ export class TextSelection {
                     isBackward: backward, startNode: this.getNodeElementFromNode(selection.anchorNode).id,
                     startOffset: anchorOffsetValue, endNode: this.getNodeElementFromNode(selection.focusNode).id,
                     // eslint-disable-next-line max-len
-                    endOffset: focusOffsetValue, textContent: selection.toString(), pageNumber: pageNumber, bound: selectionBounds, rectangleBounds: selectionRectBounds
+                    endOffset: focusOffsetValue, textContent: this.allTextContent, pageNumber: pageNumber, bound: selectionBounds, rectangleBounds: selectionRectBounds
                 };
                 this.pushSelectionRangeObject(selectionObject, pageNumber);
             } else {
@@ -1333,7 +1334,7 @@ export class TextSelection {
                     const selectionBound: IRectangle = this.getSelectionBounds(selectionRangeObject, pageNumber);
                     const selectionRectBounds: IRectangle[] = this.getSelectionRectangleBounds(selectionRangeObject, pageNumber);
                     // eslint-disable-next-line max-len
-                    return selectionObject = { isBackward: backward, startNode: firstElement.id, startOffset: startOffset, endNode: lastElement.id, endOffset: endOffset, textContent: selectionString, pageNumber: pageNumber, bound: selectionBound, rectangleBounds: selectionRectBounds };
+                    return selectionObject = { isBackward: backward, startNode: firstElement.id, startOffset: startOffset, endNode: lastElement.id, endOffset: endOffset, textContent: this.allTextContent, pageNumber: pageNumber, bound: selectionBound, rectangleBounds: selectionRectBounds };
                 } else {
                     return null;
                 }
@@ -1386,6 +1387,8 @@ export class TextSelection {
         const startElement: HTMLElement = this.getNodeElementFromNode(range.startContainer);
         const endElement: HTMLElement = this.getNodeElementFromNode(range.endContainer);
         let bounds: IRectangle = null;
+        let selectionTexts = [];
+        this.allTextContent = "";
         if (startElement !== endElement) {
             let startOffset: number = 0; let endOffset: number = 0; let currentId: number = 0;
             const anchorPageId: number = this.pdfViewerBase.textLayer.getPageIndex(range.startContainer);
@@ -1419,14 +1422,27 @@ export class TextSelection {
                     }
                     const boundingRect: IRectangle = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
                     selectionBounds.push(boundingRect);
+                    let textselection = newRange.toString();
+                    selectionTexts.push(textselection);
                     newRange.detach();
                     if (j === focusTextId) {
                         break;
                     }
                 }
             }
-        } else {
+            for (let i = 0; i < selectionTexts.length; i++) {
+                let text = selectionTexts[i];
+                if (text.slice(text.length - 2) === '\r\n'|| i === selectionTexts.length-1) {
+                    this.allTextContent += text;
+                }
+                else {
+                    this.allTextContent += text + "\r\n";
+                }
+            }
+        }
+        else {
             bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
+            this.allTextContent = range.toString();
             selectionBounds.push(bounds);
         }
         return selectionBounds;

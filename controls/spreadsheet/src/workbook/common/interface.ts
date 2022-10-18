@@ -493,6 +493,7 @@ export interface NumberFormatArgs {
     checkDate?: boolean;
     dateObj?: Date;
     skipRowFill?: boolean;
+    dataUpdate?: boolean;
 }
 /** @hidden */
 export interface DateFormatCheckArgs {

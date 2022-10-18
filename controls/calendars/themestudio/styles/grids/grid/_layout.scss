@@ -3734,7 +3734,7 @@
 
 #{&}.e-grid-min-height {
   .e-rowcell {
-    line-height: 0;
+    line-height: normal;
     padding-bottom: 0;
     padding-top: 0;
   }
@@ -3817,7 +3817,7 @@
   .e-rowcell,
   .e-rowcell:first-child,
   .e-rowcell:last-child {
-    line-height: 0;
+    line-height: normal;
     padding-bottom: 0;
     padding-top: 0;
   }

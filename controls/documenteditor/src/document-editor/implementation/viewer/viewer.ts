@@ -3598,10 +3598,11 @@ export class DocumentHelper {
             nextBlockX = this.getParagraphLeftPosition(nextBlock);
         }
         if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
-            isSamePreviousBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);
+            isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.top);
+            isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);
             isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(previousBlock.paragraphFormat.borders.left, true);
             isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(previousBlock.paragraphFormat.borders.right, true);
-            if (isSamePreviousBorder && isSameLeftBorder && isSameRightBorder
+            if (isSameTopBorder && isSameBottomBorder && isSameLeftBorder && isSameRightBorder
                 && previousBlock.paragraphFormat.borders.horizontal.lineStyle === 'None') {
                 skipTopBorder = true;
             }

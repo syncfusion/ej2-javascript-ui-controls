@@ -431,7 +431,7 @@ export class PdfExport {
                 style: undefined,
                 isForeignKey: col.isForeignColumn()
             };
-            const value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
+            const value: string = gObj.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
             const cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: 'PDF', data: dataSourceItems, style: undefined };
             this.parent.trigger(events.exportGroupCaption, cArgs, (cArgs: ExportGroupCaptionEventArgs) => {
                 row.cells.getCell(groupIndex).value = cArgs.captionText;
@@ -454,20 +454,20 @@ export class PdfExport {
                     row.cells.getCell(groupIndex + 1).columnSpan = pdfGrid.columns.count - (groupIndex + 1);
                 }
                 if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
-                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex, null, null, gObj);
                     this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush,
                                                backgroundBrush, returnType, pdfExportProperties, helper, index);
                     const groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
                 } else {
-                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex, null, null, gObj);
                     index = this.processRecord(border, gridColumns, gObj, dataSourceItems.items,
                                                pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
                     const groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
                     const isGroupedFooter: boolean = true ;
-                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false, null, null, isGroupedFooter);
+                    this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false, null, null, isGroupedFooter, null, gObj);
                 }
             });
         }
@@ -483,8 +483,8 @@ export class PdfExport {
         for (let i: number = 0; i < rows.length; i++) {
             rowNumber[i] = 0;
         }
-        if (this.parent.groupSettings.columns.length) {
-            index = this.parent.groupSettings.columns.length - 1;
+        if (grid.groupSettings.columns.length) {
+            index = grid.groupSettings.columns.length - 1;
             columnCount = columnCount - 1;
         }
         pdfGrid.columns.add(columnCount);
@@ -492,7 +492,7 @@ export class PdfExport {
         const applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {
             const gridHeader: PdfGridRow = pdfGrid.headers.getHeader(rowIdx);
             const pdfCell: PdfGridCell = gridHeader.cells.getCell(colIdx);
-            const cell: Cell<Column> = rows[rowIdx].cells[this.parent.groupSettings.columns.length ? colIdx : rowNumber[rowIdx]];
+            const cell: Cell<Column> = rows[rowIdx].cells[grid.groupSettings.columns.length ? colIdx : rowNumber[rowIdx]];
             rowNumber[rowIdx] = rowNumber[rowIdx] + 1;
             if (!isNullOrUndefined((col as Column).headerTextAlign)) {
                 pdfCell.style.stringFormat = this.getHorizontalAlignment(col.headerTextAlign);
@@ -811,7 +811,7 @@ export class PdfExport {
     private processAggregates(
         sRows: Row<AggregateColumnModel>[], pdfGrid: PdfGrid, border: PdfBorders, font: PdfFont,
         brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, isCaption: boolean,
-        captionRow?: PdfGridRow, groupIndex?: number, isGroupedFooter?: boolean, isAggregate?: boolean
+         captionRow?: PdfGridRow, groupIndex?: number, isGroupedFooter?: boolean, isAggregate?: boolean, gObj?: IGrid
     ): void {
         for (const row of sRows) {
             let leastCaptionSummaryIndex: number = -1;
@@ -894,7 +894,7 @@ export class PdfExport {
                 if (!isCaption) {
                     value.splice(0, 1);
                 } else {
-                    for (let i: number = this.parent.groupSettings.columns.length; i < value.length - 1; i++) {
+                    for (let i: number = gObj.groupSettings.columns.length; i < value.length - 1; i++) {
                         value[i] = value[i + 1];
                         value[i + 1] = value[i + 2] ? value[i + 2] : '';
                     }
@@ -1103,8 +1103,9 @@ export class PdfExport {
             }
             if (row.isExpand) {
                 const gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
-                const cell: PdfGridCell = gridRow.cells.getCell(startIndex);
-                cell.columnSpan = gridRow.cells.count - (startIndex);
+                let startIndexVal = this.parent.childGrid ? 0 : startIndex
+                const cell: PdfGridCell = gridRow.cells.getCell(startIndexVal);
+                cell.columnSpan = gridRow.cells.count - (startIndexVal);
                 cell.style.cellPadding = new PdfPaddings(10, 10, 10, 10);
                 gObj.isPrinting = true;
                 const exportType: ExportType = (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType) ?

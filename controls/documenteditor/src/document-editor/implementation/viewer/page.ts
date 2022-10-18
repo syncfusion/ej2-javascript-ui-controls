@@ -299,7 +299,7 @@ export abstract class Widget implements IWidget {
             } else {
                 let nextContainer: Widget = undefined;
                 if (widget.containerWidget instanceof TableCellWidget) {
-                    nextContainer = widget.containerWidget.getNextSplitCell();
+                    nextContainer = widget.containerWidget.getNextSplitWidget();
                 } else if (widget.containerWidget && widget.containerWidget.containerWidget instanceof FootNoteWidget &&
                     widget.containerWidget.containerWidget.footNoteType === 'Endnote') {
                     nextContainer = widget.containerWidget.nextWidget ? widget.containerWidget.nextWidget : widget.containerWidget.nextRenderedWidget;
@@ -3238,17 +3238,6 @@ export class TableCellWidget extends BlockWidget {
             } while (row);
         }
         return undefined;
-    }
-    /**
-     * @private
-     */
-     public getNextSplitCell(): Widget {
-        let widget: Widget = this;
-        let index: number = this.indexInOwner;
-        if (this.containerWidget instanceof TableRowWidget) {
-            widget = this.containerWidget.childWidgets[index + 1] as Widget;
-        }
-        return widget;
     }
     /**
      * @private

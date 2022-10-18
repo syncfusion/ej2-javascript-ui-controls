@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I408324` - Issue with Script errors throwing in validating query builder fields while double click has been fixed.
+
 ## 20.3.49 (2022-10-11)
 
 ### QueryBuilder
@@ -9,7 +17,6 @@
 #### Bug Fixes
 
 - `#I408658` - Issue with Value getting removed while closing fields Dropdown without change the value when we set rule property of query builder has been fixed
-- `#I408324` - Issue with Script errors throwing in validating query builder fields while double click has been fixed.
 
 ## 20.3.47 (2022-09-29)
 

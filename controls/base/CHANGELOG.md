@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### Common
+
+#### Bug Fixes
+
+- `#SF395314` - The issue " incorrect position of the helper element while dragging the `treeview` element" has been resolved.
+
 ## 20.3.49 (2022-10-11)
 
 ### Common

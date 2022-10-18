@@ -2302,7 +2302,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.notify('actionBegin', { editAction: args });
             if (!isRemoteData(this) && !isNullOrUndefined(this.filterModule) && !isCountRequired(this)
-        && (this.grid.filterSettings.columns.length === 0 || this.grid.searchSettings.key.length === 0)) {
+        && (this.grid.filterSettings.columns.length === 0 && this.grid.searchSettings.key.length === 0)) {
                 this.notify('clearFilters', { flatData: this.grid.dataSource });
                 this.grid.setProperties({ dataSource: this.dataResults.result }, true);
                 if (isNullOrUndefined(this.grid['changedProperties'].dataSource)) {
@@ -4002,10 +4002,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             });
             if (rows.length) {
-                if (action === 'collapse') {
-                    this.collapseRow(rows[0]);
-                } else {
-                    this.expandRow(rows[0]);
+                for (var i = 0; i < rows.length; i++) {
+                    if (action === 'collapse') {
+                        this.collapseRow(rows[i]);
+                    }
+                    else {
+                        this.expandRow(rows[i]);
+                    }
                 }
             } else if (this.allowPaging) {
                 const isExpandCollapseall : boolean = this.enableCollapseAll;
@@ -4031,7 +4034,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             return e.parentUniqueID === record.uniqueID ;
         });
         let targetEle: Element;
-        if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) {
+        if ((!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) || (action === 'collapse' || (this.isExpandAll && this.loadChildOnDemand) && !isRemoteData(this) && this.isSelfReference && isCountRequired(this))) {
             this.updateChildOnDemand(expandingArgs);
         }
         let gridRows: HTMLTableRowElement[] = this.getRows();
@@ -4124,10 +4127,34 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.notify('rowExpandCollapse', { detailrows: detailrows, action: displayAction, record: record, row: row });
             this.updateAltRow(gridRows);
+            this.updateGridRowsVisible();
         }
+    }
+    private updateGridRowsVisible() : void {
+        var rowsToRefresh = this.grid.getRowsObject();
+        var rows = this.getRows();
+            for (var i=0 ; i<rows.length; i++){
+                for(var j=0; j<rowsToRefresh.length; j++){
+                    if(rows[i].dataset.uid == rowsToRefresh[j].uid){
+                        rowsToRefresh[j].visible = rows[i].style.display === 'none' ? false : true;
+                    }
+                }
+            }
+        this.grid.notify('refresh-Expand-and-Collapse', {rows: rowsToRefresh});
     }
 
     private updateChildOnDemand(expandingArgs: DataStateChangeEventArgs) : void {
+        if (expandingArgs.requestType == 'collapse' && isCountRequired(this)) {
+            const flatDataRecords = [...this.flatData];
+            for (let i = 0; i < flatDataRecords.length; i++) {
+                if (flatDataRecords[i]['parentUniqueID'] == expandingArgs.data['uniqueID']) {
+                    flatDataRecords.splice(i, 1);
+                    i = i - 1;
+                }
+            }
+            this.dataResults.result = flatDataRecords as ReturnOption;
+            return;  
+        }
         const deff: Deferred = new Deferred();
         const childDataBind: string = 'childDataBind';
         expandingArgs[childDataBind] = deff.resolve;
@@ -4135,7 +4162,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger(events.dataStateChange, expandingArgs);
         deff.promise.then(() => {
             if (expandingArgs.childData.length) {
-                this.flatData = this.infiniteScrollData;
+                if (isCountRequired(this)) {
+                    this.flatData = this.dataResults.result as object[];
+                }
+                if (this.enableInfiniteScrolling && isCountRequired(this)) {
+                    this.flatData = this.infiniteScrollData;
+                }
                 const currentData: ITreeData[] = <ITreeData[]>(this.flatData);
                 let index: number = 0;
                 for (let i: number = 0; i < currentData.length; i++ ) {
@@ -4170,7 +4202,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
               (childData[i][this.hasChildMapping] && isCountRequired(this))) {
                             childData[i].hasChildRecords = true;
                         }
-                        currentData.splice(index + 1 + i, record[this.childMapping] && record[this.childMapping][i] ? 1 : 0, childData[i]);
+                        if (isCountRequired(this) && record[this.childMapping] && record[this.childMapping][i]) {
+                            currentData.splice(index + 1 + i, 0, childData[i]);
+                        }
+                        else {
+                            currentData.splice(index + 1 + i, record[this.childMapping] && record[this.childMapping][i] ? 1 : 0, childData[i]);
+                        }
                     } else {
                         currentData.splice(index + 1 + i, 1);
                     }
@@ -4182,6 +4219,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 for (let j: number = 0; j < expandingArgs.childData.length; j++) {
                     (data as Object[]).push(expandingArgs.childData[j]);
                 }
+            }
+            if (isCountRequired(this) && this.loadChildOnDemand && expandingArgs.requestType === "expand") {
+                this.dataResults['expandRecord'] = {};
+                this.dataResults['expandRecord'] = expandingArgs.data;
             }
             this.isExpandRefresh = true;
             const scrollHeightBeforeRefresh = this.getContentTable().parentElement.scrollTop;

@@ -1246,7 +1246,7 @@ export class FormFields {
                     formFieldsData[i].FormField.signatureType = "Text";
                     this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
                     (this.pdfViewer.nameTable as any)[key].signatureType = "Text";
-                    formFieldsData[i].FormField.fontFamily = annot.fontFamily;
+                    formFieldsData[i].FormField.fontFamily = annot.fontFamily === "TimesRoman" ? "Times New Roman" : annot.fontFamily;
                     this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
                     (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
                     formFieldsData[i].FormField.fontSize = annot.fontSize;
@@ -2458,7 +2458,7 @@ export class FormFields {
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
                     shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: isFieldRotated ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
                 };
-                annot.fontFamily = fontFamily;
+                annot.fontFamily = fontFamily === "TimesRoman" ? "Times New Roman" : fontFamily;
                 annot.fontSize = data.FontSize ? data.FontSize : data.fontSize;
             } else {
                 let bound: any = newBounds;

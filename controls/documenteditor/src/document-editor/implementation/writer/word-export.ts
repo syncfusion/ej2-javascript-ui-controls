@@ -3863,6 +3863,9 @@ export class WordExport {
                                     if (mHorizontalMerge.containsKey(k)) {
                                         prevColIndex += mHorizontalMerge.get(k) - 1;
                                         k += mHorizontalMerge.get(k);
+                                        if (k > 0) {
+                                            k--;
+                                        }
                                     }
                                 }
                             }

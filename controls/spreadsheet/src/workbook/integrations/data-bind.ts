@@ -4,7 +4,7 @@ import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFo
 import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
 import { triggerDataChange } from '../common/index';
 import { getFormatFromType } from './number-format';
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Data binding module
@@ -265,7 +265,7 @@ export class DataBind {
         if (Object.prototype.toString.call(prop) === '[object Object]') {
             if ((<CellModel>prop).formula) {
                 data.formula = (<CellModel>prop).formula;
-            } else if ((<CellModel>prop).value) {
+            } else if (!isNullOrUndefined((<CellModel>prop).value)) {
                 if (typeof ((<CellModel>prop).value) === 'string') {
                     if ((<CellModel>prop).value.indexOf('http://') === 0 || (<CellModel>prop).value.indexOf('https://') === 0 ||
                         (<CellModel>prop).value.indexOf('ftp://') === 0 || (<CellModel>prop).value.indexOf('www.') === 0) {

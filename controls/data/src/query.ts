@@ -204,12 +204,12 @@ export class Query {
      */
     public where(
         fieldName: string | Predicate | Predicate[], operator?: string,
-        value?: string | Date | number | boolean | null, ignoreCase?: boolean, ignoreAccent?: boolean): Query {
+        value?: string | Date | number | boolean | null, ignoreCase?: boolean, ignoreAccent?: boolean, matchCase?: boolean): Query {
 
         operator = operator ? (operator).toLowerCase() : null;
         let predicate: Predicate | QueryOptions = null;
         if (typeof fieldName === 'string') {
-            predicate = new Predicate(fieldName, operator, value, ignoreCase, ignoreAccent);
+            predicate = new Predicate(fieldName, operator, value, ignoreCase, ignoreAccent, matchCase);
         } else if (fieldName instanceof Predicate) {
             predicate = fieldName;
         }
@@ -500,6 +500,8 @@ export class Predicate {
     /** @hidden */
     public ignoreCase: boolean;
     /** @hidden */
+    public matchCase: boolean;
+    /** @hidden */
     public ignoreAccent: boolean = false;
     /** @hidden */
     public isComplex: boolean = false;
@@ -515,15 +517,17 @@ export class Predicate {
      * @param  {string} operator
      * @param  {string|number|boolean|Predicate|Predicate[]} value
      * @param  {boolean=false} ignoreCase
+     * @param  {boolean} matchCase
      * @hidden
      */
     constructor(
         field: string | Predicate, operator: string, value: string | number | Date | boolean | Predicate | Predicate[] | null,
-        ignoreCase: boolean = false, ignoreAccent?: boolean) {
+        ignoreCase: boolean = false, ignoreAccent?: boolean, matchCase?: boolean) {
             if (typeof field === 'string') {
             this.field = field;
             this.operator = operator.toLowerCase();
             this.value = value;
+            this.matchCase = matchCase;
             this.ignoreCase = ignoreCase;
             this.ignoreAccent = ignoreAccent;
             this.isComplex = false;
@@ -532,6 +536,9 @@ export class Predicate {
             this.isComplex = true;
             this.condition = operator.toLowerCase();
             this.predicates = [field];
+            this.matchCase = field.matchCase;
+            this.ignoreCase = field.ignoreCase;
+            this.ignoreAccent = field.ignoreAccent;
             if (value instanceof Array) {
                 [].push.apply(this.predicates, value);
             } else {
@@ -649,7 +656,8 @@ export class Predicate {
             ignoreCase: this.ignoreCase,
             ignoreAccent: this.ignoreAccent,
             condition: this.condition,
-            predicates: predicates
+            predicates: predicates,
+            matchCase: this.matchCase
         };
     }
 

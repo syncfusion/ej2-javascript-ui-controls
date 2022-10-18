@@ -132,7 +132,8 @@ export class PdfGanttTaskbarCollection {
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
         //Draw Taskbar
         let font: PdfFont = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
-        if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+            this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
             font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
         }
         const fontColor: PdfPen = null;
@@ -294,7 +295,8 @@ export class PdfGanttTaskbarCollection {
             !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
             const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
             let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
-            if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+            if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
+                this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
                 font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
             }
             const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
@@ -349,7 +351,8 @@ export class PdfGanttTaskbarCollection {
                 && !this.leftTaskLabel.isCompleted) {
                 const result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
-                if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+                if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+                    this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
                     font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
                 }
                 const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
@@ -378,7 +381,8 @@ export class PdfGanttTaskbarCollection {
     }
     private getWidth(value: string, width: number, height: number): PdfStringLayoutResult {
         let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
-        if (this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+            this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
             font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
         }
         const layouter: PdfStringLayouter = new PdfStringLayouter();

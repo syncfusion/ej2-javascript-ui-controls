@@ -1315,4 +1315,55 @@ describe('Overview', () => {
 
     });
 
+    describe('Exception occurs while changing Overview id and window resize ', () => {
+        let diagram: Diagram;
+        let overview: Overview;
+        let ele: HTMLElement;
+        let ove: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            ove = createElement('div', { id: 'over' });
+            document.body.appendChild(ove);
+
+            let nodes: NodeModel[] = [{
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                shape: {
+                    type: 'HTML',
+                    content: '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>'
+                }
+            },{
+                id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 350,
+                shape: {
+                    type: 'HTML', 
+                    content: '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>'
+                }
+            }];
+            diagram = new Diagram({
+                width: '600px', height: '500px', nodes: nodes,
+            });
+
+            diagram.appendTo('#diagram');
+
+            let options: OverviewModel = {};
+            options.height = '500';
+            options.width = '250';
+            options.sourceID = 'diagram';
+            overview = new Overview(options);
+            overview.appendTo('#over');
+
+        });
+
+        afterAll((): void => {
+            overview.destroy();
+            diagram.destroy();
+            ele.remove();
+            ove.remove();
+        });
+        it('Checking overview html layer rendering with different id', (done: Function) => {
+            expect(window['domTable']['overhtml_layer']!==null && window['domTable']['overviewhtml_layer']===undefined).toBe(true);
+            done();
+        });
+    });
+
 });

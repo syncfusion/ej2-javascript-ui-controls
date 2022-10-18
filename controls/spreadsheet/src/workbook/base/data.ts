@@ -75,14 +75,14 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                 if (valueOnly) {
-                                    cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet)) : '';
+                                    cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet), sRow, i) : '';
                                     if (typeof cells[key] === 'string' && isNumber(<string>cells[key]) && !(cell.format && cell.format === '@')) {
                                         cells[key] = parseFloat(<string>cells[key]);
                                     }
                                 } else {
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
-                                            cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, true) });
+                                            cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, sRow, i, true) });
                                             if (typeof (cells[key] as CellModel).value === 'string' &&
                                                 isNumber((cells[key] as CellModel).value) && !(cell.format && cell.format === '@')) {
                                                 cells[key]['value'] = parseFloat((cells[key] as CellModel).value);
@@ -179,18 +179,21 @@ export function getData(
 /**
  * @hidden
  * @param {Workbook} context - Specifies the context.
- * @param {number} cell - Specifies the cell model.
+ * @param {CellModel} cell - Specifies the cell model.
+ * @param {number} rowIdx - Specifies the row index.
+ * @param {number} colIdx - Specifies the column index.
  * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
  * @returns {string | Date} - To get the value format.
  */
-export function getValueFromFormat(context: Workbook, cell: CellModel, getIntValueFromDate?: boolean): string | Date {
+export function getValueFromFormat(
+    context: Workbook, cell: CellModel, rowIdx: number, colIdx: number, getIntValueFromDate?: boolean): string | Date {
     if (cell) {
         if (isNullOrUndefined(cell.value)) {
             return '';
         }
         if (cell.format) {
             const args: NumberFormatArgs = { value: cell.value, formattedText: cell.value, cell: cell, format: cell.format, onLoad: true,
-                checkDate: !getIntValueFromDate };
+                checkDate: !getIntValueFromDate, rowIndex: rowIdx, colIndex: colIdx, dataUpdate: true };
             context.notify(getFormattedCellObject, args);
             return args.dateObj && args.dateObj.toString() !== 'Invalid Date' ? args.dateObj : (getIntValueFromDate ? <string>args.value :
                 args.formattedText);

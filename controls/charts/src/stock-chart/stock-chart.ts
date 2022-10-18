@@ -661,7 +661,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     constructor(options?: StockChartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
-        this.toolbarHeight = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
     }
 
     /**
@@ -798,6 +797,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.trigger('load', loadEventData, () => {
             this.theme = this.theme;
             this.themeStyle = getThemeColor(this.theme, false);
+            this.toolbarHeight = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
             this.storeDataSource();
             this.drawSVG();
             this.renderTitle();

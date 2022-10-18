@@ -1359,14 +1359,14 @@ export class CartesianAxisLayoutPanel {
                     break;
                 case 'Shift':
                     if ((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) {
-                        intervalLength -= (rect.x - options.x); options.x = pointX = rect.x;
+                        intervalLength -= (rect.x - options.x); options.x = pointX = !isHorizontalAngle ? rect.x + padding : rect.x;
                     } else if ((i === len - 1 || (isInverse && i === 0)) && ((options.x + width) > rect.x + rect.width)) {
                         if (elementSize.width > intervalLength && axis.labelIntersectAction === 'Trim') {
                             intervalLength -= (options.x + width - (rect.x + rect.width));
                         } else {
                             intervalLength = width;
                         }
-                        options.x = pointX = rect.x + rect.width - intervalLength;
+                        options.x = pointX = !isHorizontalAngle ? rect.x + rect.width - intervalLength / 2 : rect.x + rect.width - intervalLength;
                     }
                         if (this.chart.primaryYAxis.opposedPosition && i === 0 && options.x <= rect.x) {
                             intervalLength -= (rect.x - options.x);
@@ -1554,12 +1554,14 @@ export class CartesianAxisLayoutPanel {
                 switch (axis.border.type) {
                 case 'Rectangle':
                 case 'WithoutTopBorder':
-                    if (startX < axisRect.x) {
+                    if (startX < axisRect.x && axis.labelPlacement != "OnTicks") {
                         labelBorder += ('M' + ' ' + axisRect.x + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
-                    } else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1)) {
+                    } else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1) && !(i === axis.visibleLabels.length - 1)) {
                         labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
                                 'L' + ' ' + (axisRect.width + axisRect.x) + ' ' + endY + ' ');
                     } else {
+                        startX = (i === 0 && axis.labelPlacement == "OnTicks") ? axisRect.x : startX;
+                        endX = ((i === axis.visibleLabels.length - 1) && axis.labelPlacement == "OnTicks") ? endX - gap * 0.5 : endX;
                         labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' +
                                 endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
                         if (i === 0) {

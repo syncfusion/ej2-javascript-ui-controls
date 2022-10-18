@@ -1133,6 +1133,12 @@ export class DateRangePicker extends CalendarBase {
         this.changeTrigger(e);
         this.clearRange();
         this.hide(e);
+        if (closest(this.element, 'form')) {
+            let element: Element = this.firstHiddenChild;
+            let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
 
     private restoreValue(): void {

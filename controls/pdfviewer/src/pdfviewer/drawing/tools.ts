@@ -1786,10 +1786,12 @@ export class NodeDrawingTool extends ToolBase {
      * @param {MouseEventArgs} args - Specified the mouse event arguments.
      * @returns {void}
      */
-    public mouseUp(args: MouseEventArgs): void {
+    public mouseUp(args: MouseEventArgs): void {        
         if (this.drawingObject && this.dragging) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([this.drawingObject.id], this.commandHandler.annotationSelectorSettings);
+            let drawnAnnotation = this.commandHandler.selectedItems.annotations[0];
+            this.commandHandler.nodePropertyChange(drawnAnnotation, { bounds: { x: drawnAnnotation.wrapper.offsetX, y: drawnAnnotation.wrapper.offsetY } });
             this.commandHandler.annotation.updateCalibrateValues(this.drawingObject, true);
             if (this.commandHandler && !this.isFormDesign) {
                 // eslint-disable-next-line

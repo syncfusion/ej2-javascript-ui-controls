@@ -1979,7 +1979,7 @@ export class Editor {
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(insertPosition.paragraph.characterFormat, true);
                 span.characterFormat.copyFormat(insertFormat);
                 span.text = text;
-                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || insertFormat.bidi;
+                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi;
                 span.characterFormat.bidi = isBidi;
                 span.isRightToLeft = isBidi;
                 span.line = (insertPosition.paragraph as ParagraphWidget).childWidgets[0] as LineWidget;
@@ -2020,7 +2020,7 @@ export class Editor {
                 }
                 // Todo: compare selection format
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(inline.characterFormat, true);
-                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || insertFormat.bidi;
+                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi;
                 let insertLangId: number = this.documentHelper.textHelper.getRtlLanguage(text).id;
                 let inlineLangId: number = 0;
                 let isRtl: boolean = false;
@@ -6653,6 +6653,7 @@ export class Editor {
                 startPosition.setPosition(firstParagraph.firstChild as LineWidget, true);
                 let lastParagraph: ParagraphWidget = this.selection.getLastParagraph(mergedCell);
                 endPosition.setPosition(lastParagraph.lastChild as LineWidget, false);
+                this.selection.fireSelectionChanged(false);
             }
         }
         if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
@@ -11142,12 +11143,6 @@ export class Editor {
                 //If selection end with this paragraph and selection doesnot include paragraph mark.               
                 this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
                 //Removes the splitted paragraph.
-            }
-            let revisionLength: number = paragraph.characterFormat.revisions.length;
-            if(paragraph.isEmpty() && revisionLength > 0)
-            {
-                this.removeRevisionForBlock(paragraph, undefined, false, true);
-                this.removeBlock(paragraph);
             }
             if (!isNullOrUndefined(block) && !isStartParagraph && !paraReplace) {
                 this.delBlockContinue = true;

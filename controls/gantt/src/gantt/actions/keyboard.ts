@@ -192,7 +192,13 @@ export class FocusModule {
                     || (ganttObj.editSettings.allowTaskbarEditing && !ganttObj.editModule.taskbarEditModule.touchEdit))) {
                 if ((ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectionModule.selectedRowIndexes.length)
                         || (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length)) {
-                    ganttObj.editModule.startDeleteAction();
+                            if (!isNullOrUndefined(e.target)) {
+                                if (e.target['tagName'] !== 'INPUT' ){
+                                    ganttObj.editModule.startDeleteAction();
+                                }
+                            } else {
+                                ganttObj.editModule.startDeleteAction();
+                            }
                 }
             }
             break;

@@ -2404,7 +2404,8 @@ export class AnnotationToolbar {
                     this.updateThicknessIndicator();
                 }
                 let annotationModule: any = this.pdfViewer.annotation;
-                if (annotationModule && annotationModule.inkAnnotationModule) {
+                let selectedItems: any = this.pdfViewer.selectedItems.annotations[0];
+                if (annotationModule && annotationModule.inkAnnotationModule && selectedItems && selectedItems.shapeAnnotationType === "Ink") {
                     this.pdfViewer.inkAnnotationSettings.thickness = args.value;
                 }
             }

@@ -259,7 +259,7 @@ export class Clipboard {
                     this.parent.notify(setChart, {
                         chart: [this.copiedShapeInfo.chartInfo], isInitCell: true, isUndoRedo: true, isPaste: true,
                         dataSheetIdx: this.copiedShapeInfo.sheetIdx, isCut: this.copiedShapeInfo.isCut,
-                        range: args.range || curSheet.selectedRange, isIdAvailabe: false
+                        range: args.range || curSheet.selectedRange
                     });
                 } else {
                     this.parent.notify(createImageElement, {

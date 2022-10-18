@@ -286,6 +286,14 @@ export class Predicate extends ChildProperty<Predicate> {
      */
     @Property()
     public isForeignKey: boolean;
+
+    /**
+     * Defines the condition to add the new predicates on existing predicate with "and"/"or" operator.
+     * 
+     * @default ''
+     */
+     @Property()
+     public condition: string;
 }
 
 /**

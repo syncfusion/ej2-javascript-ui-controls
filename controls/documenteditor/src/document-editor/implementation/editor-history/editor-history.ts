@@ -210,6 +210,7 @@ export class EditorHistory {
                 const tableHistoryInfo: TableHistoryInfo = new TableHistoryInfo(tableResize.currentResizingTable, this.owner);
                 tableHistoryInfo.startingPoint = startingPoint;
                 this.currentBaseHistoryInfo.modifiedProperties.push(tableHistoryInfo);
+                this.documentHelper.layout.reLayoutTable(tableResize.currentResizingTable);
             }
         }
     }

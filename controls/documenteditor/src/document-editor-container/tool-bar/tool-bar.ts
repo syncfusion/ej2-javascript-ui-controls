@@ -146,7 +146,12 @@ export class Toolbar {
             iconCss: iconCss
         });
         const locale: L10n = this.container.localObj;
-        this.buttonElement.title = locale.getConstant('Hide properties pane');
+        if (this.container.showPropertiesPane)
+            this.buttonElement.title = locale.getConstant('Hide properties pane');
+        else {
+            this.buttonElement.title = locale.getConstant('Show properties pane');
+            propertiesPaneDiv.classList.add('e-de-pane-disable-clr');
+        } 
         this.propertiesPaneButton.appendTo(this.buttonElement);
         EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);

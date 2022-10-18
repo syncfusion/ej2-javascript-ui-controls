@@ -538,8 +538,8 @@ export class Axis extends ChildProperty<Axis> {
             }
         }
         for (let i: number = min; i <= max; i++) {
-            this.tooltipLabels.push(labels[i] ? labels[i].toString() : i.toString());
-            this.labelValue.push(labels[i] ? labels[i].toString() : i.toString());
+            this.tooltipLabels.push(!isNullOrUndefined(labels[i]) ? labels[i].toString() : i.toString());
+            this.labelValue.push(!isNullOrUndefined(labels[i]) ? labels[i].toString() : i.toString());
         }
         this.min = min;
         this.max = max;

@@ -97,6 +97,13 @@ export interface HeatMapModel extends ComponentModel{
     dataSourceSettings?: DataModel;
 
     /**
+     * Specifies the background color of the entire heatmap.
+     *
+     * @default null
+     */
+    background?: string;
+
+    /**
      *  Specifies the theme for heatmap.
      *
      * @default 'Material'

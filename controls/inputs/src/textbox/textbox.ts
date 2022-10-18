@@ -722,6 +722,12 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.trigger('input', eventArgs);
             this.inputPreviousValue = this.respectiveElement.value;
             this.raiseChangeEvent(event, true);
+            if (closest(this.element, 'form')) {
+                let element: Element = this.element;
+                let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+                keyupEvent.initEvent('keyup', false, true);
+                element.dispatchEvent(keyupEvent);
+            }
         }
     }
 

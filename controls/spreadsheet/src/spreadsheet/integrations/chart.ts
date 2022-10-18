@@ -131,7 +131,7 @@ export class SpreadsheetChart {
                 const chartEle: HTMLElement = document.getElementById(chartColl[idx].id);
                 if (overlayEle && chartEle && chartColl[idx].id === chartId) {
                     this.parent.notify(initiateChart, {
-                        option: chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
+                        option: chartColl[idx], isRefresh: true
                     });
                 }
             }
@@ -550,7 +550,7 @@ export class SpreadsheetChart {
     }
 
     private initiateChartHandler(argsOpt: {
-        option: ChartModel, chartCount?: number, isRefresh?: boolean, isInitCell?: boolean,
+        option: ChartModel, isRefresh?: boolean, isInitCell?: boolean,
         triggerEvent?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean
     }): SeriesModel[] | AccumulationSeriesModel[] {
         const chart: ChartModel = argsOpt.option;

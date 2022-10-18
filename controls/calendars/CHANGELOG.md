@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### Calendar
+
+#### Bug Fixes
+
+- `#I403191` - The issue "selection is not removed properly when we select the already selected date in Calendar multiselection" has been resolved.
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#FB15052` - Issue with "Form Validator wrongly validates while clearing the components value using clear icon" has been resolved.
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#FB15052` - Issue with "Form Validator wrongly validates while clearing the components value using clear icon" has been resolved.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#FB15052` - Issue with "Form Validator wrongly validates while clearing the components value using clear icon" has been resolved.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

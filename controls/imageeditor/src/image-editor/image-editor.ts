@@ -2405,12 +2405,20 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             wrapperWidth = this.element.clientWidth;
         }
         const maxDimension: Dimension = this.calcMaxDimension(this.baseImg.width, this.baseImg.height);
+        let toolbarHeight: number = 0;
+        if (!isNullOrUndefined(this.toolbarTemplate) && !isNullOrUndefined(document.querySelector('.e-toolbar'))) {
+            toolbarHeight =  document.querySelector('.e-toolbar').clientHeight;
+            maxDimension.width -= toolbarHeight; maxDimension.height -= toolbarHeight;
+        }
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.lowerCanvas.width = this.upperCanvas.width = this.inMemoryCanvas.width = this.baseImg.width;
         this.lowerCanvas.height = this.upperCanvas.height = this.inMemoryCanvas.height = this.baseImg.height;
         this.lowerCanvas.style.maxWidth = this.upperCanvas.style.maxWidth = maxDimension.width + 'px';
         this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = maxDimension.height + 'px';
         this.lowerCanvas.style.left = this.upperCanvas.style.left = (wrapperWidth - maxDimension.width) / 2 + 1 + 'px';
+        if (!isNullOrUndefined(this.toolbarTemplate)) {
+            this.lowerCanvas.style.left = parseFloat(this.lowerCanvas.style.left) + (toolbarHeight / 2) + 'px';
+        }
         if (canvasWrapper) {
             this.lowerCanvas.style.top = this.upperCanvas.style.top = (parseFloat(canvasWrapper.style.height) - maxDimension.height - 1) / 2 + 'px';
         }
@@ -6618,7 +6626,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 (isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
                 this.toolbarHeight = 0;
             }
-            this.update();
+            if (isNullOrUndefined(this.toolbarTemplate)) {this.update(); }
             const type: string = typeof(data);
             if (type === 'string') {
                 this.imageOnLoad(data as string);
@@ -7060,7 +7068,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             this.currObjType.isCustomCrop = false;
             const start: Point = {x: x, y: y};
-            this.drawShape('circle', strokeWidth, strokeColor, fillColor, start, radiusX, radiusY);
+            this.drawShape('ellipse', strokeWidth, strokeColor, fillColor, start, radiusX, radiusY);
         }
         return isEllipse;
     }

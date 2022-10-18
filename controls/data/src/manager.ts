@@ -192,6 +192,7 @@ export class DataManager {
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
             } else if (!isNullOrUndefined(result.url) || this.isCustomDataAdaptor(this.adaptor)) {
+                this.requests = [];
                 this.makeRequest(result, deffered, args, <Query>query);
             } else {
                 args = DataManager.getDeferedArgs(<Query>query, result as ReturnOption, args as ReturnOption);

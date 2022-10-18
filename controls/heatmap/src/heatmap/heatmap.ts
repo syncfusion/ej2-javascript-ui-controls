@@ -142,6 +142,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public dataSourceSettings : DataModel;
 
     /**
+     * Specifies the background color of the entire heatmap.
+     *
+     * @default null
+     */
+     @Property(null)
+     public background: string;
+
+    /**
      *  Specifies the theme for heatmap.
      *
      * @default 'Material'
@@ -899,9 +907,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.border = {
             width: 0
         };
+        const background: string = !isNullOrUndefined(this.background) ? this.background : this.themeStyle.background;
         const width: number = 0;
         const rect: RectOption = new RectOption(
-            this.element.id + '_HeatmapBorder', this.themeStyle.background, this.border, 1,
+            this.element.id + '_HeatmapBorder', background, this.border, 1,
             new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
         this.drawSvgCanvas.drawRectangle(rect, this.svgObject);
     }

@@ -7,7 +7,7 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
 import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing, Canvas } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
+import { IClickEventArgs, IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -2960,6 +2960,52 @@ describe('BPMN text annotation not dragged properly issue', () => {
         let node: NodeModel = diagram.getObject('bpmntext');
         expect(Math.ceil((node.wrapper.children[0] as Canvas).children[4].offsetX) === 231).toBe(true);
         expect(Math.ceil((node.wrapper.children[0] as Canvas).children[4].offsetY) === 438).toBe(true);
+        done();
+    });
+
+});
+
+describe('Click event not triggered properly in scrollbar position issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramorder' });
+        document.body.appendChild(ele);
+
+        let node: NodeModel = {
+            id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
+            flipMode: 'None', flip: 'Horizontal'
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node2' }]
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 500, annotations: [{ content: 'Node3' }]
+        };
+        diagram = new Diagram({
+            width: '500px', height: '500px', nodes: [node, node2, node3],
+            scrollSettings: { horizontalOffset: -66, verticalOffset: -66 },
+        });
+
+
+        diagram.appendTo('#diagramorder');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether click event triggered properly or not', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.click = (args: IClickEventArgs) => {
+            if(args.element) {
+                expect(args.element!== null).toBe(true);
+            }
+        }
+        mouseEvents.clickEvent(diagramCanvas, 492, 442);
         done();
     });
 

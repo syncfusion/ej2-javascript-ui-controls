@@ -1081,7 +1081,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
                         || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
-                    } if (!isNullOrUndefined(currentTarget) && currentTarget.innerText === tdEle.innerText && this.previousDates && currentTarget.classList.contains(SELECTED)) {
+                    } if (!isNullOrUndefined(currentTarget) && currentTarget.innerText === tdEle.innerText && this.previousDates && tdEle.classList.contains(SELECTED) && currentTarget.classList.contains(SELECTED)) {
                         removeClass([tdEle], SELECTED);
                         this.previousDates = false;
                         const copyValues: Date[] = this.copyValues(values);
@@ -1093,6 +1093,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                             if (localDateString === tempDateString) {
                                 const index: number = copyValues.indexOf(copyValues[i]);
                                 copyValues.splice(index, 1);
+                                values.splice(index, 1);
                             }
                         }
                         this.setProperties({ values: copyValues }, true);

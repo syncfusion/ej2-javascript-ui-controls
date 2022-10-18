@@ -1128,12 +1128,21 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     anchor = this.type === 'Rect' ? 'end' : (enableRtl ? 'end' : 'start');
                     x = featureBounds.x + (enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : -elementSpacing) :
                         featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2);
+                    if (x - textWidth < this.initialClipRect.x) {
+                        anchor = 'start';
+                    }
+                    if (x > this.initialClipRect.width) {
+                        x -= textWidth;
+                    }
                     y = featureBounds.y + featureBounds.height / 2;
                 } else {
                     anchor = 'middle';
                     x = featureBounds.y + featureBounds.height / 2;
-                    y = featureBounds.x + (enableRtl ? featureBounds.width + (this.type === 'Rect' ? -textHeight : textHeight) : 0) +
+                    y = featureBounds.x + (enableRtl ? featureBounds.width + (this.type === 'Rect' ? -elementSpacing : elementSpacing) : 0) +
                         (this.type === 'Rect' ? elementSpacing : -elementSpacing);
+                    if (y + (textHeight / 2) > this.initialClipRect.height + this.initialClipRect.y) {
+                        y = y - (textHeight / 3);
+                    }
                 }
                 let labelOptions: TextOption = new TextOption(
                     this.element.id + '_DataLabel_' + i,

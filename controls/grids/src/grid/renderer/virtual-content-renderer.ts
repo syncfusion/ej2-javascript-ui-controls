@@ -372,12 +372,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (e.renderFrozenRightContent) {
                 this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.' + literals.table).appendChild(target);
                 this.requestType = this.requestType === 'virtualscroll' ? this.empty as string : this.requestType;
+                this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
             } else if (!e.renderMovableContent) {
                 this.parent.getFrozenVirtualContent().querySelector('.' + literals.table).appendChild(target);
             } else if (e.renderMovableContent) {
                 this.parent.getMovableVirtualContent().querySelector('.' + literals.table).appendChild(target);
                 if (this.parent.getFrozenMode() !== literals.leftRight) {
                     this.requestType = this.requestType === 'virtualscroll' ? this.empty as string : this.requestType;
+                    this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
                 }
             }
             if (this.vfColIndex.length) {

@@ -970,6 +970,7 @@ export class Layout {
                                 let textElement = new TextElementBox();
                                 textElement.text = " ";
                                 textElement.line = element.line;
+                                textElement.characterFormat.copyFormat(element.characterFormat);
                                 element.line.children.splice(elementIndex, 0 , textElement);
                                 element.line.children.splice(elementIndex+1, 0 , element);
                                 element = textElement;
@@ -3159,8 +3160,18 @@ export class Layout {
         let spaceHeight: number = 0;
         let spaceBaseline: number = 0;
         let isContainsImage: boolean = false;
+        let isFieldCode: boolean = false;
         for (let i: number = 0; i < line.children.length; i++) {
             let element: ElementBox = line.children[i];
+            if (element instanceof FieldElementBox && element.fieldType === 2) {
+                isFieldCode = false;
+            }
+            if (isFieldCode) {
+                continue;
+            }
+            if (element instanceof FieldElementBox && element.fieldType === 0) {
+                isFieldCode = true;
+            }
             if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
                 continue;
             }

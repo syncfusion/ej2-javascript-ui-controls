@@ -2130,7 +2130,7 @@ export class DialogEdit {
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        if (isEdit) {
+        if (isEdit && gridObj.currentViewData.length != gridObj.dataSource['length']) {
              dataSource = <ITaskSegment[]>gridObj.dataSource;
         } else {
             dataSource = <ITaskSegment[]>gridObj.currentViewData;

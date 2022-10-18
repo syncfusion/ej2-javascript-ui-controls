@@ -315,6 +315,11 @@ export class DiagramEventHandler {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
+            // EJ2-64563-Added below code to calculate the bounds x and y value if vertical offset != 0
+            if(this.diagram.scroller.verticalOffset !== 0) {
+                bounds.x = bounds.x - this.diagram.scroller.horizontalOffset;
+                bounds.y = bounds.y - this.diagram.scroller.verticalOffset;
+            }
             if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
@@ -325,6 +330,11 @@ export class DiagramEventHandler {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
+            // EJ2-64563-Added below code to calculate the bounds x and y value if horizontal offset != 0
+            if(this.diagram.scroller.horizontalOffset !== 0) {
+                bounds.x = bounds.x - this.diagram.scroller.horizontalOffset;
+                bounds.y = bounds.y - this.diagram.scroller.verticalOffset;
+            }
             if (bounds.containsPoint({ x: x, y: y })) {
                 return true;
             }
@@ -1009,14 +1019,23 @@ export class DiagramEventHandler {
                         this.diagram.nameTable[(targetNode as Node).parentId].columnIndex;
                     if (this.currentPosition.x < targetNode.wrapper.bounds.center.x) { value -= 1; }
                 }
-                if (shape.lanes.length > (value - index)) {
-                    lane.header.width = shape.lanes[value - index].header.width;
-                    lane.header.height = shape.lanes[value - index].header.height;
+                if (shape.lanes.length > (value)) {
+                    lane.header.width = shape.lanes[value].header.width;
+                    lane.header.height = shape.lanes[value].header.height;
                 } else {
-                    lane.header.width = shape.lanes[value - index - 1].header.width;
-                    lane.header.height = shape.lanes[value - index - 1].header.height;
+                    //EJ2-64457 - Not able to add lane in the existing vertical swimlane.
+                    let ind:number;
+                    if(shape.orientation === 'Horizontal')
+                        {
+                            ind = targetNode.rowIndex < 3 ? 0 : value-index-1;                    
+                        }
+                    else{
+                            ind = value - 1;
+                        }
+                    lane.header.width = shape.lanes[ind].header.width;
+                    lane.header.height = shape.lanes[ind].header.height;
                 }
-                this.diagram.addLanes(swimlaneNode, [lane], value - index);
+                this.diagram.addLanes(swimlaneNode, [lane], shape.orientation === 'Horizontal' ? value - index : value);
             }
             this.commandHandler.select(swimlaneNode);
         } else if (actualShape.isLane) {

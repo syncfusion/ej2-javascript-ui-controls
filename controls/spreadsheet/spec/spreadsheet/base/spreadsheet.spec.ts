@@ -1884,5 +1884,34 @@ describe('Spreadsheet base module ->', () => {
                 });
             });
         });
+        describe('EJ2-64286 ->', () => {
+            beforeEach((done: Function) => {
+                const data = [
+                    [{value: 'RC-1'}, {value: 'RC-2'}, {value: 'RC-3'}, {value: 'RC-4'}],
+                    [{value: 1}, {value: '0'}, {value: null}, {value: 'null'}],
+                    [{value: 0}, {value: 1}, {value: ''}, {value: false}]
+                ];
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: data }] }],
+                    beforeDataBound: function () {
+                        helper.getInstance().numberFormat('0.0000', 'A2:D6');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Issue in updateRange when trying to update zero as value', (done: Function) => {
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('1.0000');
+                expect(helper.invoke('getCell', [2, 1]).textContent).toBe('0.0000');
+                expect(helper.invoke('getCell', [2, 2]).textContent).toBe('');
+                expect(helper.invoke('getCell', [2, 3]).textContent).toBe('null');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe('0.0000');
+                expect(helper.invoke('getCell', [3, 1]).textContent).toBe('1.0000');
+                expect(helper.invoke('getCell', [3, 2]).textContent).toBe('');
+                expect(helper.invoke('getCell', [3, 3]).textContent).toBe('FALSE');
+                done();
+            });
+        });
     });
 });

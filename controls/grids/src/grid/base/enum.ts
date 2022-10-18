@@ -58,7 +58,9 @@ export type Action =
     /** represents the column state */
     'columnstate' |
     /** Defines current Action as Infinite Scroll */
-    'infiniteScroll';
+    'infiniteScroll' |
+    /** Defines current Action as stringfilterrequest */
+    'stringfilterrequest';
 
 
 

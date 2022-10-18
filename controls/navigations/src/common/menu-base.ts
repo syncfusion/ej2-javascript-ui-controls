@@ -2013,14 +2013,20 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (ul.querySelector('.' + FOCUSED)) {
                 (ul.querySelector('.' + FOCUSED) as HTMLElement).focus();
             } else {
+                const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
                 if (this.currentTarget) {
-                    if (!(this.currentTarget.classList.contains("e-numerictextbox") || this.currentTarget.classList.contains("e-textbox"))) {
-                        const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
+                    if (!(this.currentTarget.classList.contains("e-numerictextbox") || this.currentTarget.classList.contains("e-textbox") || this.currentTarget.tagName === 'INPUT')) {
                         if (ele) {
                             (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
                         } else {
                             this.element.focus();
                         }
+                    }
+                } else {
+                    if (ele) {
+                        (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
+                    } else {
+                        this.element.focus();
                     }
                 }
             }

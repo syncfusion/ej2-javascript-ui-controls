@@ -3614,7 +3614,7 @@ export class Selection {
      * @returns {TableWidget}
      */
     public getFirstParagraphInFirstCell(table: TableWidget): ParagraphWidget {
-        if (table.childWidgets.length > 0) {
+        if (!isNullOrUndefined(table.childWidgets) && table.childWidgets.length > 0) {
             const firstRow: TableRowWidget = table.childWidgets[0] as TableRowWidget;
             const cell: TableCellWidget = firstRow.childWidgets[0] as TableCellWidget;
             const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
@@ -3629,7 +3629,7 @@ export class Selection {
      * @returns {ParagraphWidget}
      */
     public getLastParagraphInLastCell(table: TableWidget): ParagraphWidget {
-        if (table.childWidgets.length > 0) {
+        if (!isNullOrUndefined(table.childWidgets) && table.childWidgets.length > 0) {
             const lastrow: TableRowWidget = table.lastChild as TableRowWidget;
             const lastcell: TableCellWidget = lastrow.lastChild as TableCellWidget;
             const lastBlock: BlockWidget = lastcell.lastChild as BlockWidget;
@@ -5301,6 +5301,9 @@ export class Selection {
         if ((cell as TableCellWidget).nextRenderedWidget && cell.nextRenderedWidget instanceof TableCellWidget) {
             //Return first paragraph in cell.
             cell = cell.nextRenderedWidget as TableCellWidget;
+            if (cell.getSplitWidgets()[0] instanceof TableCellWidget) {
+                cell = cell.getSplitWidgets()[0] as TableCellWidget;
+            }
             const block: BlockWidget = cell.firstChild as BlockWidget;
             if (block) {
                 return this.getFirstParagraphBlock(block);
@@ -6772,8 +6775,15 @@ export class Selection {
             && renderedWidget[0] instanceof ListTextElementBox && renderedWidget[1] instanceof ListTextElementBox)) {
             count = renderedWidget.length;
         }
+        let isFieldCode: boolean = false;
         for (let i: number = 0; i < count; i++) {
             let widgetInternal: ElementBox = renderedWidget[i];
+            if (widgetInternal instanceof FieldElementBox && widgetInternal.fieldType === 2) {
+                isFieldCode = false;
+            }
+            if (isFieldCode) {
+                continue;
+            }
             if (widgetInternal instanceof ShapeBase && widgetInternal.textWrappingStyle !== 'Inline') {
                 continue;
             }
@@ -6783,6 +6793,9 @@ export class Selection {
                 left += widgetInternal.margin.left;
             } else {
                 left += widgetInternal.margin.left + widgetInternal.width + widgetInternal.padding.left;
+            }
+            if (widgetInternal instanceof FieldElementBox && widgetInternal.fieldType === 0) {
+                isFieldCode = true;
             }
         }
         let isRtlText: boolean = false;
@@ -7177,7 +7190,9 @@ export class Selection {
         let currentRevision: Revision[] = this.getCurrentRevision();
         if (!isNullOrUndefined(currentRevision) && this.owner.showRevisions) {
             this.owner.trackChangesPane.currentSelectedRevision = currentRevision[0];
-            this.owner.commentReviewPane.selectReviewTab('Changes');
+            if (isNullOrUndefined(this.owner.documentHelper.currentSelectedComment)) {
+                this.owner.commentReviewPane.selectReviewTab('Changes');
+            }
             this.owner.notify('reviewPane', { comment: this.owner.showComments, changes: true, isUserClosed: false });
         } else if (!isNullOrUndefined(this.owner.trackChangesPane.currentSelectedRevision)) {
             this.owner.trackChangesPane.currentSelectedRevision = undefined;
@@ -10126,10 +10141,10 @@ export class Selection {
         if (!isNullOrUndefined(comment)) {
             let startPosition: TextPosition = this.getElementPosition(comment.commentStart, true).startPosition;
             let endPosition: TextPosition = this.getElementPosition(comment.commentEnd, false).startPosition;
-            this.selectPosition(startPosition, endPosition);
             if (this.owner.commentReviewPane) {
                 this.owner.commentReviewPane.selectComment(comment);
             }
+            this.selectPosition(startPosition, endPosition);
         }
     }
     /**

@@ -177,6 +177,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             const collection: number = document.getElementsByClassName('e-overview').length;
             this.element.id = 'overview_' + this.overviewid + '_' + collection;
         }
+        //EJ2-64637 - Diagram element in the overview disappears on window resize.
+        this.id = this.element.id?this.element.id:this.id;
         this.element.style.background = 'transparent';
         this.unWireEvents();
         this.wireEvents();

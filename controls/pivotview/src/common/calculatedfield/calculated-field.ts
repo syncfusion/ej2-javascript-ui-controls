@@ -1083,12 +1083,7 @@ export class CalculatedField implements IAction {
                 (this.parent as PivotFieldList).dialogRenderer.fieldListDialog.show();
             }
         }
-        this.treeObj.destroy();
-        this.dialog.destroy();
-        this.newFields = null;
-        if (this.menuObj && !this.menuObj.isDestroyed) {
-            this.menuObj.destroy();
-        }
+        this.destroy();
         remove(document.getElementById(this.parentID + 'calculateddialog'));
         if (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
             remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
@@ -2141,7 +2136,47 @@ export class CalculatedField implements IAction {
      * @hidden
      */
     public destroy(): void {
-        this.removeEventListener();
-        this.formatTypes = null;
+        if (this.menuObj && !this.menuObj.isDestroyed) {
+            this.menuObj.destroy();
+        }
+        if(this.treeObj && !this.treeObj.isDestroyed){
+            this.treeObj.destroy();
+        }
+        if(this.dialog && !this.dialog.isDestroyed){
+            this.dialog.destroy();
+        }
+        if(this.inputObj && !this.inputObj.isDestroyed){
+            this.inputObj.destroy();
+        }
+        if(this.confirmPopUp && !this.confirmPopUp.isDestroyed){
+            this.confirmPopUp.destroy();
+        }
+        if(this.accordion && !this.accordion.isDestroyed){
+            this.accordion.destroy();
+        }
+        if (this.menuObj) {
+            this.menuObj = null;
+        }
+        if (this.treeObj) {
+            this.treeObj = null;
+        }
+        if (this.dialog) {
+            this.dialog = null;
+        }
+        if (this.inputObj) {
+            this.inputObj = null;
+        }
+        if (this.newFields) {
+            this.newFields = null;
+        }
+        if (this.confirmPopUp) {
+            this.confirmPopUp = null;
+        }
+        if (this.accordion) {
+            this.accordion = null;
+        }
+        if (this.curMenu) {
+            this.curMenu = null;
+        }
     }
 }
