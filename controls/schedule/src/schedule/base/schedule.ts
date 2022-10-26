@@ -3221,11 +3221,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public refreshEvents(isRemoteRefresh: boolean = true): void {
-        if (this.dragAndDropModule) {
-            this.dragAndDropModule.actionObj.action = '';
-            removeClass([this.element], cls.EVENT_ACTION_CLASS);
-        }
         if (isRemoteRefresh) {
+            if (this.dragAndDropModule) {
+                this.dragAndDropModule.actionObj.action = '';
+                removeClass([this.element], cls.EVENT_ACTION_CLASS);
+            }
             this.crudModule.refreshDataManager();
         } else {
             if (this.uiStateValues) {

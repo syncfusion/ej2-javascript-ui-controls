@@ -2,7 +2,7 @@
 import { RevisionType } from '../../base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -83,6 +83,12 @@ export class Revision {
             let rangeIndex: number = 0;
             while (this.range.length > 0) {
                 if (this.range[rangeIndex] instanceof ElementBox || this.range[rangeIndex] instanceof WCharacterFormat || this.range[rangeIndex] instanceof WRowFormat) {
+                    if (this.range[rangeIndex] instanceof BookmarkElementBox && isFromAccept && this.revisionType === 'Deletion') {
+                        let inline: BookmarkElementBox = this.range[rangeIndex] as BookmarkElementBox;
+                        if (this.owner.documentHelper.bookmarks.containsKey(inline.name)) {
+                            this.owner.documentHelper.bookmarks.remove(inline.name);
+                        }
+                    }
                     const moveToNextItem: boolean = this.unlinkRangeItem(this.range[rangeIndex] as ElementBox, this, isFromAccept);
                     if (moveToNextItem) {
                         rangeIndex++;

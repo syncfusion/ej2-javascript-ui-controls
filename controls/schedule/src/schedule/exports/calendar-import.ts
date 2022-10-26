@@ -116,10 +116,10 @@ export class ICalendarImport {
             }
         });
         const app: Record<string, any>[] = <Record<string, any>[]>extend([], events, null, true);
-        this.parent.addEvent(this.processOccurrence(app));
+        this.parent.addEvent(this.processOccurrence(app, id));
     }
 
-    private processOccurrence(app: Record<string, any>[]): Record<string, any>[] {
+    private processOccurrence(app: Record<string, any>[], maxId: number | string): Record<string, any>[] {
         const appoint: Record<string, any>[] = [];
         const uId: string = 'UID';
         const fields: EventFieldsMapping = this.parent.eventFields;
@@ -129,7 +129,7 @@ export class ICalendarImport {
         });
         app.forEach((eventObj: Record<string, any>) => {
             let parentObj: Record<string, any>;
-            let id: string;
+            let id: number | string;
             // eslint-disable-next-line no-prototype-builtins
             if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
                 parentObj = eventObj;
@@ -138,29 +138,47 @@ export class ICalendarImport {
             if (appointmentIds.indexOf(eventObj[fields.id]) < 0) {
                 const data: Record<string, any>[] = app.filter((data: Record<string, any>) => data.UID === eventObj[uId]);
                 if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
+                    id = typeof(maxId) === 'number' ? maxId++ : id;
                     for (let i: number = 0; i < data.length; i++) {
                         // eslint-disable-next-line no-prototype-builtins
                         if (data[i].hasOwnProperty(fields.recurrenceID)) {
                             const exdate: string = data[i][fields.recurrenceID] as string;
-                            data[i][fields.id] = this.parent.eventBase.generateGuid();
+                            data[i][fields.id] = typeof(maxId) === 'number' ? maxId++ : this.parent.eventBase.generateGuid();
                             data[i][fields.recurrenceID] = id;
                             data[i][fields.recurrenceException] = null;
-                            parentObj[fields.recurrenceException] = (isNullOrUndefined(parentObj[fields.recurrenceException])) ?
-                                exdate : parentObj[fields.recurrenceException] + ',' + exdate;
+                            parentObj[fields.recurrenceException] =
+                                this.getExcludeDateString(parentObj[fields.recurrenceException], exdate);
                             delete data[i][uId];
                             appoint.push(data[i]);
                         }
                     }
                     delete parentObj[uId];
+                    parentObj[fields.id] = id;
                     appoint.push(parentObj);
                     // eslint-disable-next-line no-prototype-builtins
                 } else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
                     delete eventObj[uId];
+                    eventObj[fields.id] = typeof(maxId) === 'number' ? maxId++ : id;
                     appoint.push(eventObj);
                 }
             }
         });
         return appoint;
+    }
+
+    private getExcludeDateString(parentException: string, occurrenceException: string): string {
+        if (isNullOrUndefined(parentException)) {
+            return occurrenceException;
+        } else if (isNullOrUndefined(occurrenceException)) {
+            return parentException;
+        }
+        const parentExDate: string[] = parentException.split(',').map((x: string) => x.split('T')[0]);
+        const childExDate: string[] = occurrenceException.split(',').map((x: string) => x.split('T')[0]);
+        const exDate: string[] = parentExDate.filter((x: string) => childExDate.indexOf(x) > -1);
+        if (exDate.length > 0) {
+            return parentException;
+        }
+        return parentException + ',' + occurrenceException;
     }
 
     private getDateString(value: string): string {

@@ -817,6 +817,7 @@ export class Edit {
                     this.parent.predecessorModule.validatePredecessor(child, [], '');
                 }
             }
+            this.parent.predecessorModule.isValidatedParentTaskID = '';
             /** validating predecessor for current edited records */
             if (ganttRecord.ganttProperties.predecessor) {
                 this.parent.isMileStoneEdited = ganttRecord.ganttProperties.isMilestone;
@@ -826,7 +827,7 @@ export class Edit {
                 this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
             }
             if (ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
-                (args.action === "DrawConnectorLine" || args.action === "DialogEditing")) {
+                (args.action === "DrawConnectorLine" || args.action === "CellEditing" || args.action === "DialogEditing")) {
                 this.updateChildItems(ganttRecord);
             }
             this.updateParentItemOnEditing();
@@ -834,6 +835,11 @@ export class Edit {
         /** Update parent up-to zeroth level */
         if (ganttRecord.parentItem ) {
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
+            let parentData: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
+            if (parentData.ganttProperties.predecessor) {
+               this.parent.predecessorModule.validatePredecessor(parentData, [], '');
+               this.updateParentItemOnEditing();
+            }
         }
         this.initiateSaveAction(args);
     }

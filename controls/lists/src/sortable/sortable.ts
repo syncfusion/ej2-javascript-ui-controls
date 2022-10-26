@@ -203,6 +203,9 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                     target: e.target, helper: document.getElementsByClassName('e-sortableclone')[0], event: e.event, scope: this.scope
                 });
             }
+        } else if (this.curTarget !== this.target && this.scope && this.curTarget !== target && !isNullOrUndefined(newInst.placeHolder)) {
+            remove(this.getSortableInstance(this.curTarget).placeHolderElement);
+            this.curTarget = this.target;
         }
         newInst = this.getSortableInstance(this.curTarget);
         if (isNullOrUndefined(target) && e.target !== newInst.placeHolderElement) {

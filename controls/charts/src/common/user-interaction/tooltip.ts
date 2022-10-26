@@ -333,7 +333,6 @@ export class BaseTooltip extends ChartData {
         const isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
         this.stopAnimation();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((this.chart as any).isReact && isTemplateRendered) { (this.chart as any).clearTemplate([tooltipTemplate.id], [0]); }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = +setTimeout(
                 (): void => {

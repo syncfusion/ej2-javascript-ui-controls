@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.50 (2022-10-18)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#F176305` - DataManager causes memory leak when doing multiple server side actions issue has been fixed.
+
 ## 19.4.52 (2022-02-15)
 
 ### DataManager

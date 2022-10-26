@@ -1665,4 +1665,135 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(saveRecord, 'click');
         });
     });
+    describe('Taskbar drag action', () => {
+        let ganttObj: Gantt;
+        let editingData = [
+            {
+                TaskID: 1,
+                TaskName: 'Project initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                        resources: [2, 3], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                            'From an engineer or company specializing in soil testing'
+                    },
+                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '5SF', Progress: 30 },
+                ]
+            },
+            {
+                TaskID: 5,
+                TaskName: 'Project estimation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2019'),
+                        Duration: 3, Progress: 30,
+                        info: 'Develop floor plans and obtain a materials list for estimations'
+                    },
+                ]
+            },
+           
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+        dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                notes: 'info',
+                resourceInfo: 'resources'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: resources,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'MMM dd, y',
+                },
+                bottomTier: {
+                    unit: 'Day',
+                },
+            },
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            eventMarkers: [
+                { day: '4/17/2019', label: 'Project approval and kick-off' },
+                { day: '5/3/2019', label: 'Foundation inspection' },
+                { day: '6/7/2019', label: 'Site manager inspection' },
+                { day: '7/16/2019', label: 'Property handover and sign-off' },
+            ],
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources'
+            },
+            editDialogFields: [
+                { type: 'General', headerText: 'General' },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' },
+            ],
+            splitterSettings: {
+                columnIndex: 2
+            },
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('07/28/2019')
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Child Drag', () => {
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+                expect(args.taskBarEditAction).toBe('ChildDrag');
+            };
+            ganttObj.dataBind();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+               expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/08/2019');
+                expect(args.taskBarEditAction).toBe('ChildDrag');
+            };
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+    });
 });

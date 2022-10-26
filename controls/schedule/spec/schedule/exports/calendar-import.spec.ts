@@ -303,6 +303,38 @@ ISREADONLY:false
 END:VEVENT
 END:VCALENDAR`;
 
+const calString: string = `BEGIN:VCALENDAR
+PRODID:-//Syncfusion Inc//Scheduler//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Calendar
+X-WR-TIMEZONE:Asia/Calcutta
+BEGIN:VEVENT
+LOCATION:
+SUMMARY:1
+UID:1
+RRULE:FREQ=DAILY;INTERVAL=1;COUNT=5;
+EXDATE:20221017T093000
+EXDATE:20221019T093000
+DTSTART;TZID="Asia/Calcutta":20221017T093000
+DTEND;TZID="Asia/Calcutta":20221017T100000
+DESCRIPTION:
+ISREADONLY:false
+END:VEVENT
+BEGIN:VEVENT
+LOCATION:
+SUMMARY:1
+UID:1
+RECURRENCE-ID;TZID="Asia/Calcutta":20221019T103000
+RRULE:FREQ=DAILY;INTERVAL=1;COUNT=5;
+DTSTART;TZID="Asia/Calcutta":20221019T103000
+DTEND;TZID="Asia/Calcutta":20221019T110000
+DESCRIPTION:
+ISREADONLY:false
+END:VEVENT
+END:VCALENDAR`;
+
 describe('ICS calendar import', () => {
     beforeAll(() => {
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
@@ -513,6 +545,7 @@ describe('ICS calendar import', () => {
                 expect(schObj.element.querySelectorAll('.e-recurrence-icon').length).toEqual(5);
                 expect(schObj.element.querySelectorAll('.e-recurrence-edit-icon').length).toEqual(0);
             };
+            expect(typeof (schObj.eventsData[3].Id)).toEqual(typeof (schObj.eventsData[3].RecurrenceID));
             expect(schObj.element.querySelector('.e-appointment').querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('My_event');
             expect(schObj.element.querySelectorAll('.e-appointment')[3].querySelector('.' + cls.SUBJECT_CLASS).innerHTML).toEqual('My_event_exception');
             expect(schObj.element.querySelectorAll('.e-recurrence-icon').length).toEqual(4);
@@ -534,6 +567,39 @@ describe('ICS calendar import', () => {
             expect(schObj.eventsData.filter((data: Record<string, any>) => !isNullOrUndefined(data.UID)).length).toBe(0);
         });
     });
+
+    describe('EJ2-64169 - Import recurrence events', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
+                Id: 'b9c8baa1-90c6-4ccd-babb-3444d219601d',
+                Subject: 'Meeting',
+                StartTime: new Date(2022, 9, 17, 10, 0, 0),
+                EndTime: new Date(2022, 9, 17, 11, 30, 0)
+            }];
+            const options: ScheduleModel = { selectedDate: new Date(2022, 9, 17), currentView: 'Week' };
+            schObj = createSchedule(options, events, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('with string type events present in scheduler', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                expect(typeof(schObj.eventsData[2].Id)).toEqual('string');
+                expect(typeof(schObj.eventsData[1].RecurrenceID)).toEqual('string');
+                expect(schObj.eventsData[1].RecurrenceID).toEqual(schObj.eventsData[2].Id);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            expect(typeof(schObj.eventsData[0].Id)).toEqual('string');
+            const fileObj: File = new File([calString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
+            schObj.importICalendar(fileObj);
+        });
+    });
+
 
     it('memory leak', () => {
         profile.sample();

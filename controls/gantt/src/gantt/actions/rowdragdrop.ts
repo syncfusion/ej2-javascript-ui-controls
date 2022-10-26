@@ -359,20 +359,20 @@ export class RowDD {
                     let draggedParent: IGanttData;
                     let toParent: IGanttData;
                     if (draggedRecord.parentItem) {
-                        draggedParent = this.parent.currentViewData[this.parent.ids.indexOf(draggedRecord.parentItem.taskId)];
+                        draggedParent = this.parent.flatData[this.parent.ids.indexOf(draggedRecord.parentItem.taskId)];
                     }
                     else {
                         draggedParent = draggedRecord;
                     }
                     if (droppedRecord.parentItem) {
-                        toParent = this.parent.currentViewData[this.parent.ids.indexOf(droppedRecord.parentItem.taskId)];
+                        toParent = this.parent.flatData[this.parent.ids.indexOf(droppedRecord.parentItem.taskId)];
                     }
                     else {
                         toParent = droppedRecord;
                     }
                     let validateRecords: IGanttData[];
                     if (toParent.uniqueID === draggedParent.uniqueID || (draggedParent.parentItem &&
-                        toParent.uniqueID == this.parent.currentViewData[this.parent.ids.indexOf(draggedParent.parentItem.taskId)].uniqueID)) {
+                        toParent.uniqueID == this.parent.flatData[this.parent.ids.indexOf(draggedParent.parentItem.taskId)].uniqueID)) {
                         validateRecords = this.parent.currentViewData.filter((data: IGanttData) => {
                             if ((data.ganttProperties.predecessor && data.ganttProperties.predecessor.length > 0)) {
                                 for (let i: number = 0; i < data.ganttProperties.predecessor.length; i++) {

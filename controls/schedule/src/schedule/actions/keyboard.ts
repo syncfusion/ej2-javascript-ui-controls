@@ -41,6 +41,7 @@ export class KeyboardInteraction {
         enter: 'enter',
         escape: 'escape',
         delete: 'delete',
+        backspace: 'backspace',
         home: 'home',
         pageUp: 'pageup',
         pageDown: 'pagedown',
@@ -114,6 +115,7 @@ export class KeyboardInteraction {
             this.processTab(e, e.shiftKey);
             break;
         case 'delete':
+        case 'backspace':
             this.processDelete(e);
             break;
         case 'ctrlShiftUpArrow':

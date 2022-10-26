@@ -344,6 +344,49 @@ describe('Touch functionalities', () => {
         });
     });
 
+    describe('EJ2MVC-469 Need to enable Schedule swipe action when performing swipe on the appointments', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2017, 10, 2), width: 300 };
+            schObj = createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('swipe right touch move different points', () => {
+            node = schObj.element.querySelector('.e-table-container');
+            touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
+            const target: Element = schObj.element.querySelector('.e-appointment');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 50, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 80, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 100, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 250, target: target });
+            touchTestObj.startEvent(moveStart);
+            touchTestObj.moveEvent(moveArgs1);
+            touchTestObj.moveEvent(moveArgs2);
+            touchTestObj.endEvent(movedEnd);
+            EventHandler.trigger(<HTMLElement>node, 'transitionend');
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                .toEqual('<div class="e-header-day">Wed</div><div class="e-header-date e-navigate" role="link">1</div>');
+        });
+        it('swipe left touch move different points', () => {
+            node = schObj.element.querySelector('.e-table-container');
+            touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
+            const target: Element = schObj.element.querySelector('.e-appointment');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 250, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 220, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 200, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 50, target: target });
+            touchTestObj.startEvent(moveStart);
+            touchTestObj.moveEvent(moveArgs1);
+            touchTestObj.moveEvent(moveArgs2);
+            touchTestObj.endEvent(movedEnd);
+            EventHandler.trigger(<HTMLElement>node, 'transitionend'); debugger
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
+                .toEqual('<div class="e-header-day">Thu</div><div class="e-header-date e-navigate" role="link">2</div>');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

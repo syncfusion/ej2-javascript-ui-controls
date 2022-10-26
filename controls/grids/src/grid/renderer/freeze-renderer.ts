@@ -497,8 +497,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         const hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element).classList;
         if (obj.case === 'textwrap') {
             if (wrapMode !== 'Header' || obj.isModeChg) {
-                fRows = cont.querySelector('.' + literals.frozenContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
-                mRows = cont.querySelector('.' + literals.movableContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                fRows = cont.querySelector('.' + literals.frozenContent).querySelector('tbody').childNodes as NodeListOf<HTMLElement>;
+                mRows = cont.querySelector('.' + literals.movableContent).querySelector('tbody').childNodes as NodeListOf<HTMLElement>;
                 this.setWrapHeight(fRows, mRows, obj.isModeChg, true);
             }
             if (wrapMode === 'Content' && this.parent.allowTextWrap) {

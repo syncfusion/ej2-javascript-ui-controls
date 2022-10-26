@@ -415,11 +415,11 @@ export class Resize implements IAction {
                     const mtbody: Element = this.parent.getMovableContentTbody();
                     const ftbody: Element = this.parent.getFrozenLeftContentTbody();
                     const frtbody: Element = this.parent.getFrozenRightContentTbody();
-                    const mtr: Element[] = [].slice.call(mtbody.querySelectorAll('tr'));
-                    const ftr: Element[] = [].slice.call(ftbody.querySelectorAll('tr'));
+                    const mtr: Element[] = [].slice.call(mtbody.childNodes);
+                    const ftr: Element[] = [].slice.call(ftbody.childNodes);
                     let frTr: HTMLElement[] = [];
                     if (this.parent.getFrozenMode() === literals.leftRight && frtbody) {
-                        frTr = [].slice.call(frtbody.querySelectorAll('tr'));
+                        frTr = [].slice.call(frtbody.childNodes);
                     }
                     for (let i: number = 0; i < mtr.length; i++) {
                         gridActionHandler(

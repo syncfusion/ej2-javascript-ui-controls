@@ -118,6 +118,8 @@ export class CartesianAxisLayoutPanel {
             row = <Row>item;
             row.nearSizes = [];
             row.farSizes = [];
+            row.insideNearSizes = [];
+            row.insideFarSizes = [];
             this.arrangeAxis(row);
             this.measureDefinition(row, chart, new Size(chart.availableSize.width, row.computedHeight));
             if (this.leftSize < sum(row.nearSizes)) {
@@ -136,6 +138,8 @@ export class CartesianAxisLayoutPanel {
             column = <Column>item;
             column.farSizes = [];
             column.nearSizes = [];
+            column.insideNearSizes = [];
+            column.insideFarSizes = [];
             this.arrangeAxis(column);
             this.measureDefinition(column, chart, new Size(column.computedWidth, chart.availableSize.height));
             if (this.bottomSize < sum(column.nearSizes)) {
@@ -164,7 +168,7 @@ export class CartesianAxisLayoutPanel {
                 || axis.scrollbarSettings.enable) ? ele : 0;
             axis.getModule(chart);
             axis.baseModule.calculateRangeAndInterval(size, axis);
-            definition.computeSize(axis, axis.scrollBarHeight);
+            definition.computeSize(axis, axis.scrollBarHeight, definition);
         }
         if (definition.farSizes.length > 0) {
             definition.farSizes[definition.farSizes.length - 1] -= axisPadding;
@@ -222,11 +226,21 @@ export class CartesianAxisLayoutPanel {
                     axis.rect.width = 0;
                 }
                 if (axis.isAxisOpposedPosition) {
-                    x = rect.x + rect.width + sum(subArray(row.farSizes, farCount));
+                    if (axis.labelPosition === 'Inside' && axis.orientation === "Vertical") {
+                        x = rect.x + rect.width - sum(subArray(row.insideFarSizes, farCount));
+                    }
+                    else {
+                        x = rect.x + rect.width + sum(subArray(row.farSizes, farCount));
+                    }
                     axis.rect.x = axis.rect.x >= x ? axis.rect.x : x;
                     farCount++;
                 } else {
-                    x = rect.x - sum(subArray(row.nearSizes, nearCount));
+                    if (axis.labelPosition === 'Inside' && axis.orientation === "Vertical") {
+                        x = rect.x + sum(subArray(row.insideNearSizes, nearCount));
+                    }
+                    else{
+                        x = rect.x - sum(subArray(row.nearSizes, nearCount));
+                    }
                     axis.rect.x = axis.rect.x <= x ? axis.rect.x : x;
                     nearCount++;
                 }
@@ -253,11 +267,21 @@ export class CartesianAxisLayoutPanel {
                     axis.rect.height = 0;
                 }
                 if (axis.isAxisOpposedPosition) {
-                    y = rect.y - sum(subArray(column.farSizes, farCount));
+                    if (axis.labelPosition === 'Inside' && axis.orientation === "Horizontal") {
+                        y = rect.y + sum(subArray(column.insideFarSizes, farCount));
+                    }
+                    else {
+                        y = rect.y - sum(subArray(column.farSizes, farCount));
+                    }
                     axis.rect.y = axis.rect.y <= y ? axis.rect.y : y;
                     farCount++;
                 } else {
-                    y = rect.y + rect.height + sum(subArray(column.nearSizes, nearCount));
+                    if (axis.labelPosition === 'Inside' && axis.orientation === "Horizontal") {
+                        y = rect.y + rect.height - sum(subArray(column.insideNearSizes, nearCount));
+                    }
+                    else {
+                        y = rect.y + rect.height + sum(subArray(column.nearSizes, nearCount));
+                    }
                     axis.rect.y = axis.rect.y >= y ? axis.rect.y : y;
                     nearCount++;
                 }

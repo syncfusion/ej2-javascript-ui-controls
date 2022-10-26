@@ -86,9 +86,11 @@ export class Gregorian implements CalendarUtil {
         }
     }
     public setMonth(date: Date, interval: number, startDate: number): void {
+        date.setDate(1);
         date.setFullYear(date.getFullYear());
         date.setMonth(interval - 1);
-        date.setDate(startDate);
+        const maxDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        date.setDate(Math.min(startDate, maxDay));
     }
     public addYears(date: Date, interval: number): void {
         date.setFullYear(date.getFullYear() + interval);

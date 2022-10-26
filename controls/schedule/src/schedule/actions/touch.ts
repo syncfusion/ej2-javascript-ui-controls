@@ -36,8 +36,8 @@ export class ScheduleTouch {
 
     private scrollHandler(e: ScrollEventArgs): void {
         if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action || !this.parent.allowSwiping ||
-            (e.originalEvent && ((<HTMLElement>e.originalEvent.target).classList.contains(cls.APPOINTMENT_CLASS) ||
-                closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS)))) {
+            (e.originalEvent && <HTMLElement>e.originalEvent.target && ((<HTMLElement>e.originalEvent.target).classList.contains(cls.APPOINTMENT_CLASS) ||
+                closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS)) && !this.parent.isAdaptive)) {
             return;
         }
         if (!this.timeStampStart) {

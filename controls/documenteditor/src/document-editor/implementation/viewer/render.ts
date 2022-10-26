@@ -548,6 +548,10 @@ export class Renderer {
         }
     }
     private getContainerWidth(paraWidget: ParagraphWidget, page: Page): any {
+        let hangingIndent: number = 0;
+        if (paraWidget.paragraphFormat.firstLineIndent < 0) {
+            hangingIndent = Math.abs(paraWidget.paragraphFormat.firstLineIndent);
+        }
         if (paraWidget.isInsideTable) {
             let cell = paraWidget.associatedCell;
             return (cell.width + cell.margin.left + cell.margin.right) - cell.leftBorderWidth;
@@ -558,7 +562,7 @@ export class Renderer {
             } else {
                 let sectionFormat: WSectionFormat = page.bodyWidgets[0].sectionFormat;
                 let width: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
-                return HelperMethods.convertPointToPixel(width - (paraWidget.rightIndent + paraWidget.leftIndent));
+                return HelperMethods.convertPointToPixel(width + hangingIndent - (paraWidget.rightIndent + paraWidget.leftIndent));
             }
         }
     }
@@ -1922,7 +1926,7 @@ export class Renderer {
         let left: number = cellWidget.x - leftMargin - lineWidth;
         let topMargin: number = (cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth);
         let top: number = cellWidget.y - topMargin;
-        let width: number = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
+        let width: number = cellWidget.width + leftMargin + cellWidget.margin.right + lineWidth;
         if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
             let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
             bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
@@ -1937,8 +1941,7 @@ export class Renderer {
         if (cellFormat.shading.hasValue('foregroundColor') && cellFormat.shading.textureStyle !== 'TextureNone') {
             this.pageContext.beginPath();
                 this.pageContext.fillStyle = this.drawTextureStyle(cellFormat.shading.textureStyle, HelperMethods.getColor(cellFormat.shading.foregroundColor), HelperMethods.getColor(cellFormat.shading.backgroundColor), cellFormat.shading.foregroundColor === 'empty', cellFormat.shading.backgroundColor === 'empty');
-                //Width is increased twice since left and right line width is reduced in cell rendering which is required for background rendering.
-                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width + (lineWidth * 2)), this.getScaledValue(height));
+                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
                 this.pageContext.closePath();
         }    
         

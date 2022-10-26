@@ -2480,7 +2480,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}
      */
     public refreshActiveTab(): void {
-        if ((this as any).isReact) {
+        if ((this as any).isReact && this.isTemplate) {
             this.clearTemplate();
         }
         if (!this.isTemplate) {

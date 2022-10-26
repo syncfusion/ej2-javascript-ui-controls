@@ -6818,8 +6818,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             type = type ? type : 'Png';
             this.redrawActObj();
-            const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: 'ImageEditor', fileType: type as FileType};
-            const saved: SaveEventArgs = { fileName: 'ImageEditor', fileType: type as FileType};
+            const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: fileName ? fileName : 'ImageEditor', fileType: type as FileType};
+            const saved: SaveEventArgs = { fileName: fileName ? fileName : 'ImageEditor', fileType: type as FileType};
             this.trigger('beforeSave', beforeSave, (observableSaveArgs: BeforeSaveEventArgs) => {
                 if (!observableSaveArgs.cancel) {
                     fileName = observableSaveArgs.fileName ? observableSaveArgs.fileName : fileName;

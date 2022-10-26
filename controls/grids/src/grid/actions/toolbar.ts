@@ -215,7 +215,7 @@ export class Toolbar {
         const tlbrLeftWidth: number = tlbrLeftElement ? tlbrLeftElement.clientWidth : 0;
         const tlbrCenterWidth: number = tlbrCenterElement ? tlbrCenterElement.clientWidth : 0;
         const tlbrRightWidth: number = tlbrRightElement ? tlbrRightElement.clientWidth : 0;
-        const tlbrItemsWidth: number = tlbrElement ? tlbrItems.clientWidth : 0;
+        const tlbrItemsWidth: number = tlbrItems ? tlbrItems.clientWidth : 0;
         const tlbrWidth: number = tlbrElement ? tlbrElement.clientWidth : 0;
         if (tlbrLeftWidth > tlbrWidth || tlbrCenterWidth > tlbrWidth || tlbrRightWidth > tlbrWidth || tlbrItemsWidth > tlbrWidth) {
             this.toolbar.refreshOverflow();

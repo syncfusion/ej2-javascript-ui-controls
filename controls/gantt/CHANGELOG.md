@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.52 (2022-10-26)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I413261` - Dependency values for the parent task are not properly updated issue has been fixed.
+- `#I412821` - Row drag and drop is not working properly when Virtualization is enabled.
+
 ## 20.3.50 (2022-10-18)
 
 ### Gantt

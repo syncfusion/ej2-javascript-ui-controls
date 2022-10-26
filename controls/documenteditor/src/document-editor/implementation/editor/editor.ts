@@ -5501,7 +5501,12 @@ export class Editor {
                         this.constructRevisionFromID(currentElement, true);
                     }
                     if (!isNullOrUndefined(currentElement.nextNode)) {
-                        currentElement = currentElement.nextNode.nextValidNodeForTracking;
+                        if (currentElement.nextNode instanceof BookmarkElementBox) {
+                            currentElement = currentElement.nextNode;
+                        }
+                        else {
+                            currentElement = currentElement.nextNode.nextValidNodeForTracking;
+                        }
                     }
                     skipElement = false;
                 }
@@ -12473,14 +12478,16 @@ export class Editor {
                 count -= (inline.length - endIndex);
             }
             if (startIndex === 0 && endIndex === inline.length) {
-                if (!(this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing))) {
-                    if (inline instanceof BookmarkElementBox) {
-                        this.removedBookmarkElements.push(inline);
+                if (!this.owner.enableTrackChanges || this.owner.enableTrackChanges && this.skipTracking()) {
+                    if (!(this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing))) {
+                        if (inline instanceof BookmarkElementBox) {
+                            this.removedBookmarkElements.push(inline);
+                        }
                     }
-                }
-                if (inline instanceof BookmarkElementBox) {
-                    if (this.documentHelper.bookmarks.containsKey(inline.name)) {
-                        this.documentHelper.bookmarks.remove(inline.name);
+                    if (inline instanceof BookmarkElementBox) {
+                        if (this.documentHelper.bookmarks.containsKey(inline.name)) {
+                            this.documentHelper.bookmarks.remove(inline.name);
+                        }
                     }
                 }
                 if ((inline instanceof ImageElementBox && inline.textWrappingStyle !== 'Inline') || inline instanceof ShapeElementBox) {
@@ -14095,7 +14102,14 @@ export class Editor {
                         this.removeRevisionsInformation(elementBox, indexInInline, endOffset, elementIndex);
                     }
                 } else {
-                    elementBox.line.children.splice(elementBox.indexInOwner, 1);
+                    if (isTrackingEnabled && elementBox instanceof BookmarkElementBox) {
+                        if (!this.checkToCombineRevisionsInSides(elementBox, 'Deletion')) {
+                            this.insertRevision(elementBox, 'Deletion');
+                        }
+                        this.updateLastElementRevision(elementBox);
+                    } else {
+                        elementBox.line.children.splice(elementBox.indexInOwner, 1);
+                    }
                 }
                 return undefined;
             }
@@ -14366,7 +14380,9 @@ export class Editor {
         let nextElement: ElementBox = currentElement.nextNode;
         let isCombined: boolean = false;
         if (!isNullOrUndefined(prevElement)) {
-            prevElement = prevElement.previousValidNodeForTracking;
+            if (!(prevElement instanceof BookmarkElementBox)) {
+                prevElement = prevElement.previousValidNodeForTracking;
+            }
             if (!isNullOrUndefined(prevElement)) {
                 let matchedRevisions: Revision[] = this.getMatchedRevisionsToCombine(prevElement.revisions, revisionType);
                 if (matchedRevisions.length > 0) {
@@ -14376,7 +14392,9 @@ export class Editor {
             }
         }
         if (!isNullOrUndefined(nextElement)) {
-            nextElement = nextElement.nextValidNodeForTracking;
+            if (!(nextElement instanceof BookmarkElementBox)) {
+                nextElement = nextElement.nextValidNodeForTracking;
+            }
             if (!isNullOrUndefined(nextElement)) {
                 let matchedRevisions: Revision[] = this.getMatchedRevisionsToCombine(nextElement.revisions, revisionType);
                 if (matchedRevisions.length > 0) {
@@ -15011,6 +15029,7 @@ export class Editor {
             this.generateFallBackImage(base64String, width, height, imageElementBox);
         } else {
             imageElementBox.imageString = base64String;
+            imageElementBox.element.crossOrigin = 'Anonymous';
         }
         imageElementBox.width = width;
         imageElementBox.height = height;

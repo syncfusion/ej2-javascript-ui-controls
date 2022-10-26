@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.52 (2022-10-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I412377` - Axis labels are now rendering properly inside the chart.
+- `#F171844` - Console error while using shared tooltip has been fixed.
+
 ## 20.3.50 (2022-10-18)
 
 ### Chart

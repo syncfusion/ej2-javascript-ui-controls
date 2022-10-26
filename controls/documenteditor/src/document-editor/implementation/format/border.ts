@@ -526,13 +526,10 @@ export class WBorder {
     /**
      * @private
      */
-    public isEqualFormat(border: WBorder, includeSpace?: boolean): boolean {
+    public isEqualFormat(border: WBorder): boolean {
         let value: boolean = false;
-        if (this.color === border.color && this.lineStyle === border.lineStyle && this.lineWidth === border.lineWidth && this.shadow == border.shadow) {
+        if (this.color === border.color && this.lineStyle === border.lineStyle && this.lineWidth === border.lineWidth && this.shadow == border.shadow && this.space === border.space) {
             value = true;
-        }
-        if (includeSpace) {
-            value = (this.space == border.space);
         }
         return value;
     }

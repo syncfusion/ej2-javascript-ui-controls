@@ -6,6 +6,7 @@ import { getModules, ModuleLoader } from '../common/index';
 import { CommonErrors, FormulasErrorsStrings } from '../common/enum';
 import { IFormulaColl, FailureEventArgs, StoredCellInfo } from '../common/interface';
 import { Parser } from './parser';
+import { getRangeIndexes, getCellIndexes, getCellAddress, isNumber } from '../../workbook/index';
 
 /**
  * Represents the calculate library.
@@ -939,8 +940,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         }
                         args = customArgs;
                     } else {
-                        args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
-                            .split(this.getParseArgumentSeparator());
+                        // Use to split the arguments when days formula parameters contain comma inside the double quotes like "October 22, 2016"
+                        if (libFormula === 'DAYS' && sFormula.includes('"')) {
+                            args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket)).match(/(".*?"|[^",\s]+)/g);
+                        } else {
+                            args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket)).split(this.getParseArgumentSeparator());
+                        }
                         if (sFormula.includes(this.getParseArgumentSeparator() + this.tic)) {
                             let joinIdx: number = null;
                             for (let k: number = 0; k < args.length; k++) {
@@ -1841,8 +1846,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const argArr: string[] = sCell.argArray;
         let isCriteria: string = sCell.isCriteria;
         let storeCell: string[] = sCell.storedCells;
-        const isCountIfs: string = sCell.isCountIfS;
-        const i: number = sCell.countVal;
+        const isCountIfs: boolean = sCell.isCountIfS === this.trueValue;
+        const i: number = sCell.countVal || 0;
         const rangeLength: string[] | string = isCriteria === this.trueValue ? storeCell : cellValue;
         let tempStoredCell: string[] = [];
         for (let j: number = 0; j < rangeLength.length; j++) {
@@ -1850,32 +1855,70 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             let cellVal: string = this.getValueFromArg(cellValue[j]);
             let criteria: string;
             let newCell: string = '';
-            criteria = argArr[2].split(this.tic).join(this.emptyString);
+            criteria = argArr[ isCountIfs ? (1 + (i * 2)) : (2 + i)].split(this.tic).join(this.emptyString);
             criteria = this.isCellReference(criteria) ? this.getValueFromArg(criteria) : criteria;
-            isCriteria = isCountIfs === this.trueValue ? this.trueValue : isCriteria;
+            isCriteria = isCountIfs ? this.trueValue : isCriteria;
             if (isCriteria === this.trueValue) {
                 let cell: string = '';
                 let count: number = 0;
                 let newCount: number = 0;
-                storeCell[j] = isCountIfs === this.trueValue && i === 0 ? cellValue[j] : storeCell[j];
+                let prevCriteria: string;
+                let prevCriteriaIdx: number[];
+                let prevStoreCellIdx: number[];
+                let criteriaRangeIndexes: number[];
+                storeCell[j] = isCountIfs && !i ? cellValue[j] : storeCell[j];
                 cell = storeCell[j];
+                if (i) {
+                    prevCriteria = cellRanges[i - 1];
+                    prevCriteriaIdx = prevCriteria.indexOf("!") > -1 ? getRangeIndexes(prevCriteria.substring(prevCriteria.lastIndexOf("!") + 1)) : getRangeIndexes(prevCriteria);
+                    prevStoreCellIdx = cell.indexOf("!") > -1 ? getCellIndexes(cell.substring(cell.lastIndexOf("!") + 1)) : getCellIndexes(cell);
+                    criteriaRangeIndexes = cellRanges[i].indexOf("!") > -1 ? getRangeIndexes(cellRanges[i].substring(cellRanges[i].lastIndexOf("!") + 1)) : getRangeIndexes(cellRanges[i]);
+                }
+                let isCriteriaFromOtherSheet: boolean = cell.indexOf("!") > -1;
+                let isSumFromOtherSheet: boolean;
+                let sumRangeSheet: string = '';
+                let criteriaRangeSheet: string = '';
+                if (isCriteriaFromOtherSheet) {
+                    criteriaRangeSheet = cell.substring(0, cell.lastIndexOf("!") + 1);
+                    cell = cell.substring(cell.lastIndexOf("!") + 1);
+                }
                 // convert the new cell ranges  for find in range with criteria.
                 while (!this.isDigit(cell[count])) {
                     count = count + 1;
                 }
                 if (this.isCellReference(cellRanges[i]) && cellRanges[i].indexOf(':') > -1) {
-                    const k: number = cellRanges[i].indexOf(':');
-                    newCell = this.substring(cellRanges[i], k);
+                    newCell = isCountIfs && !i ? (rangeLength[j].indexOf('!') > -1 ? rangeLength[j].substring(rangeLength[j].lastIndexOf('!') + 1) : rangeLength[j]) : getCellAddress(criteriaRangeIndexes[0] + (prevStoreCellIdx[0] - prevCriteriaIdx[0]), criteriaRangeIndexes[1] + (prevStoreCellIdx[1] - prevCriteriaIdx[1]));
+                    isSumFromOtherSheet = cellRanges[i].indexOf("!") > -1;
+                    if (isSumFromOtherSheet) {
+                        sumRangeSheet = cellRanges[i].substring(0, cellRanges[i].lastIndexOf('!') + 1);
+                    }
                     while (!this.isDigit(newCell[newCount])) {
                         newCount = newCount + 1;
                     }
                 }
-                const cellAlpha: string = this.substring(cell, count);
-                const newCellAlpha: string = this.substring(newCell, newCount);
+                let cellAlpha: string = this.substring(cell, count);
+                let newCellAlpha: string = this.substring(newCell, newCount);
+                let cellNumeric: string = this.substring(cell, count, cell.length - count);
+                let newCellNumeric: string = this.substring(newCell, newCount, newCell.length - count);
+                if (isCriteriaFromOtherSheet) {
+                    cellAlpha = criteriaRangeSheet + cellAlpha;
+                    newCellAlpha = criteriaRangeSheet + newCellAlpha;
+                }
+                if (cellNumeric !== newCellNumeric) {
+                    storeCell[j] = this.substring(storeCell[j], isCriteriaFromOtherSheet ? (criteriaRangeSheet.length + count) : count) + newCellNumeric;
+                }
                 newCell = storeCell[j].split(cellAlpha).join(newCellAlpha);
+                if (isSumFromOtherSheet) {
+                    if (newCell.indexOf("!") > -1) {
+                        newCell = newCell.substring(newCell.lastIndexOf("!") + 1);
+                    }
+                    newCell = sumRangeSheet + newCell;
+                } else {
+                    newCell = newCell.substring(newCell.lastIndexOf("!") + 1);
+                }
                 cellVal = this.getValueFromArg(newCell);
-                criteria = isCountIfs === this.trueValue ? criterias[i].split(this.tic).join(this.emptyString) :
-                    criterias[i - 1].split(this.tic).join(this.emptyString);
+                criteria = isCountIfs ? criteria :
+                    ( this.isCellReference(criterias[i - 1]) ? (this.getValueFromArg(criterias[i - 1])) : criterias[i - 1].split(this.tic).join(this.emptyString));
             }
             let op: string = 'equal';
             if (criteria.startsWith('<=')) {
@@ -1978,6 +2021,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         let avgValCount: number = 0;
+        let sumRangeIndexes: number[] = cellRanges[0].indexOf("!") > -1 ? getRangeIndexes(cellRanges[0].substring(cellRanges[0].lastIndexOf("!") + 1))  : getRangeIndexes(cellRanges[0]);
+        let lastCriteria: string = cellRanges[cellRanges.length - 1];
+        let criteriaRangeIndexes: number[] = lastCriteria.indexOf("!") > -1 ? getRangeIndexes(lastCriteria.substring(lastCriteria.lastIndexOf("!") + 1))  : getRangeIndexes(lastCriteria);
         for (let j: number = 0; j < storedCell.length; j++) {
             // convert the new cell ranges  for find sum in range 0(first range)
             let cell: string = '';
@@ -1985,25 +2031,56 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             let count: number = 0;
             let newCount: number = 0;
             cell = storedCell[j];
+            let isCriteriaFromOtherSheet: boolean = cell.indexOf("!") > -1;
+            let isSumFromOtherSheet: boolean;
+            let sumRangeSheet: string = '';
+            let criteriaRangeSheet: string = '';
+            if (isCriteriaFromOtherSheet) {
+                criteriaRangeSheet = cell.substring(0, cell.lastIndexOf("!") + 1);
+                cell = cell.substring(cell.lastIndexOf("!") + 1);
+            }
             while (!this.isDigit(cell[count])) {
                 count = count + 1;
             }
             if (this.isCellReference(cellRanges[0]) && cellRanges[0].indexOf(':') > -1) {
-                const k: number = cellRanges[0].indexOf(':');
-                newCell = this.substring(cellRanges[0], k);
+                newCell = getCellAddress(sumRangeIndexes[0] + (getCellIndexes(cell)[0] - criteriaRangeIndexes[0]), sumRangeIndexes[1] + (getCellIndexes(cell)[1] - criteriaRangeIndexes[1]));
+                isSumFromOtherSheet =  cellRanges[0].indexOf("!") > -1;
+                if (isSumFromOtherSheet) {
+                    sumRangeSheet = cellRanges[0].substring(0, cellRanges[0].lastIndexOf('!') + 1);
+                }
                 while (!this.isDigit(newCell[newCount])) {
                     newCount = newCount + 1;
                 }
             }
-            const cellAlpha: string = this.substring(cell, count);
-            const newCellAlpha: string = this.substring(newCell, newCount);
+            let cellAlpha: string = this.substring(cell, count);
+            let newCellAlpha: string = this.substring(newCell, newCount);
+            let cellNumeric: string = this.substring(cell, count, cell.length - count);
+            let newCellNumeric: string = this.substring(newCell, newCount, newCell.length - count);
+            if (isCriteriaFromOtherSheet) {
+                cellAlpha = criteriaRangeSheet + cellAlpha;
+                newCellAlpha = criteriaRangeSheet + newCellAlpha;
+            }
+            if (cellNumeric !== newCellNumeric) {
+                storedCell[j] = this.substring(storedCell[j], isCriteriaFromOtherSheet ? (criteriaRangeSheet.length + count) : count) + newCellNumeric;
+            }
             cellvalue = storedCell[j].split(cellAlpha).join(newCellAlpha);
+            if (isSumFromOtherSheet) {
+                if (cellvalue.indexOf("!") > -1) {
+                    cellvalue = cellvalue.substring(cellvalue.lastIndexOf("!") + 1);
+                }
+                cellvalue = sumRangeSheet + cellvalue;
+            } else {
+                cellvalue = cellvalue.substring(cellvalue.lastIndexOf("!") + 1);
+            }
             if (isCountIfs === this.trueValue) {
                 sum = sum + 1;
             } else {
-                avgValCount++;
                 const argValue: string = this.getValueFromArg(cellvalue);
-                sum = sum + parseFloat(argValue === '' ? '0' : argValue);
+                const newArgValue: number = parseFloat(argValue === '' && isAvgIfs !== this.trueValue ? '0' : argValue);
+                if (isNumber(newArgValue)) {
+                    avgValCount++;
+                    sum = sum + newArgValue;
+                }
             }
         }
         if (isAvgIfs === this.trueValue) { sum = sum / avgValCount; }

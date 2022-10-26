@@ -4537,7 +4537,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 left++;
             }
             const frIdx: number = left + movable;
-            const td: Element = this.getCellFromIndex(selectedRow[rowIdx], fieldIdx);
+            const td: Element = this.enableVirtualization ? tr.children[fieldIdx] : this.getCellFromIndex(selectedRow[rowIdx], fieldIdx);
             if (!isNullOrUndefined(td)) {
                 const Idx: number = col.getFreezeTableName() === 'movable' ? left : col.getFreezeTableName() === 'frozen-right' ? frIdx : 0;
                 if (this.groupSettings.columns.length) {

@@ -1114,6 +1114,7 @@ export class SfdtReader {
                 let bookmark: BookmarkElementBox = undefined;
                 bookmark = new BookmarkElementBox(inline.bookmarkType);
                 bookmark.name = inline.name;
+                this.checkAndApplyRevision(inline, bookmark);
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
                 if (!this.isParseHeader || this.isPaste) {

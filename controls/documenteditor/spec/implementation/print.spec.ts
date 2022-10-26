@@ -1,4 +1,4 @@
-import { PageLayoutViewer, DocumentHelper, } from '../../src/index';
+import { PageLayoutViewer, DocumentHelper, Editor, Selection, } from '../../src/index';
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { Page, Rect } from '../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
@@ -475,3 +475,32 @@ console.log('Test print canvas alpha after enabling HF');
         expect((documentHelper.render as any).pageContext.globalAlpha).toBe(1);
     });
 });
+describe('Validate the image printing', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enablePrint: true, enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Print, Selection); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((): void => {
+        if (editor) {
+            editor.destroy();
+        }
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+    });
+    it('Validate the image printing', () => {
+        console.log('Validate the image printing');
+        editor.openBlank();
+        editor.editor.insertImage('https://cdn.syncfusion.com/content/images/Logo/Logo_150dpi.png');
+        expect(editor.exportAsImage(1, 'Png')).not.toThrowError;
+    });
+});
+

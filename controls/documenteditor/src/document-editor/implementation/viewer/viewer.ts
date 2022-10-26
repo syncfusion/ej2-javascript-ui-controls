@@ -3600,20 +3600,19 @@ export class DocumentHelper {
         if (!isNullOrUndefined(previousBlock) && previousBlock instanceof ParagraphWidget && paragraphX === previousBlockX) {
             isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(previousBlock.paragraphFormat.borders.top);
             isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(previousBlock.paragraphFormat.borders.bottom);
-            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(previousBlock.paragraphFormat.borders.left, true);
-            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(previousBlock.paragraphFormat.borders.right, true);
+            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(previousBlock.paragraphFormat.borders.left);
+            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(previousBlock.paragraphFormat.borders.right);
             if (isSameTopBorder && isSameBottomBorder && isSameLeftBorder && isSameRightBorder
                 && previousBlock.paragraphFormat.borders.horizontal.lineStyle === 'None') {
                 skipTopBorder = true;
             }
         }
-        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && paragraphX === nextBlockX) {
-            isSameNextBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.top);
+        if (!isNullOrUndefined(nextBlock) && nextBlock instanceof ParagraphWidget && (paragraphX === nextBlockX || (this.owner.documentHelper.layout.isInitialLoad && this.skipBottomBorder(paragraph, nextBlock)))) {
             isSameTopBorder = paragraph.paragraphFormat.borders.top.isEqualFormat(nextBlock.paragraphFormat.borders.top);
             isSameBottomBorder = paragraph.paragraphFormat.borders.bottom.isEqualFormat(nextBlock.paragraphFormat.borders.bottom);
-            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(nextBlock.paragraphFormat.borders.left, true);
-            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(nextBlock.paragraphFormat.borders.right, true);
-            if (isSameNextBorder && isSameBottomBorder && isSameTopBorder && isSameLeftBorder && isSameRightBorder) {
+            isSameLeftBorder = paragraph.paragraphFormat.borders.left.isEqualFormat(nextBlock.paragraphFormat.borders.left);
+            isSameRightBorder = paragraph.paragraphFormat.borders.right.isEqualFormat(nextBlock.paragraphFormat.borders.right);
+            if (isSameBottomBorder && isSameTopBorder && isSameLeftBorder && isSameRightBorder) {
                 skipBottomBorder = true;
             }
         }
@@ -3626,10 +3625,38 @@ export class DocumentHelper {
     * @private
     */
     public getParagraphLeftPosition(paragraphWidet: ParagraphWidget): number {
+        let hangingIndent: number = 0;
+        let startX: number = 0;
+        if (paragraphWidet.paragraphFormat.firstLineIndent < 0) {
+            hangingIndent = HelperMethods.convertPointToPixel(Math.abs(paragraphWidet.paragraphFormat.firstLineIndent));
+            hangingIndent = parseFloat(hangingIndent.toFixed(5));
+        }
         if (paragraphWidet.isEmpty() && paragraphWidet.paragraphFormat.textAlignment !== 'Left' && paragraphWidet.paragraphFormat.textAlignment !== 'Justify') {
-            return paragraphWidet.clientX;
+            startX = paragraphWidet.clientX > hangingIndent ? paragraphWidet.clientX - hangingIndent : paragraphWidet.clientX;
+            return startX;
         } else {
-            return paragraphWidet.x;
+            startX = paragraphWidet.x > hangingIndent ? paragraphWidet.x - hangingIndent : paragraphWidet.x;
+            return startX;
+        }
+    }
+    /**
+  * @private
+  */
+    public skipBottomBorder(paragraph: ParagraphWidget, nextWidget: ParagraphWidget): boolean {
+        let currentIndent: number = 0;
+        let previousIndent: number = 0;
+        if (paragraph.paragraphFormat.leftIndent === nextWidget.paragraphFormat.leftIndent) {
+            return true;
+        } else {
+            currentIndent = paragraph.paragraphFormat.firstLineIndent < 0 ? Math.abs(paragraph.paragraphFormat.firstLineIndent) : 0;
+            previousIndent = nextWidget.paragraphFormat.firstLineIndent < 0 ? Math.abs(nextWidget.paragraphFormat.firstLineIndent) : 0;
+            currentIndent = paragraph.paragraphFormat.leftIndent > currentIndent ? paragraph.paragraphFormat.leftIndent - currentIndent : 0;
+            previousIndent = nextWidget.paragraphFormat.leftIndent > previousIndent ? nextWidget.paragraphFormat.leftIndent - previousIndent : 0;
+            if (currentIndent === previousIndent) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
     /**

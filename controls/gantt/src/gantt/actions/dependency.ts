@@ -15,6 +15,7 @@ export class Dependency {
     private parentRecord: IParent[] = [];
     private parentIds: string[] = [];
     private parentPredecessors: IGanttData[] = [];
+    public isValidatedParentTaskID: string;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -723,6 +724,11 @@ export class Dependency {
                     continue;
                 }
                 if (record) { this.validatePredecessor(record, undefined, 'successor'); }
+            }
+            if (record && record.hasChildRecords && record.ganttProperties.taskId !== this.isValidatedParentTaskID &&
+                this.parent.editModule['taskbarMoved']) {
+                this.parent.editModule['updateChildItems'](record);
+                this.isValidatedParentTaskID = record.ganttProperties.taskId;
             }
         }
     }

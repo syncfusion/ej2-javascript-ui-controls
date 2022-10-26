@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- Issue with "Save Button Alignment in mobile mode" has been resolved.
+
+### Image Editor
+
+#### Bug Fixes
+
 - Issue with "Toolbar Template Alignment" has been resolved.
 
 ## 20.3.48 (2022-10-05)

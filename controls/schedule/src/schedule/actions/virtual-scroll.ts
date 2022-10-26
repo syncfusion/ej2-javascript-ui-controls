@@ -101,7 +101,9 @@ export class VirtualScroll {
 
     private renderEvents(): void {
         this.setTabIndex();
-        this.parent.refreshEvents(false);
+        if (this.parent.crudModule) {
+            this.parent.crudModule.refreshProcessedData(true);
+        }
         if (this.parent.currentView !== 'Month') {
             this.parent.notify(events.contentReady, {});
         }

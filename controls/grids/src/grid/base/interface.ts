@@ -1213,6 +1213,8 @@ export interface DetailDataBoundEventArgs {
      * @isGenericType true
      */
     data?: Object;
+    /** Defines the child grid of the current row. */
+    childGrid?: IGrid;
 }
 
 export interface ColumnChooserEventArgs {

@@ -1093,6 +1093,179 @@ describe('Spreadsheet formula module ->', () => {
                     done();
                 });
             });
+            it('DAYS formula returns NAN value for string formatted date value', (done: Function) => {
+                helper.edit('F1', '=DAYS("7/24/1969", "7/16/1969")');
+                const cellEle: HTMLElement = helper.invoke('getCell', [0, 5]);
+                const cell: any = helper.getInstance().getActiveSheet().rows[0].cells[5];
+                expect(cell.value).toBe(8);
+                expect(cellEle.textContent).toBe('8');
+                helper.edit('E1', '7/24/1969');
+                helper.edit('E2', '7/16/1969');
+                helper.edit('F1', '=DAYS(E1,E2)');
+                expect(cell.value).toBe(8);
+                expect(cellEle.textContent).toBe('8');
+                helper.edit('F1', '=DAYS(8, 4)');
+                expect(cell.value).toBe(4);
+                expect(cellEle.textContent).toBe('4');
+                helper.edit('F1', '=DAYS("18", "4")');
+                expect(cell.value).toBe(14);
+                expect(cellEle.textContent).toBe('14');
+                helper.edit('F1', '=DAYS("2-june-2016","2-may-2016")');
+                expect(cell.value).toBe(31);
+                expect(cellEle.textContent).toBe('31');
+                helper.edit('F1', '=DAYS("October 22","October 12")');
+                expect(cell.value).toBe(10);
+                expect(cellEle.textContent).toBe('10');
+                helper.edit('F1', '=DAYS("October 22, 2016","October 12, 2016")');
+                expect(cell.value).toBe(10);
+                expect(cellEle.textContent).toBe('10');
+                helper.edit('F1', '=DAYS("November 2020", "October 2020")');
+                expect(cell.value).toBe(31);
+                expect(cellEle.textContent).toBe('31');
+                done();
+            });
+        });
+        describe('EJ2-63727 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [
+                        { rows: [
+                            { cells: [{ value: 'Residential' }, { value: '11' }] },
+                            { cells: [{ value: '22', index: 1 }] },
+                            { cells: [{ value: 'Residential' }, { value: '33' }] },
+                            { cells: [{ value: 'New-Residential' }, { formula: '=SUM(B2:B3)' }] },
+                            { index: 5, cells: [{ value: '10' }, { value: 'Residential' }] },
+                            { cells: [{ value: '20' }, { value: 'Residential' }] },
+                            { cells: [{ value: '30' }, { value: 'Residential' }] },
+                            { cells: [{ value: '40' }, { value: 'New-Residential' }] },
+                            { cells: [{ index: 5, value: '11' }, { value: '1' }] },
+                            { cells: [{ index: 1, value: 'Residential' }, { value: 'New-Residential' }, { index: 5, value: '22' }, { value: '2' }] },
+                            { cells: [{ index: 1, value: 'Residential' }, { value: 'New-Residential' }, { index: 5, value: '33' }, { value: '3' }] },
+                            { cells: [{ index: 1, value: 'New-Residential' }, { value: 'Residential' }, { index: 5, value: '44' }, { value: '4' }] },
+                            { cells: [{ index: 1, value: 'New-Residential' }, { value: 'Residential' }, { value: 'Residential' }, { value: 'New-Residential' }] },
+                            { cells: [{ index: 3, value: 'New-Residential' }, { value: 'Residential' }] },
+                            { cells: [{ index: 3, value: 'Residential' }, { value: 'New-Residential' }] },
+                            { cells: [{ index: 3, value: 'New-Residential' }, { value: 'Residential' }] }
+                        ]},
+                        { rows: [
+                            { cells: [{ value: 'Residential' }, { value: '1' }] },
+                            { cells: [{ value: 'Residential' }, { value: '2' }] },
+                            { cells: [{ value: 'Residential' }, { value: '3' }] },
+                            { cells: [{ value: 'New-Residential' }, { value: '4' }] }
+                        ]},
+                        { rows: [
+                            { cells: [{ value: 'Residential' }, { value: '111' }] },
+                            { cells: [{ value: 'Residential' }, { value: '222' }] },
+                            { cells: [{ value: 'Residential' }, { value: '333' }] },
+                            { cells: [{ value: 'New-Residential' }, { value: '444' }] }
+                        ]}
+                    ] 
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Formula ( =SUMIFS ) not working as expected when referring values in other sheets', (done: Function) => {
+                helper.edit('D1', '=SUMIFS(B1:B3,A1:A3,"=Residential")');
+                helper.edit('E1', '=SUMIFS(Sheet2!B1:B3,Sheet2!A1:A3,"=Residential")');
+                helper.edit('F1', '=SUMIFS(Sheet3!B1:B3,Sheet2!A1:A3,"=Residential")');
+                helper.edit('G1', '=SUMIFS(B1:B3,Sheet2!A1:A3,"=Residential")');
+                helper.edit('H1', '=SUMIFS(Sheet3!B1:B3,A1:A3,"=Residential")');
+                helper.edit('D2', '=SUMIFS(B1:B4,A1:A4,"New-Residential")');
+                helper.edit('E2', '=SUMIFS(Sheet2!B1:B4,Sheet3!B1:B4,"<=333")');
+                helper.edit('F2', '=SUMIFS(Sheet2!B1:B4,Sheet3!B1:B4,">=333")');
+                helper.edit('G2', '=SUMIFS(B1:B4,A1:A4,"=")');
+                helper.edit('H2', '=SUMIFS(B1:B4,A1:A4,"<>")');
+                helper.edit('D3', '=SUMIFS(A6:A9,Sheet2!A1:A4,Sheet2!A4,Sheet3!A1:A4,Sheet3!A4)');
+                helper.edit('E3', '=SUMIFS(A6:A9,Sheet2!A1:A4,Sheet2!A3,Sheet3!A1:A4,Sheet3!A3)');
+                helper.edit('F3', '=SUMIFS(Sheet3!B1:B4,Sheet2!A1:A4,Sheet2!A4,A1:A4,A4)');
+                helper.edit('G3', '=SUMIFS(Sheet2!B1:B4,A1:A4,A1,Sheet3!A1:A4,Sheet3!A1)');
+                helper.edit('H3', '=SUMIFS(A6:A9,A1:A4,A1)');
+                helper.edit('D4', '=SUMIFS(B1:B4,A6:A9,SUM(H3:I3))');
+                helper.edit('E4', '=SUMIFS(F10:G13,Sheet2!A1:B4,"=R*")');
+                helper.edit('F4', '=SUMIFS(F10:G13,B11:C14,B11,D14:E17,"=N*")');
+                helper.edit('G4', '=SUMIFS(Sheet3!B1:C4,B11:C14,B11)');
+                helper.edit('I10', '=SUMIFS(F10:G13,B11:C14,C11)');
+                helper.edit('J10', '=SUMIFS(F10:G13,B11:C14,B11)');
+                helper.edit('k10', '=SUMIFS(F10:G13,B11:C14,C11,D14:E17,E14)');
+                helper.edit('L10', '=SUMIFS(F10:G13,B11:C14,B14,D14:E17,D14)');
+                helper.edit('I11', '=AVERAGEIFS(B1:B4,A1:A4,"New-Residential")');
+                helper.edit('J11', '=AVERAGEIFS(Sheet2!B1:B4,Sheet3!B1:B4,"<=333")');
+                helper.edit('k11', '=AVERAGEIFS(Sheet2!B1:B4,Sheet3!B1:B4,">=333")');
+                helper.edit('L11', '=AVERAGEIFS(B1:B4,A1:A4,"=")');
+                helper.edit('M11', '=AVERAGEIFS(B1:B4,A1:A4,"<>")');
+                helper.edit('I12', '=AVERAGEIFS(A6:A9,Sheet2!A1:A4,Sheet2!A4,Sheet3!A1:A4,Sheet3!A4)');
+                helper.edit('J12', '=AVERAGEIFS(A6:A9,Sheet2!A1:A4,Sheet2!A3,Sheet3!A1:A4,Sheet3!A3)');
+                helper.edit('k12', '=AVERAGEIFS(Sheet3!B1:B4,Sheet2!A1:A4,Sheet2!A4,A1:A4,A4)');
+                helper.edit('L12', '=AVERAGEIFS(Sheet2!B1:B4,A1:A4,A1,Sheet3!A1:A4,Sheet3!A1)');
+                helper.edit('M12', '=AVERAGEIFS(A6:A9,A1:A4,A1)');
+                helper.edit('I13', '=COUNTIFS(A1:A4,"New-Residential")');
+                helper.edit('J13', '=COUNTIFS(Sheet3!B1:B4,"<=333")');
+                helper.edit('k13', '=COUNTIFS(Sheet3!B1:B4,">=333")');
+                helper.edit('L13', '=COUNTIFS(A1:A4,"=")');
+                helper.edit('M13', '=COUNTIFS(A1:A4,"<>")');
+                helper.edit('I14', '=COUNTIFS(Sheet2!A1:A4,Sheet2!A4,Sheet3!A1:A4,Sheet3!A4)');
+                helper.edit('J14', '=COUNTIFS(Sheet2!A1:A4,Sheet2!A3,Sheet3!A1:A4,Sheet3!A3)');
+                helper.edit('k14', '=COUNTIFS(Sheet2!A1:A4,Sheet2!A4,A1:A4,A4)');
+                helper.edit('L14', '=COUNTIFS(A1:A4,A1,Sheet3!A1:A4,Sheet3!A1)');
+                helper.edit('M14', '=COUNTIFS(B11:C14,B11,D14:E17,D15)');
+                helper.edit('I15', '=AVERAGEIFS(F10:G13,Sheet2!A1:B4,"=R*")');
+                helper.edit('J15', '=AVERAGEIFS(F10:G13,B11:C14,B11,D14:E17,"=N*")');
+                helper.edit('k15', '=AVERAGEIFS(Sheet3!B1:C4,B11:C14,B11)');
+                helper.edit('I16', '=COUNTIFS(Sheet2!A1:B4,"=R*")');
+                helper.edit('J16', '=COUNTIFS(B11:C14,B11,D14:E17,"=N*")');
+                helper.edit('k16', '=COUNTIFS(Sheet3!A1:B4,"=R*")');
+                expect(helper.invoke('getCell', [0, 3]).textContent).toBe('44');
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('6');
+                expect(helper.invoke('getCell', [0, 5]).textContent).toBe('666');
+                expect(helper.invoke('getCell', [0, 6]).textContent).toBe('66');
+                expect(helper.invoke('getCell', [0, 7]).textContent).toBe('444');
+                expect(helper.invoke('getCell', [1, 3]).textContent).toBe('55');
+                expect(helper.invoke('getCell', [1, 4]).textContent).toBe('6');
+                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('7');
+                expect(helper.invoke('getCell', [1, 6]).textContent).toBe('22');
+                expect(helper.invoke('getCell', [1, 7]).textContent).toBe('99');
+                expect(helper.invoke('getCell', [2, 3]).textContent).toBe('40');
+                expect(helper.invoke('getCell', [2, 4]).textContent).toBe('60');
+                expect(helper.invoke('getCell', [2, 5]).textContent).toBe('444');
+                expect(helper.invoke('getCell', [2, 6]).textContent).toBe('4');
+                expect(helper.invoke('getCell', [2, 7]).textContent).toBe('40');
+                expect(helper.invoke('getCell', [3, 3]).textContent).toBe('55');
+                expect(helper.invoke('getCell', [3, 4]).textContent).toBe('66');
+                expect(helper.invoke('getCell', [3, 5]).textContent).toBe('25');
+                expect(helper.invoke('getCell', [3, 6]).textContent).toBe('333');
+                expect(helper.invoke('getCell', [9, 8]).textContent).toBe('80');
+                expect(helper.invoke('getCell', [9, 9]).textContent).toBe('40');
+                expect(helper.invoke('getCell', [9, 10]).textContent).toBe('45');
+                expect(helper.invoke('getCell', [9, 11]).textContent).toBe('35');
+                expect(helper.invoke('getCell', [10, 8]).textContent).toBe('55');
+                expect(helper.invoke('getCell', [10, 9]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [10, 10]).textContent).toBe('3.5');
+                expect(helper.invoke('getCell', [10, 11]).textContent).toBe('22');
+                expect(helper.invoke('getCell', [10, 12]).textContent).toBe('33');
+                expect(helper.invoke('getCell', [11, 8]).textContent).toBe('40');
+                expect(helper.invoke('getCell', [11, 9]).textContent).toBe('20');
+                expect(helper.invoke('getCell', [11, 10]).textContent).toBe('444');
+                expect(helper.invoke('getCell', [11, 11]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [11, 12]).textContent).toBe('20');
+                expect(helper.invoke('getCell', [12, 8]).textContent).toBe('1');
+                expect(helper.invoke('getCell', [12, 9]).textContent).toBe('3');
+                expect(helper.invoke('getCell', [12, 10]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [12, 11]).textContent).toBe('1');
+                expect(helper.invoke('getCell', [12, 12]).textContent).toBe('3');
+                expect(helper.invoke('getCell', [13, 8]).textContent).toBe('1');
+                expect(helper.invoke('getCell', [13, 9]).textContent).toBe('3');
+                expect(helper.invoke('getCell', [13, 10]).textContent).toBe('1');
+                expect(helper.invoke('getCell', [13, 11]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [13, 12]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [14, 8]).textContent).toBe('22');
+                expect(helper.invoke('getCell', [14, 9]).textContent).toBe('12.5');
+                expect(helper.invoke('getCell', [14, 10]).textContent).toBe('166.5');
+                expect(helper.invoke('getCell', [15, 8]).textContent).toBe('3');
+                expect(helper.invoke('getCell', [15, 9]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [15, 10]).textContent).toBe('3');
+                done();
+            });
         });
     });
     describe('Stability ->', () => {
@@ -1283,6 +1456,38 @@ describe('Spreadsheet formula module ->', () => {
                 expect(sheet.rows[4].cells[2].formula).toBe('=B1+AB1+AAB1');
                 done();
             });
+        });
+    });
+    describe('EJ2-64655->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '179.75' }] }, { cells: [{ value: '179.725' }] }, { cells: [{ value: '179.7235' }] }, { cells: [{ value: '179.22345' }] }, { cells: [{ value: '179.323455' }] }, { cells: [{ value: '179.8234505' }] }, { cells: [{ value: '-179.725' }] }] }, {}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Rounding formula not works properly when the last digit contains 5', (done: Function) => {
+            helper.edit('B1', '=round(A1, 1)');
+            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('179.8');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[1])).toBe('{"value":"179.8","formula":"=round(A1, 1)"}');
+            helper.edit('B2', '=round(A2, 2)');
+            expect(helper.invoke('getCell', [1, 1]).textContent).toBe('179.73');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[1])).toBe('{"value":"179.73","formula":"=round(A2, 2)"}');
+            helper.edit('B3', '=round(A3, 3)');
+            expect(helper.invoke('getCell', [2, 1]).textContent).toBe('179.724');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[1])).toBe('{"value":"179.724","formula":"=round(A3, 3)"}');
+            helper.edit('B4', '=round(A4, 4)');
+            expect(helper.invoke('getCell', [3, 1]).textContent).toBe('179.2235');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[1])).toBe('{"value":"179.2235","formula":"=round(A4, 4)"}');
+            helper.edit('B5', '=round(A5, 5)');
+            expect(helper.invoke('getCell', [4, 1]).textContent).toBe('179.32346');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[1])).toBe('{"value":"179.32346","formula":"=round(A5, 5)"}');
+            helper.edit('B6', '=round(A6, 6)');
+            expect(helper.invoke('getCell', [5, 1]).textContent).toBe('179.823451');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[1])).toBe('{"value":"179.823451","formula":"=round(A6, 6)"}');
+            helper.edit('B7', '=round(A7, 2)');
+            expect(helper.invoke('getCell', [6, 1]).textContent).toBe('-179.73');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[1])).toBe('{"value":"-179.73","formula":"=round(A7, 2)"}');
+            done();
         });
     });
 });

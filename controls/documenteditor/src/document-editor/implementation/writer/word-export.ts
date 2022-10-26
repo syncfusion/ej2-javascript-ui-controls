@@ -5873,11 +5873,11 @@ export class WordExport {
     private serializeLevelOverrides(writer: XmlWriter, listLevel: any, levelIndex: number) : void {
         writer.writeStartElement(undefined, 'lvlOverride', this.wNamespace);
         writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
-        writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
-        if(!isNullOrUndefined(listLevel.startAt)) {
+        if (!isNullOrUndefined(listLevel.startAt)) {
+            writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
             writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
+            writer.writeEndElement();
         }
-        writer.writeEndElement();
         writer.writeEndElement();     
     }
     private getLevelPattern(levelPattern: any): string {

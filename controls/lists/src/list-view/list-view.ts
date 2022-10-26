@@ -982,8 +982,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    targetElement: any;
     private clickHandler(e: MouseEvent): void {
         const target: Element = <Element>e.target;
+        this.targetElement = target;
         const classList: DOMTokenList = target.classList;
         let closestElement: HTMLElement;
         if (classList.contains(classNames.backIcon) || classList.contains(classNames.headerText)) {
@@ -1025,9 +1027,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     li.classList.remove(classNames.selected);
                 } else {
                     this.setCheckboxLI(li, e);
+                    if((target.nodeName == "INPUT") || (target.nodeName == "TEXTAREA")) {
+                        target.classList.add('e-focused');
+                        this.targetElement = target;
+                    }
                 }
             } else {
                 this.setSelectLI(li, e);
+                if((target.nodeName == "INPUT") || (target.nodeName == "TEXTAREA")) {
+                    target.classList.add('e-focused');
+                    this.targetElement = target;
+                }
             }
             closestElement = closest((e.target as HTMLElement), 'li') as HTMLElement;
             if (!isNullOrUndefined(closestElement)) {
@@ -1251,11 +1261,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.back();
                 break;
             case 32:
-                let textAreaFocus;
-                if(!isNullOrUndefined(this.curUL)){
-                     textAreaFocus = this.curUL.querySelector('textarea') || this.curUL.querySelector('input');
-                }
-                if(isNullOrUndefined(textAreaFocus) || !(textAreaFocus.classList.contains('e-focused'))){
+                if (isNullOrUndefined(this.targetElement) || !(this.targetElement.classList.contains('e-focused'))) {
                     this.spaceKeyHandler(e);
                 }
                 break;

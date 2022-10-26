@@ -5386,6 +5386,11 @@ export class BookmarkElementBox extends ElementBox {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
+        if (this.revisions.length > 0) {
+            span.removedIds = Revision.cloneRevisions(this.revisions);
+        } else {
+            span.removedIds = this.removedIds.slice();
+        }
         span.width = this.width;
         span.height = this.height;
         if (this.contentControlProperties) {

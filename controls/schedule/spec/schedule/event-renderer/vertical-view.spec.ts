@@ -1597,6 +1597,38 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+    describe('EJ2-64597 - Issue in recurrence event with yearly type', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Burning Man',
+            StartTime: new Date(1648713600000),
+            EndTime: new Date(1648713600000),
+            IsAllDay: true,
+            RecurrenceRule: 'FREQ=YEARLY;BYDAY=TH;BYSETPOS=1;BYMONTH=4;INTERVAL=1'
+        }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                showWeekend: false,
+                selectedDate: new Date(2022, 3, 7)
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', () => {
+            expect(schObj.eventsData.length).toEqual(1);
+            const eventList: Element = schObj.element.querySelector('.e-appointment');
+            expect(eventList.querySelector('.e-subject').innerHTML).toBe('Burning Man');
+        });
+
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

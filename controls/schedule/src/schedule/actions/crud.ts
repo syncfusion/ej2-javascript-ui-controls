@@ -68,7 +68,7 @@ export class Crud {
         this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 
-    public refreshProcessedData(): void {
+    public refreshProcessedData(isVirtualScrollAction: boolean = false): void {
         if (this.parent.dragAndDropModule) {
             this.parent.dragAndDropModule.actionObj.action = '';
             removeClass([this.parent.element], 'e-event-action');
@@ -87,6 +87,10 @@ export class Crud {
                 }
             }
             this.parent.resetTemplates(templateNames);
+        }
+        if (isVirtualScrollAction) {
+            this.parent.notify(events.dataReady, { processedData: this.parent.eventsProcessed });
+            return;
         }
         const eventsData: Record<string, any>[] = this.parent.eventsData || [];
         const blockData: Record<string, any>[] = this.parent.blockData || [];

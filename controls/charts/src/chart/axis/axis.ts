@@ -61,18 +61,22 @@ export class Row extends ChildProperty<Row> {
     public nearSizes: number[] = [];
     /** @private */
     public farSizes: number[] = [];
+    /** @private */
+    public insideFarSizes: number[] = [];
+    /** @private */
+    public insideNearSizes: number[] = [];
     /**
      * Measure the row size
      *
      * @returns {void}
      * @private
      */
-    public computeSize(axis: Axis, scrollBarHeight: number): void {
+    public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column): void {
         let width: number = 0;
         const innerPadding: number = 5;
         if (axis.visible && axis.internalVisibility) {
             width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
+                axis.findLabelSize(axis.crossInAxis, innerPadding, definition) + axis.lineStyle.width * 0.5);
         }
 
         if (axis.isAxisOpposedPosition) {
@@ -116,6 +120,10 @@ export class Column extends ChildProperty<Column> {
     /** @private */
     public farSizes: number[] = [];
     /** @private */
+    public insideFarSizes: number[] = [];
+    /** @private */
+    public insideNearSizes: number[] = [];
+    /** @private */
     private padding: number = 0;
 
     /**
@@ -125,12 +133,12 @@ export class Column extends ChildProperty<Column> {
      * @private
      */
 
-    public computeSize(axis: Axis, scrollBarHeight: number ): void {
+    public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column): void {
         let height: number = 0;
         const innerPadding: number = 5;
         if (axis.visible && axis.internalVisibility) {
             height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
+                axis.findLabelSize(axis.crossInAxis, innerPadding, definition) + axis.lineStyle.width * 0.5);
         }
         if (axis.isAxisOpposedPosition) {
             this.farSizes.push(height);
@@ -1045,7 +1053,7 @@ export class Axis extends ChildProperty<Axis> {
      * @returns {number} labelSize
      * @private
      */
-    public findLabelSize(crossAxis: Axis, innerPadding: number): number {
+    public findLabelSize(crossAxis: Axis, innerPadding: number, definition: Row | Column): number {
         let titleSize: number = 0; const isHorizontal: boolean = this.orientation === 'Horizontal';
         if (this.title) {
             this.titleSize = measureText(this.title, this.titleStyle);
@@ -1055,9 +1063,6 @@ export class Axis extends ChildProperty<Axis> {
                 this.titleCollection = getTitle(this.title, this.titleStyle, length);
                 titleSize = (titleSize * this.titleCollection.length);
             }
-        }
-        if (this.labelPosition === 'Inside') {
-            return titleSize + innerPadding;
         }
         let diff: number;
         let value: number;
@@ -1074,6 +1079,15 @@ export class Axis extends ChildProperty<Axis> {
                 diff = (value) * ((size - (diff < labelSize ? (labelSize - diff) : 0)) / range.delta);
                 labelSize = (diff < labelSize) ? (labelSize - diff) : 0;
             }
+        }
+        if (this.isAxisOpposedPosition) {
+            definition.insideFarSizes.push(labelSize);
+        }
+        else {
+            definition.insideNearSizes.push(labelSize);
+        }
+        if (this.labelPosition === 'Inside') {
+            return titleSize + innerPadding;
         }
         return labelSize;
     }

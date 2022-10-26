@@ -490,7 +490,13 @@ export class Layout {
                     for (let k: number = 0; k < widget.children.length; k++) {
                         const element: ElementBox = widget.children[k];
                         if (element instanceof ShapeBase && element.textWrappingStyle !== "Inline") {
-                            element.y = (childWidget as Widget).y + element.verticalPosition;
+                            if (element.verticalOrigin === "Paragraph" || element.verticalOrigin === "Line") {
+                                element.y = (childWidget as Widget).y + element.verticalPosition;
+                            }
+                            else {
+                                let position: Point = this.getFloatingItemPoints(element);
+                                element.y = position.y;
+                            }
                             if (element instanceof ShapeElementBox) {
                                 const topMargin: number = element.textFrame.marginTop;
                                 this.updateChildLocationForCellOrShape(element.y + topMargin, element as ShapeElementBox);
@@ -4106,7 +4112,7 @@ export class Layout {
             let level: boolean = false;
             level = (!isNullOrUndefined(list.levelOverrides))
                 && !isNullOrUndefined(((levelOverrideAdv = list.levelOverrides[listLevelNumber] as WLevelOverride)))
-                && (!isNullOrUndefined(levelOverrideAdv.overrideListLevel));
+                && (!isNullOrUndefined(levelOverrideAdv.overrideListLevel)) && !isNullOrUndefined(levelOverrideAdv.startAt);
             if (level) {
                 return levelOverrideAdv.overrideListLevel;
             } else if (!isNullOrUndefined(abstractList) && listLevelNumber >= 0 && listLevelNumber < abstractList.levels.length) {

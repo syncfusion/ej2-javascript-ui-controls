@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schedule, TimelineViews, TimelineMonth, TimelineYear, ScheduleModel } from '../../../src/schedule/index';
-import { timelineResourceData } from '../base/datasource.spec';
+import { timelineResourceData, generateEvents, generateResourceDatasource } from '../base/datasource.spec';
 import { createSchedule, destroy, triggerScrollEvent, triggerMouseEvent } from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -663,6 +664,40 @@ describe('Virtual scroll', () => {
             expect(conWrap.querySelector('tr').childElementCount).toEqual(27);
             expect(schObj.resourceBase.lastResourceLevel.length).toEqual(9);
             expect(schObj.resourceBase.renderedResources.length).toEqual(9);
+        });
+    });
+
+    describe('Timeline Month view', () => {
+        let schObj: Schedule;
+        const ownerData: Record<string, any>[] = generateResourceDatasource(1, 100, 'Resource');
+        const eventData: Record<string, any>[] = generateEvents(new Date(2018, 4, 1), 5000, 100);
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineMonth',
+                views: [
+                    { option: 'TimelineMonth', allowVirtualScrolling: true }
+                ],
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner',
+                    name: 'Owners', allowMultiple: true,
+                    dataSource: ownerData,
+                    textField: 'Text', idField: 'Id', colorField: 'Color'
+                }],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('EJ2-64633 - performance checking for virtual loading of events', () => {
+            expect(schObj.eventsData.length).toEqual(500000);
+            const StartTime: number = window.performance.now();
+            schObj.crudModule.refreshProcessedData(true);
+            const endTime: number = window.performance.now();
+            expect(Math.floor((endTime - StartTime) / 1000)).toBeLessThanOrEqual(1);
         });
     });
 

@@ -826,7 +826,8 @@ export class EventBase {
         }
         if (idType === 'number') {
             const datas: Record<string, number>[] = this.parent.eventsData.concat(this.parent.blockData) as Record<string, number>[];
-            let maxId: number = Math.max(...datas.map((event: Record<string, number>) => event[this.parent.eventFields.id]));
+            const appIds: number[] = datas.map((event: Record<string, number>) => event[this.parent.eventFields.id]);
+            let maxId: number = appIds.reduce((a: number, b: number) => Math.max(a, b));
             maxId = isNullOrUndefined(resourceId) ? maxId : maxId + resourceId;
             eventId = maxId + 1;
         }

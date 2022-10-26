@@ -538,7 +538,8 @@ export class EventWindow {
                     // eslint-disable-next-line max-len
                     const filter: Record<string, any> = (resourceModel.dataSource as Record<string, any>[]).filter((data: Record<string, any>) =>
                         data[resourceModel.groupIDField] === args.value[j])[0];
-                    const groupId: number = filter[resourceCollection[i + 1].groupIDField] as number;
+                    const groupId: number = (!isNullOrUndefined(filter)) ?
+                        filter[resourceCollection[i + 1].groupIDField] as number : null
                     const filterRes: Record<string, any>[] = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
                 }
@@ -552,6 +553,7 @@ export class EventWindow {
         const resourceData: Record<string, any> = this.parent.resourceBase.resourceCollection[index + 1] as Record<string, any>;
         const resObject: MultiSelect | DropDownList = (this.element.querySelector('.e-' + resourceData.field) as EJ2Instance).
             ej2_instances[0] as MultiSelect | DropDownList;
+        resObject.clear();
         return resObject;
     }
 
@@ -567,7 +569,8 @@ export class EventWindow {
                 const groupId: number = (args.itemData as Record<string, any>)[resourceCollection[i].idField] as number;
                 resObj.dataSource = this.filterDatasource(i, groupId);
                 resObj.dataBind();
-                const resValue: string = resObj.dataSource[0][resourceCollection[i + 1].idField] as string;
+                const resValue: string = (resObj.dataSource.length > 0) ?
+                    resObj.dataSource[0][resourceCollection[i + 1].idField] as string : null;
                 resObj.value = (resourceCollection[i + 1].allowMultiple) ? [resValue] : resValue;
                 resObj.dataBind();
             }

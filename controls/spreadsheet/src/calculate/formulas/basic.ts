@@ -854,24 +854,30 @@ export class BasicFormulas {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         const argsArr: string[] = range;
-        if (argsArr[0].split(this.parent.tic).join('') === this.parent.trueValue) {
-            argsArr[0] = '1';
-        }
-        if (argsArr[0].split(this.parent.tic).join('') === this.parent.falseValue) {
-            argsArr[0] = '0';
-        }
-        let endDate: string = this.parent.getValueFromArg(argsArr[0].split(this.parent.tic).join(''));
-        let startDate: string = this.parent.getValueFromArg(argsArr[1].split(this.parent.tic).join(''));
-        startDate = (startDate === '' || startDate == null) ? new Date(Date.parse('1899-12-31')).toDateString() : startDate;
-        endDate = (endDate === '' || endDate == null) ? new Date(Date.parse('1899-12-31')).toDateString() : endDate;
+        const processArgs: Function = (value: string): string => {
+            value = value.split(this.parent.tic).join('');
+            if (this.parent.isCellReference(value)) {
+                value = this.parent.getValueFromArg(value);
+            }
+            if (value === this.parent.trueValue) {
+                value = '1';
+            } else if (value === this.parent.falseValue) {
+                value = '0';
+            } else if (!value) {
+                value = new Date(Date.parse('1899-12-31')).toDateString();
+            }
+            return value;
+        };
+        const endDate: string = processArgs(argsArr[0]);
+        const startDate: string = processArgs(argsArr[1]);
         if (endDate[0] === '#') {
             return endDate;
         }
         if (startDate[0] === '#') {
             return startDate;
         }
-        const d1: string | Date = this.parent.intToDate(endDate);
-        const d2: string | Date = this.parent.intToDate(startDate);
+        const d1: string | Date = this.parent.isNaN(Number(endDate)) ? this.parent.parseDate(endDate) : this.parent.intToDate(endDate);
+        const d2: string | Date = this.parent.isNaN(Number(startDate)) ? this.parent.parseDate(startDate) : this.parent.intToDate(startDate);
         if (d1.toString()[0] === '#') {
             return d1.toString();
         }
@@ -879,8 +885,7 @@ export class BasicFormulas {
             return d2.toString();
         }
         if (Object.prototype.toString.call(d1) === '[object Date]' && Object.prototype.toString.call(d2) === '[object Date]') {
-            /* eslint-disable-next-line */
-            result = Math.ceil((d1 as any).getTime() - (d2 as any).getTime()) / (1000 * 3600 * 24);
+            result = Math.ceil((<Date>d1).getTime() - (<Date>d2).getTime()) / (1000 * 3600 * 24);
         } else {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
@@ -3156,13 +3161,18 @@ export class BasicFormulas {
             x = this.parent.parseFloat(numStr);
             digits = this.parent.parseFloat(digStr);
             if (!isNaN(digits) && !isNaN(x) && digits > 0) {
-                round = x.toFixed(digits);
+                round = this.preciseRound(x,digits);
             } else {
                 mult = Math.pow(10, -digits);
                 round = Math.round(x / mult) * mult;
             }
         }
         return round.toString();
+    }
+
+    private preciseRound(numValue: number, decimalValue: number): string {
+        let sign: number = numValue >= 0 ? 1 : -1;
+        return (Math.round((numValue * Math.pow(10, decimalValue)) + (sign * 0.001)) / Math.pow(10, decimalValue)).toFixed(decimalValue);
     }
 
     /**

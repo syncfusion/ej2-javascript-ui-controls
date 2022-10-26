@@ -153,7 +153,12 @@ export class TimelineEvent extends MonthEvent {
         eventObj[this.fields.endTime] = eventData[this.fields.endTime];
         const currentDate: Date = util.resetTime(new Date(this.dateRender[this.day].getTime()));
         const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
-        const isValidEvent: boolean = this.isValidEvent(eventObj, startTime, endTime, schedule);
+        let isValidEvent: boolean =  true;
+        if (this.isDayProcess() || eventObj[this.fields.isAllDay]) {
+            isValidEvent = true;
+        } else {
+            isValidEvent = this.isValidEvent(eventObj, startTime, endTime, schedule);
+        }
         if (startTime <= endTime && isValidEvent) {
             let appWidth: number = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay] as boolean, diffInDays);
             appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
@@ -316,12 +321,16 @@ export class TimelineEvent extends MonthEvent {
     public getStartTime(event: Record<string, any>, eventData: Record<string, any>): Date {
         let startTime: Date = event[this.fields.startTime] as Date;
         const schedule: { [key: string]: Date } = util.getStartEndHours(startTime, this.startHour, this.endHour);
-        if (schedule.startHour.getTime() >= eventData[this.fields.startTime]) {
-            startTime = schedule.startHour;
-        } else if (schedule.endHour.getTime() <= eventData[this.fields.startTime]) {
-            startTime = this.getNextDay(schedule.startHour, eventData);
+        if (this.isDayProcess()) {
+            startTime = event[this.fields.startTime] as Date;
         } else {
-            startTime = eventData[this.fields.startTime] as Date;
+            if (schedule.startHour.getTime() >= eventData[this.fields.startTime]) {
+                startTime = schedule.startHour;
+            } else if (schedule.endHour.getTime() <= eventData[this.fields.startTime]) {
+                startTime = this.getNextDay(schedule.startHour, eventData);
+            } else {
+                startTime = eventData[this.fields.startTime] as Date;
+            }
         }
         // To overcome the overflow
         eventData.trimStartTime = (event[this.fields.isAllDay]) ? schedule.startHour : eventData[this.fields.startTime];
@@ -343,16 +352,14 @@ export class TimelineEvent extends MonthEvent {
     public getEndTime(event: Record<string, any>, eventData: Record<string, any>): Date {
         let endTime: Date = event[this.fields.endTime] as Date;
         const schedule: { [key: string]: Date } = util.getStartEndHours(endTime, this.startHour, this.endHour);
-        if (this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ||
-            (this.parent.activeViewOptions.headerRows.length > 0 &&
-                this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour')) {
+        if (this.isDayProcess()) {
             endTime = eventData[this.fields.endTime] as Date;
         } else {
             endTime = eventData[this.fields.endTime] as Date;
-            if (schedule.endHour.getTime() <= eventData[this.fields.endTime]) {
+            if (schedule.endHour.getTime() <= eventData[this.fields.endTime] || event[this.fields.isAllDay]) {
                 endTime = schedule.endHour;
             }
-            if (schedule.startHour.getTime() >= eventData[this.fields.endTime].getTime() && !event.isAllDay) {
+            if (schedule.startHour.getTime() >= eventData[this.fields.endTime].getTime() && !event[this.fields.isAllDay]) {
                 endTime = this.getPreviousDay(schedule.startHour, schedule.endHour, eventData);
             }
         }
@@ -511,6 +518,15 @@ export class TimelineEvent extends MonthEvent {
         setStyleAttribute(event, {
             'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP) - (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
         });
+    }
+
+    private isDayProcess(): boolean {
+        if (this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ||
+        (this.parent.activeViewOptions.headerRows.length > 0 &&
+            this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour')) {
+            return true;
+        }
+        return false;
     }
 
     public destroy(): void {

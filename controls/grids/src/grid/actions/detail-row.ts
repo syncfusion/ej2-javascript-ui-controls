@@ -118,7 +118,7 @@ export class DetailRow {
                         parentID: gObj.element.id,
                         parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
                         parentKeyField: gObj.childGrid.queryString,
-                        parentKeyFieldValue: isComplexField(gObj.childGrid.queryString) ?
+                        parentKeyFieldValue: gObj.childGrid.queryString && isComplexField(gObj.childGrid.queryString) ?
                         getObject(gObj.childGrid.queryString, data) : data[gObj.childGrid.queryString],
                         parentRowData: data
                     };
