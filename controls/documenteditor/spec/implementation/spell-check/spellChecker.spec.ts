@@ -611,7 +611,7 @@ console.log('Spell check WhiteSpace testing');
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-        let spaceCharacterInfo: SpaceCharacterInfo = editor.spellChecker.getWhiteSpaceCharacterInfo(element.text, element.characterFormat);
+        let spaceCharacterInfo: SpaceCharacterInfo = editor.spellChecker.getWhiteSpaceCharacterInfo(element);
         expect(spaceCharacterInfo.wordLength).toBe(1);
     });
     it('Spell check specialCharacter testing', () => {
@@ -621,7 +621,7 @@ console.log('Spell check specialCharacter testing');
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-        let specialInfo: SpecialCharacterInfo = editor.spellChecker.getSpecialCharactersInfo(element.text, element.characterFormat);
+        let specialInfo: SpecialCharacterInfo = editor.spellChecker.getSpecialCharactersInfo(element);
         expect(Math.round(specialInfo.beginningWidth)).toBe(12);
     });
     it('Spell check specialCharacter testing', () => {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I388725` - Multilevel label border cut off issue has been fixed.
+
 ## 20.3.52 (2022-10-26)
 
 ### Chart

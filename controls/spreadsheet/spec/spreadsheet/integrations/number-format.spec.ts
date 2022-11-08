@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet } from '../../../src/index';
+import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet, setCell, ICellRenderer } from '../../../src/index';
 import { L10n, setCurrencyCode } from '@syncfusion/ej2-base';
 
 /**
@@ -257,6 +257,26 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(cell.value).toBe('34568');
                 expect(cell.format).toBe('MMM d, yyyy ddd');
                 expect(cellEle.textContent).toBe('Aug 22, 1994 Mon');
+                expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
+                done();
+            });
+            it('EJ2-64839 -> String type cell values are right aligned while applying custom date format', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'Text' }, 'A16']);
+                helper.invoke('numberFormat', ['dd-MMM', 'A16']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const sheet: SheetModel = helper.getInstance().sheets[0];
+                expect(sheet.rows[15].cells[0].value).toBe('Text');
+                const cellEle: HTMLElement = helper.invoke('getCell', [15, 0]);
+                expect(cellEle.textContent).toBe('Text');
+                expect(cellEle.classList.contains('e-right-align')).toBeFalsy();
+                helper.invoke('updateCell', [{ value: '7 Series' }, 'A16']);
+                expect(cellEle.textContent).toBe('7 Series');
+                expect(cellEle.classList.contains('e-right-align')).toBeFalsy();
+                setCell(15, 0, sheet, { value: '7/Aug' }, true);
+                expect(sheet.rows[15].cells[0].value).toBe('7/Aug');
+                spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refresh(15, 0, true, cellEle);
+                expect(sheet.rows[15].cells[0].value).toBe('37110');
+                expect(cellEle.textContent).toBe('07-Aug');
                 expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
                 done();
             });

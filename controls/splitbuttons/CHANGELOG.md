@@ -6,6 +6,14 @@
 
 ### DropDownButton
 
+#### Bug Fixes
+
+- `#I412776` - Select event is not triggered while using `closeActionEvents` in DropDownButton has been resolved.
+
+## 20.3.47 (2022-09-29)
+
+### DropDownButton
+
 #### New Features
 
 - `#I375776` - Provided the focusout event support to the DropDownButton component.

@@ -1841,7 +1841,12 @@ export class ListBox extends DropDownBase {
                 }
             }   
         }
-        const elems: Element[] = Array.prototype.slice.call(this.element.nextElementSibling.querySelectorAll('.e-grabbed'));
+        let elems: Element[];
+        if (this.isAngular) {
+            elems = Array.prototype.slice.call(this.element.getElementsByClassName('e-list-parent')[0].querySelectorAll('.e-grabbed'));
+        } else {
+            elems = Array.prototype.slice.call(this.element.nextElementSibling.querySelectorAll('.e-grabbed'));
+        }
         return elems;
     }
 

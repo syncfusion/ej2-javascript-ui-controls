@@ -138,6 +138,11 @@ export interface SignatureFieldSettingsModel {
     tooltip?: string;
 
     /**
+     * Get or set the thickness of the Signature field. Default value is 1. To hide the borders, set the value to 0 (zero).
+     */
+    thickness?: number;
+
+    /**
      * specifies the page number of the form field.
      */
     pageNumber?: number;
@@ -193,6 +198,11 @@ export interface InitialFieldSettingsModel {
      * Get or set the text to be displayed as tooltip. By default it is empty.
      */
     tooltip?: string;
+
+    /**
+     * Get or set the thickness of the Initial field. Default value is 1. To hide the borders, set the value to 0 (zero).
+     */
+    thickness?: number;
 
     /**
      * specifies the page number of the form field.
@@ -3638,6 +3648,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @default false
      */
     isMaintainSelection?: boolean;
+
+    /**
+     *  Get or set the flag to hide the digitally signed field on document loading. Default value is FALSE.
+     *
+     * @default false
+     */
+    hideEmptyDigitalSignatureFields?: boolean;
 
     /**
      * Customize desired date and time format

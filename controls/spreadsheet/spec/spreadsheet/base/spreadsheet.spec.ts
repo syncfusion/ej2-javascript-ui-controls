@@ -757,6 +757,42 @@ describe('Spreadsheet base module ->', () => {
             expect(sheet.rows[4].cells[9].value).toBe('3.162278');
             done();
         });
+        it('setRowsHeight testing', (done: Function) => {
+            helper.invoke('setRowsHeight', [50, ['1', '8:10', 'Sheet2!10:13']]);
+            let tr: HTMLTableRowElement = helper.invoke('getRow', [7]);
+            expect(tr.style.height).toBe('50px');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[0].height).toBe(50);
+            expect(spreadsheet.sheets[0].rows[7].height).toBe(50);
+            expect(spreadsheet.sheets[0].rows[8].height).toBe(50);
+            expect(spreadsheet.sheets[0].rows[9].height).toBe(50);
+            expect(spreadsheet.sheets[1].rows[9].height).toBe(50);
+            expect(spreadsheet.sheets[1].rows[12].height).toBe(50);
+            helper.invoke('setRowsHeight');
+            expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
+            expect(spreadsheet.sheets[0].rows[7].height).toBe(20);
+            expect(spreadsheet.sheets[0].rows[8].height).toBe(20);
+            expect(spreadsheet.sheets[0].rows[9].height).toBe(20);
+            done();
+        });
+        it('setColumnsWidth testing', (done: Function) => {
+            helper.invoke('setColumnsWidth', [80, ['A', 'B:D', 'Sheet2!G:I']]);
+            let col: HTMLElement = helper.invoke('getContentTable').querySelector('colgroup col');
+            expect(col.style.width).toBe('80px');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].columns[0].width).toBe(80);
+            expect(spreadsheet.sheets[0].columns[1].width).toBe(80);
+            expect(spreadsheet.sheets[0].columns[2].width).toBe(80);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(80);
+            expect(spreadsheet.sheets[1].columns[6].width).toBe(80);
+            expect(spreadsheet.sheets[1].columns[8].width).toBe(80);
+            helper.invoke('setColumnsWidth');
+            expect(spreadsheet.sheets[0].columns[0].width).toBe(64);
+            expect(spreadsheet.sheets[0].columns[1].width).toBe(64);
+            expect(spreadsheet.sheets[0].columns[2].width).toBe(64);
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(64);
+            done();
+        });
     });
 
     describe('OnProperty change checking ->', () => {

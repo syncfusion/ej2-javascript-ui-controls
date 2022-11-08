@@ -614,6 +614,18 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private focusoutHandler(e: MouseEvent): void {
         if (this.isPopupCreated && !this.canOpen()) {
+            let liTarget : HTMLElement = e.relatedTarget as HTMLElement;
+            if (liTarget && liTarget.className.indexOf('e-item') > -1) {
+                const li: Element = this.getLI(liTarget);
+                if (li) {
+                    let liIdx: number = Array.prototype.indexOf.call(this.getULElement().children, li);
+                    let item: ItemModel = this.items[liIdx];
+                    if (item) {
+                        let selectEventArgs: MenuEventArgs = { element: li as HTMLElement, item: item };
+                        this.trigger('select', selectEventArgs); 
+                    }
+                }   
+            }
             this.closePopup(e);
         }
     }

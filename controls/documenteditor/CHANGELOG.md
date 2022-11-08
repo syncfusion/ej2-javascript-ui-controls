@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#FB37929` - Resolved the exception while exporting the document with duplicate character style.
+- `#I412146` - Resolved the script error while opening the document.
+- `#I408099` - Resolved the list numbering issue.
+- `#I412284` - Table border is now rendering properly.
+- `#I413316` - Resolved the script error while removing few pages.
+- `#I414066` - Resolved the script error while modifying locale key.
+- `#I412817` - Formatting is now working properly in track changes protection mode.
+- `#I413284` - Strike through is now rendering similar to MS Word.
+- `#I412529` - Resolved the script error while opening html document with nested list.
+
+#### New Features
+
+- `#I297837`, `#I336116`, `#I342219`, `#I346980`, `#F164814`, `#F168911` - Improved the display of the RTL text in a bi-directional layout.
+
 ## 20.3.52 (2022-10-26)
 
 ### Document Editor

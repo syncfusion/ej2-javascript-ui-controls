@@ -53,7 +53,7 @@ export class FindAndReplace {
         if (!this.parent.element.querySelector('.e-find-dlg')) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             const dlg: DialogModel = {
-                isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
+                isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg',
                 header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'FindAndReplaceDialog', element: args.element, target:
@@ -129,7 +129,7 @@ export class FindAndReplace {
         const cancelBtn: boolean = false;
         if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
             const dlg: DialogModel = {
-                width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
+                width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg',
                 header: l10n.getConstant('GotoHeader'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = {

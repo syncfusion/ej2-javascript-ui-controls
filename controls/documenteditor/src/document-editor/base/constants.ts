@@ -60,3 +60,5 @@ export const protectionTypeChangeEvent: string = 'protectionTypeChange';
 export const internalDocumentEditorSettingsChange: string = 'internalDocumentEditorSettingsChange';
 /** @hidden */
 export const internalStyleCollectionChange: string = 'internalStyleCollectionChange';
+/** @hidden */
+export const defaultFont: string = 'Times New Roman';

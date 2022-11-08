@@ -2,7 +2,7 @@ import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageFormatInfo, HelperMethods } from '../index';
-import { Dictionary, TabJustification, TabLeader } from '../../index';
+import { Dictionary, TabJustification, TabLeader, LocaleId } from '../../index';
 import { WTabStop } from '../index';
 import { ProtectionType, CompatibilityMode } from '../../base';
 import { DocumentHelper } from '../viewer';
@@ -42,7 +42,7 @@ export class WordExport {
     private commentsExtendedPath: string = 'word/commentsExtended.xml';
     // private EmbeddingPath:string = 'word\embeddings\';
     // private DrawingPath:string = 'word\drawings\';
-    // private ThemePath: string = 'word/theme/theme1.xml';
+    private themePath: string = 'word/theme/theme1.xml';
     // private FontsPath:string = 'word\fonts\';
     // private DiagramPath:string = "word/diagrams/';
     // private ControlPath:string = "word/activeX/';
@@ -95,7 +95,7 @@ export class WordExport {
     // private DiagramLayout: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramLayout+xml';
     // private DiagramStyle: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramStyle+xml';
     private chartsContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml';
-    // private ThemeContentType: string = 'application/vnd.openxmlformats-officedocument.theme+xml';
+    private themeContentType: string = 'application/vnd.openxmlformats-officedocument.theme+xml';
     // private ChartDrawingContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml';
     // private ActiveXContentType: string = 'application/vnd.ms-office.activeX+xml';
     // private ActiveXBinContentType: string = 'application/vnd.ms-office.activeX';
@@ -123,7 +123,7 @@ export class WordExport {
     private stylesRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles';
     // private OleObjectRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject';
     private chartRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart';
-    // private ThemeRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme';
+    private ThemeRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme';
     private fontRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/font';
     private tableStyleRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/tableStyles';
     private coreRelType: string = 'http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties';
@@ -282,7 +282,9 @@ export class WordExport {
     private mLists: any;
     private mAbstractLists: any;
     private mStyles: any;
+    private mThemes:any;
     private defCharacterFormat: any;
+    private themeFontLang: any;
     private defParagraphFormat: any;
     private defaultTabWidthValue: number;
     private dontUseHtmlParagraphAutoSpacing: boolean;
@@ -525,7 +527,7 @@ export class WordExport {
         this.serializeCommentsExtended();
         //theme.xml
         // if (m_document.DocHasThemes && !isNullOrUndefined(m_document.Themes))
-        //     SerializeThemes();
+        this.serializeThemes();
         // else
         // this.serializeDefaultThemes();
         //settings.xml
@@ -578,8 +580,10 @@ export class WordExport {
         this.defCharacterFormat = document.characterFormat;
         this.defParagraphFormat = document.paragraphFormat;
         this.defaultTabWidthValue = document.defaultTabWidth;
+        this.themeFontLang = document.themeFontLanguages;
         this.dontUseHtmlParagraphAutoSpacing = document.dontUseHTMLParagraphAutoSpacing;
         this.mStyles = document.styles;
+        this.mThemes = document.themes;
         this.formatting = document.formatting;
         this.enforcement = document.enforcement;
         this.hashValue = document.hashValue;
@@ -731,6 +735,61 @@ export class WordExport {
         writer.writeEndElement();
         const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsPath);
         this.mArchive.addItem(zipArchiveItem);
+    }
+    //SerializeThemes the themes (theme.xml)
+    private serializeThemes(): void {
+        if (!isNullOrUndefined(this.mThemes)) {
+            let writer: XmlWriter = new XmlWriter();
+            writer.writeStartElement('a', 'theme', this.aNamespace);
+            writer.writeAttributeString(undefined, 'name', undefined, 'Office Theme');
+            writer.writeStartElement(undefined, 'themeElements', this.aNamespace);
+            writer.writeRaw('<a:clrScheme name="Office"><a:dk1><a:sysClr val="windowText" lastClr="000000" /></a:dk1><a:lt1><a:sysClr val="window" lastClr="FFFFFF" /></a:lt1><a:dk2><a:srgbClr val="44546A" /></a:dk2><a:lt2><a:srgbClr val="E7E6E6" /></a:lt2><a:accent1><a:srgbClr val="4472C4" /></a:accent1><a:accent2><a:srgbClr val="ED7D31" /></a:accent2><a:accent3><a:srgbClr val="A5A5A5" /></a:accent3><a:accent4><a:srgbClr val="FFC000" /></a:accent4><a:accent5><a:srgbClr val="5B9BD5" /></a:accent5><a:accent6><a:srgbClr val="70AD47" /></a:accent6><a:hlink><a:srgbClr val="0563C1" /></a:hlink><a:folHlink><a:srgbClr val="954F72" /></a:folHlink></a:clrScheme>');
+            writer.writeStartElement(undefined, 'fontScheme', this.aNamespace);
+            writer.writeAttributeString(undefined, 'name', undefined, this.mThemes.fontSchemeName);
+            writer.writeStartElement(undefined, 'majorFont', this.aNamespace);
+            for (let i: number = 0; i < this.mThemes.fontScheme.majorFontScheme.fontSchemeList.length; i++) {
+                let theme: any = this.mThemes.fontScheme.majorFontScheme.fontSchemeList[i];
+                this.themeFont(writer, theme);
+            }
+            let keys: string[] = Object.keys(this.mThemes.fontScheme.majorFontScheme.fontTypeface);
+            for (let key of keys) {
+                this.themeType(writer, key, this.mThemes.fontScheme.majorFontScheme.fontTypeface[key]);
+            }
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'minorFont', this.aNamespace);
+            for (let i: number = 0; i < this.mThemes.fontScheme.minorFontScheme.fontSchemeList.length; i++) {
+                let theme: any = this.mThemes.fontScheme.minorFontScheme.fontSchemeList[i];
+                this.themeFont(writer, theme);
+            }
+            keys = Object.keys(this.mThemes.fontScheme.minorFontScheme.fontTypeface);
+            for (let key of keys) {
+                this.themeType(writer, key, this.mThemes.fontScheme.minorFontScheme.fontTypeface[key]);
+            }
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'fmtScheme', this.aNamespace);
+            writer.writeAttributeString(undefined, 'name', undefined, 'Office');
+            writer.writeRaw('<a:fillStyleLst><a:solidFill><a:schemeClr val="phClr" /></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:lumMod val="110000" /><a:satMod val="105000" /><a:tint val="67000" /></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:lumMod val="105000" /><a:satMod val="103000" /><a:tint val="73000" /></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="105000" /><a:satMod val="109000" /><a:tint val="81000" /></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0" /></a:gradFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:satMod val="103000" /><a:lumMod val="102000" /><a:tint val="94000" /></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:satMod val="110000" /><a:lumMod val="100000" /><a:shade val="100000" /></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:lumMod val="99000" /><a:satMod val="120000" /><a:shade val="78000" /></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0" /></a:gradFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr" /></a:solidFill><a:prstDash val="solid" /><a:miter lim="800000" /></a:ln><a:ln w="12700" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr" /></a:solidFill><a:prstDash val="solid" /><a:miter lim="800000" /></a:ln><a:ln w="19050" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:schemeClr val="phClr" /></a:solidFill><a:prstDash val="solid" /><a:miter lim="800000" /></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst /></a:effectStyle><a:effectStyle><a:effectLst /></a:effectStyle><a:effectStyle><a:effectLst><a:outerShdw blurRad="57150" dist="19050" dir="5400000" algn="ctr" rotWithShape="0"><a:srgbClr val="000000"><a:alpha val="63000" /></a:srgbClr></a:outerShdw></a:effectLst></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr" /></a:solidFill><a:solidFill><a:schemeClr val="phClr"><a:tint val="95000" /><a:satMod val="170000" /></a:schemeClr></a:solidFill><a:gradFill rotWithShape="1"><a:gsLst><a:gs pos="0"><a:schemeClr val="phClr"><a:tint val="93000" /><a:satMod val="150000" /><a:shade val="98000" /><a:lumMod val="102000" /></a:schemeClr></a:gs><a:gs pos="50000"><a:schemeClr val="phClr"><a:tint val="98000" /><a:satMod val="130000" /><a:shade val="90000" /><a:lumMod val="103000" /></a:schemeClr></a:gs><a:gs pos="100000"><a:schemeClr val="phClr"><a:shade val="63000" /><a:satMod val="120000" /></a:schemeClr></a:gs></a:gsLst><a:lin ang="5400000" scaled="0" /></a:gradFill></a:bgFillStyleLst>');
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.writeEndElement();
+            const zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.themePath);
+            this.mArchive.addItem(zipArchiveItem);
+        }
+    }
+    private themeFont(writer: XmlWriter, theme: any): void {
+        if (theme.name == 'latin' || theme.name == 'ea' || theme.name == 'cs') {
+            writer.writeStartElement(undefined, theme.name, this.aNamespace);
+            writer.writeAttributeString(undefined, 'typeface', undefined, theme.typeface);
+            writer.writeAttributeString(undefined, 'panose', undefined, theme.panose);
+            writer.writeEndElement();
+        }
+    }
+    private themeType(writer: XmlWriter, script: string, typeFace: string): void {
+        writer.writeStartElement(undefined, 'font', this.aNamespace);
+        writer.writeAttributeString(undefined, 'script', undefined, script);
+        writer.writeAttributeString(undefined, 'typeface', undefined, typeFace);
+        writer.writeEndElement();
     }
     private serializeCommentCommonAttribute(writer: XmlWriter): void {
         writer.writeAttributeString('xmlns', 'wpc', undefined, this.wpCanvasNamespace);
@@ -4784,6 +4843,8 @@ export class WordExport {
         switch (borderStyle) {
             case 'Cleared':
                 return 'cleared';
+            case 'None':
+                return 'None';
             case 'DashSmallGap':
                 return 'dashSmallGap';
             case 'Triple':
@@ -5543,10 +5604,22 @@ export class WordExport {
         }
         if (!isNullOrUndefined(characterFormat.fontFamily)) {
             writer.writeStartElement(undefined, 'rFonts', this.wNamespace);
-            writer.writeAttributeString(undefined, 'ascii', this.wNamespace, characterFormat.fontFamily);
-            writer.writeAttributeString(undefined, 'hAnsi', this.wNamespace, characterFormat.fontFamily);
-            writer.writeAttributeString(undefined, 'eastAsia', this.wNamespace, characterFormat.fontFamily);
-            writer.writeAttributeString(undefined, 'cs', this.wNamespace, characterFormat.fontFamilyBidi);
+            if (!isNullOrUndefined(characterFormat.fontFamilyAscii)) {
+                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyAscii) ? 'asciiTheme' : 'ascii';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamily);
+            }
+            if (!isNullOrUndefined(characterFormat.fontFamilyFarEast)) {
+                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyFarEast) ? 'eastAsiaTheme' : 'eastAsia';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyFarEast);
+            }
+            if (!isNullOrUndefined(characterFormat.fontFamilyNonFarEast)) {
+                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyNonFarEast) ? 'hAnsiTheme' : 'hAnsi';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyNonFarEast);
+            }
+            if (!isNullOrUndefined(characterFormat.fontFamilyBidi)) {
+                let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyBidi) ? 'cstheme' : 'cs';
+                writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyBidi);
+            }
             writer.writeEndElement(); //end         
         }
         if (!isNullOrUndefined(characterFormat.bold)) {
@@ -5795,7 +5868,7 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'val', this.wNamespace, list.abstractListId.toString());
             writer.writeEndElement();
             for (let lvl: number = 0, cnt: number = list.levelOverrides.length; lvl < cnt; lvl++) {
-                    this.serializeLevelOverrides(writer, list.levelOverrides[lvl], lvl);
+                this.serializeLevelOverrides(writer, list.levelOverrides[lvl], list.levelOverrides[lvl].levelNumber);
             }
             writer.writeEndElement();
         }
@@ -5873,6 +5946,8 @@ export class WordExport {
     private serializeLevelOverrides(writer: XmlWriter, listLevel: any, levelIndex: number) : void {
         writer.writeStartElement(undefined, 'lvlOverride', this.wNamespace);
         writer.writeAttributeString(undefined, 'ilvl', this.wNamespace, levelIndex.toString());
+        if(!isNullOrUndefined(listLevel.overrideListLevel))
+            this.serializeListLevel(writer, listLevel.overrideListLevel, levelIndex);
         if (!isNullOrUndefined(listLevel.startAt)) {
             writer.writeStartElement(undefined, 'startOverride', this.wNamespace);
             writer.writeAttributeString(undefined, 'val', this.wNamespace, listLevel.startAt.toString());
@@ -5898,6 +5973,9 @@ export class WordExport {
             case 'LowLetter':
                 patternType = 'lowerLetter';
                 break;
+            case 'None':
+                patternType = 'none';
+                break;
             // case 'Ordinal':
             //     patternType = 'ordinal';
             //     break;
@@ -5919,9 +5997,6 @@ export class WordExport {
             //     break;
             // case 'Special':
             //     patternType = 'russianLower';
-            //     break;
-            // case 'None':
-            //     patternType = 'none';
             //     break;
         }
         return patternType;
@@ -5947,6 +6022,27 @@ export class WordExport {
         writer.writeStartElement(undefined, 'suff', this.wNamespace);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, fc);
         writer.writeEndElement();
+    }
+    private serializeThemeFontLang(writer: XmlWriter): void {
+        let isLanguageIdBi: boolean = this.themeFontLang.localeIdBidi > 0;
+        let isLanguageId: boolean = this.themeFontLang.localeIdAscii > 0;
+        let isLanguageIdFarEast: boolean = this.themeFontLang.localeIdFarEast > 0;
+        if (isLanguageId || isLanguageIdFarEast || isLanguageIdBi) {
+            writer.writeStartElement('w', 'themeFontLang', undefined);
+            if (isLanguageId) {
+                let ascii: string = LocaleId[this.themeFontLang.localeIdAscii];
+                writer.writeAttributeString('w', 'val', undefined, ascii.replace('_','-')); //Ascii key
+            }
+            if (isLanguageIdBi) {
+                let bidi: string = LocaleId[this.themeFontLang.localeIdBidi];
+                writer.writeAttributeString('w', 'bidi', undefined, bidi.replace('_','-')); //Bidi key
+            }
+            if (isLanguageIdFarEast) {
+                let farEast: string = LocaleId[this.themeFontLang.localeIdFarEast];
+                writer.writeAttributeString('w', 'eastAsia', undefined, farEast.replace('_','-')); //EastAsia key
+            }
+            writer.writeEndElement();
+        }
     }
     private serializeDocumentProtectionSettings(writer: XmlWriter): void {
         writer.writeStartElement('w', 'documentProtection', this.wNamespace);
@@ -6043,6 +6139,8 @@ export class WordExport {
         // }
         writer.writeAttributeString('w', 'percent', this.wNamespace, '100');
         writer.writeEndElement();
+        //<w:themeFontLang>
+        this.serializeThemeFontLang(writer);
 
         //w:displayBackgroundShape - Display Background Objects When Displaying Document
         // if (m_document.Background.Type !== BackgroundType.NoBackground)
@@ -6265,7 +6363,9 @@ export class WordExport {
                 this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
             }
         }
-        // this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
+        if(!isNullOrUndefined(this.mThemes)) {
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
+        }
 
         if (this.document.lists.length > 0) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.numberingRelType, 'numbering.xml');
@@ -6584,6 +6684,7 @@ export class WordExport {
         //settings.xml
         this.serializeOverrideContentType(writer, this.settingsPath, this.settingsContentType);
         this.serializeOverrideContentType(writer, this.commentsPath, this.commentsContentType);
+        this.serializeOverrideContentType(writer, this.themePath, this.themeContentType);
         //comments.xml
         this.serializeOverrideContentType(writer, this.commentsExtendedPath, this.commentsExContentType);
         //charts.xml

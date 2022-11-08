@@ -1,6 +1,7 @@
 @include export-module('dialog-layout') {
+
   /*! dialog layout */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-dialog {
     -webkit-flex-direction: column;
     border: $dialog-border;
@@ -20,9 +21,9 @@
     .e-dlg-header-content {
       border-radius: $header-content-border-radius;
       line-height: $dialog-header-line-height;
-      }
+    }
 
-    .e-dlg-header-content+.e-dlg-content {
+    .e-dlg-header-content + .e-dlg-content {
       padding-top: $dialog-content-padding-top;
     }
 
@@ -51,11 +52,11 @@
       position: fixed;
     }
 
-    // sass-lint:disable no-important
+    /* stylelint-disable declaration-no-important */
     .e-scroll-disabled {
       overflow: hidden !important;
     }
-    // sass-lint:enable no-important
+    /* stylelint-enable declaration-no-important */
 
     .e-dlg-content {
       display: block;
@@ -84,7 +85,9 @@
         display: none;
       }
     }
-
+    .e-alert-dialog .e-footer-content{
+      border-top: $dialog-alert-footer-content-border-top;
+    }
     .e-footer-content {
       text-align: right;
     }
@@ -148,12 +151,12 @@
     }
   }
 
-  //Bigger Style 
+  //Bigger Style
   .e-bigger.e-dialog,
   #{if(&, '&', '*')}.e-bigger .e-dialog {
     #{if(&, '&', '*')} .e-dlg-header-content {
       padding: $dialog-bigger-header-content-padding;
-      }
+    }
 
     & .e-dlg-header {
       font-size: $dialog-bigger-header-content-font-size;
@@ -189,7 +192,6 @@
       font-size: $dialog-bigger-close-icon-font-size;
       width: $dialog-bigger-close-icon-width;
     }
-
   }
 
   .e-bigger.e-rtl .e-footer-content .e-btn,
@@ -198,7 +200,7 @@
     margin-right: $dialog-bigger-footer-button-margin-right;
   }
 
-  .e-bigger .e-dlg-header-content+.e-dlg-content {
+  .e-bigger .e-dlg-header-content + .e-dlg-content {
     padding-top: $dialog-bigger-content-padding-top;
   }
 
@@ -208,7 +210,7 @@
     & .e-dlg-header-content {
       border-bottom: $dialog-header-border;
       padding: $dialog-header-content-padding;
-      }
+    }
 
     & .e-dlg-content {
       padding: $dialog-content-padding;
@@ -238,7 +240,7 @@
     margin-right: $dialog-footer-button-margin-right;
   }
 
-  .e-dialog.e-draggable> .e-dlg-header-content {
+  .e-dialog.e-draggable > .e-dlg-header-content {
     cursor: move;
   }
 
@@ -299,11 +301,11 @@
     }
   }
 
-  // sass-lint:disable no-important
+  /* stylelint-disable declaration-no-important */
   .e-dlg-target.e-scroll-disabled {
     overflow: hidden !important;
   }
-  // sass-lint:enable no-important
+  /* stylelint-enable declaration-no-important */
 
   .e-dlg-overlay {
     height: 100%;
@@ -323,13 +325,13 @@
     overflow: auto;
   }
 
-  // sass-lint:disable no-important
+  /* stylelint-disable declaration-no-important */
   .e-dlg-fullscreen {
     height: 100% !important;
     left: 0 !important;
     width: 100% !important;
-    }
-  // sass-lint:enable no-important
+  }
+  /* stylelint-enable declaration-no-important */
 
   .e-popup.e-popup-open.e-dialog {
     display: inline-flex;
@@ -437,7 +439,7 @@
 @media (min-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: 600px;
   }
 }
@@ -445,25 +447,25 @@
 @media (max-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: auto;
-	}
+  }
 }
 
 @media (max-width: 768px) {
   .e-prompt-dialog.e-dialog.e-popup,
   .e-prompt-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: auto;
-}
+  }
 }
 
 @media (min-width: 768px) {
   .e-prompt-dialog.e-dialog.e-popup,
   .e-prompt-dialog.e-dialog.e-popup {
-    margin: 30px auto;
+    margin: 30px;
     width: 600px;
-}
+  }
 }
 
 .e-dlg-ref-element {
@@ -473,4 +475,3 @@
 .e-dialog .e-footer-content {
   box-sizing: border-box;
 }
-

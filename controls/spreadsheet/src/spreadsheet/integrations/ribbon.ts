@@ -1512,7 +1512,7 @@ export class Ribbon {
         if (!isDataPresent) { this.performMerge(itemId); return; }
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
-            target: this.parent.element, height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-merge-alert-dlg',
+            height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-merge-alert-dlg',
             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('MergeCellsAlert'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {

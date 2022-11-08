@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { addClass, createElement, closest, remove, removeClass } from '@syncfusion/ej2-base';
+import { addClass, createElement, closest, remove, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
 import { InlineClickArgs, TdData } from '../base/interface';
@@ -74,19 +74,25 @@ export class InlineEdit {
             subject = inlineSubject.value;
         } else {
             const subEle: HTMLElement = args.element.querySelector('.' + cls.SUBJECT_CLASS);
-            const timeEle: HTMLElement = args.element.querySelector('.' + cls.APPOINTMENT_TIME);
-            subject = subEle.innerText;
+            if (!isNullOrUndefined(subEle)) {
+                addClass([subEle], cls.DISABLE_CLASS);
+                subject = subEle.innerText;
+            }
+            else {
+                subject = args.data[this.parent.eventFields.subject];
+            }
             inlineSubject = createElement('input', { className: cls.INLINE_SUBJECT_CLASS, attrs: { value: subject } }) as HTMLInputElement;
-            addClass([subEle], cls.DISABLE_CLASS);
             if (closest(args.element, '.' + cls.MORE_POPUP_WRAPPER_CLASS)) {
                 args.element.insertBefore(inlineSubject, subEle);
             } else if (['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
-                const subjectWrap: Element = args.element.querySelector('.' + cls.SUBJECT_WRAP);
+                let subjectWrap: Element = args.element.querySelector('.' + cls.SUBJECT_WRAP);
+                if (isNullOrUndefined(subjectWrap)) {
+                    subjectWrap = createElement('div', { className: cls.SUBJECT_WRAP });
+                    args.element.prepend(subjectWrap);
+                }
                 subjectWrap.insertBefore(inlineSubject, subjectWrap.firstChild);
             } else {
-                const elementSelector: string = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'].indexOf(this.parent.currentView) > -1 ?
-                    '.e-inner-wrap' : '.e-appointment-details';
-                args.element.querySelector(elementSelector).insertBefore(inlineSubject, timeEle);
+                args.element.querySelector('.e-appointment-details').prepend(inlineSubject);
             }
             inlineSubject.focus();
         }
@@ -233,7 +239,10 @@ export class InlineEdit {
         const inlineSubject: Element = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS);
         if (inlineSubject) {
             const appointmentSubject: Element = closest(inlineSubject, '.' + cls.APPOINTMENT_CLASS);
-            removeClass([appointmentSubject.querySelector('.' + cls.SUBJECT_CLASS)], cls.DISABLE_CLASS);
+            const subject: Element = appointmentSubject.querySelector('.' + cls.SUBJECT_CLASS);
+            if (!isNullOrUndefined(subject)) {
+                removeClass([subject], cls.DISABLE_CLASS);
+            }
             remove(inlineSubject);
         }
     }

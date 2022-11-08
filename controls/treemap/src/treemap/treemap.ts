@@ -1067,30 +1067,32 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param e - Specifies the pointer event.
      */
     public resizeOnTreeMap(e: Event): void {
-        this.isResize = true;
-        let args: IResizeEventArgs = {
-            name: resize,
-            cancel: false,
-            previousSize: this.availableSize,
-            currentSize: new Size(0, 0),
-            treemap: this
-        };
-        if (this.resizeTo) {
-            clearTimeout(this.resizeTo);
-        }
-        if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-treemap')) {
-            this.resizeTo = setTimeout(
-                (): void => {
-                    this.unWireEVents();
-                    this.createSvg();
-                    this.refreshing = true;
-                    this.wireEVents();
-                    args.currentSize = this.availableSize;
-                    this.trigger(resize, args, (observedArgs: IResizeEventArgs) => {
-                        this.render();
-                    });
-                },
-                500);
+        if (!this.isDestroyed) {
+            this.isResize = true;
+            let args: IResizeEventArgs = {
+                name: resize,
+                cancel: false,
+                previousSize: this.availableSize,
+                currentSize: new Size(0, 0),
+                treemap: this
+            };
+            if (this.resizeTo) {
+                clearTimeout(this.resizeTo);
+            }
+            if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-treemap')) {
+                this.resizeTo = setTimeout(
+                    (): void => {
+                        this.unWireEVents();
+                        this.createSvg();
+                        this.refreshing = true;
+                        this.wireEVents();
+                        args.currentSize = this.availableSize;
+                        this.trigger(resize, args, (observedArgs: IResizeEventArgs) => {
+                            this.render();
+                        });
+                    },
+                    500);
+            }
         }
     }
 
@@ -1506,28 +1508,30 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public onPropertyChanged(newProp: TreeMapModel, oldProp: TreeMapModel): void {
-        let render: boolean = false;
-        for (const prop of Object.keys(newProp)) {
-            switch (prop) {
-            case 'background':
-                this.renderBorder();
-                break;
-            case 'height':
-            case 'width':
-            case 'layoutType':
-            case 'levels':
-            case 'drillDownView':
-            case 'renderDirection':
-            case 'leafItemSettings':
-            case 'legendSettings':
-            case 'dataSource':
-                render = true;
-                break;
+        if (!this.isDestroyed) {
+            let render: boolean = false;
+            for (const prop of Object.keys(newProp)) {
+                switch (prop) {
+                    case 'background':
+                        this.renderBorder();
+                        break;
+                    case 'height':
+                    case 'width':
+                    case 'layoutType':
+                    case 'levels':
+                    case 'drillDownView':
+                    case 'renderDirection':
+                    case 'leafItemSettings':
+                    case 'legendSettings':
+                    case 'dataSource':
+                        render = true;
+                        break;
+                }
             }
-        }
-        if (render) {
-            this.createSvg();
-            this.renderElements();
+            if (render) {
+                this.createSvg();
+                this.renderElements();
+            }
         }
     }
 

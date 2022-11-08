@@ -94,7 +94,7 @@ export class WorkbookChart {
         }
     }
 
-    private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, range?: number[], showHide?: string }): void {
+    private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, range?: number[], showHide?: string, viewportIndexes?: number[][] }): void {
         if (!this.parent.chartColl || !this.parent.chartColl.length) {
             return;
         }
@@ -110,8 +110,17 @@ export class WorkbookChart {
             } else {
                 range = chart.range;
             }
-            insideRange = args.range ? checkRange([args.range], range) : (args.showHide ? this.inRowColumnRange(
-                getRangeIndexes(range), args.rIdx, args.showHide) : inRange(getRangeIndexes(range), args.rIdx, args.cIdx));
+            if (args.viewportIndexes) {
+                for (let idx: number = 0; idx < args.viewportIndexes.length; idx++) {
+                    if (checkRange([args.viewportIndexes[idx]], range)) {
+                        insideRange = true;
+                        break;
+                    }
+                }
+            } else {
+                insideRange = args.range ? checkRange([args.range], range) : (args.showHide ? this.inRowColumnRange(
+                    getRangeIndexes(range), args.rIdx, args.showHide) : inRange(getRangeIndexes(range), args.rIdx, args.cIdx));
+            }
             if (insideRange) {
                 this.parent.notify(updateChart, { chart: chart });
             }

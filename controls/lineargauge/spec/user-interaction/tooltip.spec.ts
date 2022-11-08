@@ -208,7 +208,7 @@ describe('Linear gauge control', () => {
         });
 
         it('Checking Tooltip destroy method ', () => {
-            gauge.tooltipModule.destroy(gauge);
+            gauge.tooltipModule.destroy();
         });
     });
     describe('Tooltip range value', () => {

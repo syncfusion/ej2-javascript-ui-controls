@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Heatmap
+
+#### New Features
+
+- `#I410874` - The `backgroundColor` property can now be used to change the color of the HeatMap's background.
+
 ## 20.3.50 (2022-10-18)
 
 ### Heatmap

@@ -340,6 +340,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+                this.enabled = false;
+            }
             this.renderComplete();
         }
     }

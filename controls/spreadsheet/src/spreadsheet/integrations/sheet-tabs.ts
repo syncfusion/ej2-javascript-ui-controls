@@ -447,7 +447,6 @@ export class SheetTabs {
     private showRenameDialog(target: HTMLInputElement, content: string): void {
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
-            target: document.getElementById(this.parent.element.id + '_sheet_panel'),
             height: 180, width: 400, isModal: true, showCloseIcon: true,
             content: content,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
@@ -541,7 +540,6 @@ export class SheetTabs {
             }
         } else {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-                target: document.getElementById(this.parent.element.id + '_sheet_panel'),
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: l10n.getConstant('DeleteSingleLastSheetAlert'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {

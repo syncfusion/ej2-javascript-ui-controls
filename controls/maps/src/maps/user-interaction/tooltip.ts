@@ -163,9 +163,9 @@ export class MapsTooltip {
             } else {
                 tooltipEle = createElement('div', {
                     id: this.maps.element.id + '_mapsTooltip',
-                    className: 'EJ2-maps-Tooltip',
-                    styles: 'position: absolute;pointer-events:none;'
+                    className: 'EJ2-maps-Tooltip'
                 });
+                tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
             if (option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
@@ -243,7 +243,7 @@ export class MapsTooltip {
                         && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
                         let templateStyle: string = tooltipTemplateElement.getAttribute('style');
                         templateStyle = templateStyle.replace('pointer-events: none;', 'position-events:all;');
-                        tooltipTemplateElement.setAttribute('style', templateStyle);
+                        tooltipTemplateElement.style.cssText = templateStyle;
                     }
                 } else {
                     this.clearTooltip();

@@ -397,7 +397,6 @@ export class DataValidation {
                 dialogInst.show({
                     width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
                     header: l10n.getConstant('DataValidation'),
-                    target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
                         const dlgArgs: DialogBeforeOpenEventArgs = {
                             dialogName: 'ValidationDialog', element: args.element,

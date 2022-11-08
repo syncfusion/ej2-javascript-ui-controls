@@ -259,7 +259,7 @@ export class RangeTooltip extends ChildProperty<RangeTooltip> {
      * Sets and gets the options to customize the tooltip text of range in axis.
      */
 
-    @Complex<FontModel>({ size: '13px' }, Font)
+    @Complex<FontModel>({ size: '13px', opacity: null, fontFamily: null }, Font)
     public textStyle: FontModel;
 
     /**
@@ -335,7 +335,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      * Sets and gets the options to customize the text in tooltip.
      */
 
-    @Complex<FontModel>({ color: '', size: '13px' }, Font)
+    @Complex<FontModel>({ color: '', size: '13px', opacity: null, fontFamily: null }, Font)
     public textStyle: FontModel;
 
     /**

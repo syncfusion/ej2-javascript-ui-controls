@@ -1,6 +1,6 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/dot-notation */
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer, Range } from '../axes/axis';
 import { TooltipSettings } from '../model/base';
@@ -71,13 +71,22 @@ export class GaugeTooltip {
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
             const customTooltipFormat: boolean = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
-            this.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || this.tooltip.textStyle.fontFamily;
-            this.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || this.tooltip.textStyle.opacity;
+            const tooltipStyle: FontModel = {
+                size: this.tooltip.textStyle.size,
+                color: this.tooltip.textStyle.color,
+                fontFamily: this.tooltip.textStyle.fontFamily,
+                fontWeight: this.tooltip.textStyle.fontWeight,
+                fontStyle: this.tooltip.textStyle.fontStyle,
+                opacity: this.tooltip.textStyle.opacity
+            }
+            tooltipStyle.color = tooltipStyle.color || this.gauge.themeStyle.tooltipFontColor;
+            tooltipStyle.fontFamily = tooltipStyle.fontFamily || this.gauge.themeStyle.fontFamily;
+            tooltipStyle.opacity = tooltipStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity;
             tooltipContent = customTooltipFormat ? textFormatter(
                 this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
             tooltipEle = this.tooltipCreate(tooltipEle);
-            this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY, tooltipStyle);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
         } else if (target.id.indexOf('Range') > -1 && this.gauge.tooltip.type.indexOf('Range') > -1) {
@@ -93,14 +102,21 @@ export class GaugeTooltip {
             const rangeTooltipFormat: string = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
             const customTooltipFormat: boolean = rangeTooltipFormat && ( rangeTooltipFormat.match('{end}') !== null ||
             rangeTooltipFormat.match('{start}') !== null );
-            this.tooltip.rangeSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
-            this.tooltip.rangeSettings.textStyle.fontFamily;
-            this.tooltip.rangeSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
-            this.tooltip.rangeSettings.textStyle.opacity;
+            const rangeTooltipStyle: FontModel = {
+                size: this.tooltip.rangeSettings.textStyle.size,
+                color: this.tooltip.rangeSettings.textStyle.color,
+                fontFamily: this.tooltip.rangeSettings.textStyle.fontFamily,
+                fontWeight: this.tooltip.rangeSettings.textStyle.fontWeight,
+                fontStyle: this.tooltip.rangeSettings.textStyle.fontStyle,
+                opacity: this.tooltip.rangeSettings.textStyle.opacity
+            }
+            rangeTooltipStyle.color = rangeTooltipStyle.color || this.gauge.themeStyle.tooltipFontColor;
+            rangeTooltipStyle.fontFamily = rangeTooltipStyle.fontFamily || this.gauge.themeStyle.fontFamily;
+            rangeTooltipStyle.opacity = rangeTooltipStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity;
             tooltipContent = customTooltipFormat ? rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
                 'Start : ' + startData + '<br>' + 'End : ' + endData;
             tooltipEle = this.tooltipCreate(tooltipEle);
-            this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY);
+            this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY, rangeTooltipStyle);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
         } else {
@@ -111,7 +127,7 @@ export class GaugeTooltip {
     }
 
     private tooltipRender(tooltipContent: string, target: Element, tooltipEle: HTMLElement, e: PointerEvent, areaRect: ClientRect,
-                          pageX: number, pageY : number): void {
+                          pageX: number, pageY : number, tooltipStyle: FontModel): void {
         let location: GaugeLocation = this.getTooltipLocation();
         if ((this.tooltip.rangeSettings.showAtMousePosition && target.id.indexOf('Range') > -1) ||
             (this.tooltip.showAtMousePosition && target.id.indexOf('Pointer') > -1)) {
@@ -140,14 +156,10 @@ export class GaugeTooltip {
             }
             const themes: string = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] = (target.id.indexOf('Range') > -1) ?
-                    this.tooltip.rangeSettings.textStyle.color || this.gauge.themeStyle.tooltipFontColor : this.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
                 const fillColor: string = (target.id.indexOf('Range') > -1) ? this.tooltip.rangeSettings.fill : this.tooltip.fill;
                 this.svgTooltip = this.svgCreate(this.svgTooltip, args, this.gauge, areaRect, fillColor, template, tooltipPos,
-                                                 location, target);
+                                                 location, target, tooltipStyle);
                 this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.textStyle.fontFamily = (target.id.indexOf('Range') > -1) ?
-                this.tooltip.rangeSettings.textStyle.fontFamily || this.gauge.themeStyle.fontFamily : this.tooltip.textStyle.fontFamily || this.gauge.themeStyle.fontFamily;
                 this.svgTooltip.appendTo(tooltipEle);
             }
         });
@@ -167,8 +179,16 @@ export class GaugeTooltip {
     }
 
     private svgCreate(svgTooltip: Tooltip, args: ITooltipRenderEventArgs, gauge: LinearGauge, areaRect: ClientRect, fill: string,
-                      template: string, tooltipPos: string, location: GaugeLocation, target: Element): Tooltip {
+                      template: string, tooltipPos: string, location: GaugeLocation, target: Element, textStyle: FontModel): Tooltip {
         const tooltipBorder : BorderModel = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.border : args.tooltip.border;
+        textStyle = {
+            color: args.tooltip.textStyle.color || textStyle.color,
+            fontFamily: args.tooltip.textStyle.fontFamily || textStyle.fontFamily,
+            fontStyle: args.tooltip.textStyle.fontStyle || textStyle.fontStyle,
+            fontWeight: args.tooltip.textStyle.fontWeight || textStyle.fontWeight,
+            opacity: args.tooltip.textStyle.opacity || textStyle.opacity,
+            size: args.tooltip.textStyle.size || textStyle.size
+        };
         svgTooltip = new Tooltip({
             enable: true,
             header: '',
@@ -188,7 +208,7 @@ export class GaugeTooltip {
                 tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width,
                 areaRect.height
             ),
-            textStyle: args.tooltip.textStyle,
+            textStyle: textStyle,
             border: tooltipBorder,
             theme: args.gauge.theme as TooltipTheme
         });
@@ -297,13 +317,24 @@ export class GaugeTooltip {
     }
 
     /**
-     * To destroy the tooltip.
      *
      * @return {void}
      * @private
      */
-    public destroy(gauge: LinearGauge): void {
-        // Destroy method performed here
+    public destroy(): void {
+        this.element = null;
+        this.currentAxis = null;
+        this.currentPointer = null;
+        this.currentRange = null;
+        if (!isNullOrUndefined(this.svgTooltip)) {
+            this.svgTooltip.destroy();
+        }
+        this.svgTooltip = null;
+        this.textStyle  = null;
+        this.borderStyle = null;
+        this.pointerElement = null;
+        this.tooltip = null;
         this.removeEventListener();
+        this.gauge = null;
     }
 }

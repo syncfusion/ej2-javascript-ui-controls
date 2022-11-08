@@ -8,7 +8,7 @@ import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, C
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
-import { getCell, setChart, ApplyCFArgs } from '../../workbook/index';
+import { getCell, setChart, ApplyCFArgs, getCellIndexes } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
@@ -2017,6 +2017,38 @@ export function isLockedCells(parent: Spreadsheet, rangeIndexes?: number[]): boo
  */
 export function isDiscontinuousRange(range: string): boolean {
     return range.includes(' ');
+}
+
+/**
+ * Returns the viewport indexes.
+ *
+ * @param {Spreadsheet} parent - Specify the spreadsheet context.
+ * @returns {number[][]} - Returns the viewport indexes.
+ * @hidden
+ */
+ export function getViewportIndexes(parent: Spreadsheet): number[][] {
+    const sheet: SheetModel = parent.getActiveSheet();
+    let indexes: number[][] = [[parent.viewport.topIndex + parent.frozenRowCount(sheet), parent.viewport.leftIndex +
+        parent.frozenColCount(sheet), parent.viewport.bottomIndex, parent.viewport.rightIndex]];
+    if (sheet.frozenRows || sheet.frozenColumns) {
+        const froezenRow: number = parent.frozenRowCount(sheet);
+        const froezenCol: number = parent.frozenColCount(sheet);
+        const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
+        if (froezenRow && froezenCol) {
+            indexes.push([topLeftCell[0], topLeftCell[1], froezenRow - 1, froezenCol - 1]);
+            const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
+            indexes.push([paneTopLeftCell[0], topLeftCell[1], parent.viewport.bottomIndex, froezenCol - 1]);
+        }
+        if (froezenRow) {
+            indexes.push([topLeftCell[0], parent.viewport.leftIndex + froezenCol, froezenRow - 1,
+                parent.viewport.rightIndex]);
+        }
+        if (froezenCol) {
+            indexes.push([parent.viewport.topIndex + froezenRow, topLeftCell[1], parent.viewport.bottomIndex,
+            froezenCol - 1]);
+        }
+    }
+    return indexes;
 }
 
 /**

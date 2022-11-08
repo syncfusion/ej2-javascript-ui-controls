@@ -4,8 +4,9 @@ import { SignatureBase, Dimension, ActivePoint } from '@syncfusion/ej2-inputs';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, ColorPickerEventArgs, Uploader } from '@syncfusion/ej2-inputs';
+import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner, OpenEventArgs } from '@syncfusion/ej2-popups';
-import { compile, compile as templateCompiler, Browser } from '@syncfusion/ej2-base';
+import { compile, compile as templateCompiler, Browser, detach, select } from '@syncfusion/ej2-base';
 import { ImageEditorModel } from './image-editor-model';
 /**
  * Image Editor is a graphical user interface that helps to edit an image by performing actions like selection,
@@ -595,6 +596,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (this.cssClass) {classList = classList.concat(this.cssClass.split(' ')); }
         removeClass([this.element], classList);
         if (!this.element.getAttribute('class')) {this.element.removeAttribute('class'); }
+        this.destroySubComponents();
         this.unwireEvent();
         super.destroy();
         this.element.innerHTML = '';
@@ -657,6 +659,27 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         EventHandler.remove(this.lowerCanvas, 'mousemove', this.canvasMouseMoveHandler);
         EventHandler.remove(this.lowerCanvas, 'mouseup', this.canvasMouseUpHandler);
         EventHandler.remove(document, 'mouseup', this.canvasMouseUpHandler);
+    }
+
+    private destroySubComponents(): void {
+        const inputElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('input.e-control') as NodeListOf<HTMLElement>;
+        const divElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('div.e-control:not(.e-handle)');
+        const btnElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('button.e-control');
+        for (let i: number = 0, len: number = inputElement.length; i < len; i++) {
+            if (inputElement[i].classList.contains('e-color-picker')) {
+                (getComponent(inputElement[i], 'color-picker') as ColorPicker).destroy();
+                detach(select('input#' + inputElement[i].id, this.element));
+            }
+        }
+        for (let i: number = 0, len: number = btnElement.length; i < len; i++) {
+            if (btnElement[i].classList.contains('e-dropdown-btn')) {
+                (getComponent(btnElement[i], 'dropdown-btn') as DropDownButton).destroy();
+                detach(select('button#' + btnElement[i].id, this.element));
+            } else if (btnElement[i].classList.contains('e-btn')) {
+                (getComponent(btnElement[i], 'btn') as Button).destroy();
+                detach(select('button#' + btnElement[i].id, this.element));
+            }
+        }
     }
 
     private updateTheme(): void {
@@ -1382,7 +1405,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         args.element.parentElement.offsetHeight + 'px';
                     }
                     const activeBtn: string = spanElem.innerHTML;
-                    args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                    if (activeBtn !== '') {
+                        args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
+                    }
                 },
                 select: (args: MenuEventArgs) => {
                     spanElem.textContent = args.item.text;
@@ -1966,74 +1991,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
                 this.callMainToolbar(false);
                 break;
-            case 'text':
-                this.currObjType.isCustomCrop = false;
-                imageEditorObj.drawShapeText();
-                this.refreshToolbar(type);
-                break;
-            case 'pen':
-                this.currObjType.isCustomCrop = false;
-                this.freeHandDraw(true);
-                this.refreshToolbar(type);
-                break;
             case 'reset':
                 imageEditorObj.reset();
-                break;
-            case 'load':
-                break;
-            case 'save':
-                break;
-            case 'select':
-                break;
-            case 'bold':
-                this.currObjType.isCustomCrop = false;
-                if (!this.isBoldbtn) {
-                    this.activeObj.textSettings.bold = true;
-                    this.isBoldbtn = true;
-                    this.redrawText(ratio);
-                }
-                else {
-                    this.activeObj.textSettings.bold = false;
-                    this.isBoldbtn = false;
-                    this.redrawText(ratio);
-                }
-                break;
-            case 'italic':
-                this.currObjType.isCustomCrop = false;
-                if (!this.isItalicbtn) {
-                    this.activeObj.textSettings.italic = true;
-                    if (this.activeObj.textSettings.bold) {
-                        this.upperContext.font = 'italic bold ' + this.activeObj.textSettings.fontSize + 'px' +
-                        ' ' + this.activeObj.textSettings.fontFamily;
-                    }
-                    else {
-                        this.upperContext.font = 'italic ' + this.activeObj.textSettings.fontSize + 'px' + ' ' +
-                        this.activeObj.textSettings.fontFamily;
-                    }
-                    const width: number = this.upperContext.measureText(this.activeObj.keyHistory).width +
-                    this.activeObj.textSettings.fontSize * 0.5;
-                    const height: number = this.activeObj.textSettings.fontSize + this.activeObj.textSettings.fontSize * 0.25;
-                    this.setTextSelection(width, height);
-                    this.updateActiveObject(ratio, this.activeObj.activePoint, this.activeObj);
-                    this.redrawShape(this.activeObj);
-                    this.isItalicbtn = true;
-                }
-                else {
-                    this.activeObj.textSettings.italic = false;
-                    if (this.activeObj.textSettings.bold) {
-                        this.upperContext.font = 'bold ' + this.activeObj.textSettings.fontSize + 'px' + ' ' + this.activeObj.textSettings.fontFamily;
-                    }
-                    else {
-                        this.upperContext.font = this.activeObj.textSettings.fontSize + 'px' + ' ' + this.activeObj.textSettings.fontFamily;
-                    }
-                    const width: number = this.upperContext.measureText(this.activeObj.keyHistory).width +
-                    this.activeObj.textSettings.fontSize * 0.5;
-                    const height: number = this.activeObj.textSettings.fontSize + this.activeObj.textSettings.fontSize * 0.25;
-                    this.setTextSelection(width, height);
-                    this.updateActiveObject(ratio, this.activeObj.activePoint, this.activeObj);
-                    this.redrawShape(this.activeObj);
-                    this.isItalicbtn = false;
-                }
                 break;
             }
         }
@@ -3139,7 +3098,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: ImageEditor = this;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        let xform: any = new DOMMatrix();
+        let xform: any = new DOMMatrix([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
         ctx.getTransform = () => {
             return xform;
         };
@@ -3180,7 +3139,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const transform: any = ctx.transform;
         ctx.transform = (a: number, b: number, c: number, d: number, e: number, f: number) => {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const m2: any = new DOMMatrix();
+            const m2: any = new DOMMatrix([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
             m2.a = a; m2.b = b; m2.c = c; m2.d = d; m2.e = e; m2.f = f;
             xform = xform.multiply(m2);
             return transform.call(ctx, a, b, c, d, e, f);
@@ -5969,19 +5928,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             for (let i: number = 0; i < this.objColl.length; i++) {
                 this.updateActiveObject(ratio, this.objColl[i].activePoint, this.objColl[i]);
             }
-        } else if (degree === 'zoom') {
-            for (let i: number = 0; i < this.objColl.length; i++) {
-                this.objColl[i].activePoint.startX /= ratio.width; this.objColl[i].activePoint.startY /= ratio.height;
-                this.objColl[i].activePoint.endX /= ratio.width; this.objColl[i].activePoint.endY /= ratio.height;
-                this.objColl[i].activePoint.height = this.objColl[i].activePoint.endX - this.objColl[i].activePoint.startX;
-                this.objColl[i].activePoint.width = this.objColl[i].activePoint.endY - this.objColl[i].activePoint.startY;
-                this.objColl[i].activePoint.startX *= ratio.width;
-                this.objColl[i].activePoint.startY *= ratio.height;
-                this.objColl[i].activePoint.endX *= ratio.width;
-                this.objColl[i].activePoint.endY *= ratio.height;
-                this.objColl[i].activePoint.width = this.objColl[i].activePoint.endX - this.objColl[i].activePoint.startX;
-                this.objColl[i].activePoint.height = this.objColl[i].activePoint.endY - this.objColl[i].activePoint.startY;
-            }
         }
     }
 
@@ -6302,6 +6248,34 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
         }
         return inRange;
+    }
+
+    private rotateMultiple(length: number, degree: number): void {
+        for (let i: number = 0; i < length; i++) {
+            if (degree > 0) {this.degree += 90; }
+            else {this.degree -= 90; }
+            if (this.degree === 360) {this.degree = 0; }
+            this.lowerContext.save();
+            this.setMaximumDimension(90 * (i + 1));
+            this.lowerContext.translate(this.lowerCanvas.width / 2, this.lowerCanvas.height / 2);
+            if (degree > 0) {this.lowerContext.rotate(Math.PI / 180 * 90); }
+            else {this.lowerContext.rotate(Math.PI / 180 * -90); }
+            this.lowerCanvas.style.left = this.upperCanvas.style.left = (this.element.clientWidth - parseInt(this.lowerCanvas.style.maxWidth, 10) - 18) / 2 + 1 + 'px';
+            this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.clientHeight - this.toolbarHeight - parseInt(this.lowerCanvas.style.maxHeight, 10)) / 2 + 1 + 'px';
+            this.lowerContext.drawImage(this.inMemoryCanvas, -this.lowerCanvas.height / 2, -this.lowerCanvas.width / 2);
+            if (degree > 0) {this.lowerContext.rotate(Math.PI / 180 * -90); }
+            else {this.lowerContext.rotate(Math.PI / 180 * 90); }
+            this.lowerContext.translate(-this.lowerCanvas.width / 2, -this.lowerCanvas.height / 2);
+            this.lowerContext.restore();
+            this.currImgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
+            this.inMemoryContext.putImageData(this.currImgData, 0, 0);
+            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+            if (degree > 0) {this.redrawObj(90) }
+            else {this.redrawObj(-90) }
+            
+        }
     }
 
     /**
@@ -6729,14 +6703,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      *
      * @returns {boolean}.
      */
-    public rotate(degree: number): boolean {
+     public rotate(degree: number): boolean {
         let isRotate: boolean = false;
         if (!this.disabled && this.imgDataColl.length > 0 && (degree % 90 === 0)) {
             isRotate = true;
             const transitionArgs: RotateEventArgs = {degree: degree};
             this.trigger('rotating', transitionArgs);
-            this.rotateMethod = true;
-            this.lastAction = 'rotate';
             let splitWords: string[] = [];
             let activeObjShape: string;
             if (!isNullOrUndefined(this.activeObj.activePoint)) {
@@ -6746,29 +6718,36 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
             }
             this.redrawActObj();
+            const factor: number = this.factor;
             if (this.factor !== 1) {
                 this.lowerContext.setTransform(1, 0, 0, 1, 0, 0);
                 this.upperContext.setTransform(1, 0, 0, 1, 0, 0);
                 this.factor = 1;
                 this.refreshToolbar('main');
             }
-            this.degree += degree;
-            if (this.degree === 360) {this.degree = 0; }
-            this.lowerContext.save();
-            this.setMaximumDimension(this.degree);
-            this.lowerContext.translate(this.lowerCanvas.width / 2, this.lowerCanvas.height / 2);
-            this.lowerContext.rotate(Math.PI / 180 * degree);
-            this.lowerCanvas.style.left = this.upperCanvas.style.left = (this.element.clientWidth - parseInt(this.lowerCanvas.style.maxWidth, 10) - 18) / 2 + 1 + 'px';
-            this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.clientHeight - this.toolbarHeight - parseInt(this.lowerCanvas.style.maxHeight, 10)) / 2 + 1 + 'px';
-            this.lowerContext.drawImage(this.inMemoryCanvas, -this.lowerCanvas.height / 2, -this.lowerCanvas.width / 2);
-            this.lowerContext.rotate(Math.PI / 180 * -degree);
-            this.lowerContext.translate(-this.lowerCanvas.width / 2, -this.lowerCanvas.height / 2);
-            this.lowerContext.restore();
-            this.currImgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
-            this.inMemoryContext.putImageData(this.currImgData, 0, 0);
-            this.redrawObj(degree);
+            const length: number = Math.abs(degree / 90);
+            if (length > 1) {
+                this.rotateMultiple(length, degree);
+            } else {
+                this.degree += degree;
+                if (this.degree === 360) {this.degree = 0; }
+                this.lowerContext.save();
+                this.setMaximumDimension(this.degree);
+                this.lowerContext.translate(this.lowerCanvas.width / 2, this.lowerCanvas.height / 2);
+                this.lowerContext.rotate(Math.PI / 180 * degree);
+                this.lowerCanvas.style.left = this.upperCanvas.style.left = (this.element.clientWidth - parseInt(this.lowerCanvas.style.maxWidth, 10) - 18) / 2 + 1 + 'px';
+                this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.clientHeight - this.toolbarHeight - parseInt(this.lowerCanvas.style.maxHeight, 10)) / 2 + 1 + 'px';
+                this.lowerContext.drawImage(this.inMemoryCanvas, -this.lowerCanvas.height / 2, -this.lowerCanvas.width / 2);
+                this.lowerContext.rotate(Math.PI / 180 * -degree);
+                this.lowerContext.translate(-this.lowerCanvas.width / 2, -this.lowerCanvas.height / 2);
+                this.lowerContext.restore();
+                this.currImgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
+                this.inMemoryContext.putImageData(this.currImgData, 0, 0);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                this.redrawObj(degree);
+            }
             if (!isNullOrUndefined(activeObjShape)) {
                 if (activeObjShape === 'custom') {
                     const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height - this.pannEnd.startY};
@@ -6782,10 +6761,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.refreshToolbar('main', true, true);
             }
             this.factor = 1;
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('rotate', degree, this.objColl); }
+            if (!this.isUndoRedo) {this.updateUndoRedoColl('rotate', degree, this.objColl, null); }
             this.isUndoRedo = false;
+            this.refreshToolbar('main');
         }
-        this.rotateMethod = false;
         return isRotate;
     }
 
@@ -6925,7 +6904,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      *
      * @param {boolean} value - Specifies a value whether enable or disable freehand drawing. 
      *
-     *  @returns {void}.
+     * @returns {void}.
+     * @private
      */
     public freeHandDraw(value: boolean): void {
         if (value) {
@@ -6937,6 +6917,17 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.applyPenDraw();
         }
         this.refreshToolbar('pen');
+    }
+
+    /**
+     * Enable or disable a freehand drawing in an Image Editor.
+     *
+     * @param {boolean} value - Specifies a value whether enable or disable freehand drawing. 
+     *
+     * @returns {void}.
+     */
+    public freehandDraw(value: boolean): void {
+        this.freeHandDraw(value);
     }
 
     /**
@@ -7208,7 +7199,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             isSelected = true;
             this.activeObj = obj;
             this.redrawShape(this.activeObj);
-            this.refreshToolbar('shapes');
+            if (this.activeObj.shape === 'text') {
+                  this.refreshToolbar('text');
+             } else if (this.activeObj.shape === 'pen') {
+                  this.refreshToolbar('pen');
+            } else {
+                this.refreshToolbar('shapes');
+            }
             this.updateToolbarItems(this.calcRatio());
         }
         return isSelected;
@@ -7324,7 +7321,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public canUndo(): boolean {
-        return super.canUndo();
+        return false;
     }
 
     /**
@@ -7334,7 +7331,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public canRedo(): boolean {
-        return super.canRedo();
+        return false;
     }
 
     /**
@@ -7344,7 +7341,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public clear(): void {
-        super.clear();
+        if (this.getModuleName() !== 'image-editor') {
+            super.clear();
+        }
     }
 
     /**
@@ -7358,7 +7357,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public draw(text: string, fontFamily?: string, fontSize?: number): void {
-        super.draw(text, fontFamily, fontSize);
+        if (this.getModuleName() !== 'image-editor') {
+            super.draw(text, fontFamily, fontSize);
+        }
     }
 
     /**
@@ -7369,7 +7370,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public getBlob(url: string): Blob {
-        return super.getBlob(url);
+        return null;
     }
 
     /**
@@ -7379,7 +7380,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public isEmpty(): boolean {
-        return super.isEmpty();
+        return false;
     }
 
     /**
@@ -7392,7 +7393,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public load(signature: string, width?: number, height?: number): void {
-        super.load(signature, width, height);
+        if (this.getModuleName() !== 'image-editor') {
+            super.load(signature, width, height);
+        }
     }
 
     /**
@@ -7402,7 +7405,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public undo(): void {
-        super.undo();
+        if (this.getModuleName() !== 'image-editor') {
+            super.undo();
+        }
     }
 
     /**
@@ -7412,7 +7417,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public redo(): void {
-        super.redo();
+        if (this.getModuleName() !== 'image-editor') {
+            super.redo();
+        }
     }
 
     /**
@@ -7425,7 +7432,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public save(type?: FileType, fileName?: string): void {
-        super.save(type, fileName);
+        if (this.getModuleName() !== 'image-editor') {
+            super.save(type, fileName);
+        }
     }
 
     /**
@@ -7435,7 +7444,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public saveAsBlob(): Blob {
-        return super.saveAsBlob();
+        return null;
     }
 
     /**
@@ -7445,7 +7454,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public getLocalData(): any {
-        return super.getLocalData();
+        return null;
     }
 }
 

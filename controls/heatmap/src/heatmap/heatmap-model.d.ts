@@ -101,7 +101,7 @@ export interface HeatMapModel extends ComponentModel{
      *
      * @default null
      */
-    background?: string;
+    backgroundColor?: string;
 
     /**
      *  Specifies the theme for heatmap.

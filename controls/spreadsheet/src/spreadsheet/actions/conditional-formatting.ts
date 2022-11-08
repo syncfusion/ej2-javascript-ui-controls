@@ -1,5 +1,5 @@
 import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
-import { renderCFDlg, locale, dialog, focus } from '../common/index';
+import { renderCFDlg, locale, dialog, focus, getViewportIndexes } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes } from '../../workbook/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
@@ -85,7 +85,6 @@ export class ConditionalFormatting {
         dialogInst.show({
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
             header: args.action.replace('...', ''),
-            target: this.parent.element,
             beforeOpen: (): void => {
                 dialogInst.dialogInstance.content = this.cfDlgContent(args.action);
                 dialogInst.dialogInstance.dataBind();
@@ -451,26 +450,7 @@ export class ConditionalFormatting {
         let indexes: number[][] = [args.indexes];
         let isEditCellUpdated: boolean = false;
         if (args.refreshAll) {
-            indexes = [[this.parent.viewport.topIndex + this.parent.frozenRowCount(sheet), this.parent.viewport.leftIndex +
-                this.parent.frozenColCount(sheet), this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex]];
-            if (sheet.frozenRows || sheet.frozenColumns) {
-                const froezenRow: number = this.parent.frozenRowCount(sheet);
-                const froezenCol: number = this.parent.frozenColCount(sheet);
-                const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
-                if (froezenRow && froezenCol) {
-                    indexes.push([topLeftCell[0], topLeftCell[1], froezenRow - 1, froezenCol - 1]);
-                    const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
-                    indexes.push([paneTopLeftCell[0], topLeftCell[1], this.parent.viewport.bottomIndex, froezenCol - 1]);
-                }
-                if (froezenRow) {
-                    indexes.push([topLeftCell[0], this.parent.viewport.leftIndex + froezenCol, froezenRow - 1,
-                    this.parent.viewport.rightIndex]);
-                }
-                if (froezenCol) {
-                    indexes.push([this.parent.viewport.topIndex + froezenRow, topLeftCell[1], this.parent.viewport.bottomIndex,
-                    froezenCol - 1]);
-                }
-            }
+            indexes = getViewportIndexes(this.parent);
         }
         for (let i: number = cfRule.length - 1; i >= 0; i--) {
             if (rangeCheck && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i]) :

@@ -501,7 +501,7 @@ export class Zoom {
                                             }
                                         } else {
                                             markerStyle = 'visibility:hidden';
-                                            currentEle.setAttribute('style', markerStyle);
+                                            (currentEle as HTMLElement).style.cssText = markerStyle;
                                         }
                                     }
                                 }
@@ -614,22 +614,22 @@ export class Zoom {
         const layerIndex: number = parseInt((element ? element : layerElement).id.split('_LayerIndex_')[1].split('_')[0], 10);
         const markerSVGObject: Element = this.maps.renderer.createGroup({
             id: this.maps.element.id + '_Markers_Group',
-            class: 'GroupElement',
-            style: 'pointer-events: auto;'
+            class: 'GroupElement'
         });
+        (markerSVGObject as HTMLElement).style.pointerEvents = 'auto';
         if (document.getElementById(markerSVGObject.id)) {
             removeElement(markerSVGObject.id);
         }
         const mapsAreaRect: Rect = this.maps.mapAreaRect;
         const markerTemplateElements: HTMLElement = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: 'template',
-            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                    'top:' + mapsAreaRect.y + 'px;' +
-                    'left:' + mapsAreaRect.x + 'px;' +
-                    'height:' + mapsAreaRect.height + 'px;' +
-                    'width:' + mapsAreaRect.width + 'px;'
+            className: 'template'
         });
+        markerTemplateElements.style.cssText = 'overflow: hidden; position: absolute;pointer-events: none;' +
+                                                'top:' + mapsAreaRect.y + 'px;' +
+                                                'left:' + mapsAreaRect.x + 'px;' +
+                                                'height:' + mapsAreaRect.height + 'px;' +
+                                                'width:' + mapsAreaRect.width + 'px;';
         if (document.getElementById(markerTemplateElements.id)) {
             removeElement(markerTemplateElements.id);
         }
@@ -761,16 +761,25 @@ export class Zoom {
                 let labelX: number = label['location']['x'];
                 let labelY: number = label['location']['y'];
                 if (type === 'Template') {
-                    const layerEle: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
-                    labelX = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - labelX)) * scale);
-                    labelY = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - labelY)) * scale);
-                    const templateOffset: ClientRect = element.getBoundingClientRect();
-                    const layerOffset: ClientRect = layerEle.getBoundingClientRect();
-                    const elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
-                    const x: number = ((labelX) + (layerOffset.left - elementOffset.left) - (templateOffset.width / 2));
-                    const y: number = ((labelY) + (layerOffset.top - elementOffset.top) - (templateOffset.height / 2));
-                    (<HTMLElement>element).style.left = x + 'px';
-                    (<HTMLElement>element).style.top = y + 'px';
+                    let locationX: number = 0;
+                    let locationY: number = 0;
+                    if (this.maps.isTileMap) {
+                        zoomtext = label['dataLabelText'];
+                        zoomtextSize = measureText(zoomtext, style);
+                        locationX = ((labelX + x) * scale) - (zoomtextSize['width'] / 2);
+                        locationY = ((labelY + y) * scale) - (zoomtextSize['height']); 
+                    } else {
+                        const layerEle: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
+                        labelX = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - labelX)) * scale);
+                        labelY = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - labelY)) * scale);
+                        const templateOffset: ClientRect = element.getBoundingClientRect();
+                        const layerOffset: ClientRect = layerEle.getBoundingClientRect();
+                        const elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
+                        locationX = ((labelX) + (layerOffset.left - elementOffset.left));
+                        locationY = ((labelY) + (layerOffset.top - elementOffset.top));
+                    }
+                    (<HTMLElement>element).style.left = locationX + 'px';
+                    (<HTMLElement>element).style.top = locationY + 'px';
                 } else {
                     labelX = ((labelX + x) * scale); labelY = ((labelY + y) * scale);
                     zoomtext = label['dataLabelText'];
@@ -898,9 +907,9 @@ export class Zoom {
                             if ((staticMapOffset['x'] > templateOffset['x']  || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])
                             && (staticMapOffset['y'] > templateOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < templateOffset['y'] + templateOffset['height'])
                             ) {
-                                element['style']['display'] = 'none';
+                                (element as HTMLElement).style.display = 'none';
                             } else if ((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])) {
-                                element['style']['display'] = 'none';
+                                (element as HTMLElement).style.display = 'none';
                             }
                         }
                     }
@@ -1028,7 +1037,6 @@ export class Zoom {
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
-        this.maps.zoomNotApplied = false;
         this.isSingleClick = false;
     }
 
@@ -1385,7 +1393,8 @@ export class Zoom {
     public alignToolBar(): void {
         const map: Maps = this.maps;
         const padding: number = 10;
-        const element: HTMLElement = createElement('div', { id: map.element.id + '_ToolBar', styles: 'position:absolute;z-index:2' });
+        const element: HTMLElement = createElement('div', { id: map.element.id + '_ToolBar' });
+        element.style.cssText = 'position:absolute;z-index:2';
         const rectSVGObject: Element = map.renderer.createSvg({
             id: map.element.id + '_Zooming_ToolBar', width: 10, height: 10
         });

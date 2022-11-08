@@ -168,7 +168,8 @@ export class Editor {
      */
     public get restrictFormatting(): boolean {
         return this.documentHelper.isDocumentProtected && (this.documentHelper.restrictFormatting
-            || (!this.documentHelper.restrictFormatting && !this.selection.isSelectionInEditRegion()));
+            || (!this.documentHelper.restrictFormatting && !this.selection.isSelectionInEditRegion()))
+            && this.documentHelper.protectionType !== 'RevisionsOnly';
     }
 
     /**
@@ -504,11 +505,11 @@ export class Editor {
                 this.selection.start.offset = startOffset - 1 !== -1 ? startOffset - 1 : startOffset;
             }
             this.selection.selectCurrentWord();
-            // If paragraph mark selected, remove paragraph mark selection
-            if (this.selection.isParagraphLastLine(this.selection.end.currentWidget)
-                && this.selection.end.offset === this.selection.getLineLength(this.selection.end.currentWidget) + 1) {
-                this.selection.end.offset -= 1;
-            }
+        }
+        // If paragraph mark selected, remove paragraph mark selection
+        if (this.selection.isParagraphLastLine(this.selection.end.currentWidget)
+            && this.selection.end.offset === this.selection.getLineLength(this.selection.end.currentWidget) + 1) {
+            this.selection.end.offset -= 1;
         }
         const paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
         const startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
@@ -6627,6 +6628,7 @@ export class Editor {
                 position: { X: 'center', Y: 'center' },
                 animationSettings: { effect: 'Zoom' }
             });
+            this.alertDialog.enableRtl=this.owner.enableRtl;
         } else {
             this.confirmCellMerge();
         }
@@ -10797,6 +10799,7 @@ export class Editor {
                 position: { X: 'center', Y: 'center' },
                 animationSettings: { effect: 'Zoom' }
             });
+            this.alertDialog.enableRtl=this.owner.enableRtl;
         } else {
             this.onDeleteColumnConfirmed();
         }
@@ -11871,6 +11874,7 @@ export class Editor {
                     closeOnEscape: true, position: { X: 'center', Y: 'center' },
                     animationSettings: { effect: 'Zoom' }
                 });
+                this.alertDialog.enableRtl = this.owner.enableRtl;
             } else {
 
                 this.onConfirmedTableCellsDeletion(table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action);
@@ -16814,7 +16818,7 @@ export class Editor {
                 closeOnEscape: true,
                 position: { X: 'center', Y: 'center' },
                 animationSettings: { effect: 'Zoom' }
-            });
+            }).enableRtl = this.owner.enableRtl;
         }
 
         this.setPositionForCurrentIndex(this.selection.start, initialStart);

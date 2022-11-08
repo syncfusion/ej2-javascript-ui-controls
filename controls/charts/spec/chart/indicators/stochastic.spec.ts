@@ -496,36 +496,36 @@ describe('Chart', () => {
 
 
         //trackball
-        it('stochastic indicator with track ball', (done: Function) => {
-            loaded = (args: Object): void => {
+        // it('stochastic indicator with track ball', (done: Function) => {
+        //     loaded = (args: Object): void => {
 
-                let tooltip: Element;
-                let target: Element = document.getElementById('container_Series_0_Point_1');
-                let series: Series = <Series>chartObj.series[0];
-                let chartArea: Element = document.getElementById('container_ChartAreaBorder');
-                let y: number = series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
-                let x: number = series.points[1].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-                tooltip = document.getElementById('container_tooltip');
-                expect(tooltip != null).toBe(true);
-                let group: Node = tooltip.childNodes[0].childNodes[0];
-                let path: Element = group.childNodes[0] as HTMLElement;
-                let text1: Element = group.childNodes[1] as HTMLElement;
-                let text2: Element = group.childNodes[2] as HTMLElement;
-                expect(path.getAttribute('fill') == '#000816').toBe(true);
-                expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
-                expect(text1.textContent.replace(/\u200E/g, '') == 'FebgoldHigh : 150.99Low : 60.23Open : 120.55Close : 70.9UpperLine : 150LowerLine : 30').toBe(true);
-                //expect(text2.textContent == 'UpperLine : 150').toBe(true);
-                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
-                done();
+        //         let tooltip: Element;
+        //         let target: Element = document.getElementById('container_Series_0_Point_1');
+        //         let series: Series = <Series>chartObj.series[0];
+        //         let chartArea: Element = document.getElementById('container_ChartAreaBorder');
+        //         let y: number = series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
+        //         let x: number = series.points[1].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
+        //         trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+        //         tooltip = document.getElementById('container_tooltip');
+        //         expect(tooltip != null).toBe(true);
+        //         let group: Node = tooltip.childNodes[0].childNodes[0];
+        //         let path: Element = group.childNodes[0] as HTMLElement;
+        //         let text1: Element = group.childNodes[1] as HTMLElement;
+        //         let text2: Element = group.childNodes[2] as HTMLElement;
+        //         expect(path.getAttribute('fill') == '#000816').toBe(true);
+        //         expect((<Element>text1.childNodes[0]).getAttribute('fill') == '#ffffff').toBe(true);
+        //         expect(text1.textContent.replace(/\u200E/g, '') == 'FebgoldHigh : 150.99Low : 60.23Open : 120.55Close : 70.9UpperLine : 150LowerLine : 30').toBe(true);
+        //         //expect(text2.textContent == 'UpperLine : 150').toBe(true);
+        //         trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
+        //         done();
 
-            };
-            chartObj.tooltip = { enable: true, shared: true };
-            chartObj.crosshair = { enable: true, lineType: 'Vertical' };
-            chartObj.loaded = loaded;
-            chartObj.refresh();
+        //     };
+        //     chartObj.tooltip = { enable: true, shared: true };
+        //     chartObj.crosshair = { enable: true, lineType: 'Vertical' };
+        //     chartObj.loaded = loaded;
+        //     chartObj.refresh();
             
-        });
+        // });
 
         //zooming
         it('stochastic indicator with mouse wheel  zooming', (done: Function) => {

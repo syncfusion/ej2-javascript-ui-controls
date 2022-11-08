@@ -86,6 +86,7 @@ export class FormDesigner {
             isNameChanged: false,
             isPrintChanged: false,
             isTooltipChanged: false,
+            isThicknessChanged: false,
         };
     private initialFieldPropertyChanged: any =
         {
@@ -95,6 +96,7 @@ export class FormDesigner {
             isNameChanged: false,
             isPrintChanged: false,
             isTooltipChanged: false,
+            isThicknessChanged: false,
         };
     private textFieldPropertyChanged: any =
         {
@@ -309,7 +311,7 @@ export class FormDesigner {
                 divElement.innerHTML = "";
                 divElement.style.position = 'initial';
             }
-            if (formFieldAnnotationType === "Checkbox" && (Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+            if (formFieldAnnotationType === "Checkbox" && (Browser.isDevice)) {
                 //Creating outer div for checkbox in mobile device
                 let outerDiv: HTMLElement;
                 let bounds: any = drawingObject.bounds;
@@ -348,7 +350,7 @@ export class FormDesigner {
                 }
             }
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
-            if (formFieldAnnotationType === "Checkbox" && (Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+            if (formFieldAnnotationType === "Checkbox" && (Browser.isDevice)) {
                 htmlElement.setAttribute(
                     'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
                     'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
@@ -892,7 +894,7 @@ export class FormDesigner {
                 }
             }
             const point: PointModel = cornersPointsBeforeRotation(signatureField.wrapper.children[0]).topLeft;
-            if (currentData.formFieldAnnotationType === "Checkbox" && (Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+            if (currentData.formFieldAnnotationType === "Checkbox" && (Browser.isDevice)) {
                 //ReCreate outer div while zoom options
                 let outerDiv: HTMLElement;
                 let outerDivHeight: number = element.actualSize.height + this.increasedSize;
@@ -1228,7 +1230,10 @@ export class FormDesigner {
         divElement.style.height = "100%";
         divElement.style.position = "absolute";
         divElement.style.backgroundColor = "transparent";
-        divElement.style.border = "1px solid #303030";
+        if (!isNullOrUndefined(signatureField.thickness)) {
+            divElement.className = 'e-pdfviewer-signatureformfields-signature';
+            divElement.style.border = (signatureField.thickness) + 'px solid #303030';
+        }
         if (!isNullOrUndefined(signatureField.value) && signatureField.value !== '') {
             divElement.className = 'e-pdfviewer-signatureformfields-signature';
             divElement.style.pointerEvents = 'none';
@@ -1531,7 +1536,7 @@ export class FormDesigner {
             else
                 labelElement.style.cursor = 'pointer';
             checkboxDiv = createElement("div", { className: "e-pv-checkbox-div" });
-            if (!Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
+            if (!Browser.isDevice) {
                 checkboxDiv.addEventListener('click', this.setCheckBoxState.bind(this));
             }
             (checkboxDiv as HTMLElement).id = drawingObject.id + "_input";
@@ -1741,11 +1746,11 @@ export class FormDesigner {
     }
 
     private setCheckBoxState(event: Event) {
-        if ((Browser.isDevice || this.pdfViewer.enableDesktopMode) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
+        if ((Browser.isDevice) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
             let minCheckboxWidth: number = 20;
             let isChecked: boolean = false;
             let checkTarget: Element;
-            if (Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            if (Browser.isDevice) {
                 checkTarget = document.getElementById((event.target as Element).id.split("_")[0] + '_input');
             } else {
                 checkTarget = (event.target as Element);
@@ -1901,7 +1906,7 @@ export class FormDesigner {
     private updateFormFieldSessions(): void {
         let fieldData = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         let formFieldsDatas = JSON.parse(fieldData);
-        if (this.pdfViewer.formFieldCollection.length === formFieldsDatas.length) {
+        if (formFieldsDatas && this.pdfViewer.formFieldCollection.length === formFieldsDatas.length) {
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
         }
     }
@@ -2225,7 +2230,7 @@ export class FormDesigner {
      * @returns void
      */
     public updateFormField(formFieldId: string | object,
-        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings): void {
+        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | SignatureFieldSettings | InitialFieldSettings): void {
         let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
         this.isFormFieldUpdated = true;
         if (formField) {
@@ -2391,7 +2396,7 @@ export class FormDesigner {
         return color;
     }
     private formFieldPropertyChange(formFieldObject: PdfFormFieldBaseModel,
-        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings, htmlElement: HTMLElement): void {
+        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | SignatureFieldSettings | InitialFieldSettings, htmlElement: HTMLElement): void {
         let isValueChanged: boolean = false, isFontFamilyChanged: boolean = false, isFontSizeChanged: boolean = false, isFontStyleChanged: boolean = false, isColorChanged: boolean = false,
             isBackgroundColorChanged: boolean = false, isBorderColorChanged: boolean = false, isBorderWidthChanged: boolean = false, isAlignmentChanged: boolean = false, isReadOnlyChanged: boolean = false,
             isVisibilityChanged: boolean = false, isMaxLengthChanged: boolean = false, isRequiredChanged: boolean = false, isPrintChanged: boolean = false, isToolTipChanged: boolean = false, isNameChanged: boolean = false;
@@ -2411,8 +2416,8 @@ export class FormDesigner {
                 this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue, isNameChanged);
             }
         }
-        if (formFieldObject.formFieldAnnotationType !== 'SignatureField') {
-            if (options.thickness) {
+        if (formFieldObject.formFieldAnnotationType) {
+            if (options.thickness !== null) {
                 if (formFieldObject.thickness !== options.thickness) {
                     isBorderWidthChanged = true;
                     oldValue = formFieldObject.thickness;
@@ -2426,8 +2431,8 @@ export class FormDesigner {
                         false, false, false, false, isBorderWidthChanged, false, false, false, false, false, false, false, oldValue, newValue);
                 }
             }
-            if (options.borderColor) {
-                let borderColor = this.colorNametoHashValue(options.borderColor);
+            if ((options as any).borderColor) {
+                let borderColor = this.colorNametoHashValue((options as any).borderColor);
                 if (formFieldObject.borderColor !== borderColor) {
                     isBorderColorChanged = true;
                     oldValue = formFieldObject.borderColor;
@@ -2446,8 +2451,8 @@ export class FormDesigner {
                 }
             }
         }
-        if (options.backgroundColor) {
-            let backColor = this.colorNametoHashValue(options.backgroundColor);
+        if ((options as any).backgroundColor) {
+            let backColor = this.colorNametoHashValue((options as any).backgroundColor);
             backColor = this.getSignatureBackground(backColor);
             if (formFieldObject.backgroundColor !== backColor) {
                 isBackgroundColorChanged = true;
@@ -3445,7 +3450,8 @@ export class FormDesigner {
         if (obj.isRequired) {
             (inputElement as HTMLInputElement).required = true;
             if (inputElement.firstElementChild) {
-                (inputElement.firstElementChild as HTMLElement).style.border = '1px solid red';
+                let thickness = (obj.thickness > 0) ? obj.thickness : 1;
+                (inputElement.firstElementChild as HTMLElement).style.border = thickness + 'px solid red';
             }
             else {
                 (inputElement as HTMLElement).style.border = '1px solid red';
@@ -4086,6 +4092,9 @@ export class FormDesigner {
             }
             if ((this.formFieldTooltip) || isUndoRedo) {
                 this.updateTooltipPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldBorderWidth || isUndoRedo) {
+                this.updateBorderThicknessPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldVisibility || isUndoRedo) {
                 this.updateVisibilityPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
@@ -5932,6 +5941,8 @@ export class FormDesigner {
             }
             else if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {
                 (inputElement as any).parentElement.style.backgroundColor = 'transparent';
+                let thickness: number = !isNullOrUndefined(selectedItem.thickness) ? 1 : selectedItem.thickness;
+                inputElement.parentElement.style.borderWidth = thickness;
             }
             else {
                 inputElement.style.cursor = 'default';
@@ -5960,15 +5971,18 @@ export class FormDesigner {
                 let thickness: number = selectedItem.thickness === 0 ? 1 : selectedItem.thickness;
                 (inputElement as any).parentElement.style.boxShadow = 'red 0px 0px 0px ' + thickness + 'px';
             }
+            else if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {
+                let thickness = (selectedItem.thickness > 0) ? selectedItem.thickness : 1;
+                inputElement.style.border = thickness + 'px solid red';
+            }
         } else {
             (inputElement as HTMLInputElement).required = false;
             if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {
-                let thickness: number = selectedItem.thickness === 0 ? 1 : selectedItem.thickness;
-                inputElement.style.borderWidth = thickness;
-            }
-            else{
                 inputElement.style.borderWidth = selectedItem.thickness;
-            }              
+            }
+            else {
+                inputElement.style.borderWidth = selectedItem.thickness;
+            }
             inputElement.style.borderColor = selectedItem.borderColor;
             if (selectedItem.formFieldAnnotationType === 'RadioButton') {
                 (inputElement as any).parentElement.style.boxShadow = selectedItem.borderColor + ' 0px 0px 0px ' + selectedItem.thickness + 'px';
@@ -6326,6 +6340,9 @@ export class FormDesigner {
             if (initialFieldSettings.tooltip && this.initialFieldPropertyChanged.isTooltipChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.tooltip = initialFieldSettings.tooltip;
             }
+            if ((!isNullOrUndefined(initialFieldSettings.thickness) && isSetFormFieldMode === true) && this.initialFieldPropertyChanged.isThicknessChanged) {
+                signatureField.thickness = initialFieldSettings.thickness;
+            }
             if (initialFieldSettings.name && this.initialFieldPropertyChanged.isNameChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.name = initialFieldSettings.name;
             }
@@ -6345,6 +6362,9 @@ export class FormDesigner {
             }
             if (signatureFieldSettings.tooltip && this.signatureFieldPropertyChanged.isTooltipChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.tooltip = signatureFieldSettings.tooltip;
+            }
+            if ((!isNullOrUndefined(signatureFieldSettings.thickness) && isSetFormFieldMode === true) && this.signatureFieldPropertyChanged.isThicknessChanged) {
+                signatureField.thickness = signatureFieldSettings.thickness;
             }
             if (signatureFieldSettings.name && this.signatureFieldPropertyChanged.isNameChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.name = signatureFieldSettings.name;
@@ -6366,6 +6386,7 @@ export class FormDesigner {
             this.initialFieldPropertyChanged.isTooltipChanged = !isNullOrUndefined(newSignatureFieldSettings.tooltip);
             this.initialFieldPropertyChanged.isNameChanged = !isNullOrUndefined(newSignatureFieldSettings.name);
             this.initialFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(newSignatureFieldSettings.isPrint);
+            this.initialFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(newSignatureFieldSettings.thickness);
         }
         else {
             this.signatureFieldPropertyChanged.isReadOnlyChanged = !isNullOrUndefined(newSignatureFieldSettings.isReadOnly);
@@ -6374,6 +6395,7 @@ export class FormDesigner {
             this.signatureFieldPropertyChanged.isTooltipChanged = !isNullOrUndefined(newSignatureFieldSettings.tooltip);
             this.signatureFieldPropertyChanged.isNameChanged = !isNullOrUndefined(newSignatureFieldSettings.name);
             this.signatureFieldPropertyChanged.isPrintChanged = !isNullOrUndefined(newSignatureFieldSettings.isPrint);
+            this.signatureFieldPropertyChanged.isThicknessChanged = !isNullOrUndefined(newSignatureFieldSettings.thickness);
         }
     }
     /**

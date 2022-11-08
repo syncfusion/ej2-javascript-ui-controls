@@ -373,7 +373,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
 
     //tslint:disable-next-line
     protected renderReactTemplates(callback?: any): void {
-        //No Code
+        if (!isNullOrUndefined(callback)) {
+            callback();
+        }
     }
 
     // eslint-disable-next-line

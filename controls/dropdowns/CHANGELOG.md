@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F178523` - Issue with "Script error thrown when we drag and drop the listbox item in angular platform" has been resolved.
+
+## 20.3.50 (2022-10-18)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I408860` - The issue with "While focus the item using tab key, focus disappeared instead of focus the first popup element in the Angular Dropdown Tree component" has been resolved.
+
 ## 20.3.49 (2022-10-11)
 
 ### ListBox

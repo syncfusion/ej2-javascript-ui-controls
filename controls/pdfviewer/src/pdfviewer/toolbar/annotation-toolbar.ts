@@ -4112,6 +4112,7 @@ export class AnnotationToolbar {
         const sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
         const commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
         const commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
+        let newToolbarHeight: string = '';
         if (isAdjust) {
             if (this.pdfViewer.enableToolbar) {
                 sideBarToolbar.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
@@ -4131,8 +4132,11 @@ export class AnnotationToolbar {
             }
             // eslint-disable-next-line max-len
             this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (annotationToolbarHeight + toolbarHeight)) + 'px';
-            sideBarToolbar.style.height = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight) + 'px';
-            splitterElement.style.height = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight) + 'px';
+            newToolbarHeight= this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight);
+            sideBarToolbar.style.height = newToolbarHeight;
+            splitterElement.style.height = newToolbarHeight;
+            commentPanelResizer.style.height = newToolbarHeight;
+            sideBarContentContainer.style.height = newToolbarHeight;
         } else {
             if (this.pdfViewer.enableToolbar) {
                 // eslint-disable-next-line max-len
@@ -4157,18 +4161,16 @@ export class AnnotationToolbar {
                 toolbarHeight = 0;
             }
             // eslint-disable-next-line max-len
-            this.pdfViewerBase.viewerContainer.style.height = this.resetViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
-            sideBarToolbar.style.height = this.getNavigationToolbarHeight(toolbarHeight);
-            splitterElement.style.height = this.getNavigationToolbarHeight(toolbarHeight);
+            this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
+            newToolbarHeight= this.getNavigationToolbarHeight(toolbarHeight);
+            sideBarToolbar.style.height = newToolbarHeight;
+            splitterElement.style.height = newToolbarHeight;
+            commentPanelResizer.style.height = newToolbarHeight;
+            sideBarContentContainer.style.height = newToolbarHeight;
             if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
                 // eslint-disable-next-line
                 this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height) - parseInt(sideBarToolbar.style.top)) + 'px';
             }
-        }
-        if (isBlazor()) {
-            this.updateContentContainerHeight(isAdjust, true);
-        } else {
-            this.updateContentContainerHeight(isAdjust);
         }
     }
 

@@ -566,7 +566,7 @@ export class Legend {
                             new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
                         );
                         let pathEle: Element = render.drawRectangle(leftRectPageOptions);
-                        pathEle.setAttribute('tabindex', ((page + 1) === 1 ? -1 : map.tabIndex + 1).toString());
+                        (pathEle as HTMLElement).tabIndex = (page + 1) === 1 ? -1 : (map.tabIndex + 1);
                         leftPageElement.appendChild(pathEle);
                         this.wireEvents(leftPageElement);
                         const rightPageOptions: PathOption = new PathOption(
@@ -578,7 +578,7 @@ export class Legend {
                             new Rect(rightPageX - spacing - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
                         );
                         pathEle = render.drawRectangle(rightRectPageOptions);
-                        pathEle.setAttribute('tabindex', ((page + 1) === this.totalPages.length ? -1 : map.tabIndex + 2).toString());
+                        (pathEle as HTMLElement).tabIndex = (page + 1) === this.totalPages.length ? -1 : (map.tabIndex + 2);
                         rightPageElement.appendChild(pathEle);
                         this.wireEvents(rightPageElement);
                         pagingGroup.appendChild(leftPageElement);
@@ -599,7 +599,7 @@ export class Legend {
                             'dominant-baseline': ''
                         };
                         let pagingTextElement: HTMLElement = <HTMLElement>render.createText(pageTextOptions, pagingText);
-                        pagingTextElement.setAttribute('style', 'user-select: none;')
+                        pagingTextElement.style.cssText = 'user-select: none;';
                         pagingGroup.appendChild(pagingTextElement);
                         this.legendGroup.appendChild(pagingGroup);
                     }
@@ -732,15 +732,18 @@ export class Legend {
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeElement);
                                     const shapeItemCount: number = this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].length - 1;
                                     const shapeOldFillColor: string = shapeElement.getAttribute('fill');
+                                    const shapeOldOpacity: string = shapeElement.getAttribute('fill-opacity');
                                     this.legendHighlightCollection[length - 1]['shapeOldFillColor'].push(shapeOldFillColor);
+                                    this.legendHighlightCollection[length - 1]['shapeOldOpacity'] = shapeOldOpacity;
                                     const shapeOldColor: string = this.legendHighlightCollection[length - 1]['shapeOldFillColor'][shapeItemCount];
+                                    const shapeOldFillOpacity: string = this.legendHighlightCollection[length - 1]['shapeOldOpacity'];
                                     this.shapePreviousColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'];
                                     this.setColor(
                                         shapeElement, !isNullOrUndefined(module.fill) ? module.fill : shapeOldColor,
-                                        module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                        isNullOrUndefined(module.opacity) ? shapeOldFillOpacity : module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                                     this.setColor(
                                         targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor,
-                                        module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                        isNullOrUndefined(module.opacity) ? shapeOldFillOpacity : module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                                 } else if (value === 'selection') {
                                     this.legendHighlightCollection = [];
                                     this.maps.legendSelectionClass = module;
@@ -812,6 +815,7 @@ export class Legend {
         const length: number = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
         collection[length - 1]['shapeOldFillColor'] = [];
+        collection[length - 1]['shapeOldOpacity'] = null;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -826,8 +830,9 @@ export class Legend {
             for (let j: number = 0; j < dataCount; j++) {
                 const shapeFillColor: string = item['legendOldFill'].indexOf('url') !== -1
                     ? item['shapeOldFillColor'][j] : item['legendOldFill'];
+                const shapeOpacity: string = !isNullOrUndefined(item['shapeOldOpacity']) ? item['shapeOldOpacity'] : item['shapeOpacity'];
                 this.setColor(
-                    item['MapShapeCollection']['Elements'][j], shapeFillColor, item['shapeOpacity'],
+                    item['MapShapeCollection']['Elements'][j], shapeFillColor, shapeOpacity,
                     item['shapeOldBorderColor'], item['shapeOldBorderWidth'], 'highlight');
             }
         }

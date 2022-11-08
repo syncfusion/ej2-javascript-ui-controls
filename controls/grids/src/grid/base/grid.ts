@@ -4597,13 +4597,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         childIndent  = gridObj.getIndentCount();
                         isChildRow = true;
                     }
-                    for (let i: number = 0; i < rowsObj[cells].length; i++) {
-                        const cell: Cell<Column> = rowsObj[cells][i];
-                        if (cell.isTemplate) {
-                            const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                            const td: Element = isChildGrid ? rows[j].children[cell.index + (isChildRow ? childIndent : indent)] :
-                                this.getCellFromIndex(j, i - indent);
-                            cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
+                    if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index) && !rows[j].classList.contains('e-editedrow')) {
+                        for (let i: number = 0; i < rowsObj[cells].length; i++) {
+                            const cell: Cell<Column> = rowsObj[cells][i];
+                            if (cell.isTemplate) {
+                                const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
+                                const td: Element = isChildGrid ? rows[j].children[cell.index + (isChildRow ? childIndent : indent)] :
+                                    this.getCellFromIndex(j, i - indent);
+                                cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
+                            }
                         }
                     }
                     isChildRow = false;

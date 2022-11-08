@@ -90,10 +90,10 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Cursor-style', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
-                let x: string = svg.getAttribute('cursor');
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];                
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
-                expect(x != svg.getAttribute('cursor')).toBe(true);
+                let container: HTMLElement = document.getElementById('container');
+                expect(container.style.cursor == 'auto').toBe(true);
                 done();
             };
             gauge.axes[0].pointers[0].enableDrag = true;
@@ -104,7 +104,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Cursor-style-over the pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('cursor');
                 trigger.mouseoverEvent(svg);
                 expect(x == svg.getAttribute('cursor')).toBe(true);
@@ -118,7 +118,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - circle-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('cy');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('cy')).toBe(true);
@@ -134,7 +134,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - circle-pointer - axis-inversed', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('cy');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('cy')).toBe(true);
@@ -151,7 +151,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - circle-pointer - horizontal', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('cx');
                 trigger.dragAndDropEvent(svg, 136, 652, 300, 652, '', gauge);
                 expect(x != svg.getAttribute('cx')).toBe(true);
@@ -167,7 +167,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Arrow-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('d');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('d')).toBe(true);
@@ -184,7 +184,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Diamond-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('d');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('d')).toBe(true);
@@ -200,7 +200,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Image-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('y');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('y')).toBe(true);
@@ -216,7 +216,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Image-pointer - multiple element', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: number = svg.childElementCount;
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 trigger.dragAndDropEvent(svg, 511.5, 82, 511.5, 200, '', gauge);
@@ -233,7 +233,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - InvertedArrow-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('d');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('d')).toBe(true);
@@ -249,7 +249,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - InvertedTriangle-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('d');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('d')).toBe(true);
@@ -265,7 +265,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Rectangle-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('d');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('d')).toBe(true);
@@ -281,7 +281,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Triangle-pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let x: string = svg.getAttribute('d');
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 expect(x != svg.getAttribute('d')).toBe(true);
@@ -297,7 +297,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - multiple pointer Triangle marker and circle marker', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 done();
             };
@@ -307,7 +307,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - multiple pointer Triangle marker and Triangle marker', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 done();
             };
@@ -317,7 +317,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - multiple pointer marker and bar', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 done();
             };
@@ -380,7 +380,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop  - bar drag', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointerGroup_0');
                 trigger.dragAndDropEvent(<Element>svg.childNodes[0], 677.5, 233, 677.5, (233 + 5), '', gauge);
                 done();
             };
@@ -403,7 +403,7 @@ describe('Linear gauge control', () => {
         it('checking drag and drop - RoundedRectangle drag', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 debugger;
-                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointerGroup_0');
                 trigger.dragAndDropEvent(<Element>svg.childNodes[0], 677.5, 233, (677.5), (233 + 5), '', gauge);
                 done();
             };
@@ -424,7 +424,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop  - Rounded rectangle drag - axis inversed', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointerGroup_0');
                 trigger.dragAndDropEvent(<Element>svg.childNodes[0], 677.5, (71.5 + 161.25), (677.5), ((71.5 + 161.25) - 5), '', gauge);
                 done();
             };
@@ -435,7 +435,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop  - Normal container drag - axis inversed', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointerGroup_0');
                 trigger.dragAndDropEvent(<Element>svg.childNodes[0], 677.5, (71.75 + 161.25), (677.5), ((71.75 + 161.25) - 5), '', gauge);
                 done();
             };
@@ -513,6 +513,7 @@ describe('Linear gauge control', () => {
         it('checking with mouse move while pointer dragged', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 gauge.pointerDrag = true;
+                gauge.mouseElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
                 trigger.mousemoveEvent(args.gauge.element, 0, 0, 10, 10);
                 done();
             };
@@ -523,7 +524,7 @@ describe('Linear gauge control', () => {
         it('checking drag and drop  - image drag', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 debugger;
-                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0');
                 trigger.dragAndDropEvent(<Element>svg.childNodes[0], 677.5, 233, 677.5, (233 + 5), '', gauge);
                 done();
             };
@@ -552,7 +553,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - multiple pointer bar and marker', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 trigger.mousedownEvent(svg, 501.5, 245, 501.5, 245);
                 trigger.dragAndDropEvent(svg, 501.5, 245, 450, 245, '', gauge);
                 done();
@@ -563,7 +564,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - multiple pointer bar and bar', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 trigger.mousedownEvent(svg, 501.5, 245, 501.5, 245);
                 trigger.dragAndDropEvent(svg, 501.5, 245, 450, 245, '', gauge);
                 done();
@@ -574,7 +575,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - In a middle of Horizontal Bar pointer', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 trigger.mousedownEvent(svg, 501.5, 245, 501.5, 245);
                 trigger.dragAndDropEvent(svg, 501.5, 245, 450, 245, '', gauge);
@@ -588,7 +589,7 @@ describe('Linear gauge control', () => {
         it('checking drag and drop - Bar pointer with align attribute', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 document.getElementById('container').setAttribute('align','center');
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 trigger.mousedownEvent(svg, 112.5, 255, 112.5, 255);
                 trigger.dragAndDropEvent(svg, 112.5, 255, 200, 255, '', gauge);

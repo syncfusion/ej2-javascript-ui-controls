@@ -100,9 +100,11 @@ export class WorkbookNumberFormat {
                 }
                 cell.format = orgFormat;
             } else if (isCustomDateTime(cell, true)) {
-                args.result = this.processCustomDate(args, cell);
-                isCustomText = args.result === '';
-                args.result = args.result|| cell.value;
+                if (fResult !== '') {
+                    args.result = this.processCustomDate(args, cell);
+                    isCustomText = !args.formatApplied;
+                }
+                args.result = args.result || cell.value;
             } else if (cell.format.indexOf('/') > -1) {
                 args.result = this.processCustomFraction(cell);
             } else if (cell.format.indexOf('@') > -1) {
@@ -194,22 +196,24 @@ export class WorkbookNumberFormat {
     }
 
     private processCustomDate(args: NumberFormatArgs, cell: CellModel): string {
-        let dateValue: Date = intToDate(parseFloat(cell.value));
-        let isLongCustomDate: boolean;
-        const checkLongCustomDate: Function = (): boolean => {
+        let isCustomDate: boolean;
+        const checkCustomDate: Function = (): boolean => {
+            if (cell.value.toString().includes('/') || cell.value.toString().includes('-') ) {
+                return true;
+            }
             const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
             const months: Object = formats.months['stand-alone'] && formats.months['stand-alone'].abbreviated;
             return months && !!Object.keys(months).find((key: string) => cell.value.toString().includes(months[key]));
         };
-        if (isNaN(Number(dateValue)) && !(isLongCustomDate = cell.value && checkLongCustomDate())) {
+        if (!isNumber(cell.value) && !(isCustomDate = checkCustomDate())) {
             return cell.value || '';
         }
         let type: string;
         let custFormat: string = cell.format;
         const intl: Internationalization = new Internationalization();
         const formatDateTime: Function = (checkDate?: boolean): string => {
-            let isValidDate: boolean;
-            if (cell.value.toString().includes('/') || cell.value.toString().includes('-') || isLongCustomDate) {
+            let isValidDate: boolean; let dateValue: Date;
+            if (isCustomDate) {
                 dateValue = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell).dateObj;
                 if (isValidDate = dateValue && dateValue.toString() !== 'Invalid Date') {
                     if (dateValue.getFullYear() < 1900) {
@@ -219,13 +223,18 @@ export class WorkbookNumberFormat {
                     }
                 }
             } else {
+                dateValue = intToDate(parseFloat(cell.value));
                 isValidDate = dateValue && dateValue.toString() !== 'Invalid Date';
             }
-            if (checkDate && isValidDate) {
-                args.dateObj = dateValue;
+            if (isValidDate) {
+                if (checkDate) {
+                    args.dateObj = dateValue;
+                }
+                args.formatApplied = true;
+                return intl.formatDate(dateValue, { type: type, format: custFormat });
             }
-            return (isValidDate && intl.formatDate(dateValue, { type: type, format: custFormat })) || '';
-        }
+            return '';
+        };
         if (cell.format.indexOf('h') > -1) {
             custFormat = custFormat.split('h').join('H');
             type = 'time';

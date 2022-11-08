@@ -720,6 +720,9 @@ export class FocusStrategy {
                     }
                 }
             }
+            if (e && e.args && e.args.requestType === 'infiniteScroll') {
+                this.isInfiniteScroll = true;
+            }
         };
     }
 

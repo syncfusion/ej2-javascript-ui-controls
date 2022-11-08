@@ -39,6 +39,7 @@ import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
+import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -2522,6 +2523,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.printModule) {
             const mimeType: string = format === 'Png' ? 'image/png' : 'image/jpeg';
             return this.printModule.exportAsImage(this.documentHelper, pageNumber, mimeType);
+        }
+        return undefined;
+    }
+
+    private exportAsPath(pageNumber: number): string {
+        if (!isNullOrUndefined(pageNumber) && pageNumber <= this.documentHelper.pages.length && pageNumber >= 1) {
+            const printPage: Page = this.documentHelper.pages[(pageNumber - 1)];
+            this.documentHelper.render.isExporting = true;
+            this.documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
+            //get the image data from the canvas
+            const imageData: string = this.documentHelper.render.pageCanvas.toDataURL();
+            (this.documentHelper.render.pageCanvas as DocumentCanvasElement).getContext("2d").renderedPath = "";
+            this.documentHelper.render.isExporting = false;
+            return imageData;
         }
         return undefined;
     }

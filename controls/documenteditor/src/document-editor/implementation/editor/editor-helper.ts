@@ -300,6 +300,19 @@ export class HelperMethods {
         characterFormat.allCaps = isInline ? format.allCaps : format.getValue('allCaps');
         characterFormat.localeIdBidi = isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
         characterFormat.complexScript = isInline ? format.complexScript : format.getValue('complexScript');
+        characterFormat.fontFamilyAscii = isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
+        characterFormat.fontFamilyNonFarEast = isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
+        characterFormat.fontFamilyFarEast = isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
+    }
+    /// <summary>
+    /// To check whether the font name is theme font or not.
+    /// </summary>
+    /// <param name="fontName">Specify the font name.</param>
+    /// <returns>Returns true if the font name is represent a theme font.</returns>
+    public static isThemeFont(fontName: string): boolean {
+        return (fontName == "majorAscii" || fontName == "majorBidi" || fontName == "majorEastAsia"
+            || fontName == "majorHAnsi" || fontName == "minorAscii" || fontName == "minorBidi" || fontName == "minorEastAsia"
+            || fontName == "minorHAnsi");
     }
     public static toWriteInline(format: WCharacterFormat, propertyName: string): any {
         if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {

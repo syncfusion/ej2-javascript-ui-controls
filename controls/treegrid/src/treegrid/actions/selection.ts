@@ -19,6 +19,7 @@ export class Selection {
     private selectedItems: Object[];
     private selectedIndexes: number[];
     private filteredList: Object[];
+    private searchingRecords: Object[];
     /**
      * Constructor for Selection module
      *
@@ -29,6 +30,7 @@ export class Selection {
         this.selectedItems = [];
         this.selectedIndexes = [];
         this.filteredList = [];
+        this.searchingRecords = [];
         this.addEventListener();
     }
 
@@ -285,6 +287,9 @@ export class Selection {
             if (this.filteredList.length === 0){
                 this.filteredList = filterResult;
             }
+            if (this.parent.grid.searchSettings.key.length) {
+                this.searchingRecords = filterResult;
+            }
             else{
                 if (this.filteredList !== filterResult) {
                     this.filteredList = filterResult;
@@ -296,8 +301,11 @@ export class Selection {
             }
         }
         if (this.filteredList.length > 0){
-            if (!this.parent.filterSettings.columns.length && this.filteredList.length){
+            if (!this.parent.filterSettings.columns.length && this.filteredList.length && !this.parent.grid.searchSettings.key.length) {
                 this.filteredList = [];
+            }
+            if (this.searchingRecords.length && !isNullOrUndefined(checkAll)) {
+                this.filteredList = this.searchingRecords;
             }
         }
         let data: ITreeData[] = (!isNullOrUndefined(this.parent.filterModule) &&

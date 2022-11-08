@@ -1360,6 +1360,113 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+    describe('allowInline property with template ', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        const eventTemplate = '<div class = e-subject >Subject: ${Subject}</div><div>StartTime: ${StartTime.toLocaleString()}</div>' +
+            '<div>EndTime: ${EndTime.toLocaleString()</div>';
+        beforeAll((done: Function) => {
+            const model: ScheduleModel = {
+                currentView: 'Agenda', views: [
+                    { option: 'TimelineWeek' },
+                    { option: 'TimelineMonth' },
+                    { option: 'Week' },
+                    { option: 'Agenda' }
+                ], height: '550px', width: '700px',
+                allowInline: true, selectedDate: new Date(2017, 10, 6),
+                eventSettings: { template: eventTemplate }
+            };
+            schObj = util.createSchedule(model, defaultData, done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking allowInline property in Agenda view', (done) => {
+            schObj.dataBound = function () {
+                const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList[0].firstElementChild.innerHTML).toBe('Subject: Testing');
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(23);
+            eventElementList[0].click()
+            expect(eventElementList[0].firstElementChild.className).toBe('e-subject-wrap');
+            const inLineEdited: HTMLInputElement = eventElementList[0].firstElementChild.firstChild as HTMLInputElement
+            inLineEdited.value = 'Testing';
+            expect(inLineEdited.value).toBe('Testing');
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('Checking allowInline property in TimelineWeek view', (done: Function) => {
+            schObj.dataBound = () => {
+                schObj.dataBound = function () {
+                    const eventElement = schObj.element.querySelector('[data-id="Appointment_11"]');
+                    const inLineEdited = eventElement.children[1].firstElementChild.firstElementChild;
+                    expect(inLineEdited.innerHTML).toBe('Subject: timeline');
+                    done();
+                };
+                const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_11"]');
+                eventElement.click();
+                const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+                expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+                inputElement.value = 'timeline';
+                const inLineEdited: HTMLInputElement = eventElement.children[1].firstElementChild as HTMLInputElement;
+                expect(inLineEdited.value).toBe('timeline');
+                keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+                done();
+            }
+            schObj.currentView = 'TimelineWeek';
+            schObj.dataBind();
+        });
+
+        it('Checking allowInline property in Week view', (done: Function) => {
+            schObj.dataBound = () => {
+                schObj.dataBound = function () {
+                    const eventElement = schObj.element.querySelector('[data-id="Appointment_22"]');
+                    const inLineEdited = eventElement.children[1].firstElementChild;
+                    expect(inLineEdited.innerHTML).toBe('Subject: week');
+                    done();
+                };
+                const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]');
+                eventElement.click();
+                expect(eventElement.children[1].children[1].className).toBe('e-subject e-disable');
+                const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+                expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+                inputElement.value = 'week';
+                const inLineEdited: HTMLInputElement = eventElement.children[1].firstElementChild as HTMLInputElement;
+                expect(inLineEdited.value).toBe('week');
+                keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+                done();
+            }
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+
+        it('Checking allowInline property in TimelineMonth view', (done: Function) => {
+            schObj.dataBound = () => {
+                schObj.dataBound = function () {
+                    const eventElement = schObj.element.querySelector('[data-id="Appointment_22"]');
+                    const inLineEdited: HTMLElement = eventElement.children[1].firstElementChild as HTMLElement;
+                    expect(inLineEdited.innerHTML).toBe('Subject: timelineMonth');
+                    done();
+                };
+                const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]');
+                eventElement.click();
+                const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+                expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+                inputElement.value = 'timelineMonth';
+                const inLineEdited: HTMLInputElement = eventElement.children[1].firstElementChild as HTMLInputElement;
+                expect(inLineEdited.value).toBe('timelineMonth');
+                keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+                done();
+            }
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+    });
+
     describe('EJ2-50899 - Appointments are not rendering in vertical views with group resources in mobile mode', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

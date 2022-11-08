@@ -509,7 +509,7 @@ export class AutoFill {
         if (this.isMergedRange(getRangeIndexes(args.fillRange))) {
             const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
             dialogInst.show({
-                target: this.parent.element, isModal: true, showCloseIcon: true, height: 180, width: 400, content: l10n.getConstant('AutoFillMergeAlertMsg'),
+                isModal: true, showCloseIcon: true, height: 180, width: 400, content: l10n.getConstant('AutoFillMergeAlertMsg'),
                 buttons: [{
                     buttonModel: { content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true },
                     click: (): void => { dialogInst.hide(); this.parent.selectRange(args.dataRange); }

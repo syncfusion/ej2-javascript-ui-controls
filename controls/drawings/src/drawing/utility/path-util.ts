@@ -129,6 +129,14 @@ export function parsePathData(data: string): Object[] {
  * Used to find the path for rounded rect  
  */
 export function getRectanglePath(cornerRadius: number, height: number, width: number): string {
+    if (cornerRadius > height/2)
+    {
+        cornerRadius = height/2;
+    }
+    if (cornerRadius > width/2)
+    {
+        cornerRadius = width/2;
+    }
     let x: number = 0;
     let y: number = 0;
     let path: string = '';

@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I408588` - Touchpad pinch zooming has been implemented in Windows and Mac environments.
+
+#### Bug Fixes
+
+- `#I411644` - Now, Signature are added properly in the respective signature fields.
+- `#I412264` - Now, Exposed the API for show and hide the digital signature form fields in the PDF Viewer.
+- `#I408609` - Now, properties dialog and context menu are open on right click.
+- `#I414492`,`#I414536` - Now, the Signature dialogue is vertical.
+- `#I413111` - Now the Ink annotation auto-write issue is resolved.
+- `#I406980` - Now, the Values of free text annotation properties are not missing on importing.
+- `#I408171` - Now, Annotation added above free text annotation does not hide behind after downloading and flattening.
+- `#I412525` - Now we are able to update form field values from code behind if the pages are not rendered.
+
+## 20.3.52 (2022-10-26)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I408588` - Mouse wheel zooming has been implemented based on cursor position. On iPad/iOS devices, the zooming issue has been fixed. and enhanced mobile device pinch zooming functionality.
+- `#I409164` - Now the thickness property for signature and initial fields has been added, so now the signature field and initial field will allow changing their border thickness.
+
+#### Bug Fixes
+
+- `#I408281` - Now, The Script error does not occur while changing the PDF view to the text view in the sample.
+- `#I412183` - Now, Vertical images are rendered properly in the signature fields.
+- `#I397357` - Now, Radio buttons are rendered properly while printing the document.
+- `#I411792` - Now, able to export annotation after `strikethrough`.
+- `#I401159` - Now, backward text selection is working properly.
+
 ## 20.3.50 (2022-10-18)
 
 ### PDF Viewer

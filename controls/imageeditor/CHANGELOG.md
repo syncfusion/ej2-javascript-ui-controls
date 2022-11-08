@@ -8,6 +8,12 @@
 
 #### Bug Fixes
 
+- Issue with "Image Position while rotating canvas directly more than 90 degree" has been resolved.
+
+### Image Editor
+
+#### Bug Fixes
+
 - Issue with "Save Button Alignment in mobile mode" has been resolved.
 
 ### Image Editor

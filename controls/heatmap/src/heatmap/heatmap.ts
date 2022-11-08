@@ -147,7 +147,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @default null
      */
      @Property(null)
-     public background: string;
+     public backgroundColor: string;
 
     /**
      *  Specifies the theme for heatmap.
@@ -907,7 +907,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.border = {
             width: 0
         };
-        const background: string = !isNullOrUndefined(this.background) ? this.background : this.themeStyle.background;
+        const background: string = !isNullOrUndefined(this.backgroundColor) ? this.backgroundColor : this.themeStyle.background;
         const width: number = 0;
         const rect: RectOption = new RectOption(
             this.element.id + '_HeatmapBorder', background, this.border, 1,

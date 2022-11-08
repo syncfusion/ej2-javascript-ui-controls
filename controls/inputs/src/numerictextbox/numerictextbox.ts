@@ -424,6 +424,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (this.element.hasAttribute('data-val')) {
                 this.element.setAttribute('data-val', 'false');
             }
+            if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+                this.enabled = false;
+            }
             this.renderComplete();
         }
     }

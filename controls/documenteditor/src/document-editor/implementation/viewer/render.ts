@@ -18,14 +18,16 @@ import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
 import { WSectionFormat } from '../format';
-import { TextWrappingStyle } from '../../base';
+import { FontScriptType, TextWrappingStyle } from '../../index';
 import { TextSizeInfo } from './text-helper';
+import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './document-canvas';
 
 /**
  * @private
  */
 export class Renderer {
     public isPrinting: boolean = false;
+    public isExporting: boolean =  false;
     private pageLeft: number = 0;
     private pageTop: number = 0;
     private documentHelper: DocumentHelper;
@@ -35,7 +37,8 @@ export class Renderer {
     private leftPosition: number = 0;
     private topPosition: number = 0;
     private height: number = 0;
-    public get pageCanvas(): HTMLCanvasElement {
+    private exportPageCanvas: DocumentCanvasElement;
+    public get pageCanvas(): HTMLCanvasElement | DocumentCanvasElement {
         if (this.isPrinting) {
             if (isNullOrUndefined(this.pageCanvasIn)) {
                 this.pageCanvasIn = document.createElement('canvas');
@@ -43,7 +46,14 @@ export class Renderer {
             }
             return this.pageCanvasIn;
         }
-        return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.containerCanvas;
+        if (this.isExporting) {
+            if (isNullOrUndefined(this.exportPageCanvas)) {
+                this.exportPageCanvas = new DocumentCanvasElement();
+            }
+            return this.exportPageCanvas;
+        } else {
+            return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.containerCanvas;
+        }
     }
     public get spellChecker(): SpellChecker {
         return this.documentHelper.owner.spellChecker;
@@ -51,10 +61,10 @@ export class Renderer {
     private get selectionCanvas(): HTMLCanvasElement {
         return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.selectionCanvas;
     }
-    private get pageContext(): CanvasRenderingContext2D {
+    private get pageContext(): CanvasRenderingContext2D | DocumentCanvasRenderingContext2D {
         return this.pageCanvas.getContext('2d');
     }
-    private get selectionContext(): CanvasRenderingContext2D {
+    private get selectionContext(): CanvasRenderingContext2D | DocumentCanvasRenderingContext2D {
         return this.selectionCanvas.getContext('2d');
     }
 
@@ -197,7 +207,7 @@ export class Renderer {
         const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
         let y: number = this.getScaledValue(Math.max((widget.y + widget.height), topMargin));
         const pageWidth: number = this.getScaledValue(page.boundingRectangle.width);
-        const ctx: CanvasRenderingContext2D = this.pageContext;
+        const ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
         ctx.save();
         ctx.globalAlpha = 0.65;
         const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
@@ -255,7 +265,7 @@ export class Renderer {
     }
 
     /* eslint-disable-next-line max-len */
-    public renderDashLine(context: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string, isSmallDash: boolean): void {
+    public renderDashLine(context: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string, isSmallDash: boolean): void {
         context.beginPath();
         context.strokeStyle = fillStyle;
         context.lineWidth = 1;
@@ -271,7 +281,7 @@ export class Renderer {
         context.closePath();
     }
 
-    public renderSolidLine(context: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string): void {
+    public renderSolidLine(context: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string): void {
         context.beginPath();
         context.strokeStyle = fillStyle;
         context.lineWidth = 0.5;
@@ -280,7 +290,7 @@ export class Renderer {
         context.stroke();
         context.closePath();
     }
-    private renderHeaderFooterMark(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
+    private renderHeaderFooterMark(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
         ctx.beginPath();
         ctx.fillStyle = 'lightgray';
         ctx.fillRect(x, y, w, h);
@@ -288,7 +298,7 @@ export class Renderer {
         ctx.strokeRect(x, y, w, h);
         ctx.closePath();
     }
-    private renderHeaderFooterMarkText(ctx: CanvasRenderingContext2D, content: string, x: number, y: number): void {
+    private renderHeaderFooterMarkText(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, content: string, x: number, y: number): void {
         ctx.beginPath();
         ctx.fillStyle = '#000000';
         ctx.textBaseline = 'alphabetic';
@@ -571,7 +581,18 @@ export class Renderer {
             return (paragraph.childWidgets[0] as LineWidget).margin.top;
         } else {
             let widget: LineWidget = paragraph.childWidgets[0] as LineWidget;
-            return (widget.children[0] as ElementBox).margin.top;
+            let topMargin: number = 0;
+            if (!isNullOrUndefined(widget.margin)) {
+                topMargin = widget.margin.top;
+            }
+            for (let i: number = 0; i < widget.children.length; i++) {
+                const element: ElementBox = widget.children[i] as ElementBox;
+                if (element instanceof TextElementBox) {
+                    topMargin = element.margin.top;
+                    break;
+                }
+            }
+            return topMargin;
         }
     }
     private getBottomMargin(paragarph: ParagraphWidget) {
@@ -580,10 +601,17 @@ export class Renderer {
         } else {
             let widget: LineWidget = paragarph.childWidgets[paragarph.childWidgets.length - 1] as LineWidget;
             let bottomMargin: number = 0;
-            if (widget.children.length > 0) {
-                bottomMargin = (widget.children[widget.children.length - 1] as ElementBox).margin.bottom as number;
-            } else if (!isNullOrUndefined(widget.margin)) {
+            if (!isNullOrUndefined(widget.margin)) {
                 bottomMargin = widget.margin.bottom;
+            }
+            if (widget.children.length > 0) {
+                for (let i: number = widget.children.length - 1; i >= 0; i--) {
+                    const element: ElementBox = widget.children[i] as ElementBox;
+                    if (element instanceof TextElementBox) {
+                        bottomMargin = element.margin.bottom;
+                        break;
+                    }
+                }
             }
             return bottomMargin;
         }
@@ -607,7 +635,7 @@ export class Renderer {
             for (let j: number = 0; j < bodyWidget.childWidgets.length; j++) {
                 let widget: BlockWidget = bodyWidget.childWidgets[j] as BlockWidget;
                 if (i === 0 && j === 0) {
-                    let ctx: CanvasRenderingContext2D = this.pageContext;
+                    let ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
                     this.renderSolidLine(ctx, this.getScaledValue(96, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                 }
                 if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
@@ -950,7 +978,7 @@ export class Renderer {
                 } else {
                     text = '.....' + l10n.getConstant('Page Break') + '.....' + String.fromCharCode(182);
                 }
-                let textinfo: number = this.documentHelper.textHelper.getWidth(text, currentCharFormat);
+                let textinfo: number = this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 if (this.viewer instanceof PageLayoutViewer) {
                     if (lineWidget.paragraph.bidi) {
                         if (x < (textinfo + this.viewer.clientActiveArea.x)) {
@@ -994,7 +1022,7 @@ export class Renderer {
                             text = '.....' + l10n.getConstant('Page Break') + '.....' + String.fromCharCode(182)+text;
                         }
                     }
-                    let textinfo: number = this.documentHelper.textHelper.getWidth(text, currentCharFormat);
+                    let textinfo: number = this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                     if (this.viewer instanceof PageLayoutViewer) {
                         if (lineWidget.paragraph.bidi) {
                             if (x < (textinfo + this.viewer.clientActiveArea.x)) {
@@ -1035,7 +1063,7 @@ export class Renderer {
             }
             if(text.length>0) {
                 if (lineWidget.paragraph.bidi) {
-                    x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat);
+                    x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 }
                 this.pageContext.font = characterFont;
                 this.pageContext.fillText(text, this.getScaledValue(x, 1), this.getScaledValue(y, 2));
@@ -1202,7 +1230,8 @@ export class Renderer {
         italic = format.italic ? 'italic' : '';
         fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + format.fontFamily + '"';
+        let renderFontFamily: string = this.documentHelper.textHelper.getFontNameToRender(elementBox.scriptType, format);
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + renderFontFamily + '"';
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
@@ -1287,7 +1316,7 @@ export class Renderer {
 
     private tabMark(elementBox: TextElementBox, format: WCharacterFormat, left: number, top: number, leftMargin: number, topMargin: number) {
         let tabMarkString: string = elementBox.paragraph.bidi? String.fromCharCode(8592): String.fromCharCode(8594);
-        let tabMarkWidth: number = this.documentHelper.textHelper.getWidth(tabMarkString, format);
+        let tabMarkWidth: number = this.documentHelper.textHelper.getWidth(tabMarkString, format, elementBox.scriptType);
         let availableSpaceWidth = elementBox.width / 2;
         let tabWidth = tabMarkWidth / 2;
         this.pageContext.font = this.retriveCharacterformat(elementBox.characterFormat);
@@ -1471,9 +1500,9 @@ export class Renderer {
                 y = underlineY + top;
             }
 
-            let specialCharacter: SpecialCharacterInfo = this.spellChecker.getSpecialCharactersInfo(elementBox.text, elementBox.characterFormat);
+            let specialCharacter: SpecialCharacterInfo = this.spellChecker.getSpecialCharactersInfo(elementBox);
 
-            let whiteSpaceData: SpaceCharacterInfo = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
+            let whiteSpaceData: SpaceCharacterInfo = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox);
 
             let x: number = left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left;
             let x1: number = x * this.documentHelper.zoomFactor + this.leftPosition;
@@ -1527,7 +1556,7 @@ export class Renderer {
         let textWidth: number = 0;
         let tabString: string = this.getTabLeaderString(elementBox.tabLeader);
         let tabText: string = tabString;
-        textWidth = this.documentHelper.textHelper.getWidth(tabText, elementBox.characterFormat);
+        textWidth = this.documentHelper.textHelper.getWidth(tabText, elementBox.characterFormat, elementBox.scriptType);
         let count: number = Math.floor(elementBox.width / textWidth);
         if (textWidth == 0) {
             count = 0;
@@ -1558,6 +1587,13 @@ export class Renderer {
         this.pageContext.rect(this.getScaledValue(xPos, 1), this.getScaledValue(yPos, 2), width, height);
         this.pageContext.clip();
     }
+    private getTrimmedWidth(elementBox: ElementBox): number {
+        let width: number = elementBox.width;
+        if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {
+            width = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat, elementBox.scriptType);
+        }
+        return width;
+    }
 
     private renderUnderline(elementBox: ElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, revisionInfo?: RevisionInfo): void {
         let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
@@ -1584,10 +1620,7 @@ export class Renderer {
         }
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
-            let width: number = elementBox.width;
-            if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {              
-                width = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat);
-            }
+            let width: number = this.getTrimmedWidth(elementBox);
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(width), this.getScaledValue(underlineHeight));
             y += 2 * lineHeight;
         }
@@ -1614,8 +1647,8 @@ export class Renderer {
         }
         while (lineCount < (strikethrough === 'DoubleStrike' ? 2 : 1)) {
             lineCount++;
-
-            this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y + top, 2), this.getScaledValue(elementBox.width), this.getScaledValue(lineHeight));
+            let width: number = this.getTrimmedWidth(elementBox);
+            this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y + top, 2), this.getScaledValue(width), this.getScaledValue(lineHeight));
             y += 2 * lineHeight;
         }
     }

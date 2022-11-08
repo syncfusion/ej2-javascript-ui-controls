@@ -703,7 +703,7 @@ export class Toolbar {
                         content: localizeValue.getConstant('Unsupported format'),
                         closeOnEscape: true, showCloseIcon: true,
                         position: { X: 'Center', Y: 'Center' }
-                    });
+                    }).enableRtl = this.container.enableRtl;
                 }
             }
             this.container.documentEditor.documentName = file.name.substr(0, file.name.lastIndexOf('.'));
@@ -750,7 +750,7 @@ export class Toolbar {
                 content: this.container.localObj.getConstant('Error in establishing connection with web server'),
                 closeOnEscape: true, showCloseIcon: true,
                 position: { X: 'Center', Y: 'Center' }
-            });
+            }).enableRtl = this.container.enableRtl;
         } else {
             alert('Failed to load the file');
             this.documentEditor.fireServiceFailure(args);

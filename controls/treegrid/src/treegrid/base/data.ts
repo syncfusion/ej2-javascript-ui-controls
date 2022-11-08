@@ -396,8 +396,8 @@ export class DataManipulation {
             if (!Object.prototype.hasOwnProperty.call(currentData, 'index')) {
                 currentData.index = this.storedIndex;
             }
-            if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) || ((currentData[this.parent.hasChildMapping]) &&
-            isCountRequired(this.parent))) {
+            if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) ||
+                ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent))) {
                 currentData.hasChildRecords = true;
                 if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
             && isNullOrUndefined(currentData[this.parent.childMapping])) {

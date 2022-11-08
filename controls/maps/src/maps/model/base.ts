@@ -948,7 +948,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      *
      * @default true
      */
-    @Property(false)
+    @Property(true)
     public pinchZooming: boolean;
     /**
      * Enables or disables the zooming on clicking the shapes in maps.

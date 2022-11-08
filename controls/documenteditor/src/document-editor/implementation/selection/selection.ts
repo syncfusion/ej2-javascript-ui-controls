@@ -32,6 +32,7 @@ import { ContextType, RequestNavigateEventArgs, TablePasteOptions } from '../../
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
+import { DocumentCanvasRenderingContext2D } from '../viewer/document-canvas';
 /* eslint-disable */
 /**
  * Selection
@@ -1259,7 +1260,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public addSelectionHighlight(canvasContext: CanvasRenderingContext2D, widget: LineWidget, top: number, page?: Page): void {
+    public addSelectionHighlight(canvasContext: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, widget: LineWidget, top: number, page?: Page): void {
         if (this.selectedWidgets.containsKey(widget)) {
             let height: number = this.documentHelper.render.getScaledValue(widget.height);
             const widgetInfo: object = this.selectedWidgets.get(widget);
@@ -1302,7 +1303,7 @@ export class Selection {
     }
 
 
-    private renderDashLine(ctx: CanvasRenderingContext2D, page: Page, widget: LineWidget, left: number, top: number, width: number, height: number): void {
+    private renderDashLine(ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, page: Page, widget: LineWidget, left: number, top: number, width: number, height: number): void {
         const fontColor: string = this.characterFormat.fontColor;
         const fillColor: string = fontColor ? HelperMethods.getColor(fontColor) : '#000000';
         ctx.globalAlpha = 1;
@@ -1321,7 +1322,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public addSelectionHighlightTable(canvasContext: CanvasRenderingContext2D, tableCellWidget: TableCellWidget, page?: Page): void {
+    public addSelectionHighlightTable(canvasContext: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D, tableCellWidget: TableCellWidget, page?: Page): void {
         if (this.selectedWidgets.containsKey(tableCellWidget)) {
             const selectedWidgetInfo: object = this.selectedWidgets.get(tableCellWidget);
             let selectedWidgetInfoCollection: SelectionWidgetInfo[] = undefined;
@@ -6445,7 +6446,7 @@ export class Selection {
                             if (i === (element as TextElementBox).length) {
                                 width = element.width + element.padding.left;
                             } else {
-                                width = this.documentHelper.textHelper.getWidth((element as TextElementBox).text.substr(0, i), element.characterFormat);
+                                width = this.documentHelper.textHelper.getWidth((element as TextElementBox).text.substr(0, i), element.characterFormat, (element as TextElementBox).scriptType);
                                 (element as TextElementBox).trimEndWidth = width;
                             }
                             if (x < width || i === (element as TextElementBox).length) {
@@ -6831,7 +6832,7 @@ export class Selection {
                     left += elementBox.width + width;
                 }
             } else {
-                width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat);
+                width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat, (elementBox as TextElementBox).scriptType);
                 (elementBox as TextElementBox).trimEndWidth = width;
                 if (isRtlText) {
                     left -= width;
@@ -7974,7 +7975,7 @@ export class Selection {
                 //     } while (!(fieldInline instanceof FieldElementBox));
                 // }
                 if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
-                    this.characterFormat.combineFormat(inline.characterFormat);
+                    this.characterFormat.combineFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 }
                 if (isNullOrUndefined(inline) || endOffset <= count + inline.length) {
                     break;
@@ -8000,7 +8001,7 @@ export class Selection {
             let currentLineIndex: number = startPos.paragraph.childWidgets.indexOf(startPos.currentWidget);
             if (startPos.currentWidget.previousLine) {
                 inline = startPos.currentWidget.previousLine.children[startPos.currentWidget.previousLine.children.length - 1];
-                this.characterFormat.copyFormat(inline.characterFormat);
+                this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 return true;
             }
         }
@@ -8012,12 +8013,14 @@ export class Selection {
                     if (startOffset === 0 && previousNode) {
                         inline = previousNode;
                     }
-                    this.characterFormat.copyFormat(inline.characterFormat);
+                    this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 } else {
                     if (!isNullOrUndefined(this.getPreviousTextElement(inline))) {
-                        this.characterFormat.copyFormat(this.getPreviousTextElement(inline).characterFormat);
+                        let element: ElementBox = this.getPreviousTextElement(inline);
+                        this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
                     } else if (!isNullOrUndefined(this.getNextTextElement(inline))) {
-                        this.characterFormat.copyFormat(this.getNextTextElement(inline).characterFormat);
+                        let element: ElementBox = this.getNextTextElement(inline);
+                        this.characterFormat.copyFormat(element.characterFormat, this.documentHelper.textHelper.getFontNameToRender((element as TextElementBox).scriptType, inline.characterFormat));
                     } else {
                         this.characterFormat.copyFormat(para.characterFormat);
                     }
@@ -8025,9 +8028,9 @@ export class Selection {
                 return true;
             } else {
                 if (index === inline.length && !isNullOrUndefined(inline.nextNode)) {
-                    this.characterFormat.copyFormat(this.getNextValidCharacterFormat(inline));
+                    this.characterFormat.copyFormat(this.getNextValidCharacterFormat(inline), this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 } else if (inline instanceof TextElementBox) {
-                    this.characterFormat.copyFormat(inline.characterFormat);
+                    this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 } else if (inline instanceof FieldElementBox) {
                     this.characterFormat.copyFormat(this.getNextValidCharacterFormatOfField(inline as FieldElementBox));
                 }
@@ -8035,11 +8038,11 @@ export class Selection {
         } else {
             if (length === endPos.offset) {
                 if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
-                    this.characterFormat.copyFormat(inline.characterFormat);
+                    this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 } else if (!isNullOrUndefined(inline)) {
                     inline = this.getPreviousTextElement(inline);
                     if (!isNullOrUndefined(inline)) {
-                        this.characterFormat.copyFormat(inline.characterFormat);
+                        this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                     }
                 } else {
                     this.characterFormat.copyFormat(para.characterFormat);

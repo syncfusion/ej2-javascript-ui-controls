@@ -2022,37 +2022,3 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
       jasmine.Ajax.uninstall();
   });
 });
-
-describe('keyBoard Interaction for cell navigation to the next row', () => {
-  let gridObj: TreeGrid;
-  let preventDefault: Function = new Function();
-  beforeAll((done: Function) => {
-    gridObj = createGrid(
-      {
-        dataSource: sampleData,
-          childMapping: 'subtasks',
-          treeColumnIndex: 1,
-          height: 400,
-        allowSelection: true,
-        allowRowDragAndDrop: true,
-        selectionSettings: { cellSelectionMode: 'Box', type: 'Multiple', mode: 'Cell' },
-      columns: [
-          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 90 },
-          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
-          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, format: 'yMd' },
-          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
-          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 80 },
-          { field: 'priority', headerText: 'Priority', width: 90 }
-      ]
-      },
-      done
-    );
-  });
-  it('keyBoard Interaction for cell navigation to the next row', () => {
-    gridObj.selectCell({ cellIndex: 5, rowIndex: 0 }, true);
-    var rows = gridObj.getRows();
-    gridObj.collapseRow(rows[0]);
-    gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-rowcell.e-focus') } as any);
-    expect(gridObj.element.querySelectorAll('.e-focus.e-focused')[0].innerHTML).toBe('6');
-});
-});

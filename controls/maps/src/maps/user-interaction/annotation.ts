@@ -44,8 +44,9 @@ export class Annotations {
         const availSize: Size = map.availableSize;
         const id: string = map.element.id + '_Annotation_' + annotationIndex;
         const childElement: HTMLElement = createElement('div', {
-            id: map.element.id + '_Annotation_' + annotationIndex, styles: 'position: absolute; z-index:' + annotation.zIndex + ';'
+            id: map.element.id + '_Annotation_' + annotationIndex
         });
+        childElement.style.cssText = 'position: absolute; z-index:' + annotation.zIndex + ';';
         const argsData: IAnnotationRenderingEventArgs = {
             cancel: false, name: annotationRendering, content: annotation.content,
             annotation: annotation

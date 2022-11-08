@@ -1011,7 +1011,7 @@ export class FormFields {
             data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         }
         var formFieldsData = JSON.parse(data);
-        let targetName: string = target ? target.name ? target.name : target.offsetParent.name : this.currentTarget.name;
+        var targetName = this.currentTarget ? this.currentTarget.name : target.name ? target.name : target.offsetParent.name;
         for (var i = 0; i < formFieldsData.length; i++) {
             let fieldName: string = this.pdfViewer.formDesigner ? formFieldsData[i].FormField.name : formFieldsData[i].FieldName;
             if (this.pdfViewer.formDesigner ? fieldName === targetName : fieldName === targetName && (!isNullOrUndefined(formFieldsData[i].ActualFieldName))) {
@@ -1179,6 +1179,18 @@ export class FormFields {
                 else {
                     bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
                     bounds.height = bounds.width;
+                }
+            }
+            else if(image.height/image.width > 1){
+                if (bounds.width > bounds.height) {
+                    bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / hightDifference);
+                    bounds.width = bounds.height/heightRatio;
+                }
+                else {
+                    bounds.y = bounds.y + (bounds.width/ hightDifference)
+                    var height: number = bounds.width / heightRatio;
+                    bounds = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height -height };
+
                 }
             }
             else {
@@ -1671,19 +1683,21 @@ export class FormFields {
                             currentData.Value = target.value;
                         }
                     } else if (target.type === 'radio') {
-                        for (let l: number = 0; l < FormFieldsData.length; l++) {
-                            // eslint-disable-next-line
-                            let currentType: any = FormFieldsData[l];
-                            if (FormFieldsData[l].GroupName === target.name) {
-                                FormFieldsData[l].Selected = false;
+                        if(target.checked){
+                           for (let l: number = 0; l < FormFieldsData.length; l++) {
+                               // eslint-disable-next-line
+                               let currentType: any = FormFieldsData[l];
+                               if (FormFieldsData[l].GroupName === target.name) {
+                                   FormFieldsData[l].Selected = false;
+                               }
                             }
-                        }
-                        if (target.value == currentData.Value) {
-                            currentData.Selected = true;
-                            break;
-                        }
-                        else {
-                            currentData.Selected = false;
+                            if (target.value == currentData.Value) {
+                               currentData.Selected = true;
+                               break;
+                            }
+                            else {
+                                currentData.Selected = false;
+                            }
                         }
                     } else if (target.type === 'checkbox') {
                         for (let l: number = 0; l < FormFieldsData.length; l++) {
@@ -1756,7 +1770,6 @@ export class FormFields {
                 selectedItem.value = target.value;
                 let point: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
                 this.pdfViewer.formDesignerModule.updateFormDesignerFieldInSessionStorage(point, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
-                window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
             }
         }
     }
@@ -2232,7 +2245,7 @@ export class FormFields {
         this.pdfViewerBase.isInitialField = data.IsInitialField;
         let signIndicator: string = this.pdfViewerBase.isInitialField ? "Initial" : "Sign";
         //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
-        let signatureFieldIndicatorWidth: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (this.pdfViewerBase.isInitialField ? 27 : 19) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
+        let signatureFieldIndicatorWidth: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (this.pdfViewerBase.isInitialField ? 27 : 19) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width) : 19;
         // eslint-disable-next-line
         let span: any = document.createElement('span');
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
@@ -2243,11 +2256,11 @@ export class FormFields {
         const left: number = this.ConvertPointToPixel(bounds.X);
         const top: number = this.ConvertPointToPixel(bounds.Y);
         // eslint-disable-next-line max-len
-        const height: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height > bounds.Height / 2 ? bounds.Height / 2 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height;
+        const height: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height > bounds.Height / 2 ? bounds.Height / 2 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height) : bounds.Height / 2;
         // eslint-disable-next-line max-len
         const width: number = signatureFieldIndicatorWidth > bounds.Width / 2 ? bounds.Width / 2 : signatureFieldIndicatorWidth;
         // eslint-disable-next-line max-len
-        const fontSize: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize;
+        const fontSize: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize) : 10;
         span.style.position = 'absolute';
         span.id = 'signIcon_' + pageIndex + '_' + index;
         const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
@@ -2275,11 +2288,11 @@ export class FormFields {
         span.style.textAlign = 'center';
         span.style.boxSizing = 'content-box';
         // eslint-disable-next-line
-        span.innerHTML = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text : signIndicator;
-        span.style.color = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color : 'black';
+        span.innerHTML = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text : signIndicator) : signIndicator;
+        span.style.color = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color : 'black') : 'black';
         // eslint-disable-next-line
-        span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor : 'orange';
-        span.style.opacity = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity : 1;
+        span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor : 'orange') : 'orange';
+        span.style.opacity = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity : 1) : 1;
         textLayer.appendChild(span);
         this.addSignaturePath(data, count);
         return inputField;

@@ -85,7 +85,7 @@ export class Save {
     private showErrorDialog(args: { content: string }): void {
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
-            target: this.parent.element, isModal: true, showCloseIcon: true, height: 180, width: 400, content: args.content,
+            isModal: true, showCloseIcon: true, height: 180, width: 400, content: args.content,
             beforeOpen: (): void => focus(this.parent.element)
         });
     }
@@ -95,7 +95,7 @@ export class Save {
         const type: string = args ? args.item.id.split(this.parent.element.id + '_')[1] : 'xlsx';
         if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
             const dlg: DialogModel = {
-                isModal: true, showCloseIcon: true, cssClass: 'e-open-dlg', allowDragging: false,
+                isModal: true, showCloseIcon: true, cssClass: 'e-open-dlg',
                 header: l10n.getConstant('SaveAs'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = {

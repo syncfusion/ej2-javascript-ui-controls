@@ -26,7 +26,9 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             titleFontWeight: 'Normal',
             labelStyle: 'Normal',
             labelWeight: 'Normal',
-            containerBorderColor: '#bfbfbf'
+            containerBorderColor: '#bfbfbf',
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI'
         };
         break;
     case 'highcontrast':
@@ -44,7 +46,9 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             titleFontWeight: 'Normal',
             labelStyle: 'Normal',
             labelWeight: 'Normal',
-            containerBorderColor: '#bfbfbf'
+            containerBorderColor: '#bfbfbf',
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI'
         };
         break;
     case 'bootstrap4':
@@ -231,7 +235,9 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             titleFontWeight: 'Normal',
             labelStyle: 'Normal',
             labelWeight: 'Normal',
-            containerBorderColor: '#bfbfbf'
+            containerBorderColor: '#bfbfbf',
+            fontFamily: 'Segoe UI',
+            labelFontFamily: 'Segoe UI'
         };
         break;
     }

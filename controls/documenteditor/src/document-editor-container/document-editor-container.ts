@@ -695,6 +695,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (this.documentEditor) {
                         this.documentEditor.resize();
                     }
+                    this.resize();
                     break;
                 case 'width':
                     this.element.style.width = formatUnit(this.width);
@@ -1226,14 +1227,21 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Destroys all managed resources used by this object. 
      */
-    public destroy(): void {
+     public destroy(): void {
         super.destroy();
         if (this.element) {
             this.element.innerHTML = '';
         }
         if (!this.refreshing) {
             this.element.classList.remove('e-documenteditorcontainer');
-            this.element = undefined;            
+            this.element = undefined;
+            this.paragraphFormat = undefined;
+            this.sectionFormat = undefined;
+            this.characterFormat = undefined;
+        }
+        if (this.toolbarModule) {
+            this.toolbarModule.destroy();
+            this.toolbarModule = undefined;
         }
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';
@@ -1284,6 +1292,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.containerTarget = undefined;
         this.statusBarElement = undefined;
         this.editorContainer = undefined;
-        this.unWireEvents();
+        this.statusBar = undefined;
+        this.previousContext = undefined;
     }
 }

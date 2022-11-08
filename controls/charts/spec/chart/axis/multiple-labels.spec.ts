@@ -105,7 +105,9 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-                expect(svg.getAttribute('x') === '296.8571428571429' || svg.getAttribute('x') === '133.2857142857143').toBe(true);
+                console.log(svg.getAttribute('x'));
+                console.log(svg.getAttribute('y'));
+                expect(svg.getAttribute('x') === '296.8571428571429' || svg.getAttribute('x') === '154.2857142857143').toBe(true);
                 expect(svg.getAttribute('y') === '405.5' || svg.getAttribute('y') === '406.5' || svg.getAttribute('y') === '405' ||
                 svg.getAttribute('y') === '409').toBe(true);
                 done();
@@ -592,7 +594,8 @@ describe('Chart Control', () => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
                 console.log(svg.getAttribute('y'));
-                expect(svg.getAttribute('x') === '1073.4285714285713' || svg.getAttribute('x') === '425.1428571428572').toBe(true);
+                console.log(svg.getAttribute('x'));
+                expect(svg.getAttribute('x') === '1707.7142857142856'|| svg.getAttribute('x') === '425.1428571428572').toBe(true);
                 expect(svg.getAttribute('y') === '405.5' || svg.getAttribute('y') === '376' || svg.getAttribute('y') === '405' ||
                 svg.getAttribute('y') === '409').toBe(true);
                 done();
@@ -600,6 +603,7 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.primaryXAxis.labelPlacement = 'OnTicks';
             chartObj.primaryXAxis.multiLevelLabels[0].alignment = "Far";
+            chartObj.appendTo('#container');
             chartObj.refresh();
         });
     });

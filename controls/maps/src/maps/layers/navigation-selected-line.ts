@@ -87,52 +87,50 @@ export class NavigationLine {
                         direction = 0;
                     }
                 }
-                if (point[j]['x'] !== point[j + 1]['x']) {
-                    if (showArrow) {
-                        arrowColor = arrowSettings['properties']['color'];
-                        arrowSize = arrowSettings['properties']['size'];
-                        offSetValue = (arrowSettings['properties']['offSet'] === undefined) ? 0 : arrowSettings['properties']['offSet'];
-                        const divide: number = (Math.round(arrowSize / 2));
-                        arrowPosition = arrowSettings['properties']['position'];
-                        startArrow = (arrowPosition === 'Start') ? 'url(#triangle' + i + ')' : null;
-                        endArrow = (arrowPosition === 'End') ? 'url(#triangle' + i + ')' : null;
-                        if (offSet !== 0 && angle === 0) {
-                            offSet = (arrowPosition === 'Start') ? offSetValue : -(offSetValue);
-                        }
-                        offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
-                        const triId: string = this.maps.element.id + '_triangle';
-                        const defElement: Element = this.maps.renderer.createDefs();
-                        defElement.innerHTML += '<marker id="' + 'triangle' + i + '"></marker>';
-                        const markerEle: Element = defElement.querySelector('#' + 'triangle' + i);
-                        markerEle.setAttribute('markerWidth', (arrowSize.toString()));
-                        markerEle.setAttribute('markerHeight', (arrowSize.toString()));
-                        markerEle.setAttribute('refX', (divide - offSet).toString());
-                        markerEle.setAttribute('refY', divide.toString());
-                        markerEle.setAttribute('orient', 'auto');
-                        const d2: string = 'M 0,0  L 0,' + arrowSize + ' L ' + divide + ', ' + divide + ' Z';
-                        pathOption = new PathOption(triId, arrowColor, width, color, 1, 1, dashArray, d2);
-                        navigationEle = this.maps.renderer.drawPath(pathOption);
-                        markerEle.appendChild(navigationEle);
-                        defElement.appendChild(markerEle);
-                        navigationGroup.appendChild(defElement);
+                if (showArrow) {
+                    arrowColor = arrowSettings['properties']['color'];
+                    arrowSize = arrowSettings['properties']['size'];
+                    offSetValue = (arrowSettings['properties']['offSet'] === undefined) ? 0 : arrowSettings['properties']['offSet'];
+                    const divide: number = (Math.round(arrowSize / 2));
+                    arrowPosition = arrowSettings['properties']['position'];
+                    startArrow = (arrowPosition === 'Start') ? 'url(#triangle' + i + ')' : null;
+                    endArrow = (arrowPosition === 'End') ? 'url(#triangle' + i + ')' : null;
+                    if (offSet !== 0 && angle === 0) {
+                        offSet = (arrowPosition === 'Start') ? offSetValue : -(offSetValue);
                     }
-                    angle = Math.abs(angle);
-                    d = (angle === 0) ? 'M ' + point[j]['x'] + ',' + point[j]['y'] + 'L ' + point[j + 1]['x']
-                            + ',' + point[j + 1]['y'] + ' ' :
-                        'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) +
-                            ' ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) + ' ' + 0 + ',' + 0 + ','
-                            + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
-                    pathOption = new PathOption(arcId, 'none', width, color, 1, 1, dashArray, d);
-                    navigationEle = this.maps.renderer.drawPath(pathOption) as SVGLineElement;
-                    if (!isNullOrUndefined(arrowPosition)) {
-                        const position: void = (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
-                            : navigationEle.setAttribute('marker-end', endArrow);
-                    }
-                    maintainSelection(this.maps.selectedNavigationElementId, this.maps.navigationSelectionClass, navigationEle,
-                                      'navigationlineselectionMapStyle');
-                    navigationGroup.appendChild(navigationEle);
-                    group.appendChild(navigationGroup);
+                    offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
+                    const triId: string = this.maps.element.id + '_triangle';
+                    const defElement: Element = this.maps.renderer.createDefs();
+                    defElement.innerHTML += '<marker id="' + 'triangle' + i + '"></marker>';
+                    const markerEle: Element = defElement.querySelector('#' + 'triangle' + i);
+                    markerEle.setAttribute('markerWidth', (arrowSize.toString()));
+                    markerEle.setAttribute('markerHeight', (arrowSize.toString()));
+                    markerEle.setAttribute('refX', (divide - offSet).toString());
+                    markerEle.setAttribute('refY', divide.toString());
+                    markerEle.setAttribute('orient', 'auto');
+                    const d2: string = 'M 0,0  L 0,' + arrowSize + ' L ' + divide + ', ' + divide + ' Z';
+                    pathOption = new PathOption(triId, arrowColor, width, color, 1, 1, dashArray, d2);
+                    navigationEle = this.maps.renderer.drawPath(pathOption);
+                    markerEle.appendChild(navigationEle);
+                    defElement.appendChild(markerEle);
+                    navigationGroup.appendChild(defElement);
                 }
+                angle = Math.abs(angle);
+                d = (angle === 0) ? 'M ' + point[j]['x'] + ',' + point[j]['y'] + 'L ' + point[j + 1]['x']
+                        + ',' + point[j + 1]['y'] + ' ' :
+                    'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) +
+                        ' ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) + ' ' + 0 + ',' + 0 + ','
+                        + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
+                pathOption = new PathOption(arcId, 'none', width, color, 1, 1, dashArray, d);
+                navigationEle = this.maps.renderer.drawPath(pathOption) as SVGLineElement;
+                if (!isNullOrUndefined(arrowPosition)) {
+                    const position: void = (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
+                        : navigationEle.setAttribute('marker-end', endArrow);
+                }
+                maintainSelection(this.maps.selectedNavigationElementId, this.maps.navigationSelectionClass, navigationEle,
+                                    'navigationlineselectionMapStyle');
+                navigationGroup.appendChild(navigationEle);
+                group.appendChild(navigationGroup);
             }
             point = [];
         }

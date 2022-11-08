@@ -302,7 +302,6 @@ let scrollWidth: number = null;
  * @private
  */
 export function getScrollBarWidth(): number {
-    if (scrollWidth !== null) { return scrollWidth; }
     const divNode: HTMLElement = createElement('div');
     let value: number = 0;
     divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';

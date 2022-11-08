@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable max-len */
 import { Maps } from '../../index';
-import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight } from '../index';
+import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight, shapeHighlight, IShapeSelectedEventArgs } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getElementsByClassName, getElement, removeClass, createStyle, customizeStyle, getTargetElement } from '../utils/helper';
 import { BorderModel } from '../model/base-model';
@@ -164,16 +164,34 @@ export class Highlight {
             const marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
         }
-        const border: BorderModel = {
-            color: (targetEle.parentElement.id.indexOf('LineString') === -1) ? this.highlightSettings.border.color : (this.highlightSettings.fill || this.highlightSettings.border.color),
-            width: (targetEle.parentElement.id.indexOf('LineString') === -1) ? (this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)) : (this.highlightSettings.border.width / this.maps.scale),
-            opacity: this.highlightSettings.border.opacity
-        };
-        const eventArgs: ISelectionEventArgs = {
+        const borderColor: string = (targetEle.parentElement.id.indexOf('LineString') === -1) ? this.highlightSettings.border.color : (this.highlightSettings.fill || this.highlightSettings.border.color);
+        const borderWidth: number = (targetEle.parentElement.id.indexOf('LineString') === -1) ? (this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)) : (this.highlightSettings.border.width / this.maps.scale);
+        const borderOpacity: number = isNullOrUndefined(this.highlightSettings.border.opacity) ? this.highlightSettings.opacity : this.highlightSettings.border.opacity;
+        const eventArgs: any = {
             opacity: this.highlightSettings.opacity,
             fill: (targetEle.parentElement.id.indexOf('LineString') === -1) ? (targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
                 ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none') : 'transparent',
-            border: border,
+            border: { color: borderColor, width: borderWidth, opacity: borderOpacity },
+            cancel: false
+        };
+        const shapeEventArgs: IShapeSelectedEventArgs = {
+            opacity: eventArgs.opacity,
+            fill: eventArgs.fill,
+            border: { color: borderColor, width: borderWidth, opacity: borderOpacity },
+            name: shapeHighlight,
+            target: targetEle.id,
+            cancel: false,
+            shapeData: shapeData,
+            data: data,
+            maps: this.maps
+        };
+        if (targetEle.id.indexOf('shapeIndex') > -1) {
+            this.maps.trigger(shapeHighlight, shapeEventArgs, () => { });
+        }
+        const itemEventArgs: ISelectionEventArgs = {
+            opacity: eventArgs.opacity,
+            fill: eventArgs.fill,
+            border: { color: borderColor, width: borderWidth, opacity: borderOpacity },
             name: itemHighlight,
             target: targetEle.id,
             cancel: false,
@@ -181,15 +199,20 @@ export class Highlight {
             data: data,
             maps: this.maps
         };
-        this.maps.trigger(itemHighlight, eventArgs, () => {
-            eventArgs.border.opacity = isNullOrUndefined(this.highlightSettings.border.opacity) ? this.highlightSettings.opacity : this.highlightSettings.border.opacity;
-            this.highlightMap(targetEle, eventArgs);
+        this.maps.trigger(itemHighlight, itemEventArgs, () => {
+            itemEventArgs.cancel = eventArgs.cancel !== itemEventArgs.cancel ? itemEventArgs.cancel : targetEle.id.indexOf('shapeIndex') > -1 ? shapeEventArgs.cancel : eventArgs.cancel;
+            itemEventArgs.fill = eventArgs.fill !== itemEventArgs.fill ? itemEventArgs.fill : targetEle.id.indexOf('shapeIndex') > -1 ? shapeEventArgs.fill : eventArgs.fill;
+            itemEventArgs.opacity = eventArgs.opacity !== itemEventArgs.opacity ? itemEventArgs.opacity : targetEle.id.indexOf('shapeIndex') > -1 ? shapeEventArgs.opacity : eventArgs.opacity;
+            itemEventArgs.border.color = eventArgs.border.color !== itemEventArgs.border.color ? itemEventArgs.border.color : targetEle.id.indexOf('shapeIndex') > -1 ? shapeEventArgs.border.color : eventArgs.border.color;
+            itemEventArgs.border.width = eventArgs.border.width !== itemEventArgs.border.width ? itemEventArgs.border.width : targetEle.id.indexOf('shapeIndex') > -1 ? shapeEventArgs.border.width : eventArgs.border.width;
+            itemEventArgs.border.opacity = eventArgs.border.opacity !== itemEventArgs.border.opacity ? itemEventArgs.border.opacity : targetEle.id.indexOf('shapeIndex') > -1 ? shapeEventArgs.border.opacity : eventArgs.border.opacity;
+            this.highlightMap(targetEle, itemEventArgs);
         });
     }
     private highlightMap(targetEle: Element, eventArgs: ISelectionEventArgs): void {
         let parentElement: Element;
         let children: HTMLCollection;
-        if (targetEle.getAttribute('class') === 'highlightMapStyle') {
+        if (targetEle.getAttribute('class') === 'highlightMapStyle' || eventArgs.cancel) {
             return;
         } else {
             if (getElementsByClassName('highlightMapStyle').length > 0) {

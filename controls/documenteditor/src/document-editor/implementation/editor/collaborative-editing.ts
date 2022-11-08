@@ -325,7 +325,7 @@ export class CollaborativeEditing {
             DialogUtility.alert({
                 content: localizeValue.getConstant('Already locked'),
                 closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
-            });
+            }).enableRtl = this.owner.enableRtl;
         }
     }
     private failureHandler(): void {
@@ -334,7 +334,7 @@ export class CollaborativeEditing {
         DialogUtility.alert({
             content: localizeValue.getConstant('Error in establishing connection with web server'),
             closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
-        });
+        }).enableRtl = this.owner.enableRtl;
     }
     /**
      * Locker specified region for specified user.

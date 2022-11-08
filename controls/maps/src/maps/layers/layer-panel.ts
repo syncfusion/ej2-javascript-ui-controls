@@ -55,10 +55,10 @@ export class LayerPanel {
                 height: areaRect.height
             });
             const parentElement: Element = createElement('div', {
-                id: this.mapObject.element.id + '_Tile_SVG_Parent', styles: 'position: absolute; height: ' +
-                    (areaRect.height) + 'px; width: '
-                    + (areaRect.width) + 'px;'
+                id: this.mapObject.element.id + '_Tile_SVG_Parent'
             });
+            (parentElement as HTMLElement).style.cssText = 'position: absolute; height: ' + (areaRect.height) + 'px; width: ' +
+            (areaRect.width) + 'px;';
             parentElement.appendChild(this.tileSvgObject);
             secondaryEle.appendChild(parentElement);
         }
@@ -117,12 +117,12 @@ export class LayerPanel {
         (!isNullOrUndefined(panel.mapObject.tileZoomLevel) && panel.mapObject.tileZoomLevel !== 1 )) ?
             false : true;
         if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
-            isNullOrUndefined(panel.mapObject.previousCenterLongitude)) {
+            isNullOrUndefined(panel.mapObject.previousCenterLongitude) && !panel.mapObject.isZoomByPosition) {
             panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
             panel.mapObject.previousCenterLongitude = panel.mapObject.centerPosition.longitude;
-        } else if (panel.mapObject.previousCenterLatitude !==
+        } else if ((panel.mapObject.previousCenterLatitude !==
             panel.mapObject.centerPosition.latitude && panel.mapObject.previousCenterLongitude !==
-            panel.mapObject.centerPosition.longitude) {
+            panel.mapObject.centerPosition.longitude) || panel.mapObject.isZoomByPosition) {
             panel.mapObject.centerPositionChanged = true;
             panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
             panel.mapObject.previousCenterLongitude = panel.mapObject.centerPosition.longitude;
@@ -133,7 +133,8 @@ export class LayerPanel {
         let centerTileMap : Point = center;
         if ((this.mapObject.isTileMap && panel.mapObject.markerModule) && panel.mapObject.zoomSettings.enable) {
             panel.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
-            if (!isNullOrUndefined(this.mapObject.markerCenterLatitude) && !isNullOrUndefined(this.mapObject.markerCenterLongitude)) {
+            if (!isNullOrUndefined(this.mapObject.markerCenterLatitude) && !isNullOrUndefined(this.mapObject.markerCenterLongitude)
+                && !panel.mapObject.isZoomByPosition) {
                 centerTileMap = new Point(panel.mapObject.markerCenterLongitude, panel.mapObject.markerCenterLatitude);
             }
         }
@@ -147,7 +148,7 @@ export class LayerPanel {
         } else {
             center = { x: null, y: null };
         }
-        let zoomFactorValue: number = panel.mapObject.zoomSettings.shouldZoomInitially ?
+        let zoomFactorValue: number = (panel.mapObject.zoomSettings.shouldZoomInitially && !panel.mapObject.isZoomByPosition) ?
             isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
                 panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
         zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
@@ -402,13 +403,13 @@ export class LayerPanel {
         const colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
         const labelTemplateEle: HTMLElement = createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
-            className: this.mapObject.element.id + '_template',
-            styles: 'pointer-events: none; overflow: hidden; position: absolute;' +
-                'top:' + this.mapObject.mapAreaRect.y + 'px;' +
-                'left:' + this.mapObject.mapAreaRect.x + 'px;' +
-                'height:' + this.mapObject.mapAreaRect.height + 'px;' +
-                'width:' + this.mapObject.mapAreaRect.width + 'px;'
+            className: this.mapObject.element.id + '_template'
         });
+        labelTemplateEle.style.cssText = 'pointer-events: none; overflow: hidden; position: absolute;' +
+                                        'top:' + this.mapObject.mapAreaRect.y + 'px;' +
+                                        'left:' + this.mapObject.mapAreaRect.x + 'px;' +
+                                        'height:' + this.mapObject.mapAreaRect.height + 'px;' +
+                                        'width:' + this.mapObject.mapAreaRect.width + 'px;';
         if (this.currentLayer.layerData.length !== 0) {
             for (let i: number = 0; i < this.currentLayer.layerData.length; i++) {
                 let k: number;
@@ -644,10 +645,10 @@ export class LayerPanel {
         }
         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
             (currentShapeData['property'][properties]) : ''));
-        pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + index + 3).toString());
+        (pathEle as HTMLElement).tabIndex = this.mapObject.tabIndex + index + 3;
         pathEle.setAttribute('role', '');
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
-            pathEle.setAttribute('style', 'outline:none');
+            (pathEle as HTMLElement).style.cssText = 'outline:none';
         }
         maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle,
                             'ShapeselectionMapStyle');
@@ -709,9 +710,9 @@ export class LayerPanel {
             this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
         }
         const group: Element = (this.mapObject.renderer.createGroup({
-            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
-            style: 'pointer-events: none;'
+            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group'
         }));
+        (group as HTMLElement).style.pointerEvents = 'none';
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const intersect: any[] = [];
@@ -1238,7 +1239,8 @@ export class LayerPanel {
                 }
             }
         }
-        if (this.mapObject.previousScale !== this.mapObject.scale || this.mapObject.isReset) {
+        if (this.mapObject.previousScale !== this.mapObject.scale || this.mapObject.isReset || this.mapObject.isZoomByPosition
+            || this.mapObject.zoomNotApplied) {
             this.arrangeTiles(zoomType, this.animateToZoomX, this.animateToZoomY);
         }
     }

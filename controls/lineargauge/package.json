@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-lineargauge",
-	"version": "20.2.36",
+	"version": "20.3.47",
 	"description": "Essential JS 2 LinearGauge Components",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -15,7 +15,6 @@
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",
 		"@types/requirejs": "^2.1.26",
-		"gulp-spellcheck": "^0.1.2",
 		"es6-promise": "^3.2.1",
 		"gulp": "^3.9.1",
 		"gulp-sass": "^3.1.0",
@@ -60,6 +59,6 @@
 	},
 	"main": "./dist/ej2-lineargauge.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-lineargauge.es2015.js",
+	"es2015": "./dist/es6/ej2-lineargauge.es5.js",
 	"typings": "index.d.ts"
 }

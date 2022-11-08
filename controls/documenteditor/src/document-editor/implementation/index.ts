@@ -17,3 +17,4 @@ export * from './text-helper/index';
 export * from './track-changes/index';
 export * from './viewer/index';
 export * from './writer/index';
+export * from './themes/index';

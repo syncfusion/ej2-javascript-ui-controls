@@ -1148,9 +1148,9 @@ export class RowDD {
         for (let i: number = 0; i < length; i++) {
             if (!this.isMultipleGrid) {
                 currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, tObj);
-	    } else {
+            } else {
                 currentRecord = record.childRecords[i];
-	    }
+            }
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
             setValue ('uniqueIDCollection.' + currentRecord.uniqueID, currentRecord, this.parent);

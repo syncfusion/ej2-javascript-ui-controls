@@ -259,7 +259,7 @@ export class Edit {
             }
             this.updateGridEditMode('Batch');
         }
-        else if(this.parent.editSettings.mode === 'Cell' && (!column.allowEditing || column.isPrimaryKey)){
+        else if (this.parent.editSettings.mode === 'Cell' && (!column.allowEditing || column.isPrimaryKey)){
             this.isOnBatch = true;
             this.updateGridEditMode('Batch');
         }

@@ -353,6 +353,21 @@ export class WUniqueFormat {
         if (property === 'complexScript') {
             return 18;
         }
+        if (property === 'fontFamilyFarEast') {
+            return 19;
+        }
+        if (property === 'fontFamilyAscii') {
+            return 20;
+        }
+        if (property === 'fontFamilyNonFarEast') {
+            return 21;
+        }
+        if (property === 'localeIdAscii') {
+            return 22;
+        }
+        if (property === 'localeIdFarEast') {
+            return 23;
+        }
         return 0;
     }
     private static getParaFormatPropertyType(property: string): number {
@@ -558,6 +573,15 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('complexScript', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontFamilyFarEast', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontFamilyAscii', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('fontFamilyNonFarEast', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         return true;

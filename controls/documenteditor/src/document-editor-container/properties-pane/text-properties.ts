@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, L10n, classList } from '@syncfusion/ej2-base';
+import { createElement, L10n, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor, HighlightColor } from '../../document-editor/index';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -601,7 +601,13 @@ export class Text {
         if (this.documentEditor.selection) {
             //#region character format
             if (this.documentEditor.selection.characterFormat.fontFamily) {
-                this.fontFamily.value = this.documentEditor.selection.characterFormat.fontFamily;
+                let fontFamily: string;
+                if(!isNullOrUndefined(this.documentEditor.selection.characterFormat.renderedFontFamily) && !isNullOrUndefined(this.documentEditor.selection.characterFormat.fontFamily)){
+                    fontFamily = this.documentEditor.selection.characterFormat.renderedFontFamily;
+                } else {
+                    fontFamily = this.documentEditor.selection.characterFormat.fontFamily;
+                }
+                this.fontFamily.value = fontFamily;
                 this.fontFamily.dataBind();
             } else {
                 this.fontFamily.value = '';

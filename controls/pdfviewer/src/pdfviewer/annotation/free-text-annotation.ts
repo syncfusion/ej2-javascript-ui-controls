@@ -437,12 +437,6 @@ export class FreeTextAnnotation {
                             annotationBoundsX = (annotationBoundsX - (width / 2)) + (height / 2);
                             annotationBoundsY = (annotationBoundsY) + (width / 2 - height / 2);
                         }
-                        let isPrint: boolean = true;
-                        if (annotation.annotationAddMode === 'Imported Annotation') {
-                            isPrint = annotation.IsPrint;
-                        } else {
-                            isPrint = annotation.AnnotationSettings.isPrint;
-                        }
                         // eslint-disable-next-line
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         // eslint-disable-next-line
@@ -466,7 +460,7 @@ export class FreeTextAnnotation {
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
                             // eslint-disable-next-line
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
-                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly,
+                            isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly,
                             isAddAnnotationProgrammatically: isAddedProgramatically
                         };
                         if (isImportAction) {
@@ -1327,7 +1321,7 @@ export class FreeTextAnnotation {
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
             let annot: PdfAnnotationBaseModel;
             // eslint-disable-next-line max-len
-            annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+            annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             let annotationBoundsX: number = !isNullOrUndefined(annotation.Bounds.X) ? annotation.Bounds.X : annotation.Bounds.x;
             let annotationBoundsY: number = !isNullOrUndefined(annotation.Bounds.Y) ? annotation.Bounds.Y : annotation.Bounds.y;
             let annotationBoundsWidth: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
@@ -1365,6 +1359,7 @@ export class FreeTextAnnotation {
     public updateFreeTextAnnotationCollections(shapeAnnotations: any, pageNumber: number): void {
         // eslint-disable-next-line
         let annotation: any = shapeAnnotations;
+        annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
         if (annotation.AnnotType) {
             let vertexPoints: IPoint[] = null;
             if (annotation.VertexPoints) {
@@ -1380,7 +1375,7 @@ export class FreeTextAnnotation {
                 annotation.AnnotationSettings.isLock = annotation.IsLocked;
             }
             // eslint-disable-next-line max-len
-            annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+            annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
             let annotationBoundsY: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
             let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
@@ -1403,7 +1398,7 @@ export class FreeTextAnnotation {
                 // eslint-disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 customData: this.pdfViewer.annotation.getCustomData(annotation),
-                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock,isReadonly: annotation.IsReadonly,isPrint: annotation.IsPrint,
             };
             return annot;
         }

@@ -16,7 +16,6 @@ import { valueToCoefficient, getRangePalette, VisibleRange, withInRange, calcula
  */
 export class AxisLayoutPanel {
     private gauge: LinearGauge;
-    private htmlObject: HTMLElement;
     private axisRenderer: AxisRenderer;
     // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
@@ -511,17 +510,22 @@ export class AxisLayoutPanel {
             let text: string; let labelSize: Size;
             const customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
             for (let i: number = min; (i <= max && interval > 0); i += interval) {
+                let currentAxisValue = i;
+                if (currentAxisValue.toString().indexOf('e') !== -1 && isNullOrUndefined(this.gauge.format)) {
+                    const exponent: number = parseInt(currentAxisValue.toString().split('-')[1], 10);
+                    currentAxisValue = parseInt(currentAxisValue.toFixed(exponent), 10);
+                } 
                 argsData = {
                     cancel: false, name: axisLabelRender, axis: axis,
-                    text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
-                        formatValue(i, this.gauge).toString(),
-                    value: i
+                    text: customLabelFormat ? textFormatter(style.format, { value: currentAxisValue }, this.gauge) :
+                        formatValue(currentAxisValue, this.gauge).toString(),
+                    value: currentAxisValue
                 };
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const axisLabelRenderSuccess: any = (argsData: IAxisLabelRenderEventArgs) => {
                     if (!argsData.cancel) {
                         axis.visibleLabels.push(new VisibleLabels(
-                            argsData.text, i, labelSize
+                            argsData.text, currentAxisValue, labelSize
                         ));
                     }
                 };
@@ -587,5 +591,13 @@ export class AxisLayoutPanel {
                 }
             });
         }
+    }
+
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.gauge = null;
+        this.axisRenderer = null;
     }
 }

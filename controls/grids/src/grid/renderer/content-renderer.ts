@@ -276,7 +276,7 @@ export class ContentRender implements IRenderer {
         let tbdy: Element;
         let tableName: freezeTable;
         if (isGroupAdaptive(gObj)) {
-            if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
+            if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'save', 'delete']
                 .some((value: string) => { return args.requestType === value; })) {
                 this.emptyVcRows();
             }

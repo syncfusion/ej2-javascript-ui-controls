@@ -527,7 +527,7 @@ describe('Linear gauge control', () => {
 
         it('Horizontal - Rounded Retangle container with roundedcorner radius', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 path = path.trim();
                 let value = path.split(" ");
@@ -543,7 +543,7 @@ describe('Linear gauge control', () => {
 
         it('Horizontal - Rounded Retangle container with roundedcorner radius with axis inversed', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 path = path.trim();
                 let value = path.split(" ");
@@ -559,7 +559,7 @@ describe('Linear gauge control', () => {
 
         it('Vertical - Rounded Retangle container with roundedcorner radius', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 path = path.trim();
                 let value = path.split(" ");
@@ -575,7 +575,7 @@ describe('Linear gauge control', () => {
 
         it('Vertical - Rounded Retangle container with roundedcorner radius', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 path = path.trim();
                 let value = path.split(" ");
@@ -591,7 +591,7 @@ describe('Linear gauge control', () => {
 
         it('horizontal - marker pointer position checking with placement as Far', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let split = svg.getAttribute('d').split(" ");
                 element = <HTMLElement>document.getElementById('container_AxisLine_0');
                 let split1 = element.getAttribute('d').split(" ");
@@ -610,7 +610,7 @@ describe('Linear gauge control', () => {
 
         it('vertical - marker pointer position checking with placement as Far', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
                 let split = svg.getAttribute('d').split(" ");
                 element = <HTMLElement>document.getElementById('container_AxisLine_0')
                 let split1 = element.getAttribute('d').split(" ");
@@ -629,7 +629,7 @@ describe('Linear gauge control', () => {
 
         it('Vertical - Rounded Retangle container checking with bar pointer shape', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 expect(path == null).toBe(true);
             };
@@ -645,7 +645,7 @@ describe('Linear gauge control', () => {
 
         it('Horizontal - Rounded Retangle container checking with bar pointer shape', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 expect(path == null).toBe(true);
             };
@@ -661,7 +661,7 @@ describe('Linear gauge control', () => {
 
         it('Vertical - Thermometer container checking with bar pointer shape', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 expect(path == null).toBe(true);
             };
@@ -677,7 +677,7 @@ describe('Linear gauge control', () => {
 
         it('Horizontal - Thermometer container checking with bar pointer shape', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointerGroup_0').children[0];
                 let path = svg.getAttribute('d');
                 expect(path == null).toBe(true);
             };

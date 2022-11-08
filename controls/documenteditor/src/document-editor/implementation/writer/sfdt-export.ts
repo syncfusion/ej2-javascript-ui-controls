@@ -23,6 +23,8 @@ import { DocumentHelper } from '../viewer';
 import { WLevelOverride } from '../list';
 import { DocumentEditor } from '../../document-editor';
 import { Revision } from '../track-changes/track-changes';
+import { Themes } from '../themes/themes';
+import { MajorMinorFontScheme } from '../themes/major-minor-font-scheme';
 /**
  * Exports the document to Sfdt format.
  */
@@ -283,6 +285,7 @@ export class SfdtExport {
         this.document.sections = [];
         this.document.characterFormat = this.writeCharacterFormat(this.documentHelper.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.documentHelper.paragraphFormat);
+        this.document.themeFontLanguages = this.writeCharacterFormat(this.documentHelper.themeFontLanguage);
         this.document.defaultTabWidth = this.documentHelper.defaultTabWidth;
         this.document.trackChanges = this.owner.enableTrackChanges;
         this.document.enforcement = this.documentHelper.isDocumentProtected;
@@ -293,6 +296,9 @@ export class SfdtExport {
         this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
         this.document.formFieldShading = this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading;
         this.document.compatibilityMode = this.documentHelper.compatibilityMode;
+        if (this.documentHelper.hasThemes) {
+            this.document.themes = this.writeThemes(this.documentHelper.themes);
+        }
     }
     /**
      * @private
@@ -1310,7 +1316,6 @@ export class SfdtExport {
         characterFormat.boldBidi = isInline ? format.bold : format.getValue('bold');
         characterFormat.italicBidi = isInline ? format.italic : format.getValue('italic');
         characterFormat.fontSizeBidi = isInline ? format.fontSize : format.getValue('fontSize');
-        characterFormat.fontFamilyBidi = isInline ? format.fontFamily : format.getValue('fontFamily');
         if (format.revisions.length > 0) {
             characterFormat.revisionIds = [];
             for (let x: number = 0; x < format.revisions.length; x++) {
@@ -1348,6 +1353,25 @@ export class SfdtExport {
             paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);
         }
         return paragraphFormat;
+    }
+    private writeThemes(source: Themes): any {
+        let themes: any = {};
+        themes.fontScheme = {};
+        themes.fontScheme.fontSchemeName = source.fontScheme.fontSchemeName;
+        themes.fontScheme.majorFontScheme = this.writeMajorMinorFontScheme(source.fontScheme.majorFontScheme);
+        themes.fontScheme.minorFontScheme = this.writeMajorMinorFontScheme(source.fontScheme.minorFontScheme);
+        return themes;
+    }
+    private writeMajorMinorFontScheme(source: MajorMinorFontScheme): any {
+        let majorMinorFontScheme: any = {};
+        majorMinorFontScheme.fontSchemeList = source.fontSchemeList;
+        let keys: string [] = source.fontTypeface.keys;
+        let fontTypeface: any = {};
+        for(let key of keys) {
+            fontTypeface[key] = source.fontTypeface.get(key);
+        }
+        majorMinorFontScheme.fontTypeface = fontTypeface;
+        return majorMinorFontScheme;
     }
     private writeTabs(tabStops: WTabStop[]): any {
         if (isNullOrUndefined(tabStops) || tabStops.length < 1) {

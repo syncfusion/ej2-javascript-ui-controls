@@ -36,7 +36,8 @@ export class Dialog {
             header: 'Spreadsheet',
             cssClass: this.parent.cssClass,
             target: this.parent.element,
-            buttons: []
+            buttons: [],
+            allowDragging: true
         };
         dialogModel.close = () => {
             this.destroyDialog();

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I388098` - Editing issue in grouping with `virtualization` has been fixed.
+- `#I406671` - Edit element not maintained when executing `setRowData` method is fixed.
+- `#I413403` - Script error with toolbar template has been resolved.
+- `#I408977` - Infinite Scrolling with row grouping and checkbox selection is now working fine.
+- `#F177783` - Sort icon Alignment issue with header text right align when using autofit has been fixed.
+
 ## 20.3.52 (2022-10-26)
 
 ### Grid
@@ -11,7 +23,7 @@
 - `#I400775` - `DataStateChange` event argument type is not matched with the original argument list has been fixed.
 - `#I411026` - Expanding child grid throws script while adding data dynamically to the child has been resolved.
 - `#I412478` - `SetCellValue` is working fine with `virtualization`.
-- `#411780` - German translation for the word search has been changed.
+- `#I411780` - German translation for the word search has been changed.
 - `#I367158` - While rendering the grid in the template column the script error thrown with resizing the frozen column has been fixed.
 
 ## 20.3.50 (2022-10-18)

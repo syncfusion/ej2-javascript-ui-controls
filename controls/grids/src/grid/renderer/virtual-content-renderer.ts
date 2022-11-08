@@ -946,15 +946,30 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         e.isScroll = keys.length !== 0 && this.currentInfo.sentinelInfo && this.currentInfo.sentinelInfo.axis === 'X';
     }
 
+    private getEditedRowObject(): Row<Column> {
+        const rowObjects: Row<Column>[] = this.parent.vcRows;
+        let editedrow: Row<Column>;
+        for (let i: number = 0; i < rowObjects.length; i++) {
+            if (rowObjects[i].index === this.editedRowIndex) {
+                editedrow = rowObjects[i];
+            }
+        }
+        return editedrow;
+    }
+
     private refreshCache(args: { data: Object }): void {
         const block: number = Math.ceil((this.editedRowIndex + 1) / this.getBlockSize());
         const index: number = this.editedRowIndex - ((block - 1) * this.getBlockSize());
-        this.vgenerator.cache[block][index].data = args.data;
-        if (this.vgenerator.movableCache[block]) {
-            this.vgenerator.movableCache[block][index].data = args.data;
-        }
-        if (this.vgenerator.frozenRightCache[block]) {
-            this.vgenerator.frozenRightCache[block][index].data = args.data;
+        if (this.parent.groupSettings.columns.length) {
+            this.getEditedRowObject().data = args.data;
+        } else {
+            this.vgenerator.cache[block][index].data = args.data;
+            if (this.vgenerator.movableCache[block]) {
+                this.vgenerator.movableCache[block][index].data = args.data;
+            }
+            if (this.vgenerator.frozenRightCache[block]) {
+                this.vgenerator.frozenRightCache[block][index].data = args.data;
+            }
         }
     }
 

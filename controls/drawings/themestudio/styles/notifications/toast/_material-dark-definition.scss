@@ -66,7 +66,6 @@ $toast-btn-flat-focus-bgcolor: transparent !default;
 $toast-btn-flat-active-color: $toast-btn-flat-color !default;
 $toast-btn-flat-active-bgcolor: transparent !default;
 
-
 // Toast Types theme definitions
 $toast-border: none !default;
 $toast-success-bg-color: $success-bg !default;
@@ -78,7 +77,6 @@ $toast-success-hover-bg-color: #49a84d !default;
 $toast-success-hover-color: $message-font !default;
 $toast-success-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 
-
 $toast-info-bg-color: $info-bg !default;
 $toast-info-color: $message-font !default;
 $toast-info-title-color: $message-font !default;
@@ -87,7 +85,6 @@ $toast-info-content-color: $message-font !default;
 $toast-info-hover-bg-color: #03a2ea !default;
 $toast-info-hover-color: $message-font !default;
 $toast-info-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
-
 
 $toast-warning-bg-color: $warning-bg !default;
 $toast-warning-color: $message-font !default;
@@ -98,7 +95,6 @@ $toast-warning-hover-bg-color: #f59200 !default;
 $toast-warning-hover-color: $message-font !default;
 $toast-warning-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
 
-
 $toast-danger-bg-color: $error-bg !default;
 $toast-danger-color: $message-font !default;
 $toast-danger-title-color: $message-font !default;
@@ -107,4 +103,5 @@ $toast-danger-content-color: $message-font !default;
 $toast-danger-hover-bg-color: #ff5d48 !default;
 $toast-danger-hover-color: $message-font !default;
 $toast-danger-hover-box-shadow: 0 3px 5px -1px rgba($grey-black, .2), 0 6px 10px 0 rgba($grey-black, .14), 0 1px 18px 0 rgba($grey-black, .12) !default;
+
 //enddefault

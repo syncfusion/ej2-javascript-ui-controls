@@ -525,6 +525,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         this.inputPreviousValue = this.value;
         this.respectiveElement.defaultValue = this.respectiveElement.value;
         Input.setWidth(this.width, this.textboxWrapper.container);
+        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            this.enabled = false;
+        }
         this.renderComplete();
     }
 

@@ -21,7 +21,7 @@ import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEvent
 import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
-import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress } from './../../workbook/common/index';
+import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText } from './../../workbook/common/index';
 import { BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel, setLinkModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
@@ -1492,6 +1492,67 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 setRowModel();
             }
         }
+    }
+
+    /**
+     * Allows you to set the height to the single or multiple rows.
+     *
+     * @param {number} height - Specifies the height for row.
+     * @param {string[]} ranges - Specifies the row range to set the height. If the sheet name is not specified then height will apply to
+     * the rows in the active sheet. Possible values are
+     * * Single row range: ['2'] or ['2:2']
+     * * Multiple rows range: ['1:100']
+     * * Multiple rows with discontinuous range - ['1:10', '15:25', '30:40']
+     * * Multiple rows with different sheets - ['Sheet1!1:50', 'Sheet2!1:50', 'Sheet3!1:50'].
+     * @returns {void}
+     */
+    public setRowsHeight(height: number = 20, ranges?: string[]): void {
+        if (!ranges) {
+            ranges = [`${1}:${this.getActiveSheet().usedRange.rowIndex + 1}`];
+        }
+        this.setSize(height, ranges, (idx: string) => Number(idx) - 1, this.setRowHeight.bind(this));
+    }
+
+    /**
+     * Allows you to set the width to the single or multiple columns.
+     *
+     * @param {number} width - Specifies the width for column.
+     * @param {string[]} ranges - Specifies the column range to set the width. If the sheet name is not specified then width will apply to
+     * the column in the active sheet. Possible values are
+     * * Single column range: ['F'] or ['F:F']
+     * * Multiple columns range: ['A:F']
+     * * Multiple columns with discontinuous range - ['A:C', 'G:I', 'K:M']
+     * * Multiple columns with different sheets - ['Sheet1!A:H', 'Sheet2!A:H', 'Sheet3!A:H'].
+     * @returns {void}
+     */
+    public setColumnsWidth(width: number = 64, ranges?: string[]): void {
+        if (!ranges) {
+            ranges = [`A:${getColumnHeaderText(this.getActiveSheet().usedRange.colIndex)}`];
+        }
+        this.setSize(width, ranges, (headerText: string) => getColIndex(headerText), this.setColWidth.bind(this));
+    }
+
+    private setSize(width: number, ranges: string[], getIndex: Function, updateSize: Function): void {
+        let sheetIdx: number; let rangeArr: string[]; let startIdx: number; let endIdx: number;
+        ranges.forEach((range: string): void => {
+            if (range.includes('!')) {
+                rangeArr = range.split('!');
+                sheetIdx = getSheetIndex(this, rangeArr[0]);
+                range = rangeArr[1];
+            } else {
+                sheetIdx = this.activeSheetIndex;
+            }
+            if (range.includes(':')) {
+                rangeArr = range.split(':');
+                startIdx = getIndex(rangeArr[0]);
+                endIdx = getIndex(rangeArr[1]);
+            } else {
+                startIdx = endIdx = getIndex(range);
+            }
+            for (let idx: number = startIdx; idx <= endIdx; idx++) {
+                updateSize(width, idx, sheetIdx);
+            }
+        });
     }
 
     /**

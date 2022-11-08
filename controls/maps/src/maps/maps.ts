@@ -696,6 +696,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public tileZoomLevel: number;
     /** @private */
+    public isZoomByPosition: boolean;
+    /** @private */
     public tileZoomScale: number;
     /** @private */
     public staticMapZoom: number = this.zoomSettings.enable ? this.zoomSettings.zoomFactor : 0;
@@ -1106,7 +1108,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.zoomingChange();
-        this.trigger(loaded, { maps: this, isResized: this.isResize });
+        if (!this.isZoomByPosition && !this.zoomNotApplied) {
+            this.trigger(loaded, { maps: this, isResized: this.isResize });
+        }
         this.isResize = false;
     }
 
@@ -1210,7 +1214,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'Maps Element');
         this.element.setAttribute('role', '');
-        this.element.setAttribute('tabindex', this.tabIndex.toString());
+        this.element.tabIndex = this.tabIndex;
     }
 
     // private setSecondaryElementPosition(): void {
@@ -1274,7 +1278,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             }
-            if (this.zoomModule && (this.previousScale !== this.scale)) {
+            if (this.zoomModule && ((this.previousScale !== this.scale) || this.zoomNotApplied || this.isZoomByPosition)) {
                 this.zoomModule.applyTransform(this, true);
             }
         }
@@ -1283,9 +1287,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             const secondaryElement: Element = createElement('div', {
-                id: this.element.id + '_Secondary_Element',
-                styles: 'position: absolute;z-index:2;'
+                id: this.element.id + '_Secondary_Element'
             });
+            (secondaryElement as HTMLElement).style.cssText = 'position: absolute;z-index:2;';
             this.element.appendChild(secondaryElement);
         }
     }
@@ -1340,18 +1344,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             removeElement(this.element.id + '_tiles');
             removeElement('animated_tiles');
             const ele: Element = createElement('div', {
-                id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
-                    + (this.mapAreaRect.y + padding) + 'px; height: ' +
-                    (this.mapAreaRect.height) + 'px; width: '
-                    + (this.mapAreaRect.width) + 'px; overflow: hidden;'
+                id: this.element.id + '_tile_parent'
             });
+            (ele as HTMLElement).style.cssText = 'position: absolute; left: ' +
+                                (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
+                                + (this.mapAreaRect.y + padding) + 'px; height: ' +
+                                (this.mapAreaRect.height) + 'px; width: '
+                                + (this.mapAreaRect.width) + 'px; overflow: hidden;';
             const ele1: Element = createElement('div', {
-                id: this.element.id + '_tiles', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
-                    + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
-                    + (this.mapAreaRect.width) + 'px; overflow: hidden;'
+                id: this.element.id + '_tiles'
             });
+            (ele1 as HTMLElement).style.cssText = 'position: absolute; left: ' +
+                                (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
+                                + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
+                                + (this.mapAreaRect.width) + 'px; overflow: hidden;';
             this.element.appendChild(ele);
             this.element.appendChild(ele1);
         }
@@ -1847,9 +1853,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const markerModule: Marker = this.markerModule;
             if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
                 this.mergeCluster();
-                if (element.id.indexOf('shapeIndex') > -1) {
-                    this.triggerShapeSelection(element);
-                }
             }
             if (markerModule) {
                 markerModule.markerClick(e);
@@ -2048,34 +2051,29 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
-        const factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
-        let position: Point;
-        const size: Rect = this.mapAreaRect;
+        this.zoomNotApplied = false;
+        let isRefresh: boolean = this.zoomSettings.zoomFactor == zoomFactor;
         if (!this.isTileMap && this.zoomModule) {
             if (!isNullOrUndefined(centerPosition)) {
-                position = convertGeoToPoint(
-                    centerPosition.latitude, centerPosition.longitude, factor, this.layersCollection[0], this);
-                const mapRect: ClientRect = document.getElementById(this.element.id + '_Layer_Collections').getBoundingClientRect();
-                const svgRect: ClientRect = this.svgObject.getBoundingClientRect();
-                const xDiff: number = Math.abs(mapRect.left - svgRect.left) / this.scale;
-                const yDiff: number = Math.abs(mapRect.top - svgRect.top) / this.scale;
-                const x: number = this.translatePoint.x + xDiff;
-                const y: number = this.translatePoint.y + yDiff;
-                this.scale = zoomFactor;
-                this.translatePoint.x = ((mapRect.left < svgRect.left ? x : 0) + (size.width / 2) - (position.x * zoomFactor)) / zoomFactor;
-                this.translatePoint.y = ((mapRect.top < svgRect.top ? y : 0) + (size.height / 2) - (position.y * zoomFactor)) / zoomFactor;
-                this.zoomModule.applyTransform(this);
-            } else {
-                position = { x: size.width / 2, y: size.height / 2 };
-                this.zoomModule.performZooming(position, zoomFactor, zoomFactor > this.scale ? 'ZoomIn' : 'ZoomOut');
+                this.zoomSettings.zoomFactor = zoomFactor;
+                isRefresh = this.centerPosition.latitude === centerPosition.latitude && this.centerPosition.longitude === centerPosition.longitude ? true : isRefresh;
+                this.centerPosition = centerPosition;
+                this.isZoomByPosition = true;
+                this.mapScaleValue = null;
+            }
+            else {
+                this.zoomSettings.zoomFactor = zoomFactor;
+                this.isZoomByPosition = true;
+                this.mapScaleValue = null;
             }
         } else if (this.zoomModule) {
-            this.tileZoomLevel = zoomFactor;
-            this.tileTranslatePoint = this.mapLayerPanel['panTileMap'](
-                this.availableSize.width, this.availableSize.height,
-                { x: centerPosition.longitude, y: centerPosition.latitude }
-            );
-            this.mapLayerPanel.generateTiles(zoomFactor, this.tileTranslatePoint, null, new BingMap(this));
+            this.tileZoomLevel = this.zoomSettings.zoomFactor =  zoomFactor;
+            isRefresh = this.centerPosition.latitude === centerPosition.latitude && this.centerPosition.longitude === centerPosition.longitude ? true : isRefresh;
+            this.centerPosition = centerPosition;
+            this.isZoomByPosition = true;
+        }
+        if (isRefresh) {
+            this.refresh();
         }
     }
 
@@ -2269,6 +2267,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let centerLatitude: number;
         let centerLongtitude: number;
         let isTwoCoordinates: boolean = false;
+        this.centerPosition = {
+            latitude: null,
+            longitude: null
+        };
+        this.isZoomByPosition = false;
         if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
             || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
             minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;

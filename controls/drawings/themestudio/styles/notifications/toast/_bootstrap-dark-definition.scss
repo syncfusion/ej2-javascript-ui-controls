@@ -70,7 +70,6 @@ $toast-success-hover-color: $toast-success-color !default;
 $toast-success-hover-border-color: $toast-success-bg-color !default;
 $toast-success-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
 
-
 $toast-info-bg-color: $brand-info-dark !default;
 $toast-info-color: $grey-light-font !default;
 $toast-info-title-color: $toast-info-color !default;
@@ -80,8 +79,7 @@ $toast-info-border-color: $brand-info !default;
 $toast-info-hover-bg-color: $brand-info-dark !default;
 $toast-info-hover-color: $toast-info-color !default;
 $toast-info-hover-border-color: $brand-info !default;
-$toast-info-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;;
-
+$toast-info-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
 
 $toast-warning-bg-color: $brand-warning-dark !default;
 $toast-warning-color: $base-font !default;
@@ -94,7 +92,6 @@ $toast-warning-hover-color: $base-font !default;
 $toast-warning-hover-border-color: $brand-warning !default;
 $toast-warning-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
 
-
 $toast-danger-bg-color: $brand-danger-dark !default;
 $toast-danger-color: $grey-light-font !default;
 $toast-danger-title-color: $toast-danger-color !default;
@@ -105,4 +102,5 @@ $toast-danger-hover-bg-color: $brand-danger-dark !default;
 $toast-danger-hover-color: $toast-danger-color !default;
 $toast-danger-hover-border-color: $brand-danger !default;
 $toast-danger-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
+
 //enddefault

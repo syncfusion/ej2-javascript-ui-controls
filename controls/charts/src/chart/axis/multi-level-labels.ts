@@ -165,7 +165,7 @@ export class MultiLevelLabel {
                             labelSize.height / 2 + padding + this.xAxisPrevHeight[level]) : (axisRect.y - startY + labelSize.height / 2 -
                                 this.xAxisMultiLabelHeight[level] - this.xAxisPrevHeight[level])) + scrollBarHeight;
                     if (argsData.alignment === 'Center') {
-                        x += (endX - startX - padding) / 2; x = axis.labelPlacement == 'OnTicks' && (i == 0 || i == len - 1) ? x - labelSize.width / 2 : x; anchor = 'middle';
+                        x += (endX - startX - padding) / 2; anchor = 'middle';
                     } else if (argsData.alignment === 'Far') {
                         x = x + (endX - startX - padding) - multiLevel.border.width / 2;
                         if (axis.labelPlacement == 'OnTicks' && (i == 0 || i == len - 1)) {
@@ -188,21 +188,29 @@ export class MultiLevelLabel {
                                 case 'None':
                                     break;
                                 case 'Shift':
-                                    if ((i === 0 || (isInversed && i === len - 1)) && ((options.x < axisRect.x + padding) || (options.x > axisRect.x + padding))) {
-                                        if (argsData.alignment === "Center") {
-                                            options.x += labelSize.width / 2 + padding * 2;
+                                    if ((i === 0 || (isInversed && i === len - 1))) {
+                                        if (argsData.alignment === "Center" && ((options.x < axisRect.x + padding) || (options.x - labelSize.width / 2)) < axis.rect.x) {
+                                            options.x += axisRect.x / 2;
+                                            if ((options.x / 2) < axisRect.x) {
+                                                options.x = axisRect.x + padding / 2;
+                                                options.anchor = 'start';
+                                            }
                                         }
-                                        else if (argsData.alignment === "Far") {
+                                        else if (argsData.alignment === "Far" && ((options.x < axisRect.x + padding) || (options.x > axisRect.x + padding))) {
                                             options.x += labelSize.width / 2 - gap / 2;
                                         }
-                                        else {
-                                            options.x += axisRect.x - padding / 2;
+                                        else if (argsData.alignment === 'Near' && ((options.x < axisRect.x + padding) || (options.x > axisRect.x + padding))) {
+                                            options.x = axisRect.x + padding;
                                         }
                                         gap = gap / 2;
                                     }
-                                    else if ((i === len - 1 || (isInversed && i === 0)) && ((options.x < axisRect.width) || (options.x > axisRect.width))) {
-                                        if (argsData.alignment === "Center") {
-                                            options.x +=  padding / 2;
+                                    else if ((i === len - 1 || (isInversed && i === 0))) {
+                                        if (argsData.alignment === "Center" && (options.x) > axisRect.x + axisRect.width) {
+                                            options.x -= padding;
+                                            if (options.x > axisRect.width) {
+                                                options.x = axisRect.width + axisRect.x
+                                                options.anchor = 'end';
+                                            }
                                         }
                                         else if (argsData.alignment === "Far") {
                                             options.x = axisRect.width + axisRect.x;

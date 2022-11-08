@@ -63,7 +63,7 @@ describe('Linear gauge control', () => {
         });
 
         it('bar animation - RoundedRectangle', (done: Function): void => {
-            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
                 // expect(svg != null).toBe(true);
                 done();
@@ -75,7 +75,7 @@ describe('Linear gauge control', () => {
         });
 
         it('bar animation - RoundedRectangle - axis inversed', (done: Function): void => {
-            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
                 // expect(svg != null).toBe(true);
                 done();
@@ -152,8 +152,8 @@ describe('Linear gauge control', () => {
 
         it('bar animation - Thermometer container width as zero', (done: Function): void => {
             gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
-                expect(svg != null).toBe(true);
+                let svg: HTMLElement = document.getElementById('container_PointersGroup_0');
+                expect(svg.childNodes != null).toBe(true);
                 done();
             };
             gauge.container.type = 'Thermometer';
@@ -172,6 +172,44 @@ describe('Linear gauge control', () => {
         //     gauge.container.type = 'Thermometer';
         //     gauge.refresh();
         // });
+        it('markerType as circle', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg != null).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = "Circle";
+            gauge.axes[0].pointers[0].value = 20;
+        });
+        it('markerType as image', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg!= null).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Image';
+            gauge.axes[0].pointers[0].value = 40;
+        });
+        it('markerType as Triangle', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg!= null).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Triangle';
+            gauge.axes[0].pointers[0].value = 60;
+        });
+        it('orientation changes', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg!= null).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+        });
     });
 
     describe('Checking normal rectangle animation', () => {

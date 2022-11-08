@@ -84,7 +84,7 @@ describe('Linear gauge control', () => {
         });
         it('Axis label default color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let label: string = document.getElementById('container_AxisLabel_0').style.fill;
+                let label: string = document.getElementById('container_Axis_0_Label_0').style.fill;
                 expect(label).toBe('rgb(104, 104, 104)');
             };
             gauge.refresh();
@@ -161,7 +161,7 @@ describe('Linear gauge control', () => {
         });
         it('Axis label MaterialDark theme', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let label: string = document.getElementById('container_AxisLabel_0').style.fill;
+                let label: string = document.getElementById('container_Axis_0_Label_0').style.fill;
                 expect(label).toBe('rgb(218, 218, 218)');
             };
             gauge.theme ='MaterialDark';
@@ -201,7 +201,7 @@ describe('Linear gauge control', () => {
                 targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
                 trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
                 tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
-                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
                 trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
             };
             gauge.tooltip.enable = true;
@@ -242,7 +242,7 @@ describe('Linear gauge control', () => {
         });
         it('Axis label Highcontrast theme', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let label: string = document.getElementById('container_AxisLabel_0').style.fill;
+                let label: string = document.getElementById('container_Axis_0_Label_0').style.fill;
                 expect(label).toBe('rgb(255, 255, 255)');
             };
             gauge.theme ='HighContrast';
@@ -282,7 +282,7 @@ describe('Linear gauge control', () => {
                 targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
                 trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
                 tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
-                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
                 trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
             };
             gauge.tooltip.enable = true;
@@ -323,7 +323,7 @@ describe('Linear gauge control', () => {
         });
         it('Axis label Bootstrap4 theme', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let label: string = document.getElementById('container_AxisLabel_0').style.fill;
+                let label: string = document.getElementById('container_Axis_0_Label_0').style.fill;
                 expect(label).toBe('rgb(33, 37, 41)');
             };
             gauge.theme ='Bootstrap4';
@@ -376,7 +376,7 @@ describe('Linear gauge control', () => {
                 targetElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
                 trigger.mousemoveEvent(targetElement, 668.5, 223, (668.5 + 10), (223 + 10));
                 tooltipElement = document.getElementById('container_LinearGauge_Tooltip_text');
-                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#000000');
                 trigger.mousemoveEvent(gauge.element, 0, 0, 0, 0);
             };
             gauge.tooltip.enable = true;

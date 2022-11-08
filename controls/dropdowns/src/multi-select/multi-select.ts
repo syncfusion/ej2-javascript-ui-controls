@@ -4398,6 +4398,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode !== 'CheckBox') {
             this.hideOverAllClear();
         }
+        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            this.enabled = false;
+        }
         this.wireEvent();
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);

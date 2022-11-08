@@ -176,6 +176,7 @@ export class FormDesignerToolbar {
             const sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
             const commentsContainer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelContainer;
             const commentPanelResizer: HTMLElement = this.pdfViewerBase.navigationPane.commentPanelResizer;
+            let newToolbarHeight: string = '';
             if (isAdjust) {
                 if (this.pdfViewer.enableToolbar) {
                     sideBarToolbar.style.top = (toolbarHeight + formDesignerToolbarHeight) + 'px';
@@ -195,8 +196,11 @@ export class FormDesignerToolbar {
                 }
                 // eslint-disable-next-line max-len
                 this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (formDesignerToolbarHeight + toolbarHeight)) + 'px';
-                sideBarToolbar.style.height = this.getNavigationToolbarHeight(formDesignerToolbarHeight + toolbarHeight) + 'px';
-                splitterElement.style.height = this.getNavigationToolbarHeight(formDesignerToolbarHeight + toolbarHeight) + 'px';
+                newToolbarHeight= this.getNavigationToolbarHeight(formDesignerToolbarHeight + toolbarHeight);
+                sideBarToolbar.style.height = newToolbarHeight;
+                splitterElement.style.height = newToolbarHeight;
+                commentPanelResizer.style.height = newToolbarHeight;
+                sideBarContentContainer.style.height = newToolbarHeight;
             } else {
                 if (this.pdfViewer.enableToolbar) {
                     // eslint-disable-next-line max-len
@@ -221,18 +225,16 @@ export class FormDesignerToolbar {
                     toolbarHeight = 0;
                 }
                 // eslint-disable-next-line max-len
-                this.pdfViewerBase.viewerContainer.style.height = this.resetViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), formDesignerToolbarHeight) + 'px';
-                sideBarToolbar.style.height = this.getNavigationToolbarHeight(toolbarHeight);
-                splitterElement.style.height = this.getNavigationToolbarHeight(toolbarHeight);
+                this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), formDesignerToolbarHeight) + 'px';
+                newToolbarHeight= this.getNavigationToolbarHeight(toolbarHeight);
+                sideBarToolbar.style.height = newToolbarHeight;
+                splitterElement.style.height = newToolbarHeight;
+                commentPanelResizer.style.height = newToolbarHeight;
+                sideBarContentContainer.style.height = newToolbarHeight;
                 if (this.pdfViewerBase.viewerContainer.style.height === '0px') {
                     // eslint-disable-next-line
                     this.pdfViewerBase.viewerContainer.style.height = (parseInt(this.pdfViewer.element.style.height) - parseInt(sideBarToolbar.style.top)) + 'px';
                 }
-            }
-            if (isBlazor()) {
-                this.updateContentContainerHeight(isAdjust, true);
-            } else {
-                this.updateContentContainerHeight(isAdjust);
             }
     }
 

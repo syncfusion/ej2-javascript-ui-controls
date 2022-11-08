@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I414756` - Now animation duration is working properly for indeterminate mode.
+
 ## 19.1.54 (2021-03-30)
 
 ### ProgressBar

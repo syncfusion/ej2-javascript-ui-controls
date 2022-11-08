@@ -1,9 +1,10 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { WCharacterFormat } from '../index';
+import { defaultFont, Dictionary } from '../../index'
 import { TextElementBox, ListTextElementBox, ParagraphWidget } from './page';
 import { DocumentHelper } from './viewer';
 import { HelperMethods, LtrRtlTextInfo, RtlInfo } from '../editor/editor-helper';
-import { BaselineAlignment, BiDirectionalOverride, CharacterRangeType } from '../../index';
+import { BaselineAlignment, BiDirectionalOverride, CharacterRangeType, FontScriptType, MajorMinorFontScheme, FontScheme, FontHintType, FontSchemeStruct } from '../../index';
 /**
  * @private
  */
@@ -88,31 +89,37 @@ export class TextHelper {
         let textTrimEndWidth: number = 0;
         const isRTL: boolean = characterFormat.bidi || this.isRTLText(elementBox.text);
         const text: string = this.setText(elementBox.text, isRTL, characterFormat.bdo);
-        textTrimEndWidth = this.getWidth(text, characterFormat);
+        textTrimEndWidth = this.getWidth(text, characterFormat, elementBox.scriptType);
         elementBox.width = textTrimEndWidth;
         // Calculate the text element's height and baseline offset.
-        const textHelper: TextSizeInfo = this.getHeight(characterFormat);
+        const textHelper: TextSizeInfo = this.getHeight(characterFormat, elementBox.scriptType);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
         if (elementBox.text[elementBox.text.length - 1] === ' ') {
-            textTrimEndWidth = this.getWidth(HelperMethods.trimEnd(elementBox.text), characterFormat);
+            textTrimEndWidth = this.getWidth(HelperMethods.trimEnd(elementBox.text), characterFormat, elementBox.scriptType);
         }
         elementBox.trimEndWidth = textTrimEndWidth;
         return textTrimEndWidth;
     }
-    public getHeight(characterFormat: WCharacterFormat): TextSizeInfo {
+    public getHeight(characterFormat: WCharacterFormat, scriptType?: FontScriptType): TextSizeInfo {
+        let fontToRender: string = this.getFontNameToRender(scriptType, characterFormat);
         // Get character format property as  below predefined structure to make it easy to check and retrieve
         // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection
-        const key: string = this.getFormatText(characterFormat);
+        const key: string = this.getFormatText(characterFormat, fontToRender);
         if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[key])) {
             return this.documentHelper.heightInfoCollection[key];
         }
-        const sizeInfo: TextSizeInfo = this.documentHelper.owner.textMeasureHelper.getHeightInternal(characterFormat);
+        const sizeInfo: TextSizeInfo = this.documentHelper.owner.textMeasureHelper.getHeightInternal(characterFormat, fontToRender);
         this.documentHelper.heightInfoCollection[key] = sizeInfo;
         return sizeInfo;
     }
-    public getFormatText(characterFormat: WCharacterFormat): string {
-        let formatText: string = characterFormat.fontFamily.toLocaleLowerCase();
+    public getFormatText(characterFormat: WCharacterFormat, fontToRender?: string): string {
+        let formatText: string = '';
+        if(!isNullOrUndefined(fontToRender)){
+            formatText = fontToRender.toLocaleLowerCase();
+        }else{
+            formatText = characterFormat.fontFamily.toLocaleLowerCase();
+        }        
         formatText += ';' + characterFormat.fontSize;
         if (characterFormat.bold) {
             formatText += ';' + 'bold';
@@ -122,10 +129,10 @@ export class TextHelper {
         }
         return formatText;
     }
-    public measureTextExcludingSpaceAtEnd(text: string, characterFormat: WCharacterFormat): number {
-        return this.getWidth(HelperMethods.trimEnd(text), characterFormat);
+    public measureTextExcludingSpaceAtEnd(text: string, characterFormat: WCharacterFormat, scriptType: FontScriptType): number {
+        return this.getWidth(HelperMethods.trimEnd(text), characterFormat, scriptType);
     }
-    public getWidth(text: string, characterFormat: WCharacterFormat): number {
+    public getWidth(text: string, characterFormat: WCharacterFormat, scriptType?: FontScriptType): number {
         if (text.match('\v')) {
             text.replace('\v', this.lineBreakMark);
         }
@@ -135,7 +142,7 @@ export class TextHelper {
         let fontSize: number = characterFormat.fontSize;
         bold = characterFormat.bold ? 'bold' : '';
         italic = characterFormat.italic ? 'italic' : '';
-        fontFamily = characterFormat.fontFamily;
+        fontFamily = this.getFontNameToRender(scriptType, characterFormat);
         fontSize = fontSize === 0 ? 0.5 : fontSize / (characterFormat.baselineAlignment === 'Normal' ? 1 : 1.5);
         this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
         if (characterFormat.allCaps) {
@@ -161,11 +168,11 @@ export class TextHelper {
         return textToRender;
     }
 
-    public measureText(text: string, characterFormat: WCharacterFormat): TextSizeInfo {
+    public measureText(text: string, characterFormat: WCharacterFormat, scriptType?: FontScriptType): TextSizeInfo {
         // Gets the text element's width;
-        const width: number = this.getWidth(text, characterFormat);
+        const width: number = this.getWidth(text, characterFormat, scriptType);
         // Calculate the text element's height and baseline offset.
-        const textHelper: TextSizeInfo = this.getHeight(characterFormat);
+        const textHelper: TextSizeInfo = this.getHeight(characterFormat, scriptType);
         return {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
@@ -598,7 +605,215 @@ export class TextHelper {
         }
         return isNonWordSplitChar;
     }
+    public getFontNameToRender(scriptType: FontScriptType, charFormat: WCharacterFormat): string {
+        if (!isNullOrUndefined(scriptType)) {
+            if (charFormat.bidi || charFormat.complexScript) {
+                return this.getFontNameBidiToRender(scriptType, charFormat);
+            } else {
+                if (this.isEastAsiaScript(scriptType))
+                    return this.getFontNameEAToRender(scriptType, charFormat);
+
+                else
+                    return charFormat.fontFamily;
+            }
+        } else {
+            return charFormat.fontFamily;
+        }
+    }
+    /// <summary>
+    /// Check whether specified script is EastAsia script or not.
+    /// </summary>
+    /// <param name="scriptType">Represent a FontScriptType to check.</param>
+    /// <returns></returns>
+    private isEastAsiaScript(scriptType: FontScriptType): boolean
+    {
+        return scriptType == FontScriptType.Japanese || scriptType == FontScriptType.Korean
+            || scriptType == FontScriptType.Chinese;
+    }
+            /// <summary>
+        /// Get the font name East Asia to render
+        /// </summary>
+        /// <param name="scriptType">Represent a CharacterRangeType.</param>
+        /// <returns>Returns a eastAsia font name to draw the text.</returns>
+        private getFontNameEAToRender(scriptType: FontScriptType, charFormat: WCharacterFormat)
+        {            
+            let fontName: string = charFormat.fontFamilyFarEast;
+            if (isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName))
+                return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.EastAsia);
+            else
+                return fontName;
+        }
+    private getFontNameBidiToRender(scriptType: FontScriptType, charFormat: WCharacterFormat)
     
+            {
+                //If CharacterFormat.Bidi is true, then font is determined in the order: FontNameBidi, Script-Arab, font scheme(latin, ea, cs), default font (Times New Roman)
+                //CharacterRangeType of a text and FontHintType (IdctHint) has no impact in this behavior.
+                //Note: Behavior is traced using Word version 1808 (build 10730.20304)
+                //Determines the font nmae to used for RTL characters based on its script from direct or font scheme (Document theme file)
+                let fontName: string = charFormat.fontFamilyBidi;
+                if (!isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName))
+                    return this.getFontNameFromTheme(charFormat, fontName, scriptType, FontHintType.CS);
+                else
+                    return fontName;
+            }
+
+        private getFontNameFromTheme(charFormat: WCharacterFormat, fontName:string,  scriptType:FontScriptType, hintType: FontHintType): string
+        {            
+            let fontScheme: FontScheme;
+            if(this.documentHelper.hasThemes && !isNullOrUndefined(this.documentHelper.themes) && !isUndefined(this.documentHelper.themes.fontScheme))
+                 fontScheme = this.documentHelper.themes.fontScheme;
+
+            if (fontName == "majorAscii" || fontName == "majorBidi" || fontName == "majorEastAsia" || fontName == "majorHAnsi")
+            {
+                let majorFontScheme: MajorMinorFontScheme;
+                if (fontScheme != null && fontScheme.majorFontScheme != null) {
+                    majorFontScheme = fontScheme.majorFontScheme;
+                }
+                fontName = this.updateFontNameFromTheme(charFormat, majorFontScheme, scriptType, fontName, hintType);
+            }
+            else if (fontName == "minorAscii" || fontName == "minorBidi" || fontName == "minorEastAsia" || fontName == "minorHAnsi")
+            {
+                let minorFontScheme: MajorMinorFontScheme;
+                if (fontScheme != null && fontScheme.majorFontScheme != null) {
+                    minorFontScheme = fontScheme.minorFontScheme;
+                }
+                fontName = this.updateFontNameFromTheme(charFormat, minorFontScheme, scriptType, fontName, hintType);
+            }
+            if (isNullOrUndefined(fontName) || HelperMethods.isThemeFont(fontName))
+                //Gets the default font (Times New Roman)
+                fontName = defaultFont;
+            return fontName;
+        }
+
+                /// <summary>
+        /// Update a font name from theme, based on FontHintType.
+        /// </summary>
+        /// <param name="majorMinorFontScheme"></param>
+        /// <param name="scriptType"></param>
+        /// <param name="fontName"></param>
+        /// <param name="hintType"></param>
+        private updateFontNameFromTheme(charFormat: WCharacterFormat, majorMinorFontScheme: MajorMinorFontScheme, scriptType: FontScriptType, fontName: string, hintType: FontHintType): string 
+        {
+            //Script-Arab, font scheme(latin, ea, cs), default font (Times New Roman)
+            let fontNameFromTheme: string = "";
+            //Gets font from font scheme(latin, ea, cs) of document theme.
+            if (majorMinorFontScheme != null && majorMinorFontScheme.fontSchemeList != null
+                && majorMinorFontScheme.fontSchemeList.length > 0)
+            {
+                 majorMinorFontScheme.fontSchemeList.forEach((fontSchemeStruct: FontSchemeStruct) => {
+                    
+                        if (fontSchemeStruct.name == "cs" && (fontName == "majorBidi" || fontName == "minorBidi"))
+                            fontNameFromTheme = fontSchemeStruct.typeface;
+                        else if (fontSchemeStruct.name == "ea" && (fontName == "majorEastAsia" || fontName == "minorEastAsia"))
+                            fontNameFromTheme = fontSchemeStruct.typeface;
+                        else if (fontSchemeStruct.name == "latin" && (fontName == "majorAscii" || fontName == "majorHAnsi"
+                            || fontName == "minorAscii" || fontName == "minorHAnsi"))
+                            fontNameFromTheme = fontSchemeStruct.typeface;
+                    
+                 })
+                
+            }
+            if (majorMinorFontScheme != null && majorMinorFontScheme.fontTypeface != null)
+            {
+                if (hintType == FontHintType.CS)
+                {
+                    // //If it's an complex script and "themeFontLang" element has a "bidi" attribute, then we need to locate the font name
+                    // //from the "theme.xml" for the language specified by the bidi attribute
+                    // if (charFormat.complexScript && Document != null && Document.Settings.ThemeFontLanguages != null &&
+                    //     Document.Settings.ThemeFontLanguages.HasValue(WCharacterFormat.LidBiKey))
+                    // {
+                    //     fontName = this.getFontNameWithFontScript(majorMinorFontScheme, Document.Settings.ThemeFontLanguages.LocaleIdBidi, hintType);
+                    //     if (fontName != null)
+                    //         fontNameFromTheme = fontName;
+                    // }
+                    // //To-Do: Have to implement the font name retrieval behavior, when a bidi attribute is not available in theme.
+                    // else 
+                    if (majorMinorFontScheme.fontTypeface.containsKey('Arab'))
+                    {
+                        //map(object => object.id).indexOf('c');
+                        //Gets the Arab-script (language) based font from font scheme (theme)
+                        fontNameFromTheme = majorMinorFontScheme.fontTypeface.get('Arab');
+                    }
+                }
+                else if (hintType == FontHintType.EastAsia)
+                {
+                    // if (Document != null && Document.Settings.ThemeFontLanguages != null &&
+                    //     Document.Settings.ThemeFontLanguages.HasValue(WCharacterFormat.LocaleIdFarEastKey))
+                    // {
+                    //     fontName = this.getFontNameWithFontScript(majorMinorFontScheme, Document.Settings.ThemeFontLanguages.LocaleIdFarEast, hintType);
+                    //     if (fontName != null)
+                    //         fontNameFromTheme = fontName;
+                    // }
+                }
+            }
+            
+            if (isNullOrUndefined(fontNameFromTheme))
+                //Gets the default font (Times New Roman)
+                fontNameFromTheme = defaultFont;
+
+            fontName = fontNameFromTheme;
+            return fontName;
+        }
+        // /// <summary>
+        // /// Gets the font name from a theme part for the specified font script.
+        // /// </summary>
+        // private getFontNameWithFontScript(majorMinorFontScheme: MajorMinorFontScheme, localeID: number, hintType: FontHintType): string
+        // {
+        //     let fontName: string = null;
+        //     //To-Do: Should extend this behavior deponds on the localeID.
+        //     let lang: string = LocaleIDs[localeID];
+        //     let fontTypeFaces: Dictionary<string, string> = majorMinorFontScheme.fontTypeface;
+        //     //Gujarati
+        //     //If lang script is "gu-IN" or "gu", we should retrive the "Gujr" font from a theme part.
+        //     if ((lang == 'gu_IN' || localeID == 71) && fontTypeFaces.containsKey("Gujr"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Hindi
+        //     //If lang script is "hi-IN" or "hi", we should retrive the "Deva" font from a theme part.
+        //     //Marathi
+        //     //If lang script is "mr-IN" or "mr", we should retrive the "Deva" font from a theme part.
+        //     else if ((lang == 'hi_IN' || lang == 'mr_IN' || localeID == 57 || localeID == 78)
+        //         && fontTypeFaces.containsKey("Deva"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Korean
+        //     //If lang script is "ko-KR" or "ko", we should retrive the "Hang" font from a theme part.
+        //     else if ((lang == 'ko_KR' || localeID == 18) && fontTypeFaces.containsKey("Hang"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Chinese - Simplified
+        //     //If lang script is "zh-CN", "zh-SG" or "zh", we should retrive the "Hans" font from a theme part.
+        //     else if ((lang == 'zh_CN' || lang == 'zh_SG' || localeID == 4) && fontTypeFaces.containsKey("Hans"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Chinese - Traditional
+        //     //If lang script is "zh-TW", "zh-HK", or "zh-MO", we should retrive the "Hant" font from a theme part.
+        //     else if ((lang == 'zh_TW' || lang == 'zh_HK' || lang == 'zh_MO') 
+        //         && fontTypeFaces.containsKey("Hant"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Japanese
+        //     //If lang script is "ja-JP" or "ja", we should retrive the "Jpan" font from a theme part.
+        //     else if ((lang == 'ja_JP' || localeID == 17) && fontTypeFaces.containsKey("Jpan"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Tamil
+        //     //If lang script is "ta-IN" or "ta", we should retrive the "Taml" font from a theme part.
+        //     else if ((lang == 'ta_IN' || localeID == 73) && fontTypeFaces.containsKey("Taml"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Telugu
+        //     //If lang script is "te-IN" or "te", we should retrive the "Telu" font from a theme part.
+        //     else if ((lang == 'te_IN' || localeID == 74) && fontTypeFaces.containsKey("Telu"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Hebrew
+        //     //If lang script is "he-IL" or "he", we should retrive the "Hebr" font from a theme part.
+        //     else if ((lang == 'he_IL' || lang == 'yi_Hebr' || localeID == 13) && fontTypeFaces.containsKey("Hebr"))
+        //         fontName = fontTypeFaces.get("Arab");
+        //     //Thai
+        //     //If lang script is "th_TH" or "th", we should retrive the "Thai" font from a theme part.
+        //     else if ((lang == 'th_TH' || localeID == 30) && fontTypeFaces.containsKey("Thai"))
+        //         fontName = fontTypeFaces.get("Thai");
+        //     //Arabic
+        //     else if (hintType == FontHintType.CS && fontTypeFaces.containsKey("Arab"))
+        //         fontName = fontTypeFaces.get("Arab");
+
+        //     return fontName;
+        // }
+
     public destroy(): void {
         this.documentHelper = undefined;
         this.context = undefined;

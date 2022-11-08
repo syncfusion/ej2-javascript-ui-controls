@@ -53,6 +53,7 @@ export class TextSelection {
     private dropElementLeft: HTMLElement;
     private dropElementRight: HTMLElement;
     private contextMenuHeight: number = 144;
+    private backwardStart: number = 0;
     /**
      * @private
      */
@@ -121,7 +122,15 @@ export class TextSelection {
                 // eslint-disable-next-line
                 if (rangeBounds.left <= x && rightBounds >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
                     if (selection.anchorNode !== null && (selection.anchorNode.parentNode as HTMLElement).classList.contains('e-pv-text')) {
-                        range.setStart(selection.anchorNode, selection.anchorOffset);
+                        if (selection.anchorOffset > currentPosition) {
+                            if (this.backwardStart != 0) {
+                                range.setStart(selection.anchorNode, this.backwardStart);
+                            } else {
+                                range.setStart(selection.anchorNode, selection.anchorOffset + 1);
+                            }
+                        } else {
+                            range.setStart(selection.anchorNode, selection.anchorOffset);
+                        }
                     }
                     selection.removeAllRanges();
                     selection.addRange(range);
@@ -132,8 +141,15 @@ export class TextSelection {
                     // eslint-disable-next-line
                     let isIE: boolean = !!(document as any).documentMode;
                     if (!isIE) {
-                        if (this.isBackwardPropagatedSelection) {
-                            selection.extend(targetElement, currentPosition);
+                        if (this.isBackwardPropagatedSelection || range.endOffset > currentPosition) {
+                            if (this.backwardStart != range.startOffset && range.startOffset >= currentPosition) {
+                                this.backwardStart = range.endOffset;
+                            }
+                            if (currentPosition === 0 && range.endOffset != 1) {
+                                selection.extend(targetElement, currentPosition);
+                            } else {
+                                selection.extend(targetElement, currentPosition + 1);
+                            }
                         } else if (isExtended) {
                             selection.extend(targetElement, currentPosition);
                         } else {
@@ -571,11 +587,14 @@ export class TextSelection {
      */
     public enableTextSelectionMode(): void {
         this.pdfViewerBase.isTextSelectionDisabled = false;
-        this.pdfViewerBase.viewerContainer.classList.remove('e-disable-text-selection');
-        this.pdfViewerBase.viewerContainer.classList.add('e-enable-text-selection');
-        this.pdfViewerBase.viewerContainer.addEventListener('selectstart', () => {
-            return true;
-        });
+        if(!isNullOrUndefined(this.pdfViewerBase.viewerContainer)){
+            this.pdfViewerBase.viewerContainer.classList.remove('e-disable-text-selection');
+            this.pdfViewerBase.viewerContainer.classList.add('e-enable-text-selection');
+            this.pdfViewerBase.viewerContainer.addEventListener('selectstart', () => {
+                return true;
+            });
+        }
+        
     }
 
     public clearTextSelection(): void {

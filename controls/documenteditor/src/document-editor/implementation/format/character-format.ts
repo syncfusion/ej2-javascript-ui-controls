@@ -1,6 +1,6 @@
 import { TextElementBox, ParagraphWidget, LineWidget } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
-import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride } from '../../base/types';
+import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride, FontScriptType } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle, WCharacterStyle } from './style';
@@ -94,7 +94,20 @@ export class WCharacterFormat {
     public set localeIdBidi(value: number) {
         this.setPropertyValue('localeIdBidi', value);
     }
+    public get localeIdFarEast(): number {
+        return this.getPropertyValue('localeIdFarEast') as number;
+    }
 
+    public set localeIdFarEast(value: number) {
+        this.setPropertyValue('localeIdFarEast', value);
+    }
+    public get localeIdAscii(): number {
+        return this.getPropertyValue('localeIdAscii') as number;
+    }
+
+    public set localeIdAscii(value: number) {
+        this.setPropertyValue('localeIdAscii', value);
+    }
     public get bdo(): BiDirectionalOverride {
         return this.getPropertyValue('bdo') as BiDirectionalOverride;
     }
@@ -139,7 +152,24 @@ export class WCharacterFormat {
     public set complexScript(value: boolean) {
         this.setPropertyValue('complexScript', value);
     }
-
+    public get fontFamilyFarEast(): string {
+        return this.getPropertyValue('fontFamilyFarEast') as string;
+    }
+    public set fontFamilyFarEast(value: string) {
+        this.setPropertyValue('fontFamilyFarEast', value);
+    }
+    public get fontFamilyAscii(): string {
+        return this.getPropertyValue('fontFamilyAscii') as string;
+    }
+    public set fontFamilyAscii(value: string) {
+        this.setPropertyValue('fontFamilyAscii', value);
+    }
+    public get fontFamilyNonFarEast(): string {
+        return this.getPropertyValue('fontFamilyNonFarEast') as string;
+    }
+    public set fontFamilyNonFarEast(value: string) {
+        this.setPropertyValue('fontFamilyNonFarEast', value);
+    }  
     public constructor(node?: Object) {
         this.ownerBase = node;
     }
@@ -282,9 +312,13 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('localeIdAscii', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('localeIdFarEast', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('localeIdBidi', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontFamilyFarEast', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontFamilyAscii', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('fontFamilyNonFarEast', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('complexScript', property, propValue, uniqueCharFormatTemp);
-
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
 
@@ -348,11 +382,18 @@ export class WCharacterFormat {
         case 'allCaps':
             value = false;
             break;
+        case 'localeIdAscii':
+        case 'localeIdFarEast':
         case 'localeIdBidi':
             value = 0;
             break;
         case 'complexScript':
             value = false;
+            break;
+        case 'fontFamilyFarEast':
+        case 'fontFamilyAscii':
+        case 'fontFamilyNonFarEast':
+            value = undefined;
             break;
         }
         return value;
@@ -367,10 +408,16 @@ export class WCharacterFormat {
             && this.fontColor === format.fontColor
             && this.strikethrough === format.strikethrough
             && this.highlightColor === format.highlightColor && this.bidi === format.bidi
-            && this.bdo === format.bdo)
+            && this.bdo === format.bdo
             && this.allCaps === format.allCaps
             && this.localeIdBidi === format.localeIdBidi
-            && this.complexScript === format.complexScript;
+            && this.localeIdAscii === format.localeIdAscii
+            && this.localeIdFarEast === format.localeIdFarEast
+            && this.complexScript === format.complexScript
+            && this.fontFamilyAscii === format.fontFamilyAscii
+            && this.fontFamilyBidi === format.fontFamilyBidi
+            && this.fontFamilyFarEast === format.fontFamilyFarEast
+            && this.fontFamilyNonFarEast === format.fontFamilyNonFarEast);
     }
     public isSameFormat(format: WCharacterFormat): boolean {
         return this.baseCharStyle === format.baseCharStyle &&
@@ -485,8 +532,26 @@ export class WCharacterFormat {
         if (isNullOrUndefined(this.getValue('localeIdBidi'))) {
             this.localeIdBidi = format.getValue('localeIdBidi') as number;
         }
+        if (isNullOrUndefined(this.getValue('localeIdAscii'))) {
+            this.localeIdAscii = format.getValue('localeIdAscii') as number;
+        }
+        if (isNullOrUndefined(this.getValue('localeIdFarEast'))) {
+            this.localeIdFarEast = format.getValue('localeIdFarEast') as number;
+        }
         if (isNullOrUndefined(this.getValue('complexScript'))) {
             this.complexScript = format.getValue('complexScript') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('fontFamilyAscii'))) {
+            this.fontFamilyAscii = format.getValue('fontFamilyAscii') as string;
+        }
+        if (isNullOrUndefined(this.getValue('fontFamilyBidi'))) {
+            this.fontFamilyBidi = format.getValue('fontFamilyBidi') as string;
+        }
+        if (isNullOrUndefined(this.getValue('fontFamilyFarEast'))) {
+            this.fontFamilyFarEast = format.getValue('fontFamilyFarEast') as string;
+        }
+        if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast'))) {
+            this.fontFamilyNonFarEast = format.getValue('fontFamilyNonFarEast') as string;
         }
     }
 

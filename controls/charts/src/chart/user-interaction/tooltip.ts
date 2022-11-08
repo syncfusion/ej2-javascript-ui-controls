@@ -363,7 +363,7 @@ export class Tooltip extends BaseTooltip {
                 continue;
             }
             if (chart.chartAreaType === 'Cartesian' && series.visible) {
-                data = this.getClosestX(chart, series, commonXvalues);
+                data = this.getClosestX(chart, series, this.commonXValue(series));
             } else if (chart.chartAreaType === 'PolarRadar' && series.visible && pointData.point !== null) {
                 data = new PointData(series.points[pointData.point.index], series);
             }

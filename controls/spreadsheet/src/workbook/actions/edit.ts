@@ -170,7 +170,7 @@ export class WorkbookEdit {
             cell.value = value;
         }
         this.parent.setUsedRange(range[0], range[1], sheet);
-        if (this.parent.chartColl.length) {
+        if (this.parent.chartColl.length && !this.parent.isEdit) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
         return isFormulaDependent;

@@ -989,7 +989,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.updateDataAttribute();
         this.setHTMLAttributes();
         this.setAttributes();
-        this.popupDiv = this.createElement('div', { className: CONTENT, attrs: { 'tabindex': '0' } });
+        this.popupDiv = this.createElement('div', { className: CONTENT });
         this.popupDiv.classList.add(DROPDOWN);
         this.tree = this.createElement('div', { id: this.element.id + '_tree' });
         this.popupDiv.appendChild(this.tree);
@@ -2312,13 +2312,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         const isFooter: Element = closest(target, '.' + FOOTER);
         const isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
             (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
-        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter || isScroller || isHeader || isFooter)) ||
+        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isScroller || isHeader || isFooter)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
                 (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
                  || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
             e.preventDefault();
-        } else if (!this.inputWrapper.contains(target) && this.inputFocus) {
+        } else if (!this.inputWrapper.contains(target) && this.inputFocus && !isFilter) {
             this.focusOut(e);
         }
     }

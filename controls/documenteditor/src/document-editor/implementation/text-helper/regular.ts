@@ -34,7 +34,7 @@ export class Regular {
      * @param {WCharacterFormat} characterFormat - character format to apply.
      * @returns {TextSizeInfo} returns text size information.
      */
-    public getHeightInternal(characterFormat: WCharacterFormat): TextSizeInfo {
+    public getHeightInternal(characterFormat: WCharacterFormat, fontToRender: string): TextSizeInfo {
         let textHeight: number = 0;
         let baselineOffset: number = 0;
         const spanElement: HTMLSpanElement = document.createElement('span');
@@ -51,7 +51,7 @@ export class Regular {
             iframe.contentDocument.write(innerHtml);
             iframe.contentDocument.close();
         }
-        this.applyStyle(spanElement, characterFormat);
+        this.applyStyle(spanElement, characterFormat, fontToRender);
         const parentDiv: HTMLDivElement = document.createElement('div');
         parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
         const tempDiv: HTMLDivElement = document.createElement('div');
@@ -67,10 +67,12 @@ export class Regular {
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
     }
 
-    public applyStyle(spanElement: HTMLSpanElement, characterFormat: WCharacterFormat): void {
+    public applyStyle(spanElement: HTMLSpanElement, characterFormat: WCharacterFormat, fontToRender: string): void {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
             let style: string = 'white-space:nowrap;';
-            if (characterFormat.fontFamily !== '') {
+            if (!isNullOrUndefined(fontToRender) && fontToRender !== '') {
+                style += 'font-family:' + fontToRender + ';';
+            } else{
                 style += 'font-family:' + characterFormat.fontFamily + ';';
             }
             let fontSize: number = characterFormat.fontSize;

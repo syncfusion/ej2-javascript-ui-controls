@@ -336,7 +336,9 @@ describe('DropDownList', () => {
             setTimeout(() => {
                 expect(listObj.list.classList.contains('e-nodata')).not.toBe(true);
                 expect(listObj.isDataFetched).not.toBe(true);
-                expect(listObj.listData.length === 3).toBe(true);
+                if (!isNullOrUndefined(listObj) && !isNullOrUndefined(listObj.listData)) {
+                    expect(listObj.listData.length === 3).toBe(true);
+                }
                 done();
             }, 4000);
         });

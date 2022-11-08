@@ -581,7 +581,7 @@ export class TreeInterSectionObserver extends InterSectionObserver {
         const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
         const options: string = 'options'; const movableEle: string = 'movableEle';
         const element: string = 'element'; const fromWheel: string = 'fromWheel';
-        const debounced100: Function = debounce(callback, delay);
+        //const debounced100: Function = debounce(callback, delay);
         const debounced50: Function = debounce(callback, 50);
         this[options].prevTop = this[options].prevLeft = 0;
         return (e: Event) => {
@@ -623,20 +623,24 @@ export class TreeInterSectionObserver extends InterSectionObserver {
             }
 
             if (check) {
-                let fn: Function = debounced50;
+                const fn: Function = debounced50;
                 if (current.axis === 'X') {
                     fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
                         focusElement: document.activeElement});
                 }
                 else {
                     if ((instance.dataSource instanceof DataManager && (instance.dataSource as DataManager).dataSource.url !== undefined
-                    && !(instance.dataSource as DataManager).dataSource.offline && (instance.dataSource as DataManager).dataSource.url !== '') || isCountRequired(instance)) { 
+                    && !(instance.dataSource as DataManager).dataSource.offline && (instance.dataSource as DataManager).dataSource.url !== '') || isCountRequired(instance)) {
                         fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
                             focusElement: document.activeElement});
-                    } 
+                    }
                     else
-                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement});
+                    {
+                        callback({
+                            direction: direction, sentinel: current, offset: { top: top, left: left },
+                            focusElement: document.activeElement
+                        });
+                    }
                 }
             }
             this[fromWheel] = false;

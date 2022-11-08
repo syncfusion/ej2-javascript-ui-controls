@@ -92,7 +92,7 @@ export class ProgressAnimation {
         let value: number = 0;
         const start: number = (width) ? -(parseInt(width, 10)) : -progressWidth;
         const end: number = (progress.progressRect.x + progress.progressRect.width) + ((width) ? (parseInt(width, 10)) : progressWidth);
-        const duration: number = (!progress.enableProgressSegments) ? 2500 : 3500;
+        const duration: number = (!progress.enableProgressSegments) ? progress.animation.duration : progress.animation.duration + 1000;
         animation.animate(<HTMLElement>clipPath, {
             duration: duration,
             delay: 0,
@@ -213,7 +213,8 @@ export class ProgressAnimation {
     ): void {
         const animation: Animation = new Animation({});
         const pathRadius: number = radius + ((!progress.enableProgressSegments) ? (thickness / 2) : 0);
-        const value: number = (!progress.enableProgressSegments) ? 3 : 2;
+        const duration: number = progress.animation.duration;
+        const value: number = (!progress.enableProgressSegments) ? 6000 / duration : 4000 / duration;
         animation.animate((<HTMLElement>clipPath), {
             progress: (): void => {
                 (<HTMLElement>circularProgress).style.visibility = 'visible';

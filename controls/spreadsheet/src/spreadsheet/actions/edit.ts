@@ -3,14 +3,14 @@ import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullO
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
-import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula } from '../../workbook/common/event';
+import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs } from '../../workbook/index';
 import { beginAction, updateCell, checkCellValid } from '../../workbook/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
-import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange } from '../common/index';
+import { initiateFormulaReference, initiateCur, clearCellRef, addressHandle, clearRange, getViewportIndexes } from '../common/index';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, activeSheetChanged } from '../common/event';
 
 /**
@@ -852,6 +852,7 @@ export class Edit {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
         const column: ColumnModel = getColumn(sheet, cellIndex[1]);
+        let indexes: number[][];
         if (value) {
             this.editCellData.value = value;
         }
@@ -900,6 +901,10 @@ export class Edit {
             const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
                 address: this.editCellData.addr, value: this.editCellData.value };
             this.parent.notify(workbookEditOperation, evtArgs);
+            if (<boolean>evtArgs.isFormulaDependent) {
+                indexes = getViewportIndexes(this.parent);
+            }
+            this.parent.notify(refreshChart, {cell: null, rIdx: this.editCellData.rowIndex, cIdx: this.editCellData.colIndex, viewportIndexes: indexes });
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(
                     applyCF, <ApplyCFArgs>{ indexes: [this.editCellData.rowIndex, this.editCellData.colIndex], isAction: true,

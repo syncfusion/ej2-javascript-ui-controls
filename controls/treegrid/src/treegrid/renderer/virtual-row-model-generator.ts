@@ -40,7 +40,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
             if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
                 if (!((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
                 && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent))
-                || notifyArgs.virtualInfo.blockIndexes.length === 1) { 
+                || notifyArgs.virtualInfo.blockIndexes.length === 1) {
                     notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
                 }
             } else {

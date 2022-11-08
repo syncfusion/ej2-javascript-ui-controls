@@ -845,10 +845,13 @@ export class Toolbar {
     public updateCurrentPage(pageIndex: number): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (!isBlazor()) {
-                if (this.currentPageBox.value === pageIndex) {
-                    (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
+                if(!isNullOrUndefined(this.currentPageBox)){
+                    if (this.currentPageBox.value === pageIndex) {
+                        (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
+                    }
+                    this.currentPageBox.value = pageIndex;
                 }
-                this.currentPageBox.value = pageIndex;
+               
             } else {
                 //this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
                 this.pdfViewerBase.blazorUIAdaptor.pageChanged(pageIndex);
@@ -1308,12 +1311,19 @@ export class Toolbar {
             this.fileInputElement.removeEventListener('change', this.loadDocument);
         }
         if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) && !isBlazor()) {
-            this.toolbarElement.removeEventListener('mouseup', this.toolbarOnMouseup.bind(this));
-            this.currentPageBoxElement.removeEventListener('focusout', this.textBoxFocusOut);
-            this.currentPageBoxElement.removeEventListener('keypress', this.navigateToPage);
-            this.zoomDropDown.removeEventListener('change', this.zoomPercentSelect);
-            this.zoomDropDown.element.removeEventListener('keypress', this.onZoomDropDownInput);
-            this.zoomDropDown.element.removeEventListener('click', this.onZoomDropDownInputClick);
+            if(!isNullOrUndefined( this.toolbarElement)){
+                this.toolbarElement.removeEventListener('mouseup', this.toolbarOnMouseup.bind(this));
+            }
+            if(!isNullOrUndefined(this.currentPageBoxElement)){
+                this.currentPageBoxElement.removeEventListener('focusout', this.textBoxFocusOut);
+                this.currentPageBoxElement.removeEventListener('keypress', this.navigateToPage);
+            }
+            if(!isNullOrUndefined(this.zoomDropDown)){
+                this.zoomDropDown.removeEventListener('change', this.zoomPercentSelect);
+                this.zoomDropDown.element.removeEventListener('keypress', this.onZoomDropDownInput);
+                this.zoomDropDown.element.removeEventListener('click', this.onZoomDropDownInputClick);
+            }
+           
         }
     }
     /**
@@ -1324,7 +1334,10 @@ export class Toolbar {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.navigationPane.toolbarResize();
         } else {
-            this.toolbar.refreshOverflow();
+            if(!isNullOrUndefined(this.toolbar)){
+                this.toolbar.refreshOverflow();
+            }
+            
         }
     }
 

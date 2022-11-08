@@ -297,7 +297,7 @@ export class TextLayer {
         const childElement: any = element.getElementsByClassName('foreign-object');
         if (childElement) {
             for (let i: number = 0; i < childElement.length; i++) {
-                if (Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                if (Browser.isDevice) {
                     //Remove the outer div element of checkbox and other formfields in pichzoom
                     if (childElement[i].parentElement.className === 'e-pv-text-layer' && childElement[0].parentElement.className !== 'e-pv-checkbox-outer-div') {
                         element.removeChild(childElement[0]);

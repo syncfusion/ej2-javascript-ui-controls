@@ -258,8 +258,13 @@ export class DataLabel {
                     templateElement.innerHTML =  !templateFn ? eventargs.template : '';
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
-                    labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + labelArgs.offsetX + 'px';
-                    labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + labelArgs.offsetY + 'px';
+                    if (this.maps.isTileMap) {
+                        labelElement.style.left = (((location['x'] + transPoint['x']) * scale) - (textSize['width'] / 2)) + 'px';
+                        labelElement.style.top = (((location['y'] + transPoint['y']) * scale) - textSize['height']) + 'px';
+                    } else {
+                        labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + labelArgs.offsetX + 'px';
+                        labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + labelArgs.offsetY + 'px';
+                    }
                     labelTemplateElement.appendChild(labelElement);
                 } else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {

@@ -54,7 +54,7 @@ export class Label extends ChildProperty<Label> {
      * Sets and gets the options for customizing the style of the text in axis labels.
      */
 
-    @Complex<FontModel>({ size: '12px', color: null, fontStyle: null, fontWeight: null }, Font)
+    @Complex<FontModel>({ size: '12px', color: null, fontStyle: null, fontWeight: null, fontFamily: null }, Font)
     public font: FontModel;
 
     /**
@@ -398,6 +398,9 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /** @private */
     public animationComplete: boolean = true;
+
+    /** @private */
+    public isPointerAnimation: boolean = true;
 
     /** @private */
     public currentValue: number = null;

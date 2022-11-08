@@ -3340,4 +3340,63 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             actionComplete = null;
         });
     });
+
+    describe('EJ2-61600 Right click problem after grouped columns when enableVirtualization is true => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: false,
+                    allowGrouping: true,
+                    groupSettings: { columns : [ "CustomerID" ] },
+                    enableVirtualization: true,
+                    height: 300,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity' },
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Delete operation check', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType == 'delete') {
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+        });
+        it('Add operation check', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType == 'add') {
+                    args.form.querySelector('td input').value = 1111111;
+                        gridObj.endEdit();
+                        gridObj.actionComplete = (args: any) => {
+                            if (args.requestType == 'save') {
+                                expect((gridObj.dataSource[0] as any).OrderID).toBe(1111111);
+                                done();
+                            }
+                        };
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

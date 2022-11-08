@@ -1057,7 +1057,7 @@ export class TextMarkupAnnotation {
         this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity;
         this.annotationAddMode = 'UI Drawn Annotation';
         // eslint-disable-next-line
-        let allowedInteractions: any;
+        let allowedInteractions: any[];
         const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
         let annotationRotate: number = 0;
         let pageRotation: number = this.getAngle(pageDetails.rotation);
@@ -1069,8 +1069,11 @@ export class TextMarkupAnnotation {
                 subject = 'Highlight';
                 // eslint-disable-next-line max-len
                 author = (this.pdfViewer.highlightSettings.author !== 'Guest' && this.pdfViewer.highlightSettings.author) ? this.pdfViewer.highlightSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
-                allowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : 'None';
+                allowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : ['None'];
                 // eslint-disable-next-line max-len
+                if (isNullOrUndefined(this.highlightOpacity)) {
+                    this.highlightOpacity = 1;
+                }
                 annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
                     // eslint-disable-next-line max-len
@@ -1082,7 +1085,7 @@ export class TextMarkupAnnotation {
                 subject = 'Strikethrough';
                 // eslint-disable-next-line max-len
                 author = (this.pdfViewer.strikethroughSettings.author !== 'Guest' &&  this.pdfViewer.strikethroughSettings.author) ? this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
-                allowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : 'None';
+                allowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : ['None'];
                 // eslint-disable-next-line max-len
                 if (targetElement && targetElement.style.transform !== '') {
                     if (targetElement.style.transform.startsWith('rotate(90deg)')) {
@@ -1097,6 +1100,9 @@ export class TextMarkupAnnotation {
                     else {
                         annotationRotate = pageRotation;
                     }
+                }
+                if (isNullOrUndefined(this.strikethroughOpacity)) {
+                    this.strikethroughOpacity = 1;
                 }
                 annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
@@ -1109,7 +1115,7 @@ export class TextMarkupAnnotation {
                 subject = 'Underline';
                 // eslint-disable-next-line max-len
                 author = (this.pdfViewer.underlineSettings.author !== 'Guest' && this.pdfViewer.underlineSettings.author) ? this.pdfViewer.underlineSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
-                allowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : 'None';
+                allowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : ['None'];
                 // eslint-disable-next-line max-len
                 if (targetElement && targetElement.style.transform !== '') {
                     if (targetElement.style.transform.startsWith('rotate(90deg)')) {
@@ -1124,6 +1130,9 @@ export class TextMarkupAnnotation {
                     else {
                         annotationRotate = pageRotation;
                     }
+                }
+                if (isNullOrUndefined(this.underlineOpacity)) {
+                    this.underlineOpacity = 1;
                 }
                 annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
@@ -2682,7 +2691,7 @@ export class TextMarkupAnnotation {
         }
         // eslint-disable-next-line
         let annotationSettings: object =  this.getAnnotationSettings(type);
-        const isPrint: boolean = this.getIsPrintValue(type);
+        let isPrint: boolean = this.getIsPrintValue(type);
         const annotation: ITextMarkupAnnotation = {
             // eslint-disable-next-line max-len
             textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, allowedInteractions: allowedInteractions, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
@@ -2740,6 +2749,9 @@ export class TextMarkupAnnotation {
         }
         if (type === 'Strikethrough') {
             isPrint = this.pdfViewer.strikethroughSettings.isPrint;
+        }
+        if (isNullOrUndefined(isPrint)) {
+            isPrint = true;
         }
         return isPrint;
     }

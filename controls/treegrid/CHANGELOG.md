@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 20.3.52 (2022-10-26)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I411501` - Checkbox-column selectAll behaviour works properly while clear searching.
+- `#I411372` - Confirmation dialog shows properly while expanding/collapsing actions on batch edit mode.
+
+## 20.3.50 (2022-10-18)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I395009` - `selectedItems` are getting properly after performing filter actions.
+- `#I407372` - Resolved script error when navigate over the cells through tab pressing on keyboard navigations while using row drag and drop with collapsed state record.
+- `#I411504`, `#I404107`, `#I402745`, `#I403053` - Expand icon is showing properly while using the custom binding.
+
 ## 20.3.49 (2022-10-11)
 
 ### Tree Grid

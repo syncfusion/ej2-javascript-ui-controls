@@ -271,22 +271,22 @@ export class Signature {
         }
     }
     private hideSignatureCheckbox(checkbox: any): void {
-        if(this.pdfViewerBase.isToolbarSignClicked) {
-            if(this.pdfViewerBase.isInitialField) {
-                if(this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.hideSaveSignature) {
-                   this.hideCheckboxParent(checkbox);
+        if (this.pdfViewerBase.isToolbarSignClicked) {
+            if (this.pdfViewerBase.isInitialField) {
+                if (this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings && this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.hideSaveSignature) {
+                    this.hideCheckboxParent(checkbox);
                 }
-            } else if(this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings.hideSaveSignature) {
+            } else if (this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings && this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings.hideSaveSignature) {
                 this.hideCheckboxParent(checkbox);
             }
         } else {
-            if(this.pdfViewerBase.isInitialField) {
-                if (this.pdfViewer.initialFieldSettings.initialDialogSettings.hideSaveSignature) {
+            if (this.pdfViewerBase.isInitialField) {
+                if (this.pdfViewer.initialFieldSettings.initialDialogSettings && this.pdfViewer.initialFieldSettings.initialDialogSettings.hideSaveSignature) {
                     this.hideCheckboxParent(checkbox);
                 }
             } else {
-                if (this.pdfViewer.signatureFieldSettings.signatureDialogSettings.hideSaveSignature) {
-                   this.hideCheckboxParent(checkbox);
+                if (this.pdfViewer.signatureFieldSettings.signatureDialogSettings && this.pdfViewer.signatureFieldSettings.signatureDialogSettings.hideSaveSignature) {
+                    this.hideCheckboxParent(checkbox);
                 }
             }
         }
@@ -297,13 +297,13 @@ export class Signature {
             return false;
         } else {
             if (this.pdfViewerBase.isInitialField) {
-                if (this.pdfViewer.initialFieldSettings.initialDialogSettings.hideSaveSignature) {
+                if (this.pdfViewer.initialFieldSettings.initialDialogSettings && this.pdfViewer.initialFieldSettings.initialDialogSettings.hideSaveSignature) {
                     return false;
                 } else {
                     return this.isInitialFiledSaveSignature;
                 }
             } else {
-                if (this.pdfViewer.signatureFieldSettings.signatureDialogSettings.hideSaveSignature) {
+                if (this.pdfViewer.signatureFieldSettings.signatureDialogSettings && this.pdfViewer.signatureFieldSettings.signatureDialogSettings.hideSaveSignature) {
                     return false;
                 } else {
                     return this.isSignatureFieldsSaveSignature;
@@ -843,16 +843,16 @@ export class Signature {
         let proxy: any = this;
         let items: any = [];
         if (this.pdfViewerBase.isToolbarSignClicked) {
-            if(this.pdfViewerBase.isInitialField) {
-                items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
+            if (this.pdfViewerBase.isInitialField) {
+                items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings && this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
             } else {
-                items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
+                items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings && this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
             }
         } else {
-            if(this.pdfViewerBase.isInitialField) {
-                items = this.showHideSignatureTab(this.pdfViewer.initialFieldSettings.initialDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
+            if (this.pdfViewerBase.isInitialField) {
+                items = this.showHideSignatureTab((this.pdfViewer.initialFieldSettings.initialDialogSettings ? this.pdfViewer.initialFieldSettings.initialDialogSettings.displayMode : 7), appearanceDiv, typeDiv, uploadDiv);
             } else {
-                items = this.showHideSignatureTab(this.pdfViewer.signatureFieldSettings.signatureDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
+                items = this.showHideSignatureTab((this.pdfViewer.signatureFieldSettings.signatureDialogSettings ? this.pdfViewer.signatureFieldSettings.signatureDialogSettings.displayMode : 7), appearanceDiv, typeDiv, uploadDiv);
             }
         }
         // eslint-disable-next-line

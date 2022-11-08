@@ -95,6 +95,8 @@ export class Page {
     private collapseExpandPagedchilds(rowDetails: { action: string, row: HTMLTableRowElement,
         record: ITreeData, args: RowCollapsedEventArgs }): void {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
+        this.parent.flatData.map((e: ITreeData) => e.expanded = e.uniqueID === rowDetails.record.uniqueID &&
+           e.expanded !== rowDetails.record.expanded  ? rowDetails.record.expanded : e.expanded);
         if (this.parent.enableImmutableMode) {
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
             const record: ITreeData[] = this.parent.flatData.filter((e: ITreeData) => {

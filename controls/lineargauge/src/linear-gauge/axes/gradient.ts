@@ -237,9 +237,7 @@ export class Gradient {
      * @return {void}
      * @private
      */
-    public destroy(control: LinearGauge): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
+        this.gauge = null;
     }
 }

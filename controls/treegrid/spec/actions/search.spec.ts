@@ -663,3 +663,57 @@ describe('EJ2-44620: Collapsing and expanding the searched records with hierarch
     destroy(gridObj);
   });
 });
+
+describe('EJ2-64738: Searching with checkbox column(select all) behavior not working properly after clearing the search ', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowFiltering: true,
+        allowSelection: true,
+        filterSettings: { type: 'Menu', ignoreAccent: true, hierarchyMode: 'Both' },
+        selectionSettings: { type: 'Multiple', mode: 'Both', enableToggle: false },
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: 'Row',
+        },
+        toolbar: ['Search'],
+        childMapping: 'subtasks',
+        height: 350,
+        autoCheckHierarchy: true,
+        treeColumnIndex: 1,
+        columns: [
+          { field: '', showCheckbox: true, width: 50 },
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 120, },
+          { field: 'taskName', headerText: 'Task Name', width: 220 },
+          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 140, format: { skeleton: 'yMd', type: 'date' }, },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+        ],
+      },
+      done
+    );
+  });
+  it('Check the search records length', (done: Function) => {
+    actionComplete = (args?: object): void => {
+      expect(gridObj.getRows().length == 4).toBe(true);
+      done();
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.search("plan");
+  });
+  it('Checked records was verified  while searching', () => {
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-columnheader')[0].getElementsByClassName('e-frame e-icons')[0]).click();
+    expect(gridObj.getCheckedRecords().length).toBe(4);
+  });
+  it('clearsearching then checking checked records', () => {
+    gridObj.search('');
+    expect(gridObj.getCheckedRecords().length).toBe(4);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

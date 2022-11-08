@@ -840,7 +840,6 @@ export class Clipboard {
     private showDialog(): void {
         (this.parent.serviceLocator.getService(dialog) as Dialog).show({
             header: 'Spreadsheet',
-            target: this.parent.element,
             height: 205, width: 340, isModal: true, showCloseIcon: true,
             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteAlert'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {

@@ -2415,6 +2415,9 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
         }
+        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            this.enabled = false;
+        }
         this.inputWrapper = Input.createInput(
             {
                 element: <HTMLInputElement>this.inputElement,

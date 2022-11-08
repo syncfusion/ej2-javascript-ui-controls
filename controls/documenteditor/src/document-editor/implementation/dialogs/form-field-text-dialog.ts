@@ -373,7 +373,7 @@ export class TextFormFieldDialog {
                     closeOnEscape: true,
                     position: { X: 'center', Y: 'center' },
                     animationSettings: { effect: 'Zoom' }
-                });
+                }).enableRtl = this.owner.enableRtl;
             } else {
                 let type: TextFormFieldType;
                 if (this.typeDropDown.value === 'Date') {
@@ -403,7 +403,7 @@ export class TextFormFieldDialog {
                 closeOnEscape: true,
                 position: { X: 'center', Y: 'center' },
                 animationSettings: { effect: 'Zoom' }
-            });
+            }).enableRtl = this.owner.enableRtl;
         }
     }
     /**

@@ -2,7 +2,8 @@ import { Selection } from './selection';
 import {
     TextAlignment, Underline, HighlightColor, BaselineAlignment, WidthType, Strikethrough, LineSpacingType,
     CellVerticalAlignment, HeightType, TableAlignment, BiDirectionalOverride, FootEndNoteNumberFormat,
-    FootnoteRestartIndex
+    FootnoteRestartIndex,
+    FontScriptType
 } from '../../base/types';
 import {
     WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading
@@ -37,6 +38,8 @@ export class SelectionCharacterFormat {
     private highlightColorIn: HighlightColor = undefined;
     private fontSizeIn: number = 0;
     private fontFamilyIn: string;
+    private scriptType: FontScriptType =  FontScriptType.English;
+    private renderedFontFamilyIn: string;
     private fontColorIn: string = undefined;
     private allCapsIn: boolean = undefined;
     /**
@@ -86,6 +89,9 @@ export class SelectionCharacterFormat {
         }
         this.fontSizeIn = value;
         this.notifyPropertyChanged('fontSize');
+    }
+    public get renderedFontFamily(): string {
+        return this.renderedFontFamilyIn;
     }
     /**
      * Gets or sets the font family of selected contents.
@@ -311,9 +317,10 @@ export class SelectionCharacterFormat {
      * @returns {void}
      * @private
      */
-    public copyFormat(format: WCharacterFormat): void {
+    public copyFormat(format: WCharacterFormat, renderFontFamily?: string): void {
         this.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : 'Default Paragraph Font';
         this.fontSize = format.fontSize;
+        this.renderedFontFamilyIn = renderFontFamily;
         this.fontFamily = format.fontFamily;
         this.bold = format.bold;
         this.italic = format.italic;
@@ -336,7 +343,7 @@ export class SelectionCharacterFormat {
      * @param {WCharacterFormat} format
      * @private
      */
-    public combineFormat(format: WCharacterFormat): void {
+    public combineFormat(format: WCharacterFormat, renderFontFamily?: string): void {
         if (!isNullOrUndefined(this.bold) && this.bold !== format.bold) {
             this.bold = undefined;
         }
@@ -345,6 +352,9 @@ export class SelectionCharacterFormat {
         }
         if (this.fontSize !== 0 && this.fontSize !== format.fontSize) {
             this.fontSize = 0;
+        }
+        if (!isNullOrUndefined(this.renderedFontFamily) && this.renderedFontFamily !== renderFontFamily) {
+            this.renderedFontFamilyIn = undefined;
         }
         if (!isNullOrUndefined(this.fontFamily) && this.fontFamily !== format.fontFamily) {
             this.fontFamily = undefined;

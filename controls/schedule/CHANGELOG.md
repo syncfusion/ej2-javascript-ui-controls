@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Schedule
+
+#### Bug fixes
+
+- `#F178302` - An issue with being unable to inline edit when using `eventTemplate` has been fixed.
+- `#F178112` - An issue with "Misalignment occurring on zoom-in zoom-out with the scheduler" has been fixed
+
 ## 20.3.52 (2022-10-26)
 
 ### Schedule

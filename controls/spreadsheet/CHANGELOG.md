@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Spreadsheet
+
+#### Features
+
+- `#F176472` - Provided `setRowsHeight` and `setColumnsWidth` methods to set the height and width to multiple rows and columns respectively.
+
 ## 20.3.47 (2022-09-29)
 
 ### Spreadsheet

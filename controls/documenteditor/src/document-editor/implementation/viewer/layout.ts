@@ -3,7 +3,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import {
     HeaderFooterType, HorizontalAlignment, VerticalAlignment, HorizontalOrigin, HeightType, LineSpacingType, ListLevelPattern,
-    TextAlignment, VerticalOrigin, TextWrappingStyle, FootEndNoteNumberFormat, CharacterRangeType
+    TextAlignment, VerticalOrigin, TextWrappingStyle, FootEndNoteNumberFormat, CharacterRangeType, FontScriptType
 } from '../../base/types';
 import { BodyWidgetInfo, HelperMethods, LineElementInfo, SubWidthInfo, Point, FootNoteWidgetsInfo, WrapPosition, BlockInfo, SizeInfo, BorderRenderInfo } from '../editor/editor-helper';
 import { WBorder, WBorders, WCharacterFormat, WListFormat, WParagraphFormat, WTabStop, WSectionFormat, WCellFormat } from '../format/index';
@@ -1391,7 +1391,7 @@ export class Layout {
         // Initialized the text with additional empty string.
         // It avoids the minimum width calculation from next sibling (GetNextTextRangeWidth).
 
-        let minwidth: number = this.documentHelper.textHelper.measureText(split[0], currTextRange.characterFormat).Width;
+        let minwidth: number = this.documentHelper.textHelper.measureText(split[0], currTextRange.characterFormat, currTextRange.scriptType).Width;
         //Need to layout the unicode characters (chinese) character by character.
         // if (DrawingContext.IsUnicodeText(text)) {
         //     minwidth = DrawingContext.MeasureTextRange(currTextRange, text[0].ToString()).Width;
@@ -1434,15 +1434,15 @@ export class Layout {
         if (nextSiblingTextRange) {
             text = nextSiblingTextRange.text;
             if (text.indexOf(' ') !== -1 || (text.indexOf('-') !== -1 || (text.indexOf('_') !== -1)
-                && ((width + sizeNext.width + (this.documentHelper.textHelper.measureText(text.split('-')[0], nextSiblingTextRange.characterFormat)).Width) < rect.width))
+                && ((width + sizeNext.width + (this.documentHelper.textHelper.measureText(text.split('-')[0], nextSiblingTextRange.characterFormat, nextSiblingTextRange.scriptType)).Width) < rect.width))
                 || ((nextSiblingTextRange).text === '\t')) {
                 let elementWidth: number = nextSiblingTextRange.width;
                 if (text !== text.split(' ')[0]) {
-                    elementWidth = this.documentHelper.textHelper.measureText(text.split(' ')[0], nextSiblingTextRange.characterFormat).Width;
+                    elementWidth = this.documentHelper.textHelper.measureText(text.split(' ')[0], nextSiblingTextRange.characterFormat, nextSiblingTextRange.scriptType).Width;
                 }
                 if ((width + sizeNext.width + elementWidth) > rect.width && text.indexOf('-')) {
                     if (text !== text.split('-')[0] + '-') {
-                        elementWidth = this.documentHelper.textHelper.measureText(text.split('-')[0] + '-', nextSiblingTextRange.characterFormat).Width;
+                        elementWidth = this.documentHelper.textHelper.measureText(text.split('-')[0] + '-', nextSiblingTextRange.characterFormat, nextSiblingTextRange.scriptType).Width;
                     }
                 }
                 sizeNext.width += elementWidth;
@@ -1450,7 +1450,7 @@ export class Layout {
             }
             else {
                 if (nextSiblingTextRange.text.length > 0) {
-                    let textInfo = this.documentHelper.textHelper.measureText(nextSiblingTextRange.text, nextSiblingTextRange.characterFormat);
+                    let textInfo = this.documentHelper.textHelper.measureText(nextSiblingTextRange.text, nextSiblingTextRange.characterFormat, nextSiblingTextRange.scriptType);
                     sizeNext.height += textInfo.Height;
                     sizeNext.width += textInfo.Width;
                 }
@@ -2466,10 +2466,9 @@ export class Layout {
     private layoutList(paragraph: ParagraphWidget, documentHelper: DocumentHelper): void {
         const list: WList = documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
         const currentListLevel: WListLevel = this.getListLevel(list, paragraph.paragraphFormat.listFormat.listLevelNumber);
-        if (isNullOrUndefined(currentListLevel) || isNullOrUndefined(currentListLevel.numberFormat) || currentListLevel.numberFormat === '') {
+        if (isNullOrUndefined(currentListLevel) || isNullOrUndefined(currentListLevel.numberFormat)) {
             return;
         }
-        this.viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
         let lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
         if (isNullOrUndefined(lineWidget)) {
             lineWidget = new LineWidget(paragraph);
@@ -2483,6 +2482,10 @@ export class Layout {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
 
+        if(currentListLevel.numberFormat === '') {
+            return;
+        }
+        this.viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
         if (this.documentHelper.isIosDevice) {
             let text: string = element.text;
             text = text === String.fromCharCode(61623) ? String.fromCharCode(9679) : text === String.fromCharCode(61551) + String.fromCharCode(32) ? String.fromCharCode(9675) : text;
@@ -2642,7 +2645,7 @@ export class Layout {
     }
 
     private splitByWord(lineWidget: LineWidget, paragraph: ParagraphWidget, elementBox: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
-        let index: number = this.getSplitIndexByWord(this.viewer.clientActiveArea.width, text, width, characterFormat);
+        let index: number = this.getSplitIndexByWord(this.viewer.clientActiveArea.width, text, width, characterFormat, elementBox.scriptType);
         if (index > 0 && index < elementBox.length) {
             const indexOf: number = lineWidget.children.indexOf(elementBox);
             //const lineIndex: number = paragraph.childWidgets.indexOf(lineWidget);
@@ -2655,7 +2658,7 @@ export class Layout {
                 index += prevLength - text.length;
             }
             splittedElementBox.characterFormat.copyFormat(elementBox.characterFormat);
-            splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat);
+            splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat, splittedElementBox.scriptType);
             splittedElementBox.trimEndWidth = splittedElementBox.width;
             splittedElementBox.characterRange = elementBox.characterRange;
             //splittedElementBox.revisions = splittedElementBox.revisions;
@@ -2703,10 +2706,10 @@ export class Layout {
 
     private splitByCharacter(lineWidget: LineWidget, textElement: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
         const paragraph: ParagraphWidget = lineWidget.paragraph;
-        const index: number = this.getTextSplitIndexByCharacter(this.viewer.clientArea.width, this.viewer.clientActiveArea.width, text, width, characterFormat);
+        const index: number = this.getTextSplitIndexByCharacter(this.viewer.clientArea.width, this.viewer.clientActiveArea.width, text, width, characterFormat, textElement.scriptType);
         let splitWidth: number = 0;
         if (index < textElement.length) {
-            splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, index), characterFormat);
+            splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, index), characterFormat, textElement.scriptType);
             text = text.substring(index);
         }
         if (splitWidth > this.viewer.clientActiveArea.width && textElement.indexInOwner > 0) {
@@ -2721,7 +2724,7 @@ export class Layout {
             splittedElement.errorCollection = textElement.errorCollection;
             textElement.text = textElement.text.substr(0, index);
             splittedElement.characterFormat.copyFormat(textElement.characterFormat);
-            splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, characterFormat);
+            splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, characterFormat, splittedElement.scriptType);
             splittedElement.trimEndWidth = splittedElement.width;
             splittedElement.characterRange = textElement.characterRange;
             textElement.width -= splittedElement.width;
@@ -2799,7 +2802,7 @@ export class Layout {
                     splittedElement.text = splittedText;
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
                     splittedElement.line = lineWidget;
-                    splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, format);
+                    splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, format, splittedElement.scriptType);
                     splittedElement.trimEndWidth = splittedElement.width;
                     splittedElement.height = textElement.height;
                     splittedElement.baselineOffset = textElement.baselineOffset;
@@ -2847,7 +2850,7 @@ export class Layout {
             index = characterUptoWS;
             //Checks whether text not starts with white space. If starts with white space, no need to check previous text blocks.
             if (index > 0) {
-                textWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat);
+                textWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat, element.scriptType);
             }
             if (this.viewer.clientActiveArea.width < textWidth) {
                 //Check and split the previous text elements to next line.
@@ -3663,7 +3666,7 @@ export class Layout {
                         spaceCount -= text.length - HelperMethods.trimEnd(text).length;
                     }
                     if (whiteSpaceCount < spaceCount) {
-                        width = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text, textElement.characterFormat);
+                        width = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text, textElement.characterFormat, textElement.scriptType);
                         spaceCount = whiteSpaceCount;
                     }
 
@@ -4111,9 +4114,12 @@ export class Layout {
             let levelOverrideAdv: WLevelOverride = undefined;
             let level: boolean = false;
             level = (!isNullOrUndefined(list.levelOverrides))
-                && !isNullOrUndefined(((levelOverrideAdv = list.levelOverrides[listLevelNumber] as WLevelOverride)))
-                && (!isNullOrUndefined(levelOverrideAdv.overrideListLevel)) && !isNullOrUndefined(levelOverrideAdv.startAt);
+                && !isNullOrUndefined((levelOverrideAdv = this.getOverrideListLevel(list.levelOverrides,listLevelNumber)))
+                && (!isNullOrUndefined(levelOverrideAdv.overrideListLevel));
             if (level) {
+                if (isNullOrUndefined(levelOverrideAdv.startAt)) {
+                    levelOverrideAdv.overrideListLevel.startAt = abstractList.levels[listLevelNumber].startAt;
+                }
                 return levelOverrideAdv.overrideListLevel;
             } else if (!isNullOrUndefined(abstractList) && listLevelNumber >= 0 && listLevelNumber < abstractList.levels.length) {
                 return abstractList.levels[listLevelNumber] as WListLevel;
@@ -4121,6 +4127,15 @@ export class Layout {
         }
         return undefined;
     }
+
+    private getOverrideListLevel(levelOverrides: WLevelOverride[], listLevelNumber: number): WLevelOverride {
+        for (let i = 0; i < levelOverrides.length; i++) {
+            if (levelOverrides[i].levelNumber == listLevelNumber)
+                return levelOverrides[i];
+        }
+        return undefined;
+    }
+
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
         let fPosition: number = 0;
         let isCustomTab: boolean = false;
@@ -4238,7 +4253,7 @@ export class Layout {
                     if(nextElement.text.indexOf(".") != -1){
                         let index: number = nextElement.text.indexOf(".");
                         let text: string = nextElement.text.substring(0,index);
-                        let textWidth: number = this.documentHelper.textHelper.getWidth(text, nextElement.characterFormat)
+                        let textWidth: number = this.documentHelper.textHelper.getWidth(text, nextElement.characterFormat, nextElement.scriptType)
                         defaultTabWidth = tabWidth - textWidth;
                     } else if ( width < tabWidth) {
                         defaultTabWidth = tabWidth - width;
@@ -4299,7 +4314,7 @@ export class Layout {
         return width;
     }
 
-    private getSplitIndexByWord(clientActiveWidth: number, text: string, width: number, characterFormat: WCharacterFormat): number {
+    private getSplitIndexByWord(clientActiveWidth: number, text: string, width: number, characterFormat: WCharacterFormat, scriptType: FontScriptType): number {
         let index: number = 0;
         let length: number = text.length;
         while (index < length) {
@@ -4309,7 +4324,7 @@ export class Layout {
             }
             let splitWidth: number = width;
             if ((nextIndex < length - 1 || (nextIndex === length - 1 && text[nextIndex - 1] === ' ')) && index !== nextIndex) {
-                splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, nextIndex), characterFormat);
+                splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, nextIndex), characterFormat, scriptType);
             }
             if (splitWidth <= clientActiveWidth) {
                 index = nextIndex;
@@ -4322,12 +4337,12 @@ export class Layout {
         }
         return index;
     }
-    private getTextSplitIndexByCharacter(totalClientWidth: number, clientActiveAreaWidth: number, text: string, width: number, characterFormat: WCharacterFormat): number {
+    private getTextSplitIndexByCharacter(totalClientWidth: number, clientActiveAreaWidth: number, text: string, width: number, characterFormat: WCharacterFormat, scriptType: FontScriptType): number {
         let length: number = text.length;
         for (let i: number = 0; i < length; i++) {
             let splitWidth: number = width;
             if (i + 1 < length) {
-                splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, i + 1), characterFormat);
+                splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.substring(0, i + 1), characterFormat, scriptType);
             }
             if (splitWidth > clientActiveAreaWidth) {
                 if (i === 0 && splitWidth > totalClientWidth) {
@@ -4358,7 +4373,7 @@ export class Layout {
                 lineText = elementText + lineText;
                 if (trimSpace && (elementText.trim() !== '' || elementText === '\t')) {
                     if (HelperMethods.endsWith(elementText)) {
-                        let widthExcludeSpace: number = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(elementText, element.characterFormat);
+                        let widthExcludeSpace: number = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(elementText, element.characterFormat, (element as TextElementBox).scriptType);
                         width += widthExcludeSpace;
                         // Trimmed space width can be found by subtracting the actual width and width exclude end space.
                         trimmedSpaceWidth += element.width - widthExcludeSpace;
@@ -4427,7 +4442,7 @@ export class Layout {
                 lineContent = elementText + lineContent;
                 if (trimSpace && (elementText.trim() !== '' || elementText === '\t')) {
                     if (HelperMethods.endsWith(elementText)) {
-                        width += this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(elementText, elementBox.characterFormat);
+                        width += this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(elementText, elementBox.characterFormat, elementBox.scriptType);
                     } else {
                         width += elementBox.width;
                     }
@@ -4470,7 +4485,7 @@ export class Layout {
                 if (currentWidget instanceof TextElementBox) {
                     let spaceCount: number = currentWidget.text.length - HelperMethods.removeSpace(currentWidget.text).length;
                     if (spaceCount > 0) {
-                        let spaceWidth: number = this.documentHelper.textHelper.getWidth(' ', currentWidget.characterFormat);
+                        let spaceWidth: number = this.documentHelper.textHelper.getWidth(' ', currentWidget.characterFormat, currentWidget.scriptType);
                         totalSpaceWidth += spaceCount * spaceWidth;
                     }
                 }
@@ -5579,9 +5594,13 @@ export class Layout {
         let left: number = rowWidget.x;
         let tableWidth: number = 0;
         let cellIndex: number = 0;
+        let cellspace: number = 0;
+        let linestyle: boolean = false;
         tableWidth = HelperMethods.convertPointToPixel(rowWidget.ownerTable.tableHolder.tableWidth);
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             const cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
+            let isRightStyleNone: boolean = (cellWidget.cellFormat.borders.right.lineStyle === 'None');
+            cellspace = !isNullOrUndefined(cellWidget.ownerTable) && !isNullOrUndefined(cellWidget.ownerTable.tableFormat) ? HelperMethods.convertPointToPixel(cellWidget.ownerTable.tableFormat.cellSpacing) : 0;
             if (Math.round(left) < Math.round(cellWidget.x - cellWidget.margin.left)) {
                 if (this.insertRowSpannedWidget(rowWidget, viewer, left, i)) {
                     i--;
@@ -5598,6 +5617,16 @@ export class Layout {
                 }
             }
             left += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;
+            if (cellspace > 0 || cellWidget.columnIndex === cellWidget.ownerTable.tableHolder.columns.length - 1 ||
+                cellWidget.index === (cellWidget.containerWidget as TableRowWidget).childWidgets.length - 1) {
+                if (!cellWidget.ownerTable.tableFormat.allowAutoFit) {
+                    left += cellWidget.rightBorderWidth;
+                }
+                if (!this.isInsertTable()) {
+                    linestyle = this.checkPreviousMargins(cellWidget.ownerTable);
+                }
+            }
+            left -= (isRightStyleNone && !linestyle) ? 0 : (cellWidget.rightBorderWidth);
             cellIndex++;
             if (i === rowWidget.childWidgets.length - 1 && Math.round(left) < Math.round(rowWidget.x + tableWidth)) {
                 if (this.insertRowSpannedWidget(rowWidget, viewer, left, i + 1)) {
@@ -5713,6 +5742,21 @@ export class Layout {
     private getSplittedWidget(bottom: number, splitMinimalWidget: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], cellWidget: TableCellWidget, footNoteCollection: FootnoteElementBox[]): TableCellWidget {
         let splittedWidget: TableCellWidget = undefined;
         if (cellWidget.y + cellWidget.height > bottom - this.footHeight - cellWidget.margin.bottom) {
+            for (let i: number = cellWidget.index + 1; i < cellWidget.ownerRow.childWidgets.length; i++) {
+                let tableCellWidget: TableCellWidget = cellWidget.ownerRow.childWidgets[i] as TableCellWidget;
+                if (tableCellWidget.y + tableCellWidget.height < bottom - this.footHeight - tableCellWidget.margin.bottom) {
+                    for (let j: number = 0; j < tableCellWidget.childWidgets.length; j++) {
+                        if (tableCellWidget.childWidgets[j] instanceof ParagraphWidget) {
+                            let paragraphWidget: ParagraphWidget = tableCellWidget.childWidgets[j] as ParagraphWidget;
+                            for (let k: number = 0; k < paragraphWidget.childWidgets.length; k++) {
+                                let lineWidget: LineWidget = paragraphWidget.childWidgets[k] as LineWidget;
+                                let height: number = this.getFootNoteHeightInLine(lineWidget);
+                                this.existFootnoteHeight += height;
+                            }
+                        }
+                    }
+                }
+            }
             for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
                 if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
                     const paragraphWidget: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;

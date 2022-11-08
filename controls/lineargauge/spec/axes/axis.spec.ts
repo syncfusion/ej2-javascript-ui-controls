@@ -205,7 +205,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels group', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabelsGroup');
+                svg = document.getElementById('container_AxisLabelsGroup_0');
                 expect(svg.childElementCount > 0).toBe(true);
             };
             gauge.refresh();
@@ -213,7 +213,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels comparison in vertical orientation', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg !== null).toBe(true);
             };
             gauge.refresh();
@@ -221,7 +221,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels font color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_3');
+                svg = document.getElementById('container_Axis_0_Label_3');
                 expect(svg !== null).toBe(true);
             };
             gauge.axes[0].labelStyle.font.color = 'red';
@@ -230,7 +230,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels font size', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.style.fontSize == '10px').toBe(true);
             };
             gauge.axes[0].labelStyle.font.size = '10px';
@@ -239,7 +239,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels font family', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.style.fontFamily == 'Georgia').toBe(true);
             };
             gauge.axes[0].labelStyle.font.fontFamily = 'Georgia';
@@ -248,7 +248,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels font style', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.style.fontStyle == 'italic').toBe(true);
             };
             gauge.axes[0].labelStyle.font.fontStyle = 'italic';
@@ -257,7 +257,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels in range colors', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg !== null).toBe(true);
             };
             gauge.axes[0].labelStyle.useRangeColor = true;
@@ -268,7 +268,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels font weight', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.style.fontWeight == 'lighter').toBe(true);
             };
             gauge.axes[0].labelStyle.font.fontWeight = 'lighter';
@@ -277,7 +277,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels font opacity', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.style.opacity == '1').toBe(true);
             };
             gauge.refresh();
@@ -285,7 +285,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels text content', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.textContent == '0').toBe(true);
             };
             gauge.axes[0].minimum = 0;
@@ -297,7 +297,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels format', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.textContent == '0%').toBe(true);
             };
             gauge.axes[0].labelStyle.format = '{value}%';
@@ -306,7 +306,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis labels text content', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_5');
+                svg = document.getElementById('container_Axis_0_Label_5');
                 expect(svg.textContent == '50').toBe(true);
             };
             gauge.axes[0].minimum = 0;
@@ -318,7 +318,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis inversed', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                let svg1: HTMLElement = document.getElementById('container_AxisLabel_5');
+                let svg1: HTMLElement = document.getElementById('container_Axis_0_Label_5');
                 expect(svg1 !== null).toBe(true);
             };
             gauge.axes[0].isInversed = true;
@@ -327,7 +327,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis inversed with interval', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_1');
+                svg = document.getElementById('container_Axis_0_Label_1');
                 expect(svg.textContent == '50').toBe(true);
             };
             gauge.axes[0].isInversed = true;
@@ -337,7 +337,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis maximum', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_1');
+                svg = document.getElementById('container_Axis_0_Label_1');
                 expect(svg.textContent == '200').toBe(true);
             };
             gauge.axes[0].maximum = 200;
@@ -347,7 +347,7 @@ describe('Linear gauge control', () => {
 
         it('checking with axis minimum', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_0');
+                svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.textContent == '20').toBe(true);
             };
             gauge.axes[0].minimum = 20;
@@ -841,7 +841,7 @@ describe('Linear gauge control', () => {
 
         it('checking label color with repsect to range color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabel_2');
+                svg = document.getElementById('container_Axis_0_Label_2');
                 let firstColor = svg.getAttribute('style').split(":");
                 expect(firstColor[1].split(';')[0] != 'red').toBe(true);
             };
@@ -992,10 +992,10 @@ describe('Linear gauge control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('gauge_Axis_Collections');
                 expect(svg.childElementCount == 1).toBe(true);
-                svg = document.getElementById('gauge_AxisLabel_12');
+                svg = document.getElementById('gauge_Axis_0_Label_12');
                 expect(svg.textContent == '96').toBe(true);
                 let svg1 = parseFloat(svg.textContent);
-                svg = document.getElementById('gauge_AxisLabel_13');
+                svg = document.getElementById('gauge_Axis_0_Label_13');
                 expect(svg.textContent == '100').toBe(true);
                 let svg2 = parseFloat(svg.textContent);
                 expect(svg1 != svg2).toBe(true);
@@ -1008,7 +1008,7 @@ describe('Linear gauge control', () => {
 
         it('Checking label format', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_13');
+                svg = document.getElementById('gauge_Axis_0_Label_13');
                 expect(gauge.axes[0].labelStyle.format == "{value}").toBe(true);
                 done();
             };
@@ -1051,7 +1051,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking defualt position of label and ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y')).toBe('219');
                 done();
             };
@@ -1059,7 +1059,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Inside position of label and ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y')).toBe('179');
                 done();
             };
@@ -1070,7 +1070,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Inside position of label and ticks with opposed', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y') == '278.5' || svg.getAttribute('y') == '279').toBe(true);
                 done();
             };
@@ -1079,7 +1079,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Outside position of label and ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y') == '278.5' || svg.getAttribute('y') == '279').toBe(true);
                 done();
             };
@@ -1091,7 +1091,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Outside position of label and ticks with opposed', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y')).toBe('179');
                 done();
             };
@@ -1100,7 +1100,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Cross position of label and ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y') == '218.75' || svg.getAttribute('y') == '219').toBe(true);
                 done();
             };
@@ -1112,7 +1112,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking cross label position with inside outside position of ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y') == '218.75' || svg.getAttribute('y') == '219').toBe(true);
                 done();
             };
@@ -1123,7 +1123,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking inside label position with cross position of ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y')).toBe('200');
                 done();
             };
@@ -1134,7 +1134,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label inside position with oppsed inside and outside position of ticks', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y')).toBe('189');
                 done();
             };
@@ -1145,7 +1145,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label inside position with oppesed inside and outside position of ticks and orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y') == '268.5' || svg.getAttribute('y') == '269').toBe(true);
                 done();
             };
@@ -1156,7 +1156,7 @@ describe('Linear gauge control', () => {
 
         it('Checking Inside position of label and ticks with vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '326.5' || svg.getAttribute('x') == '320' || svg.getAttribute('x') == '322.5').toBe(true);
                 done();
             };
@@ -1169,7 +1169,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Inside position of label and ticks with vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '430.5' || svg.getAttribute('x') == '425' || svg.getAttribute('x') == '427.5').toBe(true);
                 done();
             };
@@ -1178,7 +1178,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Outside position of label and ticks with vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '430.5' || svg.getAttribute('x') == '425' || svg.getAttribute('x') == '427.5').toBe(true);
                 done();
             };
@@ -1190,7 +1190,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Outside position of label and ticks with oppsed and vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '326.5' || svg.getAttribute('x') == '320' || svg.getAttribute('x') == '322.5').toBe(true);
                 done();
             };
@@ -1199,7 +1199,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking Cross position of label and ticks with vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '371.5' || svg.getAttribute('x') == '365.75' || svg.getAttribute('x') == '368.25'
                 || svg.getAttribute('x') == '496.75').toBe(true);
                 done();
@@ -1212,7 +1212,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking cross label position with inside outside position of ticks with vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '371.5' || svg.getAttribute('x') == '365.75' || svg.getAttribute('x') == '368.25').toBe(true);
                 done();
             };
@@ -1224,7 +1224,7 @@ describe('Linear gauge control', () => {
         // it('Checking inside label position with cross position of ticks with vertical orientation', (done: Function) => {
         //     debugger
         //     gauge.loaded = (args: ILoadedEventArgs): void => {
-        //         svg = document.getElementById('gauge_AxisLabel_0');
+        //         svg = document.getElementById('gauge_Axis_0_Label_0');
         //         expect(svg.getAttribute('x') == '335.5' || svg.getAttribute('x') == '347.5' || svg.getAttribute('x') == '343.5' || svg.getAttribute('x') == '472' || svg.getAttribute('x') == '329'
         //         || svg.getAttribute('x') == '461' || svg.getAttribute('x') == '331.5').toBe(true);
         //         done();
@@ -1236,7 +1236,7 @@ describe('Linear gauge control', () => {
         // });
         it('Checking label inside position with opposed inside and outside position of ticks, vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '336.5' || svg.getAttribute('x') == '330' || svg.getAttribute('x') == '332.5'
                 || svg.getAttribute('x') == '461').toBe(true);
                 done();
@@ -1248,7 +1248,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label inside position with oppesed inside and outside position of ticks, vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '420.5' || svg.getAttribute('x') == '415' || svg.getAttribute('x') == '417.5').toBe(true);
                 done();
             };
@@ -1257,7 +1257,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label outside position with oppesed inside position of ticks, vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '390.5' || svg.getAttribute('x') == '516' || svg.getAttribute('x') == '385' || svg.getAttribute('x') == '387.5').toBe(true);
                 done();
             };
@@ -1269,7 +1269,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label inside position with oppesed outside position of ticks, vertical orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('x') == '366.5' || svg.getAttribute('x') == '491' || svg.getAttribute('x') == '360' || svg.getAttribute('x') == '362.5').toBe(true);
                 done();
             };
@@ -1280,7 +1280,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label outside position with oppesed inside position of ticks, horizontal orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y') == '238.5' || svg.getAttribute('y') == '239').toBe(true);
                 done();
             };
@@ -1292,7 +1292,7 @@ describe('Linear gauge control', () => {
         });
         it('Checking label inside position with oppesed outside position of ticks, horizontal orientation', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_AxisLabel_0');
+                svg = document.getElementById('gauge_Axis_0_Label_0');
                 expect(svg.getAttribute('y')).toBe('219');
                 done();
             };

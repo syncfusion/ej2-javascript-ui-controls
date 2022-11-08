@@ -34,6 +34,8 @@ export class Magnification {
     private previousTouchDifference: number;
     private touchCenterX: number = 0;
     private touchCenterY: number = 0;
+    private mouseCenterX: number = 0;
+    private mouseCenterY: number = 0;
     private pageRerenderCount: number = 0;
     private imageObjects: HTMLImageElement[] = [];
     private topValue: number = 0;
@@ -248,6 +250,16 @@ export class Magnification {
     }
 
     /**
+     * Initiating cursor based zoom.
+     * @private
+     */
+    public initiateMouseZoom(pointX : number, pointY : number, zoomValue : number): void{
+        this.mouseCenterX = pointX;
+        this.mouseCenterY = pointY;
+        this.zoomTo(zoomValue);
+    }
+
+    /**
      * Performs pinch in operation
      */
     private pinchIn(): void {
@@ -256,8 +268,11 @@ export class Magnification {
         if (temporaryZoomFactor < 4 && temporaryZoomFactor > 2) {
             temporaryZoomFactor = this.zoomFactor - this.pinchStep;
         }
-        if (temporaryZoomFactor < 0.1) {
-            temporaryZoomFactor = 0.1;
+        if(temporaryZoomFactor <=1.5){
+            temporaryZoomFactor = this.zoomFactor - (this.pinchStep / 1.5);
+        }
+        if (temporaryZoomFactor < 0.25) {
+            temporaryZoomFactor = 0.25;
         }
         this.isPinchZoomed = true;
         this.onZoomChanged(temporaryZoomFactor * 100);
@@ -278,8 +293,8 @@ export class Magnification {
         this.fitType = null;
         let temporaryZoomFactor: number = this.zoomFactor + this.pinchStep;
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            if (temporaryZoomFactor > 2) {
-                temporaryZoomFactor = 2;
+            if (temporaryZoomFactor > 4) {
+                temporaryZoomFactor = 4;
             }
         } else {
             if (temporaryZoomFactor > 2) {
@@ -436,7 +451,7 @@ export class Magnification {
         if (!this.pdfViewerBase.documentLoaded && !this.pdfViewerBase.isInitialPageMode) {
             this.isPagesZoomed = true;
         }
-        const scrollValue: number = this.getMagnifiedValue(this.pdfViewerBase.viewerContainer.scrollTop);
+        const scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.maintainSelectionOnZoom(false, true);
         }
@@ -448,6 +463,7 @@ export class Magnification {
         }
         this.updatePageLocation();
         this.resizeCanvas(this.reRenderPageNumber);
+        this.calculateScrollValuesOnMouse(scrollValue);
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.resizeTouchElements();
         }
@@ -463,7 +479,6 @@ export class Magnification {
             let proxy: any = this;
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
-            this.pdfViewerBase.viewerContainer.scrollTop = scrollValue;
             if (!this.pdfViewerBase.documentLoaded) {
                 this.magnifyPageRerenderTimer = setTimeout(
                     () => {
@@ -633,16 +648,42 @@ export class Magnification {
             const currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
             // update scroll top for the viewer container based on pinch zoom factor
             const previousPageTop: number = (currentPageBounds.top) * this.previousZoomFactor;
-            const previousY: number = scrollValue + this.touchCenterY;
+            const canvasPreviousY: number = scrollValue + this.touchCenterY;
             // eslint-disable-next-line max-len
-            const currentY: number = (currentPageBounds.top) * this.zoomFactor + ((previousY - previousPageTop) < 0 ? previousY - previousPageTop : (previousY -
+            const canvasCurrentY: number = (currentPageBounds.top) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
                 // eslint-disable-next-line max-len
                 previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
-            this.pdfViewerBase.viewerContainer.scrollTop = currentY - this.touchCenterY;
+            this.pdfViewerBase.viewerContainer.scrollTop = canvasCurrentY - this.touchCenterY;
             // update scroll left for the viewer container based on pinch zoom factor
-            const prevValue: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
-            const scaleCorrectionFactor: number = this.zoomFactor / prevValue - 1;
+            const previousWidthFactor: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
+            const scaleCorrectionFactor: number = this.zoomFactor / previousWidthFactor - 1;
             const scrollX: number = this.touchCenterX - currentPageBounds.left;
+            this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+        }
+    }
+
+    private calculateScrollValuesOnMouse(scrollValue: number): void {
+        const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+        const currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
+        if (currentPageCanvas) {
+            const currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
+            // update scroll top for the viewer container based on mouse zoom factor
+            const previousPageTop: number = (currentPageBounds.top) * this.previousZoomFactor;
+            const canvasPreviousY: number = scrollValue + this.mouseCenterY;
+            // eslint-disable-next-line max-len
+            const canvasCurrentY: number = (currentPageBounds.top) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
+                // eslint-disable-next-line max-len
+                previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
+            // eslint-disable-next-line max-len
+            let pageGapValue = this.zoomFactor - this.previousZoomFactor > 0 ? - this.pdfViewerBase.pageGap *(this.zoomFactor / this.previousZoomFactor) : this.pdfViewerBase.pageGap * (this.previousZoomFactor / this.zoomFactor );
+            if(this.pdfViewerBase.isTouchPad && !this.pdfViewerBase.isMacSafari){
+                pageGapValue =  pageGapValue / this.pdfViewerBase.zoomInterval;
+            }
+            this.pdfViewerBase.viewerContainer.scrollTop = canvasCurrentY - this.mouseCenterY + pageGapValue;
+            // update scroll left for the viewer container based on mouse zoom factor
+            const previousWidthFactor: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
+            const scaleCorrectionFactor: number = this.zoomFactor / previousWidthFactor - 1;
+            const scrollX: number = this.mouseCenterX - currentPageBounds.left;
             this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
         }
     }

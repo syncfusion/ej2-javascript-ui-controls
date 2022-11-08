@@ -687,3 +687,38 @@ describe('Check switching Match destination formatting while enable Track chnage
         expect(container.editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
     });
 });
+
+describe('To check formatting is applied when the document is protected with RevisionsOnly', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('To check formatting is applied when the document is protected with RevisionsOnly', () => {
+        console.log('To check formatting is applied when the document is protected with RevisionsOnly');
+        container.openBlank();
+        container.editor.insertText('Adventure Works Cycles, the fictitious company on which the Adventure Works sample databases are based, is a large, multinational manufacturing company.');
+        container.editor.addProtection('','RevisionsOnly');
+        expect(container.editor.restrictFormatting).toBe(false);
+        container.selection.select('0;0;39','0;0;47');
+        container.editor.toggleBold();
+        expect(container.selection.characterFormat.bold).toBe(true);
+    });
+});

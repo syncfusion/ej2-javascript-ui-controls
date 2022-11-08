@@ -204,6 +204,12 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
     @Property('')
     public tooltip: string;
 
+   /**
+     * Get or set the thickness of the Signature field. Default value is 1. To hide the borders, set the value to 0 (zero).
+     */
+    @Property(1)
+    public thickness: number;
+
     /**
      * specifies the page number of the form field.
      */
@@ -269,6 +275,12 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
      */
     @Property('')
     public tooltip: string;
+
+     /**
+     * Get or set the thickness of the Initial field. Default value is 1. To hide the borders, set the value to 0 (zero).
+     */
+    @Property(1)
+    public thickness: number;
 
     /**
      * specifies the page number of the form field.
@@ -4315,6 +4327,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(false)
     public isMaintainSelection: boolean;
 
+     /**
+     *  Get or set the flag to hide the digitally signed field on document loading. Default value is FALSE.
+     *
+     * @default false
+     */
+    @Property(false)
+    public hideEmptyDigitalSignatureFields: boolean;
+
     /**
      * Customize desired date and time format
      */
@@ -4354,14 +4374,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Get or set the signature field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
+    @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', thickness: 1, signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public signatureFieldSettings: SignatureFieldSettingsModel;
 
     /**
      * Get or set the initial field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', initialIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
+    @Property({ name: '', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', thickness: 1, initialIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false } })
     public initialFieldSettings: InitialFieldSettingsModel;
 
     /**
@@ -6115,7 +6135,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let isformDesignerModuleListBox: boolean = false;
         if (target) {
             target = target ? target : document.getElementById(fieldValue.id + '_content_html_element').children[0].children[0];
-            if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
+            if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password' || fieldValue.type === 'PasswordField') {
                 target.value = fieldValue.value;
             } else if (fieldValue.type === 'Checkbox' || fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
                 if (fieldValue.type === 'CheckBox') {
@@ -6189,7 +6209,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         fieldName = currentData.FieldName;
                     }
                     if (fieldName === fieldValue.name) {
-                        if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
+                        if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password' || fieldValue.type === 'PasswordField') {
                             if (fieldValue.value) {
                                 currentData.Text = fieldValue.value;
                                 currentData.Value = fieldValue.value;

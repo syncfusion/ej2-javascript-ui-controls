@@ -98,9 +98,9 @@ describe('Linear gauge control', () => {
                 args.axis.labelStyle.font.color = 'violet';
             };
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabelsGroup');
+                svg = document.getElementById('container_AxisLabelsGroup_0');
                 expect(svg.childElementCount).toBe(10);
-                svg = document.getElementById('container_AxisLabel_5');
+                svg = document.getElementById('container_Axis_0_Label_5');
                 expect(svg.style.fill).toBe('violet');
                 done();
             };
@@ -114,9 +114,9 @@ describe('Linear gauge control', () => {
                 }
             };
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_AxisLabelsGroup');
+                svg = document.getElementById('container_AxisLabelsGroup_0');
                 expect(svg.childElementCount).toBe(10);
-                svg = document.getElementById('container_AxisLabel_3');
+                svg = document.getElementById('container_Axis_0_Label_3');
                 expect(svg.textContent).toBe('sixty');
                 done();
             };

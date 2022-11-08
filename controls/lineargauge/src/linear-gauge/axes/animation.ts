@@ -1,5 +1,5 @@
 /* eslint-disable valid-jsdoc */
-import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from './axis';
 import { animationComplete } from '../model/constant';
@@ -40,11 +40,15 @@ export class Animations {
             pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         let currentValue: number;
-        let start: number = pointer.startValue;
+        let start: number = typeof(pointer.startValue) === 'string' ? parseInt(pointer.startValue, 10) : pointer.startValue;
         const end: number = pointer.currentValue;
         start = (start === end) ? range.min : start;
         const val: number = Math.abs(start - end);
         const currentPath: string = options.d;
+        const cx: number = options['cx'];
+        const cy: number = options['cy'];
+        const x: number = options['x'];
+        const y: number = options['y'];
         new Animation({}).animate(markerElement, {
             duration: pointer.animationDuration,
             progress: (args: AnimationOptions): void => {
@@ -54,20 +58,51 @@ export class Animations {
                     if (this.gauge.orientation === 'Vertical') {
                         pointer.bounds.y = (valueToCoefficient(currentValue, axis, this.gauge.orientation, range) *
                             rectHeight) + rectY;
+                        options = calculateShapes(
+                            pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
+                            pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+                        if (!isNullOrUndefined(options['r'])) {
+                            markerElement.setAttribute('cy', options['cy'].toString());
+                        }
+                        else if (!isNullOrUndefined(options['y'])) {
+                            markerElement.setAttribute('y', options['y'].toString());
+                        }
+                        else {
+                            markerElement.setAttribute('d', options.d);
+                        }
                     } else {
                         pointer.bounds.x = (valueToCoefficient(currentValue, axis, this.gauge.orientation, range) *
                             rectHeight) + rectY;
+                        options = calculateShapes(
+                            pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
+                            pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+                        if (!isNullOrUndefined(options['r'])) {
+                            markerElement.setAttribute('cx', options['cx'].toString());
+                        }
+                        else if (!isNullOrUndefined(options['x'])) {
+                            markerElement.setAttribute('x', options['x'].toString());
+                        }
+                        else {
+                            markerElement.setAttribute('d', options.d);
+                        }
                     }
-                    options = calculateShapes(
-                        pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
-                        pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
-                    markerElement.setAttribute('d', options.d);
                 }
             },
             end: (model: AnimationOptions) => {
-                markerElement.setAttribute('d', currentPath);
-                pointer.startValue = pointer.currentValue;
+                if (!isNullOrUndefined(cy)) {
+                    markerElement.setAttribute('cy', cy.toString());
+                    markerElement.setAttribute('cx', cx.toString());
+                }
+                else if (!isNullOrUndefined(y)) {
+                    markerElement.setAttribute('y', y.toString());
+                    markerElement.setAttribute('x', x.toString());
+                }
+                else {
+                    markerElement.setAttribute('d', currentPath);
+                }
+                pointer.isPointerAnimation = false;
                 pointer.animationComplete = true;
+                pointer.startValue = pointer.value = pointer.currentValue;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
             }
         });
@@ -93,7 +128,8 @@ export class Animations {
         const lineHeight: number = (this.gauge.orientation === 'Vertical') ? axis.lineBounds.height : axis.lineBounds.width;
         const lineY: number = (this.gauge.orientation === 'Vertical') ? axis.lineBounds.y : axis.lineBounds.x;
         const size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
-        let start: number = pointer.startValue; const end: number = pointer.currentValue;
+        let start: number = typeof(pointer.startValue) === 'string' ? parseInt(pointer.startValue, 10) : pointer.startValue;
+        const end: number = pointer.currentValue;
         start = (start === end) ? range.min : start;
         let path: string = ''; let currentPath: string = '';
         const tagName: string = pointerElement.tagName;
@@ -176,7 +212,8 @@ export class Animations {
                         pointerElement.setAttribute('width', rectHeight.toString());
                     }
                 }
-                pointer.startValue = pointer.currentValue;
+                pointer.isPointerAnimation = false;
+                pointer.startValue = pointer.value = pointer.currentValue;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
             }
         });

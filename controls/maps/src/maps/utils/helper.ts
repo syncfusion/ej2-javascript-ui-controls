@@ -750,9 +750,9 @@ export function renderTextElement(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function convertElement(element: HTMLCollection, markerId: string, data: any, index: number, mapObj: Maps): HTMLElement {
     const childElement: HTMLElement = createElement('div', {
-        id: markerId,
-        styles: 'position: absolute;pointer-events: auto;'
+        id: markerId
     });
+    childElement.style.cssText = 'position: absolute;pointer-events: auto;';
     let elementLength: number = element.length;
     while (elementLength > 0) {
         childElement.appendChild(element[0]);
@@ -840,11 +840,12 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
         // eslint-disable-next-line @typescript-eslint/ban-types
         templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i] + '}}', 'g'), data[properties[i].toString()]);
     }
-    return createElement('div', {
+    let templateEle: HTMLElement = createElement('div', {
         id: labelId,
-        innerHTML: templateHtml,
-        styles: 'position: absolute'
+        innerHTML: templateHtml
     });
+    templateEle.style.position = 'absolute';
+    return templateEle;
 }
 
 /**
@@ -2252,7 +2253,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         mapObject.zoomSettings.zoomFactor ===
         mapObject.mapScaleValue ? mapObject.zoomSettings.zoomFactor :
         mapObject.zoomSettings.zoomFactor !== mapObject.mapScaleValue && !mapObject.centerPositionChanged ? mapObject.mapScaleValue : mapObject.zoomSettings.zoomFactor;
-    if (mapObject.zoomSettings.shouldZoomInitially) {
+    if (mapObject.zoomSettings.shouldZoomInitially && !mapObject.isZoomByPosition) {
         mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale === 1)
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
         zoomFactorValue = mapObject.mapScaleValue;
@@ -2283,6 +2284,10 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
             } else {
+                if (mapObject.isZoomByPosition) {
+                    mapObject.zoomTranslatePoint.x = -point.x + leftPosition;
+                    mapObject.zoomTranslatePoint.y = -point.y + topPosition;
+                }
                 x = mapObject.zoomTranslatePoint.x;
                 y = mapObject.zoomTranslatePoint.y;
                 zoomFactorValue = zoomFactor;
@@ -2492,7 +2497,7 @@ export function triggerShapeEvent(
         target: targetId,
         maps: maps
     };
-    maps.trigger(eventName, eventArgs, (observedArgs: IShapeSelectedEventArgs) => {
+    maps.trigger(eventName, eventArgs, () => {
         eventArgs.border.opacity = isNullOrUndefined(eventArgs.border.opacity) ? eventArgs.opacity : eventArgs.border.opacity;
     });
     return eventArgs;
@@ -2732,11 +2737,11 @@ export function showTooltip(
     }
     if (!tooltip) {
         tooltip = createElement('div', {
-            id: id,
-            styles: 'background-color: rgb(255, 255, 255) !important; color:black !important; ' +
-                'position:absolute;border:1px solid rgb(0, 0, 0); padding-left:5px;' +
-                'font-size:12px; font-family: "Segoe UI"; text-align:center'
+            id: id
         });
+        tooltip.style.cssText = 'background-color: rgb(255, 255, 255) !important; color:black !important; ' +
+                                'position:absolute;border:1px solid rgb(0, 0, 0); padding-left:5px;' +
+                                'font-size:12px; font-family: "Segoe UI"; text-align:center';
     }
     if (x < (areaWidth - width)) {
         // eslint-disable-next-line no-self-assign
@@ -2836,12 +2841,13 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
         'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px;';
     if (!tooltip) {
         tooltip = createElement('div', {
-            id: id, innerHTML: '&nbsp;' + text + '&nbsp;', styles: style
+            id: id, innerHTML: '&nbsp;' + text + '&nbsp;'
         });
+        tooltip.style.cssText = style;
         document.body.appendChild(tooltip);
     } else {
-        tooltip.setAttribute('innerHTML', '&nbsp;' + text + '&nbsp;');
-        tooltip.setAttribute('styles', style);
+        tooltip.innerHTML = '&nbsp;' + text + '&nbsp;';
+        tooltip.style.cssText = style;
     }
 }
 
@@ -3251,7 +3257,7 @@ export function animate(element: Element, delay: number, duration: number, proce
             end.call(this, { element: element });
             if (element.id.indexOf('Marker') > -1) {
                 let markerElement: Element = getElementByID(element.id.split('_Layer')[0] + '_Markers_Group');
-                markerElement.setAttribute('style', markerStyle);
+                (markerElement as HTMLElement).style.cssText = markerStyle;
             }
         }
     };

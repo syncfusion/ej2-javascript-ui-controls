@@ -26,7 +26,6 @@ export class Merge {
         args: { rowIdx?: number, colIdx?: number, showDialog?: boolean, lastCell?: boolean, element?: Element, mergeCel?: boolean }): void {
         if (args.showDialog) {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-                target: this.parent.element,
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('PasteMergeAlert'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {

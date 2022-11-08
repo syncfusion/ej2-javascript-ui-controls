@@ -52,7 +52,9 @@ export class TreeMapTooltip {
                 toolTipHeader = item['name'];
                 value = item['weight'];
                 toolTipData = item['data'];
-                markerFill = item['options']['fill'];
+                if (!isNullOrUndefined(item['options'])) {
+                    markerFill = item['options']['fill'];
+                }
                 if (this.treemap.enableRtl) {
                     tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
                         formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString()];

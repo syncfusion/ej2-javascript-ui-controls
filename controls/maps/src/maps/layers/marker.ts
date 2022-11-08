@@ -46,18 +46,18 @@ export class Marker {
         const currentLayer: LayerSettings = <LayerSettings>maps.layersCollection[layerIndex];
         this.markerSVGObject = maps.renderer.createGroup({
             id: maps.element.id + '_Markers_Group',
-            class: 'GroupElement',
-            style: 'pointer-events: auto;'
+            class: 'GroupElement'
         });
+        (this.markerSVGObject as HTMLElement).style.pointerEvents = 'auto';
         const markerTemplateEle: HTMLElement = createElement('div', {
             id: maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: maps.element.id + '_template',
-            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + maps.mapAreaRect.y + 'px;' +
-                'left:' + maps.mapAreaRect.x + 'px;' +
-                'height:' + maps.mapAreaRect.height + 'px;' +
-                'width:' + maps.mapAreaRect.width + 'px;'
+            className: maps.element.id + '_template'
         });
+        markerTemplateEle.style.cssText = 'overflow: hidden; position: absolute;pointer-events: none;' +
+                                            'top:' + maps.mapAreaRect.y + 'px;' +
+                                            'left:' + maps.mapAreaRect.x + 'px;' +
+                                            'height:' + maps.mapAreaRect.height + 'px;' +
+                                            'width:' + maps.mapAreaRect.width + 'px;';
         currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerData: any[] = <any[]>markerSettings.dataSource;
@@ -272,7 +272,8 @@ export class Marker {
             }
             if (this.maps.isTileMap && !this.maps.enablePersistence
                 && this.maps.mapScaleValue <= 1) {
-                this.maps.tileZoomLevel = this.maps.mapScaleValue === 0 ? 1 : this.maps.mapScaleValue;
+                this.maps.tileZoomLevel = this.maps.mapScaleValue === 0 ? (this.maps.isZoomByPosition ? this.maps.tileZoomLevel : 1)
+                    : this.maps.mapScaleValue;
                 if (this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1) {
                     this.maps.tileTranslatePoint.x = 0;
                     this.maps.tileTranslatePoint.y = 0;
@@ -418,7 +419,7 @@ export class Marker {
         }
         const options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(targetId);
         if (this.maps.markerClusterExpand) {
-            (e.target as Element).setAttribute('style', 'cursor: pointer');
+            (e.target as HTMLElement).style.cursor = 'pointer';
         }
         if (isNullOrUndefined(options)) {
             return;

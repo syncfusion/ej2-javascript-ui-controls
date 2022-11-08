@@ -40,6 +40,7 @@ import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 import { FormFieldPopUp } from '../dialogs/form-field-popup';
 import { Revision } from '../track-changes/track-changes';
 import { TrackChangesPane } from '../track-changes/track-changes-pane';
+import { Themes } from '../themes/themes';
 
 /**
  * @private
@@ -278,6 +279,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public themeFontLanguage: WCharacterFormat;
+    /**
+     * @private
+     */
     public renderedLists: Dictionary<WAbstractList, Dictionary<number, number>>;
     /**
      * @private
@@ -499,6 +504,14 @@ export class DocumentHelper {
      * @private
      */
     public customXmlData: Dictionary<string, string>;
+    /**
+     * @private
+     */
+    public themes: Themes = new Themes();
+    /**
+     * @private
+     */
+    public hasThemes: boolean = false;
     /**
      * @private
      */
@@ -769,6 +782,7 @@ export class DocumentHelper {
         this.abstractLists = [];
         this.render = new Renderer(this);
         this.characterFormat = new WCharacterFormat(this);
+        this.themeFontLanguage = new WCharacterFormat(this);
         this.paragraphFormat = new WParagraphFormat(this);
         this.renderedLists = new Dictionary<WAbstractList, Dictionary<number, number>>();
         this.renderedLevelOverrides = [];
@@ -785,6 +799,7 @@ export class DocumentHelper {
         this.contentControlCollection = [];
         this.footnoteCollection = [];
         this.endnoteCollection = [];
+        this.themes = new Themes();
     }
     private initalizeStyles(): void {
         this.preDefinedStyles.add('Normal', '{"type":"Paragraph","name":"Normal","next":"Normal"}');
@@ -836,6 +851,7 @@ export class DocumentHelper {
         this.revisionsInternal.clear();
         this.owner.revisions.destroy();
         this.characterFormat.clearFormat();
+        this.themeFontLanguage.clearFormat();
         this.paragraphFormat.clearFormat();
         if (this.owner.trackChangesPane) {
             this.owner.trackChangesPane.clear();
@@ -864,6 +880,8 @@ export class DocumentHelper {
         this.endnoteCollection = [];
         this.abstractLists = [];
         this.lists = [];
+        this.themes = new Themes();
+        this.hasThemes = false;
     }
     /**
      * @private
@@ -2538,33 +2556,6 @@ export class DocumentHelper {
     }
 
     /**
-     * @private
-     */
-    public linkPageToHeaderFooter(currentPage: Page): void {
-        if (currentPage.headerWidget && currentPage.headerWidget.page === currentPage) {
-            currentPage.headerWidget.page = undefined;
-        }
-        if (currentPage.footerWidget && currentPage.footerWidget.page === currentPage) {
-            currentPage.footerWidget.page = undefined;
-        }
-        // if (currentPage.headerWidgetIn && currentPage.footerWidgetIn
-        //     && isNullOrUndefined(currentPage.headerWidgetIn.parentHeaderFooter)
-        //     && isNullOrUndefined(currentPage.footerWidgetIn.parentHeaderFooter)) {
-        //     for (let i: number = 0; i < this.pages.length; i++) {
-        //         let page: Page = this.pages[i];
-        //         if (page != currentPage) {
-        //             if (page.headerWidgetIn.parentHeaderFooter === currentPage.headerWidgetIn) {
-        //                 page.headerWidgetIn = currentPage.headerWidget;
-        //                 page.headerWidgetIn.page = page;
-        //                 page.footerWidgetIn = currentPage.footerWidget;
-        //                 page.footerWidgetIn.page = page;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-    }
-    /**
      * Removes specified page.
      * @private
      * @param {Page} page - Specifies page to remove
@@ -3124,7 +3115,6 @@ export class DocumentHelper {
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
-                this.linkPageToHeaderFooter(this.pages[j]);
                 this.removePage(this.pages[j]);
                 j--;
             }

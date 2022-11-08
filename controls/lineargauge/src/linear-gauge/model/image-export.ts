@@ -10,7 +10,6 @@ import { ExportType } from '../utils/enum';
  * @hidden
  */
 export class ImageExport {
-    private control: LinearGauge;
 
     /**
      * Constructor for gauge
@@ -19,7 +18,6 @@ export class ImageExport {
      */
     // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: LinearGauge) {
-        this.control = control;
     }
 
     /**
@@ -29,24 +27,24 @@ export class ImageExport {
      * @param fileName
      * @private
      */
-    public export(type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
+    public export(gauge: LinearGauge, type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
-                    'width': this.control.availableSize.width.toString(),
-                    'height': this.control.availableSize.height.toString()
+                    'width': gauge.availableSize.width.toString(),
+                    'height': gauge.availableSize.height.toString()
                 }
             });
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             const svgData: string = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
+            gauge.svgObject.outerHTML +
             '</svg>';
             const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
-                        [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                        [(new XMLSerializer()).serializeToString(gauge.svgObject)],
                     { type: 'image/svg+xml' }
                 )
             );
@@ -98,9 +96,6 @@ export class ImageExport {
      * @return {void}
      * @private
      */
-    public destroy(control: LinearGauge): void {
-        /**
-         * Destroy method performed here
-         */
+    public destroy(): void {
     }
 }

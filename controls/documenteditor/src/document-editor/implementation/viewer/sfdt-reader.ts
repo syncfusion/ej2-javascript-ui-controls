@@ -23,6 +23,7 @@ import { Dictionary } from '../../base/dictionary';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
 import { CompatibilityMode } from '../../base/types';
+import { Themes, FontSchemeStruct, MajorMinorFontScheme } from '../index';
 /**
  * @private
  */
@@ -52,6 +53,7 @@ export class SfdtReader {
     private isParseHeader: boolean = false;
     public footnotes: Footnote = undefined;
     public endnotes: Footnote = undefined;
+    public themes:Themes = undefined;
     /**
      * @private
      */
@@ -91,6 +93,9 @@ export class SfdtReader {
         const paragraphFormat: any = isNullOrUndefined(jsonObject.paragraphFormat) ?
             this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
         this.parseParagraphFormat(paragraphFormat, this.documentHelper.paragraphFormat);
+        if(!isNullOrUndefined(jsonObject.themeFontLanguages)){
+            this.parseCharacterFormat(jsonObject.themeFontLanguages, this.documentHelper.themeFontLanguage);
+        }
         this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.documentHelper.defaultTabWidth = jsonObject.defaultTabWidth;
@@ -142,6 +147,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.endnotes)) {
             this.parseEndtnotes(jsonObject.endnotes, this.documentHelper.endnotes);
+        }
+        if (!isNullOrUndefined(jsonObject.themes)) {
+            this.parseThemes(jsonObject.themes,this.documentHelper.themes);
         }
         this.generalizeRevisions();
         return sections;
@@ -1717,6 +1725,9 @@ export class SfdtReader {
                 characterFormat.fontSizeBidi = sourceFormat.fontSizeBidi < 0 ? 0 : sourceFormat.fontSizeBidi;
             }
             if (!isNullOrUndefined(sourceFormat.fontFamilyBidi)) {
+                if (sourceFormat.fontFamilyBidi.indexOf('"') !== -1) {
+                    sourceFormat.fontFamilyBidi = sourceFormat.fontFamilyBidi.replace('"', '');
+                }
                 characterFormat.fontFamilyBidi = sourceFormat.fontFamilyBidi;
             }
             if (!isNullOrUndefined(sourceFormat.boldBidi)) {
@@ -1734,14 +1745,67 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.localeIdBidi)) {
                 characterFormat.localeIdBidi = sourceFormat.localeIdBidi;
             }
+            if (!isNullOrUndefined(sourceFormat.localeIdAscii)) {
+                characterFormat.localeIdAscii = sourceFormat.localeIdAscii;
+            }
+            if (!isNullOrUndefined(sourceFormat.localeIdFarEast)) {
+                characterFormat.localeIdFarEast = sourceFormat.localeIdFarEast;
+            }
             if (!isNullOrUndefined(sourceFormat.complexScript)) {
                 characterFormat.complexScript = sourceFormat.complexScript;
+            }
+            if (!isNullOrUndefined(sourceFormat.fontFamilyFarEast)) {
+                if (sourceFormat.fontFamilyFarEast.indexOf('"') !== -1) {
+                    sourceFormat.fontFamilyFarEast = sourceFormat.fontFamilyFarEast.replace('"', '');
+                }
+                characterFormat.fontFamilyFarEast = sourceFormat.fontFamilyFarEast;
+            }
+            if (!isNullOrUndefined(sourceFormat.fontFamilyAscii)) {
+                if (sourceFormat.fontFamilyAscii.indexOf('"') !== -1) {
+                    sourceFormat.fontFamilyAscii = sourceFormat.fontFamilyAscii.replace('"', '');
+                }
+                characterFormat.fontFamilyAscii = sourceFormat.fontFamilyAscii;
+            }
+            if (!isNullOrUndefined(sourceFormat.fontFamilyNonFarEast)) {
+                if (sourceFormat.fontFamilyNonFarEast.indexOf('"') !== -1) {
+                    sourceFormat.fontFamilyNonFarEast = sourceFormat.fontFamilyNonFarEast.replace('"', '');
+                }
+                characterFormat.fontFamilyNonFarEast = sourceFormat.fontFamilyNonFarEast;
             }
         }
     }
     private getColor(color: string): string {
         let convertColor: string = color;
         return convertColor || '#ffffff';
+    }
+    public parseThemes(sourceFormat: any, themes: Themes): void {
+        this.parseFontScheme(sourceFormat.fontScheme, themes);
+    }
+    public parseFontScheme(sourceFormat: any, themes: Themes): void {
+        if(!isNullOrUndefined(sourceFormat.fontSchemeName))
+            themes.fontScheme.fontSchemeName = sourceFormat.fontSchemeName;
+        if (!isNullOrUndefined(sourceFormat.majorFontScheme) && (sourceFormat.majorFontScheme.fontSchemeList.length > 0 || sourceFormat.majorFontScheme.fontTypeface.length > 0)) {
+            this.parseMajorMinorFontScheme(sourceFormat.majorFontScheme, themes.fontScheme.majorFontScheme);
+            this.documentHelper.hasThemes = true;
+        }
+        if (!isNullOrUndefined(sourceFormat.minorFontScheme) && (sourceFormat.minorFontScheme.fontSchemeList.length > 0 || sourceFormat.minorFontScheme.fontTypeface.length > 0)) {
+            this.parseMajorMinorFontScheme(sourceFormat.minorFontScheme, themes.fontScheme.minorFontScheme);
+            this.documentHelper.hasThemes = true;
+        }
+    }
+    public parseMajorMinorFontScheme(sourceFormat: any, majorMinor: MajorMinorFontScheme): void {
+        let keys: string[] = Object.keys(sourceFormat.fontTypeface);
+        for (let key of keys) {
+            majorMinor.fontTypeface.add(key, sourceFormat.fontTypeface[key]);
+        }
+        for (let j: number = 0; j < sourceFormat.fontSchemeList.length; j++) {
+            let data: any = sourceFormat.fontSchemeList[j];
+            let fontList: FontSchemeStruct = new FontSchemeStruct();
+            fontList.name = data.name;
+            fontList.typeface = data.typeface;
+            fontList.panose = data.panose;
+            majorMinor.fontSchemeList.push(fontList);
+        }
     }
     public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {

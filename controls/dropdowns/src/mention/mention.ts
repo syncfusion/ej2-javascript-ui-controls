@@ -522,7 +522,7 @@ export class Mention extends DropDownBase {
         if (!isNullOrUndefined(this.spinnerElement)) {
             hideSpinner(this.spinnerElement);
         }
-        if (!isNullOrUndefined(this.spinnerTemplate)) {
+        if (!isNullOrUndefined(this.spinnerTemplate) && !isNullOrUndefined(this.spinnerTemplateElement)) {
             detach(this.spinnerTemplateElement);
         }
     }
@@ -546,7 +546,6 @@ export class Mention extends DropDownBase {
             }
             if (!isNullOrUndefined(this.spinnerTemplate)) {
                 this.setSpinnerTemplate();
-                this.popupObj.element.appendChild(this.spinnerTemplateElement);
             }
         }
     }
@@ -1349,6 +1348,24 @@ export class Mention extends DropDownBase {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private setValue(e?: KeyboardEventArgs | MouseEvent): boolean {
+        if (!(this as any).isReact) {
+            if (!isNullOrUndefined(this.displayTemplate)) {
+                this.setDisplayTemplate();
+            }
+            this.updateMentionValue(e);
+            return true;
+        }
+        else {
+            if (!isNullOrUndefined(this.displayTemplate)) {
+                this.setDisplayTemplate(e);
+            } else {
+                this.updateMentionValue(e);
+            }
+            return true;
+        }
+    }
+
+    private updateMentionValue(e?: KeyboardEventArgs | MouseEvent): void {
         const dataItem: { [key: string]: string } = this.getItemData();
         let textSuffix: string;
         let value: string;
@@ -1372,7 +1389,6 @@ export class Mention extends DropDownBase {
             myField.selectionEnd = startPos + value.length;
             if (this.isPopupOpen) { this.hidePopup(); }
             this.onChangeEvent(e);
-            return true;
         } else {
             endPos = this.getTriggerCharPosition() + this.mentionChar.length;
             if (this.range && (this.range.startContainer.textContent.trim() !== this.mentionChar)) {
@@ -1401,14 +1417,13 @@ export class Mention extends DropDownBase {
             }
             if (this.isPopupOpen) { this.hidePopup(); }
             this.onChangeEvent(e);
-            return true;
         }
     }
 
     private mentionVal(value: string): string {
         let showChar: string = this.showMentionChar ? this.mentionChar : '';
-        if (!isNullOrUndefined(this.displayTemplate)) {
-            value = this.setDisplayTemplate();
+        if (!isNullOrUndefined(this.displayTemplate) && !isNullOrUndefined(this.displayTempElement)) {
+            value = this.displayTempElement.innerHTML;
         }
         if (this.isContentEditable(this.inputElement)) {
             return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : ' ');
@@ -1417,7 +1432,7 @@ export class Mention extends DropDownBase {
         }
     }
 
-    private setDisplayTemplate(): string {
+    private setDisplayTemplate(e?: KeyboardEventArgs | MouseEvent): void {
         let compiledString: Function;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
@@ -1443,8 +1458,17 @@ export class Mention extends DropDownBase {
                 this.displayTempElement.appendChild(displayCompTemp[i]);
             }
         }
-        this.renderReactTemplates();
-        return this.displayTempElement.innerHTML;
+        if (!(this as any).isReact) {
+            this.renderTemplates();
+        } else {
+            this.renderTemplates(() => {
+                this.updateMentionValue(e);
+            });
+        }
+    }
+
+    public renderTemplates(callBack?: any): void {
+        this.renderReactTemplates(callBack);
     }
 
     private setSpinnerTemplate(): void {
@@ -1473,7 +1497,15 @@ export class Mention extends DropDownBase {
                 this.spinnerTemplateElement.appendChild(spinnerCompTemp[i]);
             }
         }
-        this.renderReactTemplates();
+        if (!(this as any).isReact) {
+            this.renderTemplates();
+            this.popupObj.element.appendChild(this.spinnerTemplateElement);
+        }
+        else {
+            this.renderTemplates(() => {
+                this.popupObj.element.appendChild(this.spinnerTemplateElement);
+            });
+        }
     }
 
     private onChangeEvent(eve: MouseEvent | KeyboardEvent | TouchEvent): void {

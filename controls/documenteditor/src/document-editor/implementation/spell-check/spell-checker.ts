@@ -1034,7 +1034,7 @@ export class SpellChecker {
         element.height = errorElement.height;
         element.canTrigger = errorElement.canTrigger;
         element.characterFormat.copyFormat(errorElement.characterFormat);
-        element.width = this.documentHelper.textHelper.getWidth(element.text, errorElement.characterFormat);
+        element.width = this.documentHelper.textHelper.getWidth(element.text, errorElement.characterFormat, (errorElement as TextElementBox).scriptType);
         return element;
     }
     /**
@@ -1087,7 +1087,9 @@ export class SpellChecker {
      * @param {WCharacterFormat} characterFormat - Specifies the character format.
      * @returns {SpecialCharacterInfo} - Returs special character info.
      */
-    public getWhiteSpaceCharacterInfo(text: string, characterFormat: WCharacterFormat): SpaceCharacterInfo {
+    public getWhiteSpaceCharacterInfo(elementBox: TextElementBox): SpaceCharacterInfo {
+        let text: string = elementBox.text;
+        let characterFormat: WCharacterFormat = elementBox.characterFormat;
         /* eslint-disable @typescript-eslint/no-explicit-any */
         let matchedText: any = [];
         let width: number = 0;
@@ -1095,7 +1097,7 @@ export class SpellChecker {
         matchedText = text.match(/[\s]+/);
         if (!isNullOrUndefined(matchedText) && matchedText.length > 0) {
             for (let i: number = 0; i < matchedText.length; i++) {
-                width += this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat);
+                width += this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat, elementBox.scriptType);
                 length += matchedText[i].length;
             }
 
@@ -1111,7 +1113,9 @@ export class SpellChecker {
      * @param {WCharacterFormat} characterFormat - Specifies the character format.
      * @returns {SpecialCharacterInfo} - Returs special character info.
      */
-    public getSpecialCharactersInfo(text: string, characterFormat: WCharacterFormat): SpecialCharacterInfo {
+    public getSpecialCharactersInfo(elementBox: TextElementBox): SpecialCharacterInfo {
+        let text: string = elementBox.text;
+        let characterFormat: WCharacterFormat = elementBox.characterFormat;
         /* eslint-disable @typescript-eslint/no-explicit-any */
         let matchedText: any = [];
         let beginingwidth: number = 0;
@@ -1120,7 +1124,7 @@ export class SpellChecker {
         matchedText = text.match(/^[\#\@\!\~\$\%\^\&\*\(\)\-\_\+\=\{\}\[\]\:\;\"\'\,\<\.\>\/\?\`]*/);
         for (let i: number = 0; i < matchedText.length; i++) {
             if (!isNullOrUndefined(matchedText[i]) && matchedText[i].length > 0) {
-                beginingwidth = this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat);
+                beginingwidth = this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat, elementBox.scriptType);
             }
             length = matchedText.length;
         }
@@ -1128,7 +1132,7 @@ export class SpellChecker {
         matchedText = text.match(/[\#\@\!\~\$\%\^\&\*\(\)\-\_\+\=\{\}\[\]\:\;\"\'\,\<\.\>\/\?\`]*$/);
         for (let i: number = 0; i < matchedText.length; i++) {
             if (!isNullOrUndefined(matchedText[i]) && matchedText[i].length > 0) {
-                endWidth = this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat);
+                endWidth = this.documentHelper.textHelper.getWidth(matchedText[i], characterFormat, elementBox.scriptType);
             }
             length = matchedText.length;
         }

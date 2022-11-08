@@ -1131,7 +1131,7 @@ export class ParagraphWidget extends BlockWidget {
                         matchedValue = matchedValue + text;
                     }
                     if (text !== '') {
-                        width += this.bodyWidget.page.documentHelper.textHelper.getWidth(text, span.characterFormat);
+                        width += this.bodyWidget.page.documentHelper.textHelper.getWidth(text, span.characterFormat, span.scriptType);
                     }
                     if (matchedValue === match[0]) {
                         break;
@@ -1166,7 +1166,7 @@ export class ParagraphWidget extends BlockWidget {
         let element: ElementBox = (this.childWidgets[0] as LineWidget).children[0];
         do {
             if (element instanceof TextElementBox && element.text !== '') {
-                width += this.bodyWidget.page.documentHelper.textHelper.getWidth(element.text, element.characterFormat);
+                width += this.bodyWidget.page.documentHelper.textHelper.getWidth(element.text, element.characterFormat, element.scriptType);
             } else if (element instanceof FieldElementBox && element.fieldType === 0) {
                 let fieldBegin: FieldElementBox = element as FieldElementBox;
                 if (fieldBegin.fieldEnd != null) {
@@ -1227,6 +1227,10 @@ export class ParagraphWidget extends BlockWidget {
             || (character >= String.fromCharCode(12352) && character <= String.fromCharCode(12447)) //Hiragana characters https://en.wikipedia.org/wiki/Hiragana_(Unicode_block)
         );
     }
+    private isThaiCharacter(character: string): boolean {
+        // Thai characters https://en.wikipedia.org/wiki/Thai_script#Unicode_ranges 
+        return (character >= String.fromCharCode(3584) && character <= String.fromCharCode(3711));
+    }
     private isChineseChar(character: string): boolean {
         //To-Do: Should handle a Chinese characters as two separate scripts such as Chinese Simplified and Chinese Traditional.
         return (
@@ -1265,6 +1269,9 @@ export class ParagraphWidget extends BlockWidget {
         // Return FontScriptType as Hebrew, if input character is in-between Hebrew character ranges.
         else if (this.isHebrewChar(inputCharacter))
             return FontScriptType.Hebrew;
+        // Return FontScriptType as Thai, if input character is in-between Thai character ranges.
+        else if (this.isThaiCharacter(inputCharacter))
+            return FontScriptType.Thai;
         // Return FontScriptType as English, for remaining character ranges.
         else
             return FontScriptType.English;
@@ -3538,7 +3545,7 @@ export class TableCellWidget extends BlockWidget {
             if (ownerCell.columnIndex === 0 || (ownerCell.cellIndex === 0 && ownerCell.ownerRow.rowFormat.gridBefore > 0)) {
                 isFirstCell = true;
             }
-            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
+            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && !(leftBorder.isBorderDefined && leftBorder.lineWidth !== 0)) || isNullOrUndefined(leftBorder)) {
                 if (isFirstCell) {
                     leftBorder = rowBorders.left;
                     if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
@@ -3632,7 +3639,7 @@ export class TableCellWidget extends BlockWidget {
                 || (ownerCell.cellIndex === ownerCell.ownerRow.childWidgets.length - 1)) {
                 isLastCell = true;
             }
-            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
+            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && !(rightBorder.isBorderDefined && rightBorder.lineWidth !== 0)) || isNullOrUndefined(rightBorder)) {
                 if (isLastCell) {
                     rightBorder = rowBorders.right;
                     if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
@@ -3714,7 +3721,7 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(topBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isFirstRow: boolean = isNullOrUndefined(ownerCell.ownerRow.previousWidget);
-            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
+            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && !(topBorder.isBorderDefined && topBorder.lineWidth !== 0)) || isNullOrUndefined(topBorder)) {
                 if (isFirstRow) {
                     topBorder = rowBorders.top;
                     if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
@@ -3806,7 +3813,7 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isLastRow: boolean = isNullOrUndefined(ownerCell.ownerRow.nextWidget);
-            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
+            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && !(bottomBorder.isBorderDefined && bottomBorder.lineWidth !== 0)) || isNullOrUndefined(bottomBorder)) {
                 if (isLastRow) {
                     bottomBorder = rowBorders.bottom;
                     if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {
@@ -5033,7 +5040,10 @@ export class TextElementBox extends ElementBox {
      * @private
      */
     public scriptType?: FontScriptType = FontScriptType.English;
-
+    /**
+     * @private
+     */
+    public renderedFontFamily?: string = undefined
     constructor() {
         super();
         this.errorCollection = [];

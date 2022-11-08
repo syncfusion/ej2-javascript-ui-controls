@@ -282,6 +282,18 @@ export class ChartData {
         return this.commonXvalues;
     }
 
+    public commonXValue(series: Series): number[] {
+        let commonXValues: number[] = [];
+        for (let i: number = 0; i < series.points.length; i++) {
+            let point: Points = series.points[i];
+            if (point && (point.index == 0 || point.index == series.points.length - 1 || (point.symbolLocations.length > 0))) {
+                commonXValues.push(point.xValue);
+            }
+        }
+        return commonXValues;
+    }
+
+
     private getDistinctValues(first: number[] = [], second: number[] = []): number[] {
             let intial: object = {};
             let result: number[] = [];

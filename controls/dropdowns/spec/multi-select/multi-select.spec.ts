@@ -7695,57 +7695,57 @@ describe('MultiSelect', () => {
         count = 0;
         });
     });
-    describe('EJ2-40997', () => {
-        let listObj: any;
-        let mouseDownEvent : MouseEvent = document.createEvent('MouseEvent');
-        mouseDownEvent.initEvent('mousedown');
-        let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
-        let dataSource: any = [];
-        for (let i:number = 0; i<= 1000; i++) {
-            let obj: any = {Name: "Data "+i, Code: i}
-            dataSource.push(obj);
-        }
-        beforeAll(() => {
-            document.body.appendChild(mEle);
-        });
-        afterAll((done) => {
-            setTimeout(() => {
-                listObj.destroy();
-                mEle.remove();
-            }, 1000);
-            done();
-        });
-        it('Performance checking when clicking Select All for 1000 data', (done) => {
-            let startTime: any;
-            let endTime:any;
-            listObj = new MultiSelect({
-                dataSource: dataSource,
-                mode: 'CheckBox',
-                showSelectAll: true,
-                maximumSelectionLength: 2000,
-                popupHeight: 200,
-                fields: { text: 'Name', value: 'Code' },
-                selectedAll: function() {
-                    setTimeout(() => {
-                        while(listObj.list.querySelectorAll('.e-check').length) {
-                            if (listObj.list.querySelectorAll('.e-check').length == 1001) {
-                                endTime = Date.now();
-                                expect(endTime-startTime).toBeLessThan(4000);
-                                break;   
-                            }
-                        }
-                    }, 100);
-                    done();
-                }
-            });
-            listObj.appendTo(mEle);
-            listObj.showPopup();
-            if (listObj.isPopupOpen()) {
-                listObj.popupObj.element.querySelector('.e-selectall-parent').dispatchEvent(mouseDownEvent);
-                startTime = Date.now();
-            }
-        });
-    });
+    // describe('EJ2-40997', () => {
+    //     let listObj: any;
+    //     let mouseDownEvent : MouseEvent = document.createEvent('MouseEvent');
+    //     mouseDownEvent.initEvent('mousedown');
+    //     let mEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+    //     let dataSource: any = [];
+    //     for (let i:number = 0; i<= 1000; i++) {
+    //         let obj: any = {Name: "Data "+i, Code: i}
+    //         dataSource.push(obj);
+    //     }
+    //     beforeAll(() => {
+    //         document.body.appendChild(mEle);
+    //     });
+    //     afterAll((done) => {
+    //         setTimeout(() => {
+    //             listObj.destroy();
+    //             mEle.remove();
+    //         }, 1000);
+    //         done();
+    //     });
+    //     it('Performance checking when clicking Select All for 1000 data', (done) => {
+    //         let startTime: any;
+    //         let endTime:any;
+    //         listObj = new MultiSelect({
+    //             dataSource: dataSource,
+    //             mode: 'CheckBox',
+    //             showSelectAll: true,
+    //             maximumSelectionLength: 2000,
+    //             popupHeight: 200,
+    //             fields: { text: 'Name', value: 'Code' },
+    //             selectedAll: function() {
+    //                 setTimeout(() => {
+    //                     while(listObj.list.querySelectorAll('.e-check').length) {
+    //                         if (listObj.list.querySelectorAll('.e-check').length == 1001) {
+    //                             endTime = Date.now();
+    //                             expect(endTime-startTime).toBeLessThan(4000);
+    //                             break;   
+    //                         }
+    //                     }
+    //                 }, 100);
+    //                 done();
+    //             }
+    //         });
+    //         listObj.appendTo(mEle);
+    //         listObj.showPopup();
+    //         if (listObj.isPopupOpen()) {
+    //             listObj.popupObj.element.querySelector('.e-selectall-parent').dispatchEvent(mouseDownEvent);
+    //             startTime = Date.now();
+    //         }
+    //     });
+    // });
     describe('EJ2-40997', () => {
         let listObj1: any;
         let mouseDownEvent : MouseEvent = document.createEvent('MouseEvent');

@@ -203,8 +203,9 @@ export class Render {
                 if (args.column.template) {
                     args.cell.innerHTML = null;
                 }
-                else
+                else {
                     args.cell.innerHTML = summaryData;
+                }
             }
         }
         if (isNullOrUndefined(this.parent.rowTemplate)) {

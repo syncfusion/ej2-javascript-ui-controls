@@ -1315,7 +1315,6 @@ export class SpreadsheetChart {
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-title-dlg',
             header: addChartEle === 'chart_abovechart' ? l10n.getConstant('ChartTitle') : addChartEle ===
                 'PHAxisTitle' ? l10n.getConstant('HorizontalAxisTitle') : l10n.getConstant('VerticalAxisTitle'),
-            target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
             beforeOpen: (): void => {
                 dialogInst.dialogInstance.content = this.titleDlgContent(addChartEle, chartComp);
                 dialogInst.dialogInstance.dataBind();

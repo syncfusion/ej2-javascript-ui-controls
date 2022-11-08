@@ -8,6 +8,7 @@ import { Size, Rect, valueToCoefficient, PathOption, textElement,
     getElement, textTrim} from '../utils/helper';
 import { TextOption, RectOption, calculateShapes, getBox, getPathToRect, getRangeColor, VisibleRange } from '../utils/helper';
 import { MarkerType } from '../utils/enum';
+import { FontModel } from '../model/base-model';
 
 /**
  * @private
@@ -41,9 +42,9 @@ export class AxisRenderer extends Animations {
             this.htmlObject = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_Axis_Group_' + i });
             this.drawAxisLine(axis, this.htmlObject, i);
             this.drawRanges(axis, this.htmlObject, i);
-            this.drawTicks(axis, major, this.htmlObject, 'MajorTicks', axis.majorTickBounds);
-            this.drawTicks(axis, minor, this.htmlObject, 'MinorTicks', axis.minorTickBounds);
-            this.drawAxisLabels(axis, this.htmlObject);
+            this.drawTicks(axis, major, this.htmlObject, 'MajorTicks', axis.majorTickBounds, i);
+            this.drawTicks(axis, minor, this.htmlObject, 'MinorTicks', axis.minorTickBounds, i);
+            this.drawAxisLabels(axis, this.htmlObject, i);
             this.drawPointers(axis, this.htmlObject, i);
             this.axisElements.push(this.htmlObject);
         }
@@ -108,7 +109,7 @@ export class AxisRenderer extends Animations {
         }
     }
 
-    public drawTicks(axis: Axis, ticks: Tick, axisObject: Element, tickID: string, tickBounds: Rect): void {
+    public drawTicks(axis: Axis, ticks: Tick, axisObject: Element, tickID: string, tickBounds: Rect, axisIndex: number): void {
         let tickPath: string = '';
         let pointY: number; let pointX: number;
         const range: VisibleRange = axis.visibleRange;
@@ -135,12 +136,12 @@ export class AxisRenderer extends Animations {
             }
         }
         const options: PathOption = new PathOption(
-            this.gauge.element.id + '_' + tickID + 'Line_' + 0, tickColor, ticks.width,
+            this.gauge.element.id + '_' + tickID + 'Line_' + axisIndex, tickColor, ticks.width,
             tickColor, 1, null, tickPath);
         axisObject.appendChild(this.gauge.renderer.drawPath(options) as SVGElement);
     }
 
-    public drawAxisLabels(axis: Axis, axisObject: Element): void {
+    public drawAxisLabels(axis: Axis, axisObject: Element, axisIndex: number): void {
         /* eslint-disable max-len */
         let options: TextOption; let pointX: number; let pointY: number;
         const rect: Rect = axis.lineBounds;
@@ -151,7 +152,7 @@ export class AxisRenderer extends Animations {
         const fontColor: string = this.gauge.themeStyle.labelColor;
         let labelColor: string; const offset: number = axis.labelStyle.offset;
         const labelLength: number = axis.visibleLabels.length - 1;
-        const labelElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
+        const labelElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup_' + axisIndex });
         for (let i: number = 0; i < axis.visibleLabels.length; i++) {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, <Range[]>axis.ranges) : null;
@@ -234,11 +235,19 @@ export class AxisRenderer extends Animations {
                     axis.visibleLabels[i].y = pointY;
                 }
             }
-            axis.labelStyle.font.fontFamily = this.gauge.themeStyle.labelFontFamily || axis.labelStyle.font.fontFamily;
-            axis.labelStyle.font.fontStyle = axis.labelStyle.font.fontStyle || this.gauge.themeStyle.labelStyle;
-            axis.labelStyle.font.fontWeight = axis.labelStyle.font.fontWeight || this.gauge.themeStyle.labelWeight;
-            options = new TextOption(this.gauge.element.id + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
-            textElement(options, axis.labelStyle.font, labelColor, labelElement);
+            const style: FontModel = {
+                size: axis.labelStyle.font.size,
+                color: axis.labelStyle.font.color,
+                fontFamily: axis.labelStyle.font.fontFamily,
+                fontWeight: axis.labelStyle.font.fontWeight,
+                fontStyle: axis.labelStyle.font.fontStyle,
+                opacity: axis.labelStyle.font.opacity
+            };
+            style.fontFamily = style.fontFamily || this.gauge.themeStyle.labelFontFamily;
+            style.fontStyle = style.fontStyle || this.gauge.themeStyle.labelStyle;
+            style.fontWeight = style.fontWeight || this.gauge.themeStyle.labelWeight;
+            options = new TextOption(this.gauge.element.id + '_Axis_'+ axisIndex +'_Label_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
+            textElement(options, style, labelColor, labelElement);
         }
         axisObject.appendChild(labelElement);
     }
@@ -247,18 +256,19 @@ export class AxisRenderer extends Animations {
         let pointer: Pointer;
         let clipId: string;
         let pointerClipRectGroup: Element;
-        const pointesGroup: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_PointersGroup' });
+        const pointesGroup: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_PointersGroup_' + axisIndex });
         for (let i: number = 0; i < axis.pointers.length; i++) {
             pointer = <Pointer>axis.pointers[i];
             clipId = 'url(#' + this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + i + ')';
             if (!(isNullOrUndefined(pointer.bounds))) {
                 pointerClipRectGroup = this.gauge.renderer.createGroup({
-                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i
+                    'id': this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'PointerGroup_' + i
                 });
                 if (isNullOrUndefined(pointer.startValue)) {
                     pointer.startValue = axis.visibleRange.min;
                 }
-                if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
+                if (pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && !this.gauge.gaugeResized) {
+                    pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum: pointer.startValue;
                     if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
                         pointerClipRectGroup.setAttribute('clip-path', clipId);
                     }
@@ -306,12 +316,15 @@ export class AxisRenderer extends Animations {
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
                 this.gauge.renderer.drawPath(options) as SVGAElement));
         parentElement.appendChild(pointerElement);
-        if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
+        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] != pointer.currentValue) && !this.gauge.gaugeResized) {
+            pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum: pointer.startValue;
             pointer.animationComplete = false;
             this.performMarkerAnimation(pointerElement, axis, pointer);
         }
+        if (pointer.animationDuration === 0) {
+            pointer.startValue = pointer.currentValue;
+        }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
-        pointerElement.setAttribute('cursor', 'pointer');
     }
 
     public drawBarPointer(axis: Axis, axisIndex: number, pointer: Pointer, pointerIndex: number, parentElement: Element): void {
@@ -364,8 +377,8 @@ export class AxisRenderer extends Animations {
             parentElement.appendChild(pointerElement);
         }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
-        pointerElement.setAttribute('cursor', 'pointer');
-        if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
+        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] != pointer.currentValue) && !this.gauge.gaugeResized) {
+            pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum: pointer.startValue;
             if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0 && this.gauge.container.width > 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(
                     new RectOption(
@@ -375,13 +388,16 @@ export class AxisRenderer extends Animations {
             }
             this.performBarAnimation(pointerElement, axis, pointer);
         }
+        if (pointer.animationDuration === 0) {
+            pointer.startValue = pointer.currentValue;
+        }
     }
 
 
     public drawRanges(axis: Axis, axisObject: Element, axisIndex: number): void {
         let range: Range;
         let options: PathOption;
-        const rangeElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_RangesGroup' });
+        const rangeElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_RangesGroup_' + axisIndex });
         for (let j: number = 0; j < axis.ranges.length; j++) {
             range = <Range>axis.ranges[j];
             if (!(isNullOrUndefined(range.path))) {
@@ -392,6 +408,16 @@ export class AxisRenderer extends Animations {
             }
         }
         axisObject.appendChild(rangeElement);
+    }
+
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.htmlObject = null;
+        this.axisObject = null;
+        this.axisElements = [];
+        this.gauge = null;
     }
 }
 

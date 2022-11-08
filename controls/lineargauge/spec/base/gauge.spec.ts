@@ -55,8 +55,11 @@ describe('Linear gauge control', () => {
         });
 
         it('checking with empty height property', (): void => {
-            svg = document.getElementById('container_svg');
-            expect(svg.getAttribute('height')).toEqual('450');
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_svg');
+                expect(svg.getAttribute('height')).toEqual('450');
+            }
+            gauge.refresh();
         });
 
         it('checking with background color', (): void => {

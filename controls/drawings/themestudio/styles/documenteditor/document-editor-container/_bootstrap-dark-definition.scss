@@ -9,8 +9,8 @@ $de-tlbr-margin-first: 12px !default;
 $de-tlbr-margin-first-big: 16px !default;
 $de-tlbr-margin-right: 6px !default;
 $de-tlbr-margin-right-big: 8px !default;
-$de-ctrnr-tblr-separator-margin: 0 5.5px  !default;
-$de-ctrnr-tblr-separator-margin-big: 0 7.5px  !default;
+$de-ctrnr-tblr-separator-margin: 0 5.5px !default;
+$de-ctrnr-tblr-separator-margin-big: 0 7.5px !default;
 $de-ctnr-margin-bottom: 12px !default;
 $de-ctnr-margin-bottom-big: 16px !default;
 $de-group-btn-hgt: 34px !default;
@@ -22,15 +22,17 @@ $de-spellcheck-tlbr-height: 34px !default;
 $de-spellcheck-tlbr-margin-left: 7.5px !default;
 $de-zoom-tlbr-margin-left: calc(100% - 380px) !default;
 $de-zoom-tlbr-margin-left-big: calc(100% - 410px) !default;
+
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 115px) !default;
 $de-tool-ctnr-editor-height-big: calc(100% - 121px) !default;
+
 // Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 38px) !default;
 $de-ctnr-editor-height-big: calc(100% - 38px) !default;
 $de-ctrnr-tblr-item-padding: 0 !default;
-$de-ctrnr-tblr-item-margin: 0 6.5px  !default;
-$de-ctrnr-tblr-item-margin-big: 0 6px  !default;
+$de-ctrnr-tblr-item-margin: 0 6.5px !default;
+$de-ctrnr-tblr-item-margin-big: 0 6px !default;
 $de-prpty-btn-bg-clr: $grey-darker !default;
 $de-panel-header-size: 12px !default;
 $de-panel-header-color: $grey-cc !default;

@@ -1577,11 +1577,1008 @@ export enum FontScriptType {
     Chinese = 3,
     Arabic = 4,
     Hebrew = 5,
-    Japanese = 6
+    Japanese = 6,
+    Thai = 7
     //To-Do : Should add a enum field for other known scripts. Such as Tamil, Malayalam, Telugu, etc.
 }
-
+/**
+* @private
+*/
+export enum FontHintType {
+    //0x00 - default
+    Default = 0,
+    //0x01 - eastAsia
+    EastAsia = 1,
+    //0x02 - cs
+    CS = 2
+}
 /**
  * Specifies the server action types.
  */
 export type ServerActionType = 'Import' | 'RestrictEditing' | 'SpellCheck' | 'SystemClipboard';
+/**
+ * @private
+ * Specifies the local ID's.
+ */
+export enum LocaleId {
+    /**
+     * African.
+     */
+    af_ZA = 1078,
+    /**
+     * Albanian.
+     */
+    sq_AL = 1052,
+    /**
+     * Amharic.
+     */
+    am_ET = 1118,
+    /**
+     * Alsatian.
+     */
+    gsw_FR = 1156,
+    /**
+     * Arabic Algerian.
+     */
+    ar_DZ = 5121,
+    // /**
+    //  * Arabic Bahraini.
+    //  */
+    ar_BH = 15361,
+    /**
+     * Arabic Egyptian.
+     */
+    ar_EG = 3073,
+    /**
+     * Arabic Iraqi.
+     */
+    ar_IQ = 2049,
+    /**
+     * Arabic Jordanian.
+     */
+    ar_JO = 11265,
+    /**
+     * Arabic Kuwaiti.
+     */
+    ar_KW = 13313,
+    /**
+     * Arabic Lebanese.
+     */
+    ar_LB = 12289,
+    /**
+     * Arabic Libyan.
+     */
+    ar_LY = 4097,
+    /**
+     * Arabic Moroccan.
+     */
+    ar_MA = 6145,
+    // /**
+    //  * Arabic Omani.
+    //  */
+    ar_OM = 8193,
+    // /**
+    //  * Arabic Qatari.
+    //  */
+    ar_QA = 16385,
+    /**
+     * Arabic Saudi.
+     */
+    ar_SA = 1025,
+    /**
+     * Arabic Syrian.
+     */
+    ar_SY = 10241,
+    /**
+     * Arabic Tunisian.
+     */
+    ar_TN = 7169,
+    /**
+     * Arabic United Arab Emirates.
+     */
+    ar_AE = 14337,
+    /**
+     * Arabic Yemeni.
+     */
+    ar_YE = 9217,
+    /**
+     * Armenian.
+     */
+    hy_AM = 1067,
+    /**
+     * Assamese.
+     */
+    as_IN = 1101,
+    // /**
+    //  * Azeri Cyrillic.
+    //  */
+    az_Cyrl_AZ = 2092,
+    // /**
+    //  * Azeri Latin.
+    //  */
+    az_Latn_AZ = 1068,
+    // /**
+    //  * Bashkir.
+    //  */
+    ba_RU = 1133,
+    /**
+     * Basque.
+     */
+    eu_ES = 1069,
+    // /**
+    //  * Belarusian.
+    //  */
+    be_BY = 1059,
+    /**
+     * Bengali (Bangladesh).
+     */
+    bn_BD = 2117,
+    /**
+     * Bengali (India).
+     */
+    bn_IN = 1093,
+    /**
+     * Bosnian (Cyrillic, Bosnia and Herzegovina).
+     */
+    bs_Cyrl_BA = 8218,
+    /**
+     * Bosnian (Bosnia/Herzegovina).
+     */
+    bs_Latn_BA = 5146,
+    /**
+     * Bulgarian.
+     */
+    bg_BG = 1026,
+    /**
+     * Breton.
+     */
+    br_FR = 1150,
+    /**
+     * Burmese.
+     */
+    my_MM = 1109,
+    /**
+     * Catalan.
+     */
+    ca_ES = 1027,
+    /**
+     * Cherokee - United States.
+     */
+    chr_US = 1116,
+    // /**
+    //  * Chinese - Hong Kong SAR.
+    //  */
+    zh_HK = 3076,
+    // /**
+    //  * Chinese - Macao SAR.
+    //  */
+    zh_MO = 5124,
+    /**
+     * Chinese - People's Republic of China.
+     */
+    zh_CN = 2052,
+    /**
+     * Chinese - Singapore.
+     */
+    zh_SG = 4100,
+    /**
+     * Chinese - Taiwan.
+     */
+    zh_TW = 1028,
+    /**
+     * Corsican.
+     */
+    co_FR = 1155,
+    /**
+     * Croatian (Bosnia/Herzegovina).
+     */
+    hr_BA = 4122,
+    /**
+     * Croatian.
+     */
+    hr_HR = 1050,
+    /**
+     * Czech.
+     */
+    cs_CZ = 1029,
+    /**
+     * Danish.
+     */
+    da_DK = 1030,
+    /**
+     * Dari.
+     */
+    prs_AF = 1164,
+    // /**
+    //  * Divehi.
+    //  */
+    dv_MV = 1125,
+    /**
+     * Dutch - Belgium.
+     */
+    nl_BE = 2067,
+    /**
+     * Dutch - Netherlands.
+     */
+    nl_NL = 1043,
+    // /**
+    //  * Edo.
+    //  */
+    bin_NG = 1126,
+    /**
+     * Estonian.
+     */
+    et_EE = 1061,
+    /**
+     * English - Australia.
+     */
+    en_AU = 3081,
+    /**
+     * English - Belize.
+     */
+    en_BZ = 10249,
+    /**
+     * English - Canada.
+     */
+    en_CA = 4105,
+    /**
+     * English - Caribbean.
+     */
+    en_029 = 9225,
+    // /**
+    //  * English - Hong Kong SAR.
+    //  */
+    en_HK = 15369,
+    /**
+     * English - India.
+     */
+    en_IN = 16393,
+    /**
+     * English - Indonesia.
+     */
+    en_ID = 14345,
+    /**
+     * English - Ireland.
+     */
+    en_IE = 6153,
+    /**
+     * English - Jamaica.
+     */
+    en_JM = 8201,
+    /**
+     * English - Malaysia.
+     */
+    en_MY = 17417,
+    /**
+     * English - New Zealand.
+     */
+    en_NZ = 5129,
+    /**
+     * English - Philippines.
+     */
+    en_PH = 13321,
+    /**
+     * English - Singapore.
+     */
+    en_SG = 18441,
+    /**
+     * English - South Africa.
+     */
+    en_ZA = 7177,
+    /**
+     * English - Trinidad.
+     */
+    en_TT = 11273,
+    /**
+     * English - United Kingdom.
+     */
+    en_GB = 2057,
+    /**
+     * English - United States.
+     */
+    en_US = 1033,
+    /**
+     * English - Zimbabwe.
+     */
+    en_ZW = 12297,
+    // /**
+    //  * Faroese.
+    //  */
+    fo_FO = 1080,
+    /**
+     * Filipino.
+     */
+    fil_PH = 1124,
+    /**
+     * Finnish.
+     */
+    fi_FI = 1035,
+    /**
+     * French - Belgium.
+     */
+    fr_BE = 2060,
+    /**
+     * French - Cameroon.
+     */
+    fr_CM = 11276,
+    /**
+     * French - Canada.
+     */
+    fr_CA = 3084,
+    /**
+     * French - Democratic Rep. of Congo.
+     */
+    fr_CD = 9228,
+    // /**
+    //  * French - Cote d'Ivoire.
+    //  */
+    fr_CI = 12300,
+    /**
+     * French - France.
+     */
+    fr_FR = 1036,
+    /**
+     * French - Haiti.
+     */
+    fr_HT = 15372,
+    /**
+     * French - Luxembourg.
+     */
+    fr_LU = 5132,
+    /**
+     * French - Mali.
+     */
+    fr_ML = 13324,
+    /**
+     * French - Monaco.
+     */
+    fr_MC = 6156,
+    /**
+     * French - Morocco.
+     */
+    fr_MA = 14348,
+    /**
+     * French - Reunion.
+     */
+    fr_RE = 8204,
+    /**
+     * French - Senegal.
+     */
+    fr_SN = 10252,
+    /**
+     * French - Switzerland.
+     */
+    fr_CH = 4108,
+    /**
+     * French - West Indies.
+     */
+    //fr_fr_WINDIES = 7180,
+    /**
+     * Frisian - Netherlands.
+     */
+    fy_NL = 1122,
+    // /**
+    //  * Fulfulde - Nigeria.
+    //  */
+    ff_NG = 1127,
+    /**
+     * Scottish Gaelic.
+     */
+    gd_GB = 1084,
+    // /**
+    //  * Galician.
+    //  */
+    gl_ES = 1110,
+    /**
+     * Georgian.
+     */
+    ka_GE = 1079,
+    /**
+     * German - Austria.
+     */
+    de_AT = 3079,
+    /**
+     * German - Germany.
+     */
+    de_DE = 1031,
+    /**
+     * German - Liechtenstein.
+     */
+    de_LI = 5127,
+    /**
+     * German - Luxembourg.
+     */
+    de_LU = 4103,
+    /**
+     * German - Switzerland.
+     */
+    de_CH = 2055,
+    /**
+     * Greek.
+     */
+    el_GR = 1032,
+    /**
+     * Guarani - Paraguay.
+     */
+    gn_PY = 1140,
+    /**
+     * Gujarati.
+     */
+    gu_IN = 1095,
+    // /**
+    //  * Greenlandic.
+    //  */
+    kl_GL = 1135,
+    /**
+     * Hausa - Nigeria.
+     */
+    ha_Latn_NG = 1128,
+    /**
+     * Hawaiian - United States.
+     */
+    haw_US = 1141,
+    /**
+     * Hebrew.
+     */
+    he_IL = 1037,
+    /**
+     * Hindi.
+     */
+    hi_IN = 1081,
+    /**
+     * Hungarian.
+     */
+    hu_HU = 1038,
+    // /**
+    //  * Ibibio - Nigeria.
+    //  */
+    ibb_NG = 1129,
+    /**
+     * Icelandic.
+     */
+    is_IS = 1039,
+    // /**
+    //  * Igbo - Nigeria.
+    //  */
+    ig_NG = 1136,
+    /**
+     * Indonesian.
+     */
+    id_ID = 1057,
+    // /**
+    //  * Inuktitut (Latin, Canada).
+    //  */
+    iu_Latn_CA = 2141,
+    // /**
+    //  * Inuktitut.
+    //  */
+    iu_Cans_CA = 1117,
+    /**
+     * Italian - Italy.
+     */
+    it_IT = 1040,
+    /**
+     * Italian - Switzerland.
+     */
+    it_CH = 2064,
+    /**
+     * Irish.
+     */
+    ga_IE = 2108,
+    /**
+     * Xhosa.
+     */
+    xh_ZA = 1076,
+    /**
+     * Zulu.
+     */
+    zu_ZA = 1077,
+    /**
+     * Kannada (India).
+     */
+    kn_IN = 1099,
+    // /**
+    //  * Kanuri - Nigeria.
+    //  */
+    kr_NG = 1137,
+    // /**
+    //  * Kashmiri.
+    //  */
+    ks_Deva = 2144,
+    // /**
+    //  * Kashmiri (Arabic).
+    //  */
+    ks_Arab = 1120,
+    /**
+     * Kazakh.
+     */
+    kk_KZ = 1087,
+    /**
+     * Khmer.
+     */
+    km_KH = 1107,
+    // /**
+    //  * Konkani.
+    //  */
+    kok_IN = 1111,
+    /**
+     * Korean.
+     */
+    ko_KR = 1042,
+    // /**
+    //  * Kyrgyz (Cyrillic).
+    //  */
+    ky_KG = 1088,
+    // /**
+    //  * K'iche.
+    //  */
+    qut_GT = 1158,
+    // /**
+    //  * Kinyarwanda.
+    //  */
+    rw_RW = 1159,
+    /**
+     * Lao.
+     */
+    lo_LA = 1108,
+    /**
+     * Latin.
+     */
+    la_Latn = 1142,
+    /**
+     * Latvian.
+     */
+    lv_LV = 1062,
+    /**
+     * Lithuanian.
+     */
+    lt_LT = 1063,
+    // /**
+    //  * Lower Sorbian (Germany).
+    //  */
+    dsb_DE = 2094,
+    // /**
+    //  * Luxembourgish.
+    //  */
+    lb_LU = 1134,
+    // /**
+    //  * FYRO Macedonian.
+    //  */
+    mk_MK = 1071,
+    // /**
+    //  * Malay - Brunei Darussalam.
+    //  */
+    ms_BN = 2110,
+    /**
+     * Malay - Malaysia.
+     */
+    ms_MY = 1086,
+    /**
+     * Malayalam.
+     */
+    ml_IN = 1100,
+    /**
+     * Maltese.
+     */
+    mt_MT = 1082,
+    // /**
+    //  * Manipuri.
+    //  */
+    mni_IN = 1112,
+    /**
+     * Maori - New Zealand.
+     */
+    mi_NZ = 1153,
+    /**
+     * Marathi.
+     */
+    mr_IN = 1102,
+    // /**
+    //  * Mapudungun.
+    //  */
+    arn_CL = 1146,
+    /**
+     * Mongolian (Cyrillic).
+     */
+    mn_MN = 1104,
+    /**
+     * Mongolian (Mongolian).
+     */
+    mn_Mong_CN = 2128,
+    /**
+     * Nepali.
+     */
+    ne_NP = 1121,
+    /**
+     * Nepali - India.
+     */
+    ne_IN = 2145,
+    // /**
+    //  * Norwegian (Bokml).
+    //  */
+    nb_NO = 1044,
+    // /**
+    //  * Norwegian (Nynorsk).
+    //  */
+    nn_NO = 2068,
+    // /**
+    //  * Occitan.
+    //  */
+    oc_FR = 1154,
+    /**
+     * Oriya.
+     */
+    or_IN = 1096,
+    // /**
+    //  * Oromo.
+    //  */
+    om_Ethi_ET = 1138,
+    // /**
+    //  * Papiamentu.
+    //  */
+    pap_AN = 1145,
+    // /**
+    //  * Pashto.
+    //  */
+    ps_AF = 1123,
+    // /**
+    //  * Farsi.
+    //  */
+    fa_IR = 1065,
+    /**
+     * Polish.
+     */
+    pl_PL = 1045,
+    /**
+     * Portuguese - Brazil.
+     */
+    pt_BR = 1046,
+    /**
+     * Portuguese - Portugal.
+     */
+    pt_PT = 2070,
+    /**
+     * Punjabi (India).
+     */
+    pa_IN = 1094,
+    /**
+     * Punjabi (Pakistan).
+     */
+    pa_PK = 2118,
+    // /**
+    //  * Quecha - Bolivia.
+    //  */
+    quz_BO = 1131,
+    // /**
+    //  * Quecha - Ecuador.
+    //  */
+    guz_EC = 2155,
+    // /**
+    //  * Quecha - Peru.
+    //  */
+    guz_PE = 3179,
+    /**
+     * Romanian.
+     */
+    ro_RO = 1048,
+    // /**
+    //  * Romanian - Moldava.
+    //  */
+    ro_MO = 2072,
+    // /**
+    //  * Rhaeto-Romanic.
+    //  */
+    rm_CH = 1047,
+    /**
+     * Russian.
+     */
+    ru_RU = 1049,
+    // /**
+    //  * Russian - Moldava.
+    //  */
+    ru_MO = 2073,
+    // /**
+    //  * Sami, Inari (Finland).
+    //  */
+    smn_FI = 9275,
+    // /**
+    //  * Sami, Lule (Norway).
+    //  */
+    smj_NO = 4155,
+    // /**
+    //  * Sami, Lule (Sweden).
+    //  */
+    smj_SE = 5179,
+    // /**
+    //  * Sami, Northern (Finland).
+    //  */
+    se_FI = 3131,
+    // /**
+    //  * Sami (Lappish).
+    //  */
+    se_NO = 1083,
+    // /**
+    //  * Sami, Northern (Sweden).
+    //  */
+    se_SE = 2107,
+    // /**
+    //  * Sami, Skolt (Finland).
+    //  */
+    sms_FI = 8251,
+    // /**
+    //  * Sami, Southern (Norway).
+    //  */
+    sma_NO = 6203,
+    // /**
+    //  * Sami, Southern (Sweden).
+    //  */
+    sma_SE = 7227,
+    /**
+     * Sanskrit - India.
+     */
+    sa_IN = 1103,
+    /**
+     * Serbian (Cyrillic, Bosnia and Herzegovina).
+     */
+    sr_Cyrl_BA = 7194,
+    /**
+     * Serbian (Cyrillic).
+     */
+    sr_Cyrl_CS = 3098,
+    /**
+     * Serbian (Latin, Bosnia and Herzegovina).
+     */
+    sr_Latn_BA = 6170,
+    /**
+     * Serbian (Latin, Serbia and Montenegro (Former)).
+     */
+    sr_Latn_CS = 2074,
+    /**
+     * Serbian (Latin).
+     */
+    nso_ZA = 1132,
+    /**
+     * Tswana.
+     */
+    tn_ZA = 1074,
+    /**
+     * Sindhi - Pakistan.
+     */
+    sd_Arab_PK = 2137,
+    /**
+     * Sindhi - India.
+     */
+    sd_Deva_IN = 1113,
+    // /**
+    //  * Sinhalese - Sri Lanka.
+    //  */
+    si_LK = 1115,
+    /**
+     * Slovak.
+     */
+    sk_SK = 1051,
+    /**
+     * Slovenian.
+     */
+    sl_SI = 1060,
+    /**
+     * Somali.
+     */
+    so_SO = 1143,
+    /**
+     * Spanish - Argentina.
+     */
+    es_AR = 11274,
+    /**
+     * Spanish - Bolivia.
+     */
+    es_BO = 16394,
+    /**
+     * Spanish - Chile.
+     */
+    es_CL = 13322,
+    /**
+     * Spanish - Colombia.
+     */
+    es_CO = 9226,
+    /**
+     * Spanish - Costa Rica.
+     */
+    es_CR = 5130,
+    /**
+     * Spanish - Dominican Republic.
+     */
+    es_DO = 7178,
+    /**
+     * Spanish - Ecuador.
+     */
+    es_EC = 12298,
+    /**
+     * Spanish - El Salvador.
+     */
+    es_SV = 17418,
+    /**
+     * Spanish - Guatemala.
+     */
+    es_GT = 4106,
+    /**
+     * Spanish - Honduras.
+     */
+    es_HN = 18442,
+    /**
+     * Spanish - Mexico.
+     */
+    es_MX = 2058,
+    /**
+     * Spanish - Nicaragua.
+     */
+    es_NI = 19466,
+    /**
+     * Spanish - Panama.
+     */
+    es_PA = 6154,
+    /**
+     * Spanish - Paraguay.
+     */
+    es_PY = 15370,
+    /**
+     * Spanish - Peru.
+     */
+    es_PE = 10250,
+    /**
+     * Spanish - Puerto Rico.
+     */
+    es_PR = 20490,
+    /**
+     * Spanish - International Sort.
+     */
+    es_ES = 3082,
+    /**
+     * Spanish - Spain (Traditional Sort).
+     */
+    es_ES_tradnl = 1034,
+    /**
+     * Spanish - United States.
+     */
+    es_US = 21514,
+    /**
+     * Spanish - Uruguay.
+     */
+    es_UY = 14346,
+    /**
+     * Spanish - Venezuela.
+     */
+    es_VE = 8202,
+    // /**
+    //  * Sutu.
+    //  */
+    st_ZA = 1072,
+    /**
+     * Swahili.
+     */
+    sw_KE = 1089,
+    /**
+     * Swedish - Finland.
+     */
+    sv_FI = 2077,
+    /**
+     * Swedish.
+     */
+    sv_SE = 1053,
+    /**
+     * Syriac.
+     */
+    syr_SY = 1114,
+    // /**
+    //  * Tajik.
+    //  */
+    tg_Cyrl_TJ = 1064,
+    // /**
+    //  * Tamazight.
+    //  */
+    tzm_Arab_MA = 1119,
+    // /**
+    //  * Tamazight (Latin).
+    //  */
+    tzm_Latn_DZ = 2143,
+    /**
+     * Tamil.
+     */
+    ta_IN = 1097,
+    /**
+     * Tatar.
+     */
+    tt_RU = 1092,
+    /**
+     * Telugu.
+     */
+    te_IN = 1098,
+    /**
+     * Thai.
+     */
+    th_TH = 1054,
+    /**
+     * Tibetan (PRC).
+     */
+    bo_CN = 1105,
+    // /**
+    //  * Tigrigna (Eritrea).
+    //  */
+    ti_ER = 2163,
+    // /**
+    //  * Tigrigna (Ethiopia).
+    //  */
+    ti_ET = 1139,
+    // /**
+    //  * Tsonga.
+    //  */
+    ts_ZA = 1073,
+    /**
+     * Turkish.
+     */
+    tr_TR = 1055,
+    // /**
+    //  * Turkmen.
+    //  */
+    tk_TM = 1090,
+    /**
+     * Uighur - China.
+     */
+    ug_CN = 1152,
+    /**
+     * Ukrainian.
+     */
+    uk_UA = 1058,
+    // /**
+    //  * Sorbian.
+    //  */
+    hsb_DE = 1070,
+    /**
+     * Urdu.
+     */
+    ur_PK = 1056,
+    /**
+     * Uzbek (Cyrillic).
+     */
+    uz_Cyrl_UZ = 2115,
+    /**
+     * Uzbek (Latin).
+     */
+    uz_Latn_UZ = 1091,
+    // /**
+    //  * Venda.
+    //  */
+    ve_ZA = 1075,
+    /**
+     * Vietnamese.
+     */
+    vi_VN = 1066,
+    /**
+     * Welsh.
+     */
+    cy_GB = 1106,
+    // /**
+    //  * Wolof.
+    //  */
+    wo_SN = 1160,
+    /**
+     * Yakut.
+     */
+    sah_RU = 1157,
+    /**
+     * Yi.
+     */
+    ii_CN = 1144,
+    /**
+     * Yiddish.
+     */
+    yi_Hebr = 1085,
+    /**
+     * Yoruba.
+     */
+    yo_NG = 1130,
+    /**
+     * Japanese.
+     */
+    ja_JP = 1041
+}
