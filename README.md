@@ -14,6 +14,8 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
  
  *Screens of [showcase applications](#showcase-applications) created using Syncfusion Essential JS 2 UI controls*
  
+ [![Verified on Openbase](https://badges.openbase.com/js/verified/@syncfusion/ej2-grids.svg?token=ox5WciPRoByBTCpEeBe7wYUXAc+Vyt6cVOZ1PNgbPRk=)](https://openbase.com/js/@syncfusion/ej2-grids?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge)
+ 
 ## Table of Contents
 * [Framework highlights](#framework-highlights)
 * [Control list](#control-list)
@@ -59,7 +61,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-data-grid?utm_medium=listing&utm_source=github"><b>Data Grid</b></a>
         </td>
         <td>
-            <a href="https://www.npmjs.com/package/@syncfusion/ej2-grids"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-grids" title="@syncfusion/ej2-grids" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-grids"><img src="https://ej2.syncfusion.com/badges/ej2-grids/coverage.svg" alt="code coverage of @syncfusion/ej2-grids" title="@syncfusion/ej2-grids" /></a>
+            <a href="https://www.npmjs.com/package/@syncfusion/ej2-grids"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-grids" title="@syncfusion/ej2-grids" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-grids"><img src="https://ej2.syncfusion.com/badges/ej2-grids/coverage.svg" alt="code coverage of @syncfusion/ej2-grids" title="@syncfusion/ej2-grids" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://openbase.com/js/@syncfusion/ej2-grids?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge"><img src="https://badges.openbase.com/js/verified/@syncfusion/ej2-grids.svg?token=ox5WciPRoByBTCpEeBe7wYUXAc+Vyt6cVOZ1PNgbPRk=" alt="Verified on Openbase" title="@syncfusion/ej2-grids" /></a>
         </td>
         <td>
             <a href="controls/grids/src">Source</a>
