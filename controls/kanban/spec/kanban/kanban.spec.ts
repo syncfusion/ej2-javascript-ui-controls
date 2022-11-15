@@ -1445,6 +1445,7 @@ describe('Kanban base module', () => {
 
     describe('RenderHeader using method', () => {
         let kanbanObj: Kanban;
+        let dataSourceEventCalled: boolean = false;
         beforeAll((done: DoneFn) => {
             const model: KanbanModel = {
                 columns: [
@@ -1470,9 +1471,14 @@ describe('Kanban base module', () => {
                         { key: 'Summary', type: 'TextArea', validationRules: { required: true } }
                     ]
                 },
-                constraintType: 'Swimlane'
+                constraintType: 'Swimlane',
+                dataSourceChanged: dataSourceChangedEvent
             };
             kanbanObj = util.createKanban(model, kanbanData.slice(0, 20), done);
+
+            function dataSourceChangedEvent (args: any) {
+                dataSourceEventCalled = true;
+            }
         });
 
         afterAll(() => {
@@ -1502,7 +1508,7 @@ describe('Kanban base module', () => {
             (card as any).Summary = 'updateCard';
             kanbanObj.updateCard(card, 0);
             expect((card as any).Summary === 'updateCard').toBe(true);
-
+            expect(dataSourceEventCalled).toBe(true);
         });
 
         it('Add a new card', () => {

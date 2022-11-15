@@ -182,7 +182,7 @@ export class TaskProcessor extends DateProcessor {
                         }
                     }
                 });
-            } else if (!tempData[child]) {
+            } else if (!tempData[child] || (tempData[child] && tempData[child].length === 0)) {
                 unassignedTasks.push(tempData);
             }
             if (tempData[this.parent.taskFields.child] && tempData[this.parent.taskFields.child].length) {

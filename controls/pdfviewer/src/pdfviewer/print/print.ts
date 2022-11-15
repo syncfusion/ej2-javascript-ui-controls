@@ -84,7 +84,8 @@ export class Print {
             hashId: this.pdfViewerBase.hashId, zoomFactor: "2",
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,
-            uniqueId: this.pdfViewerBase.documentId
+            uniqueId: this.pdfViewerBase.documentId,
+            digitalSignaturePresent: this.pdfViewerBase.digitalSignaturePresent(pageIndex)
         };
         if (this.pdfViewerBase.jsonDocumentId) {
             // eslint-disable-next-line

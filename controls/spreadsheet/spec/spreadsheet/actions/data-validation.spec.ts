@@ -1693,4 +1693,125 @@ describe('Data validation ->', () => {
             });  
         });
     });
+    describe('EJ2-65124->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: [ {
+                            "Rate Card Country": "USA",
+                            "Rate Card Currency": "CHF",
+                            "Level": "1",
+                            "Age":"21",
+                            "Start Date": "11/11/2022",
+                            "End Date": "11/11/2022",
+                            "decimal":"17.23",
+                            "Octane":"17.23",
+                            "Name":"Seenu",
+                            "City":"THJAJ",
+                            "Time1":"8:00 AM",
+                            "Time2":"8:00 AM"
+                        },
+                        {
+                            "Rate Card Country": "",
+                            "Rate Card Currency": "",
+                            "Level": "",
+                            "Age":"",
+                            "Start Date": "",
+                            "End Date": "",
+                            "decimal":"",
+                            "Octane":"",
+                            "Name":"",
+                            "City":"",
+                            "Time1":"",
+                            "Time2":""
+                        },
+                        {
+                            "Rate Card Country": "CD",
+                            "Rate Card Currency": "GP-British-Pound",
+                            "Level": "22",
+                            "Age":"30",
+                            "Start Date": "09/09/2022",
+                            "End Date": "09/09/2022",
+                            "decimal":"1.2",
+                            "Octane":"1.2",
+                            "Name":"Pa",
+                            "City":"VK",
+                            "Time1":"6:00 AM",
+                            "Time2":"6:00 AM"
+                        }]
+                    }], selectedRange: 'A1:A10'
+                }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.addDataValidation({ type: 'List', value1: 'Brazil,Canada,India,Italy,Japan,Philippines,Slovakia,Spain,UK,USA' ,ignoreBlank: true}, `A2:A5`);
+                    spreadsheet.addDataValidation({ type: 'List', value1:'AED,AUD,CAD,CHF,EUR,GBP,HKD,INR,JPY,NOK,NZD,PHP,SAR,SEK,USD,ZAR,SGD',ignoreBlank: false }, `B2:B5`);
+                    spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '1',value2: '12',ignoreBlank: true}, `C2:C5`);
+                    spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '1',value2: '22',ignoreBlank: false}, `D2:D5`);
+                    spreadsheet.addDataValidation({ type: 'Date', operator: 'GreaterThan', value1: '10/10/2022', ignoreBlank: true}, `E2:E5`);  
+                    spreadsheet.addDataValidation({ type: 'Date', operator: 'GreaterThan', value1: '10/10/2022', ignoreBlank: false}, `F2:F5`);
+                    spreadsheet.addDataValidation({ type: 'Decimal', operator: 'GreaterThan', value1: '15.15' ,ignoreBlank: true}, `G2:G5`);
+                    spreadsheet.addDataValidation({ type: 'Decimal', operator: 'GreaterThan', value1: '15.15' ,ignoreBlank: false}, `H2:H5`);
+                    spreadsheet.addDataValidation({ type: 'TextLength', operator: 'GreaterThan', value1: '3', ignoreBlank: true }, 'I2:I5');
+                    spreadsheet.addDataValidation({ type: 'TextLength', operator: 'GreaterThan', value1: '3', ignoreBlank: false }, 'J2:J5');     
+                    spreadsheet.addDataValidation({ type: 'Time', operator: 'GreaterThan', value1: '7:00:00 AM', ignoreBlank: true  }, 'K2:K5');
+                    spreadsheet.addDataValidation({ type: 'Time', operator: 'GreaterThan', value1: '7:00:00 AM', ignoreBlank: false  }, 'L2:L5');
+                    spreadsheet.addInvalidHighlight('A2:A5');
+                    spreadsheet.addInvalidHighlight('B2:B5');
+                    spreadsheet.addInvalidHighlight('C2:C5');
+                    spreadsheet.addInvalidHighlight('D2:D5');
+                    spreadsheet.addInvalidHighlight('E2:E5');
+                    spreadsheet.addInvalidHighlight('F2:F5');
+                    spreadsheet.addInvalidHighlight('G2:G5');
+                    spreadsheet.addInvalidHighlight('H2:H5');
+                    spreadsheet.addInvalidHighlight('I2:I5');
+                    spreadsheet.addInvalidHighlight('J2:J5');
+                    spreadsheet.addInvalidHighlight('K2:K5');
+                    spreadsheet.addInvalidHighlight('L2:L5');
+                }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Data validation ignoreBlank: true property is not working as expected', (done: Function) => {
+            expect(helper.invoke('getCell', [1, 0]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 0]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 0]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [3, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 2]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 3]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [3, 3]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 4]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 5]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [3, 5]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 6]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 6]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 8]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 8]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 9]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 9]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [3, 9]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 10]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 10]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [3, 10]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [1, 11]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            expect(helper.invoke('getCell', [2, 11]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(helper.invoke('getCell', [3, 11]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            done();
+        });
+    });
 });

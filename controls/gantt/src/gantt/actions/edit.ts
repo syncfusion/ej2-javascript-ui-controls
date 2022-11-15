@@ -30,6 +30,7 @@ export class Edit {
     public validatedChildItems: IGanttData[];
     private isFromDeleteMethod: boolean = false;
     private targetedRecords: IGanttData[] = [];
+    private isNewRecordAdded: boolean = false;
     /**
      * @private
      */
@@ -836,7 +837,7 @@ export class Edit {
         if (ganttRecord.parentItem ) {
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
             let parentData: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
-            if (parentData.ganttProperties.predecessor) {
+            if (!parentData.ganttProperties.predecessorsName) {
                this.parent.predecessorModule.validatePredecessor(parentData, [], '');
                this.updateParentItemOnEditing();
             }
@@ -2504,6 +2505,7 @@ export class Edit {
                     parentItem.taskData[child] = [];
                     parentItem.taskData[child].push(record.taskData);
                 }
+                this.isNewRecordAdded = true;
             }
         }
     }
@@ -2619,9 +2621,10 @@ export class Edit {
                 if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
                     dataSource.push(addedRecord[i].taskData);
                 } else {
-                    if (isNullOrUndefined(addedRecord[i].parentItem)) {
+                    if (!this.isNewRecordAdded) {
                         this.addDataInRealDataSource(dataSource, addedRecord[i].taskData, rowPosition);
                     }
+                    this.isNewRecordAdded = false;
                 }
             }
             this.isBreakLoop = false;
@@ -3336,7 +3339,14 @@ export class Edit {
             if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
                 const rowPos: RowPosition = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
                 this.parent.editModule.addRowSelectedItem = droppedRec;
-                this.parent.editModule.updateRealDataSource(draggedRec, rowPos);
+                let dragRecord: IGanttData[] = [];
+                if (!Array.isArray(draggedRec)) {
+                   dragRecord[0] = draggedRec;
+                }
+                else {
+                   dragRecord = draggedRec;
+                }
+                this.parent.editModule.updateRealDataSource(dragRecord, rowPos);
                 delete this.parent.editModule.addRowSelectedItem;
             }
         }

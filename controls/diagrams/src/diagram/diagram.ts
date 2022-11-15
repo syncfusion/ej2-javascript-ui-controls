@@ -1948,7 +1948,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const view: View = this.views[temp];
                     if (!(view instanceof Diagram)) {
                         if (newProp.scrollSettings && newProp.scrollSettings.currentZoom !== oldProp.scrollSettings.currentZoom) {
-                            view.updateHtmlLayer(view);
+                            //view.updateHtmlLayer(view);
                         }
                         if (!scrollAlone) {
                             this.refreshCanvasDiagramLayer(view);
@@ -4650,6 +4650,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     redoObject: cloneObject(annotation), category: 'Internal'
                 };
                 this.addHistoryEntry(entry);
+            }
+            // EJ2-65546 - Adding BPMN Text annotation node inside swimlane at runtime is not working properly.
+            // Checking whether the node is children of Lane.
+            if((node as Node).parentId)
+            {
+                let nodeParent:NodeModel = this.nameTable[(node as Node).parentId];
+                
+                if(nodeParent && (nodeParent as Node).isLane)
+                {
+                    // Getting swimlane node using lane parent Id and setting isTextNode property to true to provide 
+                    // drag support for bpmn text annotation while dragging swimlane.
+                    let swimlane:NodeModel = this.nameTable[(nodeParent as Node).parentId];
+                    (swimlane as Node).isTextNode = true;
+                } 
             }
         }
     }
@@ -8110,10 +8124,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (canvas && canvas.children && canvas.children.length > 0) {
                     const pathSegment: PathElement = canvas.children[0] as PathElement;
                     const data: string = pathSegment.data;
-                    connector.getSegmentElement(
-                        connector, pathSegment,
-                        this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?
-                            this.layout.orientation : undefined, undefined, false);
+                    if(connector.isBezierEditing && this.selectedItems.connectors[0].id === connector.id || connector.type !== "Bezier"){
+                        connector.getSegmentElement(
+                            connector, pathSegment,
+                            this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?
+                                this.layout.orientation : undefined, undefined, false);
+                    }
                     if (pathSegment.data !== data) {
                         canvas.measure(new Size());
                         canvas.arrange(canvas.desiredSize);

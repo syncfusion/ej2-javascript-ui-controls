@@ -451,7 +451,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private setAttributes(): void {
         if (this.type === 'chip') {
-            this.element.tabIndex = 0;
+            if(this.enabled) this.element.tabIndex = 0;
             this.element.setAttribute('role', 'option');
         } else {
             this.element.classList.add(classNames.chipSet);
@@ -496,6 +496,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 });
                 if (fieldsData.value) {
                     wrapper.setAttribute('data-value', fieldsData.value.toString());
+                }
+                if (!fieldsData.enabled) {
+                    wrapper.removeAttribute('tabindex');
                 }
                 append(chipArray, wrapper);
                 chipListArray.push(wrapper);

@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 20.3.56 (2022-11-08)
+## 20.3.57 (2022-11-15)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I405590` - The pivot table will now properly refreshed while performing value sorting with autofit enabled.
+
+#### New Features
+
+- `#I395302` - When using a server-side engine, the aggregated values of the pivot table will now be customized via the controller.
+
+## 20.3.50 (2022-10-18)
 
 ### Pivot Table
 

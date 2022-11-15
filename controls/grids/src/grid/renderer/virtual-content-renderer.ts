@@ -337,7 +337,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         } else {
             this.virtualEle.setWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
         }
-        if (!isNullOrUndefined(target.parentNode)) {
+        if (!isNullOrUndefined(target) && !isNullOrUndefined(target.parentNode)) {
             remove(target);
         }
         let tbody: HTMLElement;

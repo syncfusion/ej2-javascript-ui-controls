@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### Schedule
+
+#### Bug fixes
+
+`#I415847` - An issue with Edit recurrence series to greater than its end date has been fixed.
+
 ## 20.3.56 (2022-11-08)
 
 ### Schedule

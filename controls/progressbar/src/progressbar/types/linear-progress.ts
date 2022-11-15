@@ -121,7 +121,7 @@ export class Linear {
                         progress.themeStyle.progressOpacity, thickness, segmentWidth
                     );
                 } else if (this.isRange && !progress.isIndeterminate) {
-                    linearProgress = this.segment.createLinearRange(linearProgressWidth, progress);
+                    linearProgress = this.segment.createLinearRange(linearProgressWidth, progress, progressWidth);
                 } else {
                     if (!refresh) {
                         linearProgress = progress.renderer.drawPath(option);

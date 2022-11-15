@@ -117,7 +117,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public currentAction: string;
     /** @hidden */
-    private staticPivotGridModule: PivotView;
+    public staticPivotGridModule: PivotView;
     /** @hidden */
     public enableValueSorting: boolean = false;
     /** @hidden */

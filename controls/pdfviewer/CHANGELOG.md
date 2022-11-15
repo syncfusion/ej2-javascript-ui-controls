@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I418199` - Now, the Script error does not occur while updating the image in the form fields programmatically.
+- `#I408281` - Now, the Script error does not occur while changing the PDF view to the text view in the sample.
+- `#I413254` - Now, the aspect ratio value for the image type signature has been properly handled.
+- `#F178250` - Now, the Color Palette is no longer obscured in the PDF Viewer.
+- `#I178667` - Now, the text box's border color is now properly updated and no longer hidden.
+- `#I418214` - Cleared session items for the older documents.
+- `#I178018` - Now, searching for a multiple-sentence phrase no longer causes the PDF Viewer to freeze.
+
 ## 20.3.56 (2022-11-08)
 
 ### PDF Viewer
@@ -20,6 +34,7 @@
 - `#I406980` - Now, the Values of free text annotation properties are not missing on importing.
 - `#I408171` - Now, Annotation added above free text annotation does not hide behind after downloading and flattening.
 - `#I412525` - Now we are able to update form field values from code behind if the pages are not rendered.
+- `#I408588` - Pinch zoom pivot point calculation for touch-based devices has been improved.
 
 ## 20.3.52 (2022-10-26)
 

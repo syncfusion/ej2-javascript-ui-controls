@@ -181,7 +181,7 @@ export class DragAndDrop {
                     target.appendChild(this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.BORDER_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && (target.nextElementSibling && target.nextElementSibling.classList.contains(cls.CARD_WRAPPER_CLASS))
-                    && (this.dragObj.targetClone && !this.dragObj.targetClone.previousElementSibling && !this.dragObj.targetClone.nextElementSibling)) {
+                    && this.dragObj.targetClone) {
                     target.nextElementSibling.appendChild(this.dragObj.targetClone);
                 }
             } else if (keys.length > 1 && (contentCell.classList.contains(cls.DROPPING_CLASS)  ||
@@ -370,7 +370,7 @@ export class DragAndDrop {
             if (!target || target.tagName !== 'TABLE') {
                 element.style.width = parseInt(dimensions.width.toString()) + 'px';
             }
-            element.style.left = (element.parentElement.getBoundingClientRect().left - 15) + 'px';
+            element.style.left = (element.parentElement.getBoundingClientRect().left - closest(element, '.e-kanban').getBoundingClientRect().left) + 'px';
         });
     }
 

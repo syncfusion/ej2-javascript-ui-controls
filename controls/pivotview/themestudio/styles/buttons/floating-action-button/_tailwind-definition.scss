@@ -25,3 +25,4 @@ $fab-bigger-small-padding: 0 17px !default;
 $fab-bigger-small-icon-font-size: 14px !default;
 
 $fab-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .2), 0 -2px 15px -3px rgba(0, 0, 0, .1), 0 6px 10px rgba(0, 0, 0, .14) !default;
+$fab-focus-box-shadow: $fab-box-shadow, $shadow-focus-ring2 !default;

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I415922` - Resolved the browser hanging issue while opening the document.
+- `#I415359` - Resolved the table layouting issue while resizing the table.
+- `#I414775` - Resolved the layouting issue while inserting page break.
+- `#I414224` - Table resizing is now working properly in header/footer.
+- `#I413303`, `#I417629` - Resolved the script error while opening the word document.
+- `#I413477` - Resolved the script error while deleting text with comment.
+- `#F178063` - Scrolling on bookmark navigation is now working similar to Microsoft Word.
+
 ## 20.3.56 (2022-11-08)
 
 ### Document Editor
@@ -12,10 +26,10 @@
 - `#I412146` - Resolved the script error while opening the document.
 - `#I408099` - Resolved the list numbering issue.
 - `#I412284` - Table border is now rendering properly.
-- `#I413316` - Resolved the script error while removing few pages.
+- `#I413316` - Resolved the script error while deleting content of few pages.
 - `#I414066` - Resolved the script error while modifying locale key.
-- `#I412817` - Formatting is now working properly in track changes protection mode.
-- `#I413284` - Strike through is now rendering similar to MS Word.
+- `#I412817` - Formatting is now applied properly in track changes protection mode.
+- `#I413284` - Strike through is now properly skipped for trailing space characters like Microsoft Word.
 - `#I412529` - Resolved the script error while opening html document with nested list.
 
 #### New Features

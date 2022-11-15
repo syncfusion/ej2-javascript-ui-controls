@@ -2728,7 +2728,7 @@ export class DocumentHelper {
             }
         }
     }
-    public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean): void {
+    public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean, isBookmark?: boolean): void {
         if (this.skipScrollToPosition || this.isWebPrinting) {
             this.skipScrollToPosition = false;
             return;
@@ -2775,11 +2775,16 @@ export class DocumentHelper {
         let caretHeight: number = caretInfo.height;
         x += (endPosition.location.x) * this.zoomFactor;
         y += (endPosition.location.y + topMargin) * this.zoomFactor;
-        //vertical scroll bar update
-        if ((scrollTop + 20) > y) {
-            this.viewerContainer.scrollTop = (y - 10);
-        } else if (scrollTop + pageHeight < y + caretHeight) {
-            this.viewerContainer.scrollTop = y + caretHeight - pageHeight + 10;
+        if (!isBookmark) {
+            //vertical scroll bar update
+            if ((scrollTop + 20) > y) {
+                this.viewerContainer.scrollTop = (y - 10);
+            } else if (scrollTop + pageHeight < y + caretHeight) {
+                this.viewerContainer.scrollTop = y + caretHeight - pageHeight + 10;
+            }
+        } else {
+            // As per MS Word behaviour, update vertical scroll bar using static value while navigate bookmark
+            this.viewerContainer.scrollTop = y - 96;
         }
         if (!skipCursorUpdate) {
             this.selection.updateCaretToPage(startPosition, endPage);
@@ -3660,6 +3665,107 @@ export class DocumentHelper {
         let isBottomFit: boolean = pageTop + pageH >= vertical && pageTop + pageH <= vertical + height;
         let isMiddleFit: boolean = pageTop <= vertical && pageTop + pageH >= vertical + height;
         return isTopFit || isBottomFit || isMiddleFit;
+    }
+    /**
+     * Get first paragraph in cell
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getFirstParagraphInCell(cell: TableCellWidget): ParagraphWidget {
+        const firstBlock: BlockWidget = cell.childWidgets[0] as BlockWidget;
+        if (firstBlock instanceof ParagraphWidget) {
+            return firstBlock as ParagraphWidget;
+        } else {
+            return this.getFirstParagraphInFirstCell((firstBlock as TableWidget));
+        }
+    }
+    /**
+     * Get first paragraph in first cell
+     *
+     * @private
+     * @returns {TableWidget}
+     */
+     public getFirstParagraphInFirstCell(table: TableWidget): ParagraphWidget {
+        if (!isNullOrUndefined(table.childWidgets) && table.childWidgets.length > 0) {
+            const firstRow: TableRowWidget = table.childWidgets[0] as TableRowWidget;
+            const cell: TableCellWidget = firstRow.childWidgets[0] as TableCellWidget;
+            const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+            return this.getFirstParagraphBlock(block);
+        }
+        return undefined;
+    }
+    /**
+     * Get last paragraph in last cell
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getLastParagraphInLastCell(table: TableWidget): ParagraphWidget {
+        if (!isNullOrUndefined(table.childWidgets) && table.childWidgets.length > 0) {
+            const lastrow: TableRowWidget = table.lastChild as TableRowWidget;
+            const lastcell: TableCellWidget = lastrow.lastChild as TableCellWidget;
+            const lastBlock: BlockWidget = lastcell.lastChild as BlockWidget;
+            return this.getLastParagraphBlock(lastBlock);
+        }
+        return undefined;
+    }
+    /**
+     * Get first paragraph in block
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getFirstParagraphBlock(block: BlockWidget): ParagraphWidget {
+        if (block instanceof ParagraphWidget) {
+            return block as ParagraphWidget;
+        } else if (block instanceof TableWidget) {
+            return this.getFirstParagraphInFirstCell(block as TableWidget);
+        }
+        return undefined;
+    }
+    /**
+     * Get last paragraph in block
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getLastParagraphBlock(block: BlockWidget): ParagraphWidget {
+        if (block instanceof ParagraphWidget) {
+            return block as ParagraphWidget;
+        } else if (block instanceof TableWidget) {
+            return this.getLastParagraphInLastCell(block as TableWidget);
+        }
+        return undefined;
+    }
+    /**
+     * Get last paragraph in first row
+     *
+     * @private
+     * @returns {ParagraphWidget}
+     */
+    public getLastParagraphInFirstRow(table: TableWidget): ParagraphWidget {
+        if (table.childWidgets.length > 0) {
+            const row: TableRowWidget = table.firstChild as TableRowWidget;
+            const lastcell: TableCellWidget = row.lastChild as TableCellWidget;
+            const lastBlock: BlockWidget = lastcell.lastChild as BlockWidget;
+            return this.getLastParagraphBlock(lastBlock);
+        }
+        return undefined;
+    }
+    /**
+     * Get first paragraph in last row
+     *
+     * @private
+     */
+    public getFirstParagraphInLastRow(table: TableWidget): ParagraphWidget {
+        if (table.childWidgets.length > 0) {
+            const lastRow: TableRowWidget = table.childWidgets[table.childWidgets.length - 1] as TableRowWidget;
+            const lastCell: TableCellWidget = lastRow.childWidgets[0] as TableCellWidget;
+            const lastBlock: BlockWidget = lastCell.childWidgets[0] as BlockWidget;
+            return this.getFirstParagraphBlock(lastBlock);
+        }
+        return undefined;
     }
 }
 /**

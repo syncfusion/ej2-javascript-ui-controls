@@ -318,4 +318,83 @@ describe('Diagram Control', () => {
         })
     })
 
+    describe('BPMN Text Annotations inside swimlane', () => {
+
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+           
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        orientation: 'Horizontal',
+                        header: {
+                            annotation: { content: 'SALES PROCESS FLOW CHART', style: { fill: 'transparent' } },
+                            height: 50, style: { fontSize: 11 },
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'Consumer' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                   
+                                ],
+                            },
+                            
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 500, offsetY: 300,
+                    height: 500,
+                    width: 650
+                },
+            ];
+            diagram = new Diagram({
+                width: 1500, height: 1000, nodes: nodes
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking dragging of annotation node inside the swimlane, while dragging swimlane', (done: Function) => {
+            let newNode:NodeModel = {
+                id:'bpmnNode1',width:60,height:60,margin:{left:100,top:100},shape:{type:'Bpmn',shape:'Event'}
+            }
+            diagram.addNodeToLane(newNode,'swimlane','stackCanvas1');
+            diagram.select([diagram.nameTable['bpmnNode1']]);
+            diagram.addTextAnnotation({ id: 'newAnnotation', text: 'New Annotation', length: 300, angle: 180 }, diagram.selectedItems.nodes[0]);
+            let annotOffsetX = (diagram.selectedItems.nodes[0].wrapper.children[0] as Canvas).children[4].offsetX;
+            diagram.select([diagram.nameTable['swimlane']]);
+            diagram.drag(diagram.selectedItems.nodes[0],20,0);
+            diagram.select([diagram.nameTable['bpmnNode1']]);
+            expect(annotOffsetX !== (diagram.selectedItems.nodes[0].wrapper.children[0] as Canvas).children[4].offsetX).toBe(true);
+            done();
+        });
+    });
+
 });

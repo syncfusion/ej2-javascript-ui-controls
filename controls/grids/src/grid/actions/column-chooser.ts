@@ -59,8 +59,8 @@ export class ColumnChooser implements IAction {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.addEventListener();
-        this.cBoxTrue = createCheckBox(this.parent.createElement, true, { checked: true, label: ' ' });
-        this.cBoxFalse = createCheckBox(this.parent.createElement, true, { checked: false, label: ' ' });
+        this.cBoxTrue = createCheckBox(this.parent.createElement, false, { checked: true, label: ' ' });
+        this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
         this.cBoxTrue.insertBefore(
             this.parent.createElement('input', {
                 className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { type: 'checkbox' }

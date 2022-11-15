@@ -931,12 +931,12 @@ describe('ListView', () => {
 
         it('role of the ul element', () => {
             let deepNode = ele.childNodes[0].childNodes[0] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('presentation');
+            expect(deepNode.getAttribute('role')).toBe('group');
         });
 
         it('role of the li element', () => {
             let deepNode = ele.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('option');
+            expect(deepNode.getAttribute('role')).toBe('listitem');
         });
 
         it('role of the wrapper element', () => {
@@ -946,7 +946,7 @@ describe('ListView', () => {
 
         it('role of the group element', () => {
             let deepNode = ele.childNodes[0].childNodes[0].childNodes[0] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('option');
+            expect(deepNode.getAttribute('role')).toBe('presentation');
         });
     });
 

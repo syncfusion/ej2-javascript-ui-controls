@@ -597,6 +597,10 @@ export class DiagramRenderer {
                     start = selector.segments.length > selector.maxSegmentThumb + 2 ? 2 : start;
                     // (EJ2-57115) - If segments length is greater than maxSegmentThumb + 2 means then set end as last before segment 
                     end = selector.segments.length > selector.maxSegmentThumb + 2 ? selector.segments.length - 2 : end;
+                    if(selector.segments.length === 1 && (selector.segments[0] as OrthogonalSegment).points.length <= 2) {
+                        start = 1;
+                        end = selector.segments.length;
+                    }
                     for (i = start; i < end; i++) {
                         const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
                         this.renderOrthogonalThumbs(

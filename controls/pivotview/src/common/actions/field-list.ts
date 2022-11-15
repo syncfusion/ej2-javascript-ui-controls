@@ -48,7 +48,7 @@ export class FieldList implements IAction {
         if (select('#' + this.parent.element.id + 'containerwrapper', document) === null) {
             let containerWrapper: HTMLElement = createElement('div', {
                 id: this.parent.element.id + 'containerwrapper',
-                styles: 'height:' + this.parent.height
+                styles: 'height:' + (isNaN(this.parent.height as number) ? this.parent.height : (this.parent.height + 'px'))
             });
             this.parent.element.parentElement.appendChild(containerWrapper);
             containerWrapper.appendChild(this.element);

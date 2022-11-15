@@ -236,6 +236,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             const checked: boolean = isNaN(parseInt(value.toString(), 10)) ? value === 'true' : parseInt(value.toString(), 10) > 0;
             const checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: checked, label: ' ' });
             node.innerHTML = '';
+            node.classList.add('e-gridchkbox-cell');
             checkWrap.classList.add('e-checkbox-disabled');
             if (this.parent.cssClass) {
                 addClass([checkWrap], [this.parent.cssClass]);

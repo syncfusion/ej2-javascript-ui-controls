@@ -1736,6 +1736,53 @@ describe('Vertical View Event Render Module', () => {
 
     });
 
+    describe('EJ2-65298 - Editing recurrence series to the greater than its end date causes an issue', () => {
+        let schObj: Schedule;
+        const sampleData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Recurrence event',
+            StartTime: new Date(2022, 9, 30, 10),
+            EndTime: new Date(2022, 9, 30, 11, 30),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5;'
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: ['Week'],
+                height: '550px', width: '100%',
+                selectedDate: new Date(2022, 10, 1)
+            };
+            schObj = util.createSchedule(model, sampleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('To check recurrence appointment after changing start date', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                expect(schObj.eventsData[0].StartTime).toEqual(new Date(2022, 10, 4, 10));
+                expect(schObj.eventsData[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5;');
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toBe(2);
+                done();
+            };
+            const appElement: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            util.triggerMouseEvent(appElement, 'click');
+            util.triggerMouseEvent(appElement, 'dblclick');
+            expect(schObj.eventsData.length).toEqual(1);
+            expect(schObj.eventsData[0].StartTime).toEqual(new Date(2022, 9, 30, 10));
+            expect(schObj.eventsData[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5;');
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toBe(5);
+            const quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            expect(quickDialog.classList).toContain('e-popup-open');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList).toContain('e-popup-close');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0].value = new Date(2022, 10, 4, 10, 0);
+            (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0].value = new Date(2022, 10, 4, 11, 30);
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

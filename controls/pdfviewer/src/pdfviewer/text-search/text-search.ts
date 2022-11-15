@@ -631,29 +631,56 @@ export class TextSearch {
         }
     }
 
-    private correctLinetext (searchString:string,matchIndex:number,pageText:string) {
-      let indiuvalLineArray:string[] =[];
-      let searchArray =searchString.toLowerCase().split(/[" "]+/);
-      matchIndex =0;
-      let linestring:string="";
-      for(var i=0;i<searchArray.length;i++){
-          let searchArrayText =linestring+searchArray[i]
-          matchIndex=pageText.indexOf(searchArrayText,matchIndex)
-          if(matchIndex!==-1){
-              linestring +=searchArray[i]+" ";
-              if(i==(searchArray.length-1)){
-               indiuvalLineArray.push(linestring)
-              }
+    private correctLinetext (searchString:string,matchIndex:number,pageText:string) 
+    {
+        let indiuvalLineArray:string[] = [];
+        let searchArray:string[] = searchString.split(/[" "]+/);
+        if (!this.isMatchCase) {
+            searchArray = searchString.toLowerCase().split(/[" "]+/);
+        }
+        matchIndex = 0;
+        let linestring:string = "";
+        let mergedText:string= pageText.replace(/\r\n/g, " ");;
+        mergedText = mergedText.replace(/[^a-zA-Z0-9 ]/g, '');
+        searchString = searchString.replace(/[^a-zA-Z0-9 ]/g, '');
+        let result:any = mergedText.match(searchString);
+        if (!this.isMatchCase) {
+            result = mergedText.match(searchString.toLowerCase());
+        }
+        result = pageText.slice(result.index, pageText.length)
+        let pageCheck= result;
+        for (var i = 0; i < searchArray.length; i++) {
+            let searchArrayText = linestring + searchArray[i];
+            matchIndex = pageText.indexOf(searchArrayText, matchIndex);
+            pageCheck =pageCheck?pageCheck.replace(searchArray[i-1] ,""): pageText.replace(searchArray[i-1] ,"");
+            if((pageCheck[pageCheck.indexOf(searchArray[i])-1] === "\n" && (pageCheck[pageCheck.indexOf(searchArray[i+1])-1]) === "\n")|| (pageCheck[pageCheck.indexOf(searchArray[i])-1] === "\n" && isNullOrUndefined((pageCheck[pageCheck.indexOf(searchArray[i+1])-1])))){
+                matchIndex =-1;
+                if(linestring===""){
+                    linestring = searchArray[i];
+                    i=i+1;
+                }
             }
-        else{
-            indiuvalLineArray.push(linestring)
-            linestring =searchArray[i]+" ";
-            if(i==(searchArray.length-1)){
-                indiuvalLineArray.push(linestring)
+            if (matchIndex !== -1) {
+                linestring += searchArray[i] + " ";
+                if (i == (searchArray.length - 1)) {
+                    indiuvalLineArray.push(linestring);
+                }
+            }
+            else {
+                indiuvalLineArray.push(linestring);
+                linestring = searchArray[i] + " ";
+                if(pageCheck[pageCheck.indexOf(searchArray[i])-1] == "\n" && pageCheck[pageCheck.indexOf(searchArray[i+1])-1] == "\n"){
+                    indiuvalLineArray.push(linestring);
+                    linestring = searchArray[i+1] + " ";
+                    pageCheck =pageCheck?pageCheck.replace(searchArray[i-1] ,""): pageText.replace(searchArray[i-1] ,"");
+                    i =i+1;
+                }
+                if (i == (searchArray.length - 1)) {
+                    indiuvalLineArray.push(linestring);
+                }
             }
         }
-    }
-    return indiuvalLineArray;
+       return indiuvalLineArray;
     }
 
     // eslint-disable-next-line

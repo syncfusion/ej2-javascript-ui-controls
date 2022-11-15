@@ -207,6 +207,7 @@ export class Data {
             requestType: type, cancel: false, addedRecords: params.addedRecords,
             changedRecords: params.changedRecords, deletedRecords: params.deletedRecords
         };
+        this.setState({ isDataChanged: true });
         this.eventPromise(actionArgs, this.query, index);
         this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
             if (!offlineArgs.cancel) {

@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { ChildArrangement, ConnectionPointOrigin, DiagramTools, NodeConstraints, ConnectorConstraints  } from '../../../src/diagram/enum/enum';
+import { ChildArrangement, ConnectionPointOrigin, DiagramTools, NodeConstraints, ConnectorConstraints, PortVisibility, PortConstraints  } from '../../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { BasicShapeModel, BpmnShapeModel, NativeModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
@@ -3006,6 +3006,316 @@ describe('Click event not triggered properly in scrollbar position issue', () =>
             }
         }
         mouseEvents.clickEvent(diagramCanvas, 492, 442);
+        done();
+    });
+
+});
+
+describe('Prevent segment thumb rendering while render orthogonal connector as straight segment line', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramsegment' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 50, width: 100, offsetX: 200, offsetY: 100, annotations: [{ content: 'Node1' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+            {
+                id: 'node2', height: 50, width: 100, offsetX: 500, offsetY: 100, annotations: [{ content: 'Node2' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+        ];
+        
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'right', targetPortID: 'left'
+            }
+        ];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            getConnectorDefaults: function (connector: ConnectorModel) {
+                connector.type = 'Orthogonal';
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                connector.maxSegmentThumb = 3;
+                connector.allowNodeOverlap = true;
+            }
+        });
+        diagram.appendTo('#diagramsegment');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Render connector as straight line segment and check whether segment rendered or not', function (done) {
+        diagram.select([diagram.connectors[0]]);
+        let element: HTMLElement = document.getElementById('orthoThumb_1_2');
+        expect(element === null).toBe(true);
+        done();
+    });
+
+});
+
+describe('Check whether connector segment overlap node-Right-Left', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramsegment' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 50, width: 100, offsetX: 200, offsetY: 100, annotations: [{ content: 'Node1' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+            {
+                id: 'node2', height: 50, width: 100, offsetX: 500, offsetY: 250, annotations: [{ content: 'Node2' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+        ];
+        
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'right', targetPortID: 'left'
+            }
+        ];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            getConnectorDefaults: function (connector: ConnectorModel) {
+                connector.type = 'Orthogonal';
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                connector.maxSegmentThumb = 3;
+                connector.allowNodeOverlap = true;
+            }
+        });
+        diagram.appendTo('#diagramsegment');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Move First segment towards source node and check whether connector does not get intersect', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let element: HTMLElement = document.getElementById('orthoThumb_1_2');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x - 50, bounds.y);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x - 50, bounds.y );
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 3).toBe(true);
+        done();
+    });
+    it('Move First segment towards target node and check whether connector does not get intersect', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let element: HTMLElement = document.getElementById('orthoThumb_2_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 350, bounds.y);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 350, bounds.y );
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 3).toBe(true);
+        done();
+    });
+
+});
+
+describe('Check whether connector segment overlap node-Left-Right - 1', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramsegment' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 50, width: 100, offsetX: 200, offsetY: 100, annotations: [{ content: 'Node1' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+            {
+                id: 'node2', height: 50, width: 100, offsetX: 500, offsetY: 250, annotations: [{ content: 'Node2' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+        ];
+        
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'left', targetPortID: 'right'
+            }
+        ];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            getConnectorDefaults: function (connector: ConnectorModel) {
+                connector.type = 'Orthogonal';
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                connector.maxSegmentThumb = 3;
+                connector.allowNodeOverlap = true;
+            }
+        });
+        diagram.appendTo('#diagramsegment');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Move Middle segment towards target node', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let element: HTMLElement = document.getElementById('orthoThumb_1_3');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 50);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 50);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 5).toBe(true);
+        done();
+    });
+    it('Move First segment towards source node and check whether connector does not get intersect', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let element: HTMLElement = document.getElementById('orthoThumb_2_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 100, bounds.y);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 100, bounds.y );
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 5).toBe(true);
+        done();
+    });
+
+});
+
+describe('Check whether connector segment overlap node-Left-Right - 2', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagramsegment' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 50, width: 100, offsetX: 200, offsetY: 100, annotations: [{ content: 'Node1' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default  },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+            {
+                id: 'node2', height: 50, width: 100, offsetX: 500, offsetY: 250, annotations: [{ content: 'Node2' }],
+                ports: [
+                    { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                    { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                ]
+            },
+        ];
+        
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'left', targetPortID: 'right'
+            }
+        ];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            getConnectorDefaults: function (connector: ConnectorModel) {
+                connector.type = 'Orthogonal';
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                connector.maxSegmentThumb = 3;
+                connector.allowNodeOverlap = true;
+            }
+        });
+        diagram.appendTo('#diagramsegment');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Move Middle segment towards target node', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let element: HTMLElement = document.getElementById('orthoThumb_1_3');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 50);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 50);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 5).toBe(true);
+        done();
+    });
+    it('Move last segment towards target node and check whether connector does not get intersect', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let element: HTMLElement = document.getElementById('orthoThumb_4_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x - 100, bounds.y);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x - 100, bounds.y );
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 5).toBe(true);
+        done();
+    });
+    it('Move Middle segment towards source node', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.connectors[0]]);
+        let element: HTMLElement = document.getElementById('orthoThumb_3_1');
+        let bounds: any = element.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 50);
+        mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y - 50);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 5).toBe(true);
         done();
     });
 

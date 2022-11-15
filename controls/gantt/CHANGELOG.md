@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I413261` - Dependency values for the parent task are not properly updated issue has been fixed.
+- `#I410200` - Timeline headers disappears when timeline changes dynamically.
+- `#I413560` - Datasource Property not updated properly after row indent and outdent issue has been fixed.
+- `#I65261`  - Filtering functionality issues in duration column.
+- `#I65321`  - Task duration is not calculated properly in dialog edit.
+
 ## 20.3.56 (2022-11-08)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I414182` - Datasource Property not updated properly after row drag and drop issue has been fixed.
+- `#I413625` - Current view data not updated properly when dynamically change the view type issue has been fixed.
+- `#I414481` - Dynamically updating the `renderBaseline` property in immutable mode issue has been fixed.
+
+## 20.3.52 (2022-10-26)
 
 ### Gantt
 

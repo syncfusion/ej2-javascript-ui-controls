@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### Chips
+
+#### Bug Fixes
+
+- `#293361` - When setting `enabled` value as `false` in Chip component then the disabled chip item get focused issue has been resolved.
+
 ## 20.3.50 (2022-10-18)
 
 ### Checkbox

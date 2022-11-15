@@ -905,8 +905,17 @@ export class WorkbookNumberFormat {
                 cell.format = format;
             }
         };
+        let firstVal: string;
+        const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
+        let months: Object = formats.months['stand-alone'] ? formats.months['stand-alone'].wide : {};
+        let abbreviatedMonth: Object = formats.months['stand-alone'] ? formats.months['stand-alone'].abbreviated : {};
+        const isMonth: Function = (monthValue: string, abbrMonthValue: string, dateVal: string, dateLength: number) => {
+            let shortMonthValue = monthValue.substring(0, dateLength);
+            if (shortMonthValue === dateVal) {
+                firstVal = abbrMonthValue;
+            }
+        }
         if (dateArr.length === 2) {
-            let firstVal: string;
             const updateSecValue: Function = (secVal: string): void => {
                 val = firstVal;
                 formatArr[0] = 'MMM';
@@ -915,38 +924,50 @@ export class WorkbookNumberFormat {
                     formatArr.splice(0, 0, 'dd');
                     updateFormat();
                 } else if (Number(secVal) >= 1900 && Number(secVal) <= 9999) {
-                    val += (separator + secVal.slice(2, 4));
+                    val += (separator + secVal);
                     formatArr[1] = 'yy';
                     updateFormat();
+                    // Changed year format alone when given year value with 4 digits like May-2022
+                    formatArr[1] = 'yyyy';
+                    format = formatArr.join(separator);
+                } else {
+                    val = 'Invalid'; //Set as Invalid for invalid data like May-June.
                 }
             };
-            const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
             dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
-            const inputMonth: string = dateArr[1].substring(0,3);
-            if (firstVal = !Number(dateArr[0]) && months.find((month: string) => dateArr[0].includes(month))) {
-                if (!dateArr[0].includes(',')) { // Added ',' checking to skip updating for the MMM d, yyyy ddd format.
+            if (!Number(dateArr[0]) && dateArr[0].length >= formats.months['stand-alone'].abbreviated['1'].length) {
+                Object.keys(months).find((key: string) => isMonth(months[key].toLowerCase(), abbreviatedMonth[key], dateArr[0], dateArr[0].length));
+                if (!isNullOrUndefined(firstVal) && !dateArr[0].includes(',')) { // Added ',' checking to skip updating for the MMM d, yyyy ddd format.
                     updateSecValue(dateArr[1]);
                 }
-            } else if (firstVal = !Number(dateArr[1]) && months.find((month: string) => inputMonth.includes(month))) {
-                updateSecValue(dateArr[0]);
+            } else if (!Number(dateArr[1]) && dateArr[1].length >= formats.months['stand-alone'].abbreviated['1'].length) {
+                Object.keys(months).find((key: string) => isMonth(months[key].toLowerCase(), abbreviatedMonth[key], dateArr[1], dateArr[1].length));
+                if (!isNullOrUndefined(firstVal)) {
+                    updateSecValue(dateArr[0]);
+                }
             } else if (dateArr[0] && Number(dateArr[0]) <= 12 && Number(dateArr[1])) {
-                firstVal = months[Number(dateArr[0]) - 1];
+                firstVal = months[Number(dateArr[0])];
                 updateSecValue(dateArr[1]);
             }
             if (!formatArr.length) {
                 val = 'Invalid';
             }
         } else if (dateArr.length > 2) {
-            const months: string[] = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'sept', 'oct', 'nov', 'dec'];
             for (let i: number = 0; i < dateArr.length; i++) {
                 if (!(Number(dateArr[i]) > -1)) {
-                    if (months.filter((month: string) => dateArr[i].toLowerCase().includes(month)).length) {
+                    Object.keys(months).find((key: string) => isMonth(months[key].toLowerCase(), abbreviatedMonth[key], dateArr[i].toLowerCase(), dateArr[i].length));
+                    if (!isNullOrUndefined(firstVal)) {
                         if (i === 1) {
                             formatArr[1] = 'MMM';
                             if (Number(dateArr[0]) < 31 && Number(dateArr[2]) >= 1900 && Number(dateArr[2]) <= 9999) {
+                                val = dateArr[0] + separator + firstVal;
+                                val += (separator + dateArr[2]);
                                 formatArr[0] = 'd';
                                 formatArr[2] = 'yy';
                                 updateFormat();
+                                // Changed year format alone when given year value with 4 digits like 20-May-2022
+                                formatArr[2] = 'yyyy';
+                                format = formatArr.join(separator);
                             }
                         }
                     } else {

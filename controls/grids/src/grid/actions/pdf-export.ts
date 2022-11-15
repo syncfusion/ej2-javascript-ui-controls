@@ -54,6 +54,7 @@ export class PdfExport {
     private headerOnPages: number[] = [];
     private drawPosition: Object = { xPosition: 0, yPosition: 0 };
     private pdfPageSettings: PdfPageSettings;
+    private rowIndex: number;
 
     /**
      * Constructor for the Grid PDF Export module
@@ -65,6 +66,7 @@ export class PdfExport {
         this.parent = parent;
         this.helper = new ExportHelper(parent);
         this.gridPool = {};
+        this.rowIndex;
     }
 
     /**
@@ -457,6 +459,7 @@ export class PdfExport {
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex, null, null, gObj);
                     this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush,
                                                backgroundBrush, returnType, pdfExportProperties, helper, index);
+                    index = this.rowIndex;
                     const groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
@@ -1047,6 +1050,7 @@ export class PdfExport {
         const rows: Row<Column>[] = helper.getGridRowModel(columns, dataSource, gObj, rowIndex);
         for (const row of rows) {
             rowIndex++;
+            this.rowIndex = rowIndex
             // create a new row and set default style properties
             const gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
             const cellLength: number = row.cells.length;

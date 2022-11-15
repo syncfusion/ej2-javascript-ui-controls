@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#F178215` - In the Dashboard Layout component, the panel template does not work while using the v-slot issue has been resolved.
+
 ## 20.3.48 (2022-10-05)
 
 ### Dashboard Layout

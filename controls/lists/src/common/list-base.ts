@@ -332,6 +332,9 @@ export namespace ListBase {
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options, componentInstance);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
+                if(ariaAttributes.groupItemRole =='presentation'){
+                    li.removeAttribute('aria-level');
+                }
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.tooltip)) {

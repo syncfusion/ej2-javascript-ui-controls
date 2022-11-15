@@ -108,7 +108,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     public initialize(element: HTMLCanvasElement, dotnetRef?: BlazorDotnetObject): void {
         this.element = element;
         this.canvasContext = this.element.getContext('2d');
-        this.canvasContext.canvas.tabIndex = 0;
+        this.canvasContext.canvas.tabIndex = -1;
         if (dotnetRef) {
             this.dotnetRef = dotnetRef;
             this.isBlazor = true;

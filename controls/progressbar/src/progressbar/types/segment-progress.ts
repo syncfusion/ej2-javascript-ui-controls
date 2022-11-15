@@ -135,7 +135,7 @@ export class Segment {
         return angle;
     }
 
-    public createLinearRange(totalWidth: number, progress: ProgressBar): Element {
+    public createLinearRange(totalWidth: number, progress: ProgressBar, progressWidth: number): Element {
         const posX: number = progress.progressRect.x + ((progress.enableRtl) ? progress.progressRect.width : 0);
         const startY: number = (progress.progressRect.y + (progress.progressRect.height / 2));
         const rangeGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearRangeGroup' });
@@ -170,6 +170,9 @@ export class Segment {
                 '0', 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + endX + ' ' + startY
             );
             rangePath = progress.renderer.drawPath(option);
+            if (progress.cornerRadius === 'Round' && progressWidth) {
+                rangePath.setAttribute('stroke-linecap', 'round');
+            }
             rangeGroup.appendChild(rangePath);
             if (progress.isGradient) {
                 if (range.length - 1 === i) {
@@ -214,6 +217,9 @@ export class Segment {
                 '0', getPathArc(centerX, centerY, radius, startAngle, endAngle, progress.enableRtl)
             );
             rangePath = progress.renderer.drawPath(option);
+            if (progress.cornerRadius === 'Round' && startAngle !== endAngle) {
+                rangePath.setAttribute('stroke-linecap', 'round');
+            }
             rangeGroup.appendChild(rangePath);
             if (progress.isGradient) {
                 if (range.length - 1 === i) {

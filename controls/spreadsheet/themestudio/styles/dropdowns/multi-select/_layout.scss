@@ -2000,3 +2000,7 @@ ejs-multiselect {
 .e-multiselect.e-readonly.e-control-wrapper.e-input-group.e-control-container.e-input-group :not(.e-disabled).e-multi-select-wrapper:hover .e-clear-icon {
   display: none;
 }
+
+.e-multiselect.e-input-group.e-control-wrapper .e-input-group-icon {
+  margin-right: 0;
+}

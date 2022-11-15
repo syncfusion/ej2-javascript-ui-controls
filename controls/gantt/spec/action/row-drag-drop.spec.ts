@@ -630,7 +630,213 @@ describe('Gantt Drag and Drop support', () => {
             expect(ganttObj_self.dataSource[1].TaskID).toBe(4);
         });
     });
-    
+    describe('Drag And drop for below position', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    allowFiltering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                        resourceInfo: 'ResourceId',
+                    },
+                    resourceNameMapping: 'ResourceName',
+                    resourceIDMapping: 'ResourceId',
+                    resources: projectResources,
+                     allowRowDragAndDrop: true,
+                     allowSorting: true,
+                     enableContextMenu: true,
+                     enableImmutableMode: true,
+                    splitterSettings: {
+                        columnIndex: 7,
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'ResourceId', headerText: 'Resources' },
+                        { field: 'TaskName', headerText: 'Task Name' },
+                        { field: 'StartDate', headerText: 'Start Date' },
+                        { field: 'Duration', headerText: 'Duration' },
+                        { field: 'Predecessor', headerText: 'Predecessor' },
+                        { field: 'Progress', headerText: 'Progress' },
+                    ],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Drag and drop', function () {
+           ganttObj.actionComplete = (args: any): void => {
+              if (args.requestType === 'rowDropped') {
+                expect(ganttObj.dataSource[0].subtasks[0].subtasks.length).toBe(6);
+              }
+           };
+          ganttObj.dataBind();
+          ganttObj.reorderRows([10], 3, 'below');
+       });
+    });
+    describe('Update datasource after indent and outdent', () => {
+        let ganttObj: Gantt;
+        let editingData = [
+            {
+              TaskID: 1,
+              TaskName: 'Project initiation',
+              StartDate: new Date('04/02/2019'),
+              EndDate: new Date('04/04/2019'),
+            },
+            {
+              TaskID: 2,
+              TaskName: 'Identify site location',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 30,
+              resources: [1],
+              info: 'Measure the total property area alloted for construction',
+            },
+            {
+                TaskID: 3,
+                TaskName: 'Identify site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 4,
+                Progress: 30,
+                resources: [1],
+                info: 'Measure the total property area alloted for construction',
+              },
+          ];
+          
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                        { field: 'Predecessor', headerText: 'Predecessor' }
+                    ],
+                    sortSettings: {
+                        columns: [{ field: 'TaskID', direction: 'Ascending' },
+                            { field: 'TaskName', direction: 'Ascending' }]
+                    },
+                    toolbar: ['Indent','Outdent'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    allowSelection: true,
+                    allowRowDragAndDrop: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    holidays: [{
+                            from: "04/04/2019",
+                            to: "04/05/2019",
+                            label: " Public holidays",
+                            cssClass: "e-custom-holiday"
+                        },
+                        {
+                            from: "04/12/2019",
+                            to: "04/12/2019",
+                            label: " Public holiday",
+                            cssClass: "e-custom-holiday"
+                        }],
+                    searchSettings: { fields: ['TaskName', 'Duration']
+                    },
+                    allowResizing: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+       it('Perform indent and outdent', function () {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'outdented') {
+                  expect(ganttObj.dataSource[0].subtasks.length).toBe(2);
+                }
+             };
+           ganttObj.dataBind();
+           ganttObj.indent();
+           ganttObj.selectRow(2);
+           ganttObj.indent();
+           ganttObj.selectRow(2);
+           ganttObj.indent();
+           ganttObj.selectRow(2);
+           ganttObj.outdent()
+       });
+    });
 });
 describe('Gantt filter after drag and drop', () => {
     Gantt.Inject(Filter, Toolbar, ColumnMenu,RowDD);

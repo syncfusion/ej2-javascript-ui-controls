@@ -611,8 +611,8 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltiptarget', innerHTML:
-                    "<p><a id='link1' title='MAScript (or ES) is a trademarked scripting-language specification'>ECMAScript</a> and "
-                    + "<a id='link2' title='The World Wide Web'>WWW</a></p> <a id='link3'>Test without title attribute</a>"
+                    "<p><a id='link1' class='targettooltip' title='MAScript (or ES) is a trademarked scripting-language specification'>ECMAScript</a> and "
+                    + "<a id='link2' class='targettooltip' title='The World Wide Web'>WWW</a></p> <a id='link3' class='targettooltip'>Test without title attribute</a>"
             });
             document.body.appendChild(ele);
         });
@@ -666,6 +666,18 @@ describe('Tooltip Control', () => {
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
             triggerMouseEvent(target3, 'mousedown');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+        });
+        it('dynamically added target testing', () => {
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                width: '100px', height: '40px', showTipPointer: false, target: '.targettooltip'
+            }, '.tooltiptarget');
+            let target2 = document.querySelector('.tooltiptarget');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            let childEle: HTMLElement = createElement('div', {
+                className: 'targettooltip', innerHTML: "Dynamicall added target"
+            });
+            target2.appendChild(childEle);
         });
     });
     describe('Tooltip and tip positions', () => {

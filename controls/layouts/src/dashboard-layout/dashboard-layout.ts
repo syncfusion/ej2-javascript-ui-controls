@@ -686,6 +686,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim());
                 }
+                else {
+                    return compile(template);
+                }
             } catch (error) {
                 const sanitizedValue: string = SanitizeHtmlHelper.sanitize(template);
                 return compile((this.enableHtmlSanitizer && typeof (template) === 'string') ? sanitizedValue : template);

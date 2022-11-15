@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I415519` - When setting the `getImageUrl` with the handler doesn't trigger a server-side GetImage operation in File Manager component issue has been resolved.
+
 ## 20.3.49 (2022-10-11)
 
 ### File Manager

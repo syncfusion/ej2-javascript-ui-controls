@@ -147,6 +147,8 @@ export class ConnectorEditing extends ToolBase {
                     }
                 }
                 this.commandHandler.updateEndPoint(connector as Connector, oldValues);
+                // EJ2-65063 - While mouseUp set the selectedSegmentIndex as zero.
+                (connector as Connector).selectedSegmentIndex = 0;
             }
         }
         if (this.undoElement) {
@@ -156,6 +158,9 @@ export class ConnectorEditing extends ToolBase {
                 type: 'SegmentChanged', redoObject: obj, undoObject: this.undoElement, category: 'Internal'
             };
             this.commandHandler.addHistoryEntry(entry);
+        }
+        if ((connector as Connector).isBezierEditing) {
+            (connector as Connector).isBezierEditing = false;
         }
         super.mouseUp(args);
     }
@@ -345,6 +350,10 @@ export class ConnectorEditing extends ToolBase {
         let index: number = obj.segments.indexOf(segment); let update: boolean = false;
         //const orientation: string = (segment.points[0].y.toFixed(2) === segment.points[1].y.toFixed(2)) ? 'horizontal' : 'vertical';
         //const prevSegment: OrthogonalSegmentModel; const nextSegment: OrthogonalSegmentModel;
+        // EJ2-65063 - If the allowNodeOverlap is set as true means then we set the segment index which is going to drag in selectedSegmentIndex property
+        if (obj.allowNodeOverlap) {
+            (obj as Connector).selectedSegmentIndex = index ? index : segmentIndex;
+        }
         if (index !== -1) {
             if (index === 0 && obj.segments.length === 1 && segment.points.length === 2) {
                 index = this.addSegments(obj as Connector, segment, tx, ty, index);
@@ -592,7 +601,8 @@ export class ConnectorEditing extends ToolBase {
             } else {
                 prev.length -= tx;
             }
-            if (connector.sourcePortID !== '' && prev.length < 0) {
+            // EJ2-65063 - Added the below condition !allowNodeOverlap to prevent the segment to split into two segments while intersect with source node.
+            if (connector.sourcePortID !== '' && prev.length < 0 && !connector.allowNodeOverlap) {
                 this.updatePortSegment(prev, connector as Connector, index, tx, ty);
             } else if (connector.sourceID && connector.sourcePortID === '' && prev.length < 0 && index === 1) {
                 isNextUpdate = false;

@@ -54,7 +54,7 @@ export class Optimized {
         const factor: number = 1.0 / window.devicePixelRatio;
         container.style.transform = 'scale(' + factor.toString() + ',' + factor.toString() + ')';
         /* eslint-disable-next-line max-len */
-        container.innerHTML = '<span style="font-size:0; font-family: ' + characterFormat.fontFamily + '; display: inline-block;">m</span><span style="font-size:' + maxFontHeight + 'pt; font-family: ' + characterFormat.fontFamily + ';' + ((characterFormat.bold) ? 'font-weight:bold;' : '') + ((characterFormat.italic) ? 'font-style:italic;' : '') + ' display: inline-block;">m</span>';
+        container.innerHTML = '<span class="e-de-font-info" style="font-size:0; font-family: ' + characterFormat.fontFamily + '; display: inline-block;">m</span><span class="e-de-font-info" style="font-size:' + maxFontHeight + 'pt; font-family: ' + characterFormat.fontFamily + ';' + ((characterFormat.bold) ? 'font-weight:bold;' : '') + ((characterFormat.italic) ? 'font-style:italic;' : '') + ' display: inline-block;">m</span>';
         document.body.appendChild(container);
         /* eslint-disable-next-line max-len */
         const baseLineFactor: number = (container.firstChild as HTMLSpanElement).offsetTop / (container.lastChild as HTMLSpanElement).offsetHeight;

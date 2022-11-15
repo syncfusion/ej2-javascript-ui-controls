@@ -430,4 +430,48 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             });
         });
     });
+
+    describe('EJ2-64943->', (): void => {
+        let sheet: any;
+        beforeAll((done: Function) => {
+            model = {
+                sheets: [{
+                    rows: [{
+                        cells: [{ value: 'Mar-2020' }, { value: 'April-2010' }, { value: '2020-April' }, { value: 'No benchmark-USD' },
+                        { value: 'mark-20' }, { value: '10-october' }, { value: 'Novem-2022' }, { value: 'Novel-2022' }, { value: '-2' }, { value: 'no-2022' },
+                        { value: '12-October-1945' }, { value: 'October-1945' }]
+                    }]
+                }]
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll((): void => {
+            helper.invoke('destroy');
+        });
+        it('Spreadsheet auto format the text into date', (done: Function) => {
+            sheet = helper.invoke('getActiveSheet');
+            const cellEle: Element[] = helper.invoke('getRow', [0]).cells;
+            expect(cellEle[0].textContent).toBe('Mar-20');
+            expect(cellEle[1].textContent).toBe('Apr-10');
+            expect(cellEle[2].textContent).toBe('Apr-20');
+            expect(cellEle[3].textContent).toBe('No benchmark-USD');
+            expect(cellEle[4].textContent).toBe('mark-20');
+            expect(cellEle[5].textContent).toBe('10-Oct');
+            expect(cellEle[6].textContent).toBe('Nov-22');
+            expect(cellEle[7].textContent).toBe('Novel-2022');
+            expect(cellEle[8].textContent).toBe('-2');
+            expect(cellEle[9].textContent).toBe('no-2022');
+            expect(cellEle[10].textContent).toBe('12-Oct-45');
+            expect(cellEle[11].textContent).toBe('Oct-45');
+            helper.invoke('selectRange', ['K1']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_LongDate').click();
+            helper.invoke('selectRange', ['L1']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_LongDate').click();
+            expect(cellEle[10].textContent).toBe('Friday, October 12, 1945');
+            expect(cellEle[11].textContent).toBe('Monday, October 1, 1945');
+            done();
+        });
+    });
 });

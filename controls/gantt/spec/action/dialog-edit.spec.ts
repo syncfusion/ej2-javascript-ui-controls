@@ -632,6 +632,32 @@
                 triggerMouseEvent(saveRecord, 'click');
             }
         });
+        it('Resource editing -dailog-edit', () => {
+            
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeOpenEditDialog") {
+                    args.dialogModel.animationSettings = { 'effect': 'none' };
+                }
+            };
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                   
+                    expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+                }
+            };
+            ganttObj.dataBind();
+            let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            triggerMouseEvent(checkbox, 'click');
+            let unit: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+            if (unit) {
+                triggerMouseEvent(unit, 'dblclick');
+                let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'ResourcesTabContainer_gridcontrolunit')).ej2_instances[0];
+                input.value = 50;
+                input.dataBind();
+                let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+            }
+        });
     });
     describe('Dialog editing - Resource Tab with unit mapping', () => {
         let ganttObj: Gantt;

@@ -24,6 +24,7 @@ export class FormFields {
     // eslint-disable-next-line
     private maintanMinTabindex: any = {};
     private isSignatureField: boolean = false;
+    private  paddingDifferenceValue : number = 10;
     private isKeyDownCheck: boolean = false;
     /**
      * @private
@@ -1165,47 +1166,28 @@ export class FormFields {
     //  EJ2-62918- Image signature width is wrong while adding programmatically and it is fixed by adding an onload event.
     //  A function was added and it was called
     private imageOnLoad(bounds: any, image: HTMLImageElement, currentValue: string, currentPage: number, rotateAngle: number, currentField: any, signatureField: PdfAnnotationBase, signString: string, signatureFontFamily: string, signatureFontSize: number, target: any) {
-        let annot: PdfAnnotationBaseModel;
-            if (this.pdfViewer.signatureFitMode === 'Default'){
-            // To check whether the image shape is square or rectangle
-            let difference: number = 20;
-            let hightDifference: number = 4;
-            let heightRatio: number = 2;{
-            if (Math.abs(image.height - image.width) < difference) {
-                if (bounds.width > bounds.height) {
-                    bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / heightRatio);
-                    bounds.width = bounds.height;
-                }
-                else {
-                    bounds.y = bounds.y + (bounds.height / heightRatio) - (bounds.width / heightRatio);
-                    bounds.height = bounds.width;
-                }
-            }
-            else if(image.height/image.width > 1){
-                if (bounds.width > bounds.height) {
-                    bounds.x = bounds.x + (bounds.width / heightRatio) - (bounds.height / hightDifference);
-                    bounds.width = bounds.height/heightRatio;
-                }
-                else {
-                    bounds.y = bounds.y + (bounds.width/ hightDifference)
-                    var height: number = bounds.width / heightRatio;
-                    bounds = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height -height };
-
-                }
-            }
-            else {
-                if (bounds.width > bounds.height) {
-                    bounds.y = bounds.y + (bounds.height / hightDifference);
-                    bounds.x = bounds.x + (bounds.height / hightDifference);
-                    let height: number = bounds.height / heightRatio;
-                    bounds = { x: bounds.x, y: bounds.y, width: bounds.width - height, height: bounds.height - height };
-                }
-                else {
-                    bounds.y = bounds.y + (bounds.height / hightDifference);
-                    bounds.height = bounds.height / heightRatio;
-                }
+        if (target && target.offsetParent && signatureField) {
+            this.pdfViewerBase.drawSignatureWithTool = true;
+            if (target.nextSibling && target.nextSibling.id.indexOf("initial") !== -1) {
+                this.pdfViewer.isInitialFieldToolbarSelection = true;
             }
         }
+        let annot: PdfAnnotationBaseModel;
+        if (this.pdfViewer.signatureFitMode === 'Default'){
+            {
+                let padding = Math.min(bounds.height /this. paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
+                let maxHeight = bounds.height - padding;
+                let maxWidth = bounds.width - padding;
+                let imageWidth = image.width;
+                let imageHeight = image.height;
+                let beforeWidth = bounds.width;
+                let beforeHeight = bounds.height;
+                let ratio = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
+                bounds.width = imageWidth * ratio;
+                bounds.height = imageHeight * ratio;
+                bounds.x = bounds.x + (beforeWidth - bounds.width) / 2;
+                bounds.y = bounds.y + (beforeHeight - bounds.height) / 2;
+            }
         annot = {
             // eslint-disable-next-line max-len
             id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',

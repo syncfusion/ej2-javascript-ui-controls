@@ -463,7 +463,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     }
                     break;
                 case 'value':
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                    if ((( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) && this.element.value !== '') {
                         this.setProperties({value: this.element.value}, !isDynamic);
                     }
                     break;

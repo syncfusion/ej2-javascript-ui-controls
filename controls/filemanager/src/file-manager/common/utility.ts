@@ -451,16 +451,17 @@ export function fileType(file: Object): string {
 // eslint-disable-next-line
 export function getImageUrl(parent: IFileManager, item: Object): string {
     const baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
+    let pathUrl: string = (baseUrl.indexOf('?') !== -1) ? '&path=' : '?path=';
     let imgUrl: string;
     const fileName: string = encodeURIComponent(getValue('name', item));
     const fPath: string = getValue('filterPath', item);
     if (parent.hasId) {
         const imgId: string = getValue('id', item);
-        imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
+        imgUrl = baseUrl + pathUrl + parent.path + '&id=' + imgId;
     } else if (!isNOU(fPath)) {
-        imgUrl = baseUrl + '?path=' + encodeURIComponent(fPath.replace(/\\/g, '/')) + fileName;
+        imgUrl = baseUrl + pathUrl + encodeURIComponent(fPath.replace(/\\/g, '/')) + fileName;
     } else {
-        imgUrl = baseUrl + '?path=' + parent.path + fileName;
+        imgUrl = baseUrl + pathUrl + parent.path + fileName;
     }
     imgUrl = imgUrl + '&time=' + (new Date().getTime()).toString();
     const eventArgs: BeforeImageLoadEventArgs = {

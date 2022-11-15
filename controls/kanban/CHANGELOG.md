@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.3.56 (2022-11-08)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#FB37730` - Now, dragging and dropping cards quickly onto empty columns works properly.
+
+- `#F178105` - Now, dragging and dropping cards between the columns for the first time will trigger the `dataSourceChanged` event properly.
+
 ## 20.3.49 (2022-10-11)
 
 ### Kanban

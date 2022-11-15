@@ -1123,9 +1123,7 @@ export class PivotChart {
                 keyPos++;
             }
         }
-        if (this.accumulationType.indexOf(this.chartSettings.chartSeries.type) > -1 && legendSettings.visible === undefined) {
-            legendSettings.visible = false;
-        }
+        legendSettings.visible = legendSettings.visible !== false;
         legendSettings.padding = legendSettings.padding ? legendSettings.padding : 25;
         legendSettings.shapePadding = legendSettings.shapePadding ? legendSettings.shapePadding : 10;
         return legendSettings;

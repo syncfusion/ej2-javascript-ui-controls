@@ -5351,3 +5351,47 @@ describe('EJ2-62907-Checking rowSelected event should have rowIndexes when singl
         gridObj = null;
     });
 });
+
+describe('EJ2-65110 - Enter and shiftEnter key functionality with template column', () => {
+    let gridObj: Grid;
+    let rows: Element[];
+    let preventDefault: Function = new Function();
+    beforeAll((done) => {
+        gridObj = createGrid({
+            dataSource: data,
+            allowPaging: true,
+            allowSelection: true,
+            selectionSettings: { mode: 'Cell' },
+            enableHover: false,
+            columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'OrderID', headerText: 'OrderID', width: 180 },
+                {
+                    headerText: 'Employee Image', textAlign: 'Center',
+                    template: '<div>${CustomerID}</div>', width: 150
+                },
+                { field: 'ShipPostalCode', headerText: 'ShipPostalCode', width: 195, textAlign: 'Right' },
+                { field: 'ShipCity', headerText: 'ShipCity', width: 120 },
+                { field: 'ShipCountry', headerText: 'ShipCountry', width: 130 }
+            ],
+            pageSettings: { pageCount: 2 },
+        }, done);
+    });
+    it('focus navigation by enter and ShiftEnter', () => {
+        gridObj.dataBind();
+        rows = gridObj.getRows();
+        (rows[0] as HTMLTableRowElement).cells[2].focus();
+        gridObj.focusModule.setActive(true);
+        gridObj.focusModule.active.matrix.current = [0, 2];
+        let args: any = { action: 'enter', preventDefault: preventDefault, target: (rows[0] as HTMLTableRowElement).cells[2] };
+        (gridObj.focusModule as any).onKeyPress(args);
+        expect((rows[1] as HTMLTableRowElement).cells[2].classList.contains('e-focused')).toBeTruthy();
+        args = { action: 'shiftEnter', preventDefault: preventDefault, target: (rows[1] as HTMLTableRowElement).cells[2] };
+        (gridObj.focusModule as any).onKeyPress(args);
+        expect((rows[0] as HTMLTableRowElement).cells[2].classList.contains('e-focused')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -2,7 +2,7 @@
  * Gantt base spec
  */
 import { Gantt, ColumnMenu } from '../../src/index';
-import { baselineData } from './data-source.spec';
+import { baselineData,filterdata } from './data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt spec for  scroll', () => {
@@ -99,6 +99,71 @@ describe('Gantt spec for  scroll', () => {
             let scrollLeft: number = getValue('element.scrollLeft', ganttObj.ganttChartModule.scrollObject);
             let gridLeft: number = ganttObj.chartVerticalLineContainer.offsetLeft;
             //expect(scrollLeft === Math.abs(gridLeft)).toBe(true);
+        });
+    });
+    describe('CR-Issue-EJ2-EJ2-65261', () => {        
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: filterdata,
+                dateFormat: 'MM/dd/yyyy',
+                taskFields: {
+                  id: 'TaskID',
+                  name: 'TaskName',
+                  startDate: 'StartDate',
+                  endDate: 'EndDate',
+                  duration: 'Duration',
+                  dependency: 'Predecessor',
+                  child: 'subtasks',
+                },
+                columns: [
+                  {
+                    field: 'TaskName',
+                    headerText: 'Task Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                  },
+                  { field: 'StartDate', headerText: 'Start Date' },
+                  { field: 'Duration', headerText: 'Duration', editType: 'numericedit',type:"number" },
+                  { field: 'EndDate', headerText: 'End Date' },
+                  { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                treeColumnIndex: 0,
+                toolbar: ['Search'],
+                allowFiltering: true,
+                includeWeekend: true,
+                height: '450px',
+                timelineSettings: {
+                  timelineUnitSize: 60,
+                  topTier: {
+                    format: 'MMM dd, yyyy',
+                    unit: 'Day',
+                  },
+                  bottomTier: {
+                    unit: 'Hour',
+                    format: 'h.mm a',
+                  },
+                },
+                splitterSettings: {
+                  columnIndex: 3,
+                },
+                durationUnit: 'Day',
+                dayWorkingTime: [{ from: 1, to: 24 }],
+                labelSettings: {
+                  rightLabel: 'TaskName',
+                },
+                projectStartDate: new Date('07/15/1969 01:00:00 AM'),
+                projectEndDate: new Date('07/25/1969'),
+               
+                }, done);
+
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('column type', () => {
+            expect(ganttObj.treeGridModule.treeGridColumns[2].type).toBe('number')
+        
         });
     });
 });

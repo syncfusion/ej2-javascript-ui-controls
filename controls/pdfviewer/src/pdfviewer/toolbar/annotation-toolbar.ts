@@ -1958,6 +1958,7 @@ export class AnnotationToolbar {
             // eslint-disable-next-line max-len
             args.element.parentElement.style.top = (this.pdfViewerBase.viewerContainer.clientHeight/2) + 'px';
         }
+        this.popupPosition(args,this.colorDropDownElement)
         this.colorPalette.refresh();
     }
 
@@ -2005,7 +2006,18 @@ export class AnnotationToolbar {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             args.element.parentElement.style.top = (this.pdfViewerBase.viewerContainer.clientHeight/2) + 'px';
         }
+        this.popupPosition(args, this.strokeDropDownElement);
         this.strokeColorPicker.refresh();
+    }
+    private popupPosition = function(colorElement : any, buttonElement : any):void {
+        if(colorElement && colorElement.element) {
+            let buttonBounds = buttonElement.getBoundingClientRect();
+            let elements = colorElement.element.getElementsByClassName("e-container e-color-palette")[0].getElementsByClassName("e-palette")[0].getBoundingClientRect();
+            let mainContainerBounds = this.pdfViewerBase.mainContainer.getBoundingClientRect();
+            if(elements.left + elements.width > mainContainerBounds.width){
+                colorElement.element.parentElement.style.left = (elements.left - elements.width) + buttonBounds.width + 'px';
+            }
+        }   
     }
 
     // eslint-disable-next-line

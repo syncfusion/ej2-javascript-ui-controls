@@ -269,7 +269,7 @@ export class TextSearch {
     }
     /* eslint-disable-next-line max-len */
     private findInlineText(section: Widget, pattern: RegExp, findOption: FindOption, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): void {
-        let paragraphWidget: ParagraphWidget = this.owner.selection.getFirstParagraphBlock(section.childWidgets[0] as BlockWidget);
+        let paragraphWidget: ParagraphWidget = this.owner.documentHelper.getFirstParagraphBlock(section.childWidgets[0] as BlockWidget);
         /* eslint-disable-next-line max-len */
         while (!isNullOrUndefined(paragraphWidget) && paragraphWidget.childWidgets.length === 1 && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
             paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;

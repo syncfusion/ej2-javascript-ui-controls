@@ -2989,7 +2989,7 @@ export class Editor {
         }
         this.documentHelper.layout.layoutBodyWidgetCollection(firstBlock.index, firstBlock.containerWidget, firstBlock, false);
         if (firstBlock instanceof TableWidget) {
-            firstBlock = selection.getFirstParagraphInFirstCell(firstBlock);
+            firstBlock = this.documentHelper.getFirstParagraphInFirstCell(firstBlock);
         }
         if (selectFirstBlock) {
             selection.selectParagraphInternal(firstBlock as ParagraphWidget, true);
@@ -5127,7 +5127,7 @@ export class Editor {
             while (!(widget instanceof TableWidget)) {
                 widget = table.nextRenderedWidget;
             }
-            paragraphWidget = this.selection.getFirstParagraphInFirstCell(widget);
+            paragraphWidget = this.documentHelper.getFirstParagraphInFirstCell(widget);
         }
         this.documentHelper.layout.reLayoutTable(table);
         this.selection.selectParagraphInternal(paragraphWidget, true);
@@ -5565,7 +5565,7 @@ export class Editor {
                 paragraph = block as ParagraphWidget;
             }
             if (block instanceof TableWidget) {
-                paragraph = selection.getFirstParagraphInFirstCell(block as TableWidget);
+                paragraph = this.documentHelper.getFirstParagraphInFirstCell(block as TableWidget);
             }
             this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
         }
@@ -5963,7 +5963,7 @@ export class Editor {
             if (block instanceof ParagraphWidget) {
                 paragraph = block as BlockWidget;
             } else {
-                paragraph = this.selection.getFirstParagraphInFirstCell(block as TableWidget);
+                paragraph = this.documentHelper.getFirstParagraphInFirstCell(block as TableWidget);
             }
 
             this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
@@ -6106,10 +6106,10 @@ export class Editor {
                 this.isTableInsert = true;
             }
         }
-        let startLine: LineWidget = this.selection.getFirstParagraphInFirstCell(table).childWidgets[0] as LineWidget;
+        let startLine: LineWidget = this.documentHelper.getFirstParagraphInFirstCell(table).childWidgets[0] as LineWidget;
         startPos.setPosition(startLine, true);
         this.selection.end.setPositionInternal(startPos);
-        let lastParagraph: ParagraphWidget = this.selection.getLastParagraphInLastCell(table.getSplitWidgets().pop() as TableWidget);
+        let lastParagraph: ParagraphWidget = this.documentHelper.getLastParagraphInLastCell(table.getSplitWidgets().pop() as TableWidget);
         let endOffset: number = lastParagraph.getLength() + 1;
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
 
@@ -6194,7 +6194,7 @@ export class Editor {
             while (!(widget instanceof TableWidget)) {
                 widget = table.nextRenderedWidget;
             }
-            paragraph = this.selection.getFirstParagraphInFirstCell(widget);
+            paragraph = this.documentHelper.getFirstParagraphInFirstCell(widget);
         }
         if (isInsertRow) {
             this.documentHelper.layout.reLayoutTable(table);
@@ -7252,6 +7252,8 @@ export class Editor {
             this.startParagraph = undefined;
             this.endParagraph = undefined;
             //this.documentHelper.layout.allowLayout = true;
+        } else if (this.documentHelper.owner.enableHeaderAndFooter) {
+            this.updateHeaderFooterWidget();
         }
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo &&
             ((this.editorHistory.currentBaseHistoryInfo.action !== 'RowResizing'
@@ -10618,7 +10620,7 @@ export class Editor {
     private removeSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition): boolean {
         //If end is not table end and start is outside the table, then skip removing the contents and move caret to start position.
         if (end.paragraph.isInsideTable
-            && end.paragraph !== selection.getLastParagraphInLastCell(end.paragraph.associatedCell.ownerTable)
+            && end.paragraph !== this.documentHelper.getLastParagraphInLastCell(end.paragraph.associatedCell.ownerTable)
             && (!start.paragraph.isInsideTable
                 || start.paragraph.associatedCell.ownerTable.index !== end.paragraph.associatedCell.ownerTable.index)) {
             return false;
@@ -10867,10 +10869,7 @@ export class Editor {
                 }
                 table.destroy();
             } else {
-                table.isGridUpdated = false;
-                table.buildTableColumns();
-                table.isGridUpdated = true;
-                this.documentHelper.layout.reLayoutTable(table);
+                this.updateTable(table);
             }
             this.selection.selectParagraphInternal(paragraph, true);
             if (isNullOrUndefined(this.editorHistory) || this.checkIsNotRedoing()) {
@@ -11079,10 +11078,10 @@ export class Editor {
         let previousWidget: Widget = table.previousWidget ? table.previousWidget : table.previousRenderedWidget;
         if (nextWidget) {
             paragraph = nextWidget instanceof ParagraphWidget ? nextWidget as ParagraphWidget
-                : this.selection.getFirstParagraphInFirstCell((nextWidget as TableWidget));
+                : this.documentHelper.getFirstParagraphInFirstCell((nextWidget as TableWidget));
         } else if (previousWidget) {
             paragraph = previousWidget instanceof ParagraphWidget ? previousWidget as ParagraphWidget
-                : this.selection.getLastParagraphInLastCell((previousWidget as TableWidget));
+                : this.documentHelper.getLastParagraphInLastCell((previousWidget as TableWidget));
         }
         return paragraph;
     }
@@ -12276,7 +12275,7 @@ export class Editor {
         return newTable;
     }
     private updateEditPosition(cell: TableCellWidget, selection: Selection): void {
-        let firstParagraph: ParagraphWidget = selection.getFirstParagraphInCell(cell);
+        let firstParagraph: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(cell);
         selection.editPosition = this.selection.getHierarchicalIndex(firstParagraph, '0');
     }
 
@@ -13960,13 +13959,13 @@ export class Editor {
                 selection.owner.isShiftingEnabled = true;
             }
             let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
-            let lineWidget: LineWidget = selection.start.currentWidget;
+            let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(paragraph, paragraphInfo.offset);
             let removeOffset: number = offset - 1;
             if (removeOffset < 0) {
-                lineWidget = lineWidget.previousLine as LineWidget;
-                removeOffset = this.documentHelper.selection.getLineLength(lineWidget) + removeOffset;
+                lineInfo.line = lineInfo.line.previousLine as LineWidget;
+                removeOffset = this.documentHelper.selection.getLineLength(lineInfo.line) + removeOffset;
             }
-            this.removeAtOffset(lineWidget, selection, removeOffset);
+            this.removeAtOffset(lineInfo.line, selection, removeOffset);
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset - 1, false);
             this.setPositionForHistory();
             if (!isRedoing) {
@@ -17338,7 +17337,7 @@ export class Editor {
                 if (this.editorHistory) {
                     this.editorHistory.updateComplexHistoryInternal();
                 }
-                const startLine: LineWidget = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
+                const startLine: LineWidget = this.documentHelper.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
                 const endLine: LineWidget = this.selection.getLastParagraph(endCell).childWidgets[0] as LineWidget;
                 let offset: number = startLine.getOffset(startLine.children[0], 1);
                 this.selection.start.setPositionParagraph(startLine, offset);
@@ -17388,7 +17387,7 @@ export class Editor {
                 let startParagraph: LineWidget;
                 if (z === cellSelectionStartIndex) {
                     startCell = row.childWidgets[cellSelectionStartIndex] as TableCellWidget;
-                    startParagraph = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
+                    startParagraph = this.documentHelper.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
                 }
                 const editStart: EditRangeStartElementBox = this.addEditElement(user);
                 if (z === cellSelectionStartIndex) {
@@ -18010,7 +18009,7 @@ export class Editor {
                         break;
                     }
                     if (nextBlock instanceof TableWidget) {
-                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                        nextBlock = this.documentHelper.getFirstParagraphBlock(nextBlock);
                     }
                     while ((nextBlock as ParagraphWidget).isEmpty()) {
                         nextBlock = nextBlock.nextRenderedWidget as BlockWidget;

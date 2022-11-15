@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I416343` - Now corner radius is applied when applying the range colors for Progress bar.
+
 ## 20.3.56 (2022-11-08)
 
 ### ProgressBar

@@ -490,7 +490,7 @@ export class GanttTreeGrid {
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : !isNullOrUndefined(column.edit) ? null :
                 this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
-            column.type = 'string';
+            column.type = column.type ? column.type : 'string';
         } else if (taskSettings.progress === column.field) {
             this.composeProgressColumn(column);
         } else if (taskSettings.dependency === column.field) {

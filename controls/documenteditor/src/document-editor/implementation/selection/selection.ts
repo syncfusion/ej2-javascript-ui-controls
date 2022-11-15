@@ -955,7 +955,7 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public highlightSelection(isSelectionChanged: boolean): void {
+    public highlightSelection(isSelectionChanged: boolean, isBookmark?: boolean): void {
         if (this.owner.enableImageResizerMode) {
             this.owner.imageResizerModule.hideImageResizer();
         }
@@ -980,7 +980,7 @@ export class Selection {
         }
         this.documentHelper.updateTouchMarkPosition();
         if (isSelectionChanged) {
-            this.documentHelper.scrollToPosition(this.start, this.end);
+            this.documentHelper.scrollToPosition(this.start, this.end, undefined, isBookmark);
         }
     }
 
@@ -1949,7 +1949,7 @@ export class Selection {
             tableCell = tableCell.previousSplitWidget as TableCellWidget;
         }
         const firstBlock: BlockWidget = tableCell.firstChild as BlockWidget;
-        return this.getFirstParagraphBlock(firstBlock);
+        return this.documentHelper.getFirstParagraphBlock(firstBlock);
     }
     /**
      * Get last block in last cell
@@ -2693,8 +2693,8 @@ export class Selection {
         if (!isNullOrUndefined(start) && !isNullOrUndefined(end) && !isNullOrUndefined(this.getTable(start, end))) {
             const containerCell: TableCellWidget = this.getContainerCellOf(start.paragraph.associatedCell, end.paragraph.associatedCell);
             const table: TableWidget = containerCell.ownerTable;
-            const firstPara: ParagraphWidget = this.getFirstParagraphBlock(table);
-            const lastPara: ParagraphWidget = this.getLastParagraphBlock(table);
+            const firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table);
+            const lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table);
             const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
             this.start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
             this.end.setPositionParagraph((lastPara.lastChild as LineWidget), offset + 1);
@@ -3342,7 +3342,7 @@ export class Selection {
                 } else {
                     //If table is shifted to previous text position then return the first paragraph within table.
                     if (child instanceof TableWidget) {
-                        return this.documentHelper.selection.getFirstParagraphInFirstCell((child as TableWidget));
+                        return this.documentHelper.getFirstParagraphInFirstCell((child as TableWidget));
                     }
                     return undefined;
                 }
@@ -3352,7 +3352,7 @@ export class Selection {
             if (nextWidget instanceof Widget) {
                 position.index = '0';
                 if (nextWidget instanceof TableWidget) {
-                    return this.documentHelper.selection.getFirstParagraphInFirstCell((nextWidget as TableWidget));
+                    return this.documentHelper.getFirstParagraphInFirstCell((nextWidget as TableWidget));
                 }
                 return nextWidget as ParagraphWidget;
             }
@@ -3578,7 +3578,7 @@ export class Selection {
     public getNextParagraph(section: BodyWidget): ParagraphWidget {
         if (section.nextRenderedWidget instanceof BodyWidget) {
             const block: BlockWidget = (section.nextRenderedWidget as BodyWidget).childWidgets[0] as BlockWidget;
-            return this.getFirstParagraphBlock(block);
+            return this.documentHelper.getFirstParagraphBlock(block);
         }
         return undefined;
     }
@@ -3590,66 +3590,7 @@ export class Selection {
         if (section.previousRenderedWidget instanceof BodyWidget) {
             const bodyWidget: BodyWidget = section.previousRenderedWidget as BodyWidget;
             const block: BlockWidget = bodyWidget.childWidgets[bodyWidget.childWidgets.length - 1] as BlockWidget;
-            return this.getLastParagraphBlock(block);
-        }
-        return undefined;
-    }
-    /**
-     * Get first paragraph in cell
-     *
-     * @private
-     * @returns {ParagraphWidget}
-     */
-    public getFirstParagraphInCell(cell: TableCellWidget): ParagraphWidget {
-        const firstBlock: BlockWidget = cell.childWidgets[0] as BlockWidget;
-        if (firstBlock instanceof ParagraphWidget) {
-            return firstBlock as ParagraphWidget;
-        } else {
-            return this.getFirstParagraphInFirstCell((firstBlock as TableWidget));
-        }
-    }
-    /**
-     * Get first paragraph in first cell
-     *
-     * @private
-     * @returns {TableWidget}
-     */
-    public getFirstParagraphInFirstCell(table: TableWidget): ParagraphWidget {
-        if (!isNullOrUndefined(table.childWidgets) && table.childWidgets.length > 0) {
-            const firstRow: TableRowWidget = table.childWidgets[0] as TableRowWidget;
-            const cell: TableCellWidget = firstRow.childWidgets[0] as TableCellWidget;
-            const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
-            return this.getFirstParagraphBlock(block);
-        }
-        return undefined;
-    }
-    /**
-     * Get last paragraph in last cell
-     *
-     * @private
-     * @returns {ParagraphWidget}
-     */
-    public getLastParagraphInLastCell(table: TableWidget): ParagraphWidget {
-        if (!isNullOrUndefined(table.childWidgets) && table.childWidgets.length > 0) {
-            const lastrow: TableRowWidget = table.lastChild as TableRowWidget;
-            const lastcell: TableCellWidget = lastrow.lastChild as TableCellWidget;
-            const lastBlock: BlockWidget = lastcell.lastChild as BlockWidget;
-            return this.getLastParagraphBlock(lastBlock);
-        }
-        return undefined;
-    }
-    /**
-     * Get last paragraph in first row
-     *
-     * @private
-     * @returns {ParagraphWidget}
-     */
-    public getLastParagraphInFirstRow(table: TableWidget): ParagraphWidget {
-        if (table.childWidgets.length > 0) {
-            const row: TableRowWidget = table.firstChild as TableRowWidget;
-            const lastcell: TableCellWidget = row.lastChild as TableCellWidget;
-            const lastBlock: BlockWidget = lastcell.lastChild as BlockWidget;
-            return this.getLastParagraphBlock(lastBlock);
+            return this.documentHelper.getLastParagraphBlock(block);
         }
         return undefined;
     }
@@ -4016,7 +3957,7 @@ export class Selection {
         if (block.nextRenderedWidget instanceof ParagraphWidget) {
             return block.nextRenderedWidget as ParagraphWidget;
         } else if (block.nextRenderedWidget instanceof TableWidget) {
-            return this.getFirstParagraphInFirstCell((block.nextRenderedWidget as TableWidget));
+            return this.documentHelper.getFirstParagraphInFirstCell((block.nextRenderedWidget as TableWidget));
         }
         if ((block as BlockWidget).containerWidget instanceof TableCellWidget) {
             return this.getNextParagraphCell(((block as BlockWidget).containerWidget as TableCellWidget));
@@ -4090,7 +4031,7 @@ export class Selection {
         if (block.previousRenderedWidget instanceof ParagraphWidget) {
             return block.previousRenderedWidget as ParagraphWidget;
         } else if (block.previousRenderedWidget instanceof TableWidget) {
-            return this.getLastParagraphInLastCell((block.previousRenderedWidget));
+            return this.documentHelper.getLastParagraphInLastCell((block.previousRenderedWidget));
         }
         if (block.containerWidget instanceof TableCellWidget) {
             return this.getPreviousParagraphCell((block.containerWidget)) as ParagraphWidget;
@@ -4102,34 +4043,6 @@ export class Selection {
         return undefined;
     }
 
-    /**
-     * Get first paragraph in block
-     *
-     * @private
-     * @returns {ParagraphWidget}
-     */
-    public getFirstParagraphBlock(block: BlockWidget): ParagraphWidget {
-        if (block instanceof ParagraphWidget) {
-            return block as ParagraphWidget;
-        } else if (block instanceof TableWidget) {
-            return this.getFirstParagraphInFirstCell(block as TableWidget);
-        }
-        return undefined;
-    }
-    /**
-     * Get last paragraph in block
-     *
-     * @private
-     * @returns {ParagraphWidget}
-     */
-    public getLastParagraphBlock(block: BlockWidget): ParagraphWidget {
-        if (block instanceof ParagraphWidget) {
-            return block as ParagraphWidget;
-        } else if (block instanceof TableWidget) {
-            return this.getLastParagraphInLastCell(block as TableWidget);
-        }
-        return undefined;
-    }
     /**
      * Return true if paragraph has valid inline
      *
@@ -4290,7 +4203,7 @@ export class Selection {
                 if (block instanceof ParagraphWidget) {
                     return block as ParagraphWidget;
                 } else {
-                    return this.getFirstParagraphInLastRow(block as TableWidget);
+                    return this.documentHelper.getFirstParagraphInLastRow(block as TableWidget);
                 }
             } else {
                 const widgets: IWidget[] = (cell.previousRenderedWidget as TableCellWidget).childWidgets;
@@ -4315,7 +4228,7 @@ export class Selection {
             if (!this.isForward) {
                 const cell: TableCellWidget = (row.previousRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
                 const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
-                return this.getFirstParagraphBlock(block);
+                return this.documentHelper.getFirstParagraphBlock(block);
             } else {
                 return this.getPreviousParagraphSelection((row.previousRenderedWidget as TableRowWidget));
             }
@@ -4330,7 +4243,7 @@ export class Selection {
             return block.nextRenderedWidget as ParagraphWidget;
         } else if (block.nextRenderedWidget instanceof TableWidget) {
             if (this.isEmpty || this.isForward) {
-                return this.getLastParagraphInFirstRow(block.nextRenderedWidget);
+                return this.documentHelper.getLastParagraphInFirstRow(block.nextRenderedWidget);
             } else {
                 return this.getNextParagraphSelection(((block.nextRenderedWidget as TableWidget).childWidgets[0] as TableRowWidget));
             }
@@ -4352,7 +4265,7 @@ export class Selection {
             if (this.isEmpty || this.isForward) {
 
                 const block: BlockWidget = (cell.nextRenderedWidget as TableCellWidget).childWidgets[(cell.nextRenderedWidget as TableCellWidget).childWidgets.length - 1] as BlockWidget;
-                return this.getLastParagraphBlock(block);
+                return this.documentHelper.getLastParagraphBlock(block);
             } else {
                 //Return first paragraph in cell.
                 const block: BlockWidget = (cell.nextRenderedWidget as TableCellWidget).childWidgets[0] as BlockWidget;
@@ -4377,7 +4290,7 @@ export class Selection {
 
                 const cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[(row.nextRenderedWidget as TableRowWidget).childWidgets.length - 1] as TableCellWidget;
                 const block: BlockWidget = cell.childWidgets[cell.childWidgets.length - 1] as BlockWidget;
-                return this.getLastParagraphBlock(block);
+                return this.documentHelper.getLastParagraphBlock(block);
             } else {
                 return this.getNextParagraphSelection(row.nextRenderedWidget as TableRowWidget);
             }
@@ -4396,7 +4309,7 @@ export class Selection {
                 return block as ParagraphWidget;
             } else {
                 if (this.isEmpty || this.isForward) {
-                    return this.getLastParagraphInFirstRow((block as TableWidget));
+                    return this.documentHelper.getLastParagraphInFirstRow((block as TableWidget));
                 } else {
                     return this.getNextParagraphSelection(((block as TableWidget).childWidgets[0] as TableRowWidget));
                 }
@@ -4416,7 +4329,7 @@ export class Selection {
             cell = this.getFirstCellInRegion(row, startCell, this.upDownSelectionLength, false);
         }
         const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
-        return this.getFirstParagraphBlock(block);
+        return this.documentHelper.getFirstParagraphBlock(block);
     }
     /**
      * @private
@@ -4426,7 +4339,7 @@ export class Selection {
             return block.previousRenderedWidget as ParagraphWidget;
         } else if (block.previousRenderedWidget instanceof TableWidget) {
             if (!this.isForward) {
-                return this.getFirstParagraphInLastRow(block.previousRenderedWidget as TableWidget);
+                return this.documentHelper.getFirstParagraphInLastRow(block.previousRenderedWidget as TableWidget);
             } else {
 
                 return this.getPreviousParagraphSelection(((block.previousRenderedWidget as TableWidget).childWidgets[(block.previousRenderedWidget as TableWidget).childWidgets.length - 1] as TableRowWidget));
@@ -4452,7 +4365,7 @@ export class Selection {
                 return block as ParagraphWidget;
             } else {
                 if (!this.isForward) {
-                    return this.getFirstParagraphInLastRow(block as TableWidget);
+                    return this.documentHelper.getFirstParagraphInLastRow(block as TableWidget);
                 } else {
                     const tableWidget: TableWidget = block as TableWidget;
 
@@ -4474,7 +4387,7 @@ export class Selection {
             cell = this.getLastCellInRegion(row, startCell, this.upDownSelectionLength, true);
         }
         const block: BlockWidget = cell.childWidgets[cell.childWidgets.length - 1] as BlockWidget;
-        return this.getLastParagraphBlock(block);
+        return this.documentHelper.getLastParagraphBlock(block);
     }
     /**
      * Get last cell in the selected region
@@ -4526,20 +4439,7 @@ export class Selection {
         }
         return tableCell;
     }
-    /**
-     * Get first paragraph in last row
-     *
-     * @private
-     */
-    public getFirstParagraphInLastRow(table: TableWidget): ParagraphWidget {
-        if (table.childWidgets.length > 0) {
-            const lastRow: TableRowWidget = table.childWidgets[table.childWidgets.length - 1] as TableRowWidget;
-            const lastCell: TableCellWidget = lastRow.childWidgets[0] as TableCellWidget;
-            const lastBlock: BlockWidget = lastCell.childWidgets[0] as BlockWidget;
-            return this.getFirstParagraphBlock(lastBlock);
-        }
-        return undefined;
-    }
+
     /**
      * Get previous valid offset
      *
@@ -5122,7 +5022,7 @@ export class Selection {
         if (!isNullOrUndefined(row.nextRenderedWidget)) {
             const cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
             const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
-            return this.getFirstParagraphBlock(block);
+            return this.documentHelper.getFirstParagraphBlock(block);
         }
         return this.getNextParagraphBlock((row as TableRowWidget).ownerTable) as ParagraphWidget;
     }
@@ -5136,7 +5036,7 @@ export class Selection {
 
             const cell: TableCellWidget = (row.previousRenderedWidget as TableRowWidget).lastChild as TableCellWidget;
             const block: BlockWidget = (cell.lastChild as BlockWidget) ? cell.lastChild as BlockWidget : (cell.previousSplitWidget).lastChild as BlockWidget;
-            return this.getLastParagraphBlock(block);
+            return this.documentHelper.getLastParagraphBlock(block);
         }
         return this.getPreviousParagraphBlock(row.ownerTable as BlockWidget) as ParagraphWidget;
     }
@@ -5207,7 +5107,7 @@ export class Selection {
         } else {
             lastBlock = cell.previousSplitWidget.lastChild as BlockWidget;
         }
-        return this.getLastParagraphBlock(lastBlock);
+        return this.documentHelper.getLastParagraphBlock(lastBlock);
     }
     /**
      * Return true is source cell contain cell
@@ -5307,7 +5207,7 @@ export class Selection {
             }
             const block: BlockWidget = cell.firstChild as BlockWidget;
             if (block) {
-                return this.getFirstParagraphBlock(block);
+                return this.documentHelper.getFirstParagraphBlock(block);
             } else {
                 return this.getNextParagraphCell(cell);
             }
@@ -5323,7 +5223,7 @@ export class Selection {
         if (!isNullOrUndefined(cell.previousRenderedWidget) && cell.previousRenderedWidget instanceof TableCellWidget) {
             cell = cell.previousRenderedWidget as TableCellWidget;
             const block: BlockWidget = cell.lastChild as BlockWidget;
-            return this.getLastParagraphBlock(block);
+            return this.documentHelper.getLastParagraphBlock(block);
         }
         return this.getPreviousParagraphRow(cell.ownerRow as TableRowWidget);
     }
@@ -6917,11 +6817,11 @@ export class Selection {
      * Select content between given range
      * @private
      */
-    public selectRange(startPosition: TextPosition, endPosition: TextPosition): void {
+    public selectRange(startPosition: TextPosition, endPosition: TextPosition, isBookmark?: boolean): void {
         this.start.setPositionInternal(startPosition);
         this.end.setPositionInternal(endPosition);
         this.upDownSelectionLength = this.end.location.x;
-        this.fireSelectionChanged(true, true);
+        this.fireSelectionChanged(true, true, isBookmark);
     }
     /**
      * Selects current paragraph
@@ -6949,9 +6849,9 @@ export class Selection {
         let position: TextPosition;
         if (block instanceof TableWidget) {
             if (selectFirstBlock) {
-                block = this.getFirstParagraphInFirstCell(block);
+                block = this.documentHelper.getFirstParagraphInFirstCell(block);
             } else {
-                block = this.getLastParagraphInLastCell(block);
+                block = this.documentHelper.getLastParagraphInLastCell(block);
             }
         }
         if (block instanceof ParagraphWidget) {
@@ -7040,7 +6940,7 @@ export class Selection {
      * Notify selection change event
      * @private
      */
-    public fireSelectionChanged(isSelectionChanged: boolean, isKeyBoardNavigation?: boolean): void {
+    public fireSelectionChanged(isSelectionChanged: boolean, isKeyBoardNavigation?: boolean, isBookmark?: boolean): void {
         if (!this.isEmpty) {
             if (this.isForward) {
                 this.start.updatePhysicalPosition(true);
@@ -7059,7 +6959,7 @@ export class Selection {
         this.documentHelper.clearSelectionHighlight();
         this.hideToolTip();
         if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled) {
-            this.highlightSelection(true);
+            this.highlightSelection(true, isBookmark);
         }
         if (this.documentHelper.restrictEditingPane.isShowRestrictPane && !this.skipEditRangeRetrieval) {
             this.documentHelper.restrictEditingPane.updateUserInformation();
@@ -9920,7 +9820,7 @@ export class Selection {
             let startPosition: TextPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(bookmrkElmnt.line, offset);
             if (moveToStart) {
-                this.documentHelper.selection.selectRange(startPosition, startPosition);
+                this.documentHelper.selection.selectRange(startPosition, startPosition, true);
             } else {
                 //bookmark end element
                 let bookmrkEnd: BookmarkElementBox = bookmrkElmnt.reference;
@@ -9931,7 +9831,7 @@ export class Selection {
                 let endPosition: TextPosition = new TextPosition(this.owner);
                 endPosition.setPositionParagraph(bookmrkEnd.line, endoffset);
                 //selects the bookmark range
-                this.documentHelper.selection.selectRange(startPosition, endPosition);
+                this.documentHelper.selection.selectRange(startPosition, endPosition, true);
             }
         }
     }

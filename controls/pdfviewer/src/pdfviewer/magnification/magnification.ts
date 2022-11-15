@@ -79,6 +79,10 @@ export class Magnification {
     /**
      * @private
      */
+     public isDoubleTapZoom: boolean = false;
+    /**
+     * @private
+     */
     public isFormFieldPageZoomed: boolean = false;
     private isWebkitMobile: boolean = false;
     private isFitToPageMode: boolean = true;
@@ -254,8 +258,9 @@ export class Magnification {
      * @private
      */
     public initiateMouseZoom(pointX : number, pointY : number, zoomValue : number): void{
-        this.mouseCenterX = pointX;
-        this.mouseCenterY = pointY;
+        let pointInViewer: any = this.positionInViewer(pointX, pointY);
+        this.mouseCenterX = pointInViewer.x;
+        this.mouseCenterY = pointInViewer.y;
         this.zoomTo(zoomValue);
     }
 
@@ -411,8 +416,9 @@ export class Magnification {
      * @private
      */
     public setTouchPoints(clientX: number, clientY: number): void {
-        this.touchCenterX = clientX;
-        this.touchCenterY = clientY;
+        let pointInViewer: any = this.positionInViewer(clientX, clientY);
+        this.touchCenterX = pointInViewer.x;
+        this.touchCenterY = pointInViewer.y;
     }
 
     /**
@@ -438,8 +444,9 @@ export class Magnification {
         this.isPinchScrolled = false;
         this.isMagnified = false;
         this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
-        this.touchCenterX = (pointX1 + pointX2) / 2;
-        this.touchCenterY = (pointY1 + pointY2) / 2;
+        let pointInViewer: any = this.positionInViewer((pointX1 + pointX2) / 2, (pointY1 + pointY2) / 2);
+        this.touchCenterX = pointInViewer.x;
+        this.touchCenterY = pointInViewer.y;
         this.zoomOverPages(pointX1, pointY1, pointX2, pointY2);
     }
 
@@ -645,19 +652,29 @@ export class Magnification {
         const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
         const currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
         if (currentPageCanvas) {
+            let pointInViewer: any;
             const currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
+            if(this.pdfViewer.enableRtl && !this.isDoubleTapZoom){
+                pointInViewer = this.positionInViewer(currentPageBounds.right, currentPageBounds.top);
+            }
+            else{
+                pointInViewer = this.positionInViewer(currentPageBounds.left, currentPageBounds.top);
+            }
+            let currentPageBoundsLeft= pointInViewer.x;
+            let currentPageBoundsTop= pointInViewer.y;
             // update scroll top for the viewer container based on pinch zoom factor
-            const previousPageTop: number = (currentPageBounds.top) * this.previousZoomFactor;
+            const previousPageTop: number = (currentPageBoundsTop) * this.previousZoomFactor;
             const canvasPreviousY: number = scrollValue + this.touchCenterY;
             // eslint-disable-next-line max-len
-            const canvasCurrentY: number = (currentPageBounds.top) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
+            const canvasCurrentY: number = (currentPageBoundsTop) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
                 // eslint-disable-next-line max-len
                 previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
-            this.pdfViewerBase.viewerContainer.scrollTop = canvasCurrentY - this.touchCenterY;
+            let pageGapValue = this.zoomFactor - this.previousZoomFactor > 0 ? - this.pdfViewerBase.pageGap *(this.zoomFactor / this.previousZoomFactor) : this.pdfViewerBase.pageGap * (this.previousZoomFactor / this.zoomFactor );
+            this.pdfViewerBase.viewerContainer.scrollTop = canvasCurrentY - this.touchCenterY + pageGapValue / this.pdfViewerBase.zoomInterval;
             // update scroll left for the viewer container based on pinch zoom factor
             const previousWidthFactor: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
             const scaleCorrectionFactor: number = this.zoomFactor / previousWidthFactor - 1;
-            const scrollX: number = this.touchCenterX - currentPageBounds.left;
+            const scrollX: number = this.touchCenterX - currentPageBoundsLeft;
             this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
         }
     }
@@ -666,12 +683,21 @@ export class Magnification {
         const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
         const currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
         if (currentPageCanvas) {
+            let pointInViewer: any;
             const currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
+            if(this.pdfViewer.enableRtl){
+                pointInViewer = this.positionInViewer(currentPageBounds.right, currentPageBounds.top);
+            }
+            else{
+                pointInViewer = this.positionInViewer(currentPageBounds.left, currentPageBounds.top);
+            }
+            let currentPageBoundsLeft = pointInViewer.x;
+            let currentPageBoundsTop = pointInViewer.y;
             // update scroll top for the viewer container based on mouse zoom factor
-            const previousPageTop: number = (currentPageBounds.top) * this.previousZoomFactor;
+            const previousPageTop: number = (currentPageBoundsTop) * this.previousZoomFactor;
             const canvasPreviousY: number = scrollValue + this.mouseCenterY;
             // eslint-disable-next-line max-len
-            const canvasCurrentY: number = (currentPageBounds.top) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
+            const canvasCurrentY: number = (currentPageBoundsTop) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
                 // eslint-disable-next-line max-len
                 previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
             // eslint-disable-next-line max-len
@@ -683,7 +709,7 @@ export class Magnification {
             // update scroll left for the viewer container based on mouse zoom factor
             const previousWidthFactor: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
             const scaleCorrectionFactor: number = this.zoomFactor / previousWidthFactor - 1;
-            const scrollX: number = this.mouseCenterX - currentPageBounds.left;
+            const scrollX: number = this.mouseCenterX - currentPageBoundsLeft;
             this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
         }
     }
@@ -1219,6 +1245,7 @@ export class Magnification {
         }
         const scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
         if (!this.pdfViewer.selectedItems.annotations[0]) {
+            this.isDoubleTapZoom = true;
             if (!this.isTapToFitZoom) {
                 if (this.zoomFactor < 2) {
                     this.zoomTo(200);
@@ -1230,6 +1257,7 @@ export class Magnification {
             }
             this.calculateScrollValues(scrollValue);
             this.isTapToFitZoom = !this.isTapToFitZoom;
+            this.isDoubleTapZoom = false;
         } else {
             if (isBlazor()) {
                 // eslint-disable-next-line max-len
@@ -1342,5 +1370,15 @@ export class Magnification {
                 viewerContainer.scrollTop = ((pagepoint.y + pdfViewerBase.pageSize[pageNumber - 1].top) - prevScrollTop) * zoomFactor;
             }
         }
+    }
+
+    /**
+    * Returns Point value respect to Main container.
+    * @param PointX
+    * @param PointY
+    */
+     private positionInViewer(pointX: number, pointY: number): any {
+        let mainRect = this.pdfViewerBase.mainContainer.getBoundingClientRect();
+        return {x: pointX - mainRect.left, y: pointY - mainRect.top};
     }
 }

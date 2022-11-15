@@ -4112,6 +4112,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     this.localExpand(action, row, record);
                 }
             }
+            if (!isNullOrUndefined(targetEle) && targetEle.closest('.e-treerowcell').classList.contains('e-cellselectionbackground')) {
+                targetEle.closest('.e-treerowcell').classList.remove('e-cellselectionbackground');
+                targetEle.closest('.e-treerowcell').removeAttribute('aria-selected');
+            }
             if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell') ) {
                 let totalRows: HTMLTableRowElement[] = this.getRows();
                 const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;

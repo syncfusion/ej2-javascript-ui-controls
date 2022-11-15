@@ -3464,12 +3464,12 @@ describe('Uploader Control', () => {
                 expect(uploadObj.filesData[0].statusCode).toBe('2');
                 //expect(uploadObj.filesData[1].status).toEqual('Ready to upload');
                 //expect(uploadObj.filesData[1].statusCode).toBe('1');
-                setTimeout(() => {
+                //setTimeout(() => {
                     // expect(uploadObj.filesData[1].status).toEqual('File uploaded successfully');
                     // expect(uploadObj.filesData[1].statusCode).toBe('2');
                     done();
-                }, 300);
-            }, 40);
+                //}, 300);
+            }, 300);
         });
     })
 

@@ -2398,6 +2398,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             series.category = seriesCollection[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
             series.interior = series.fill || colors[i % count];
+            if (!series.visible) {
+                if (this.isSecondaryAxis(series.xAxis)) {
+                    series.xAxis.internalVisibility = series.xAxis.series.some((value) => (value.visible));
+                }
+                if (this.isSecondaryAxis(series.yAxis)) {
+                    series.yAxis.internalVisibility = series.yAxis.series.some((value) => (value.visible));
+                }
+            }
             switch (series.type) {
             case 'Bar':
             case 'StackingBar':
@@ -2429,6 +2437,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.visibleSeries.push(series);
             seriesCollection[i] = series;
         }
+    }
+
+    public isSecondaryAxis(axis: Axis): boolean {
+        return ((this as Chart).axes.indexOf(axis) > -1);
     }
 
     private renderTitle(): void {
@@ -2593,6 +2605,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public removeSeries(index: number): void {
         this.redraw = false; //fix for remove svg not working when use animatemethod.
+        if (this.visibleSeries[index]) {
+            this.visibleSeries[index].xAxis.orientation = null;
+            this.visibleSeries[index].yAxis.orientation = null;
+        }
         this.series.splice(index, 1);
         this.refresh();
     }
@@ -2804,6 +2820,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         element.style.display = 'block';
         // To fix angular and react tooltip div scrollbar issue
         element.style.overflow = 'hidden';
+        element.style.height = element.style.height ? element.style.height : 'inherit';
     }
     /**
      * Finds the orientation.

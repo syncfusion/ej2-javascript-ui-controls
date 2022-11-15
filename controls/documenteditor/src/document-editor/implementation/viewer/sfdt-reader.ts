@@ -954,7 +954,7 @@ export class SfdtReader {
                 footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
                 this.parseCharacterFormat(inline.characterFormat, footnoteElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, footnoteElement);
-                this.parseBody(inline.blocks, footnoteElement.bodyWidget.childWidgets as BlockWidget[], undefined, false);
+                this.parseBody(inline.blocks, footnoteElement.bodyWidget.childWidgets as BlockWidget[], footnoteElement.bodyWidget, false);
 
                 lineWidget.children.push(footnoteElement);
                 hasValidElmts = true;
@@ -1782,29 +1782,33 @@ export class SfdtReader {
         this.parseFontScheme(sourceFormat.fontScheme, themes);
     }
     public parseFontScheme(sourceFormat: any, themes: Themes): void {
-        if(!isNullOrUndefined(sourceFormat.fontSchemeName))
+        if (!isNullOrUndefined(sourceFormat.fontSchemeName))
             themes.fontScheme.fontSchemeName = sourceFormat.fontSchemeName;
-        if (!isNullOrUndefined(sourceFormat.majorFontScheme) && (sourceFormat.majorFontScheme.fontSchemeList.length > 0 || sourceFormat.majorFontScheme.fontTypeface.length > 0)) {
+        if (!isNullOrUndefined(sourceFormat.majorFontScheme)) {
             this.parseMajorMinorFontScheme(sourceFormat.majorFontScheme, themes.fontScheme.majorFontScheme);
-            this.documentHelper.hasThemes = true;
         }
-        if (!isNullOrUndefined(sourceFormat.minorFontScheme) && (sourceFormat.minorFontScheme.fontSchemeList.length > 0 || sourceFormat.minorFontScheme.fontTypeface.length > 0)) {
+        if (!isNullOrUndefined(sourceFormat.minorFontScheme)) {
             this.parseMajorMinorFontScheme(sourceFormat.minorFontScheme, themes.fontScheme.minorFontScheme);
-            this.documentHelper.hasThemes = true;
         }
     }
     public parseMajorMinorFontScheme(sourceFormat: any, majorMinor: MajorMinorFontScheme): void {
-        let keys: string[] = Object.keys(sourceFormat.fontTypeface);
-        for (let key of keys) {
-            majorMinor.fontTypeface.add(key, sourceFormat.fontTypeface[key]);
+        if (!isNullOrUndefined(sourceFormat.fontTypeface) && sourceFormat.fontTypeface.length > 0) {
+            let keys: string[] = Object.keys(sourceFormat.fontTypeface);
+            for (let key of keys) {
+                majorMinor.fontTypeface.add(key, sourceFormat.fontTypeface[key]);
+            }
+            this.documentHelper.hasThemes = true;
         }
-        for (let j: number = 0; j < sourceFormat.fontSchemeList.length; j++) {
-            let data: any = sourceFormat.fontSchemeList[j];
-            let fontList: FontSchemeStruct = new FontSchemeStruct();
-            fontList.name = data.name;
-            fontList.typeface = data.typeface;
-            fontList.panose = data.panose;
-            majorMinor.fontSchemeList.push(fontList);
+        if (!isNullOrUndefined(sourceFormat.fontSchemeList) && sourceFormat.fontSchemeList.length > 0) {
+            for (let j: number = 0; j < sourceFormat.fontSchemeList.length; j++) {
+                let data: any = sourceFormat.fontSchemeList[j];
+                let fontList: FontSchemeStruct = new FontSchemeStruct();
+                fontList.name = data.name;
+                fontList.typeface = data.typeface;
+                fontList.panose = data.panose;
+                majorMinor.fontSchemeList.push(fontList);
+            }
+            this.documentHelper.hasThemes = true;
         }
     }
     public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {

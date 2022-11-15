@@ -1044,15 +1044,40 @@ export class DataValidation {
             const opt: string = validation.operator || 'Between';
             const type: string = validation.type || 'WholeNumber';
             const ignoreBlank: boolean = isNullOrUndefined(validation.ignoreBlank) ? true : validation.ignoreBlank;
-            const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
-            isValidate = formValidation.isValidate;
-            errorMsg = formValidation.errorMsg;
-            if (isValidate) {
-                isValidate = false;
-                if (type === 'Date' || type === 'Time') {
-                    args.value = args.value.toString().slice(args.value.toString().indexOf(' ') + 1, args.value.length);
-                    for (let idx: number = 0; idx < 3; idx++) {
-                        args.value = idx === 0 ? args.value : idx === 1 ? value1 : value2;
+            if (ignoreBlank && enterValue === '') {
+                isValidate = true;
+            } else {
+                const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
+                isValidate = formValidation.isValidate;
+                errorMsg = formValidation.errorMsg;
+                if (isValidate) {
+                    isValidate = false;
+                    if (type === 'Date' || type === 'Time') {
+                        args.value = args.value.toString().slice(args.value.toString().indexOf(' ') + 1, args.value.length);
+                        for (let idx: number = 0; idx < 3; idx++) {
+                            args.value = idx === 0 ? args.value : idx === 1 ? value1 : value2;
+                            const dateEventArgs: { [key: string]: string | number } = {
+                                value: args.value,
+                                rowIndex: args.range[0],
+                                colIndex: args.range[1],
+                                sheetIndex: args.sheetIdx,
+                                updatedVal: ''
+                            };
+                            if (args.value !== '') {
+                                this.parent.notify(checkDateFormat, dateEventArgs);
+                            }
+                            const updatedVal: string = dateEventArgs.updatedVal as string;
+                            if (idx === 0 && updatedVal === '') {
+                                value = args.value;
+                            } else if (idx === 0) {
+                                value = updatedVal;
+                            } else if (idx === 1) {
+                                value1 = updatedVal;
+                            } else {
+                                value2 = updatedVal;
+                            }
+                        }
+                    } else if (validation.type === 'TextLength') {
                         const dateEventArgs: { [key: string]: string | number } = {
                             value: args.value,
                             rowIndex: args.range[0],
@@ -1060,139 +1085,118 @@ export class DataValidation {
                             sheetIndex: args.sheetIdx,
                             updatedVal: ''
                         };
-                        if (args.value !== '') {
-                            this.parent.notify(checkDateFormat, dateEventArgs);
-                        }
+                        this.parent.notify(checkDateFormat, dateEventArgs);
                         const updatedVal: string = dateEventArgs.updatedVal as string;
-                        if (idx === 0 && updatedVal === '') {
-                            value = args.value;
-                        } else if (idx === 0) {
-                            value = updatedVal;
-                        } else if (idx === 1) {
-                            value1 = updatedVal;
+                        if (updatedVal !== '') {
+                            value = updatedVal.toString().length.toString();
                         } else {
-                            value2 = updatedVal;
+                            value = args.value.toString().length.toString();
                         }
                     }
-                } else if (validation.type === 'TextLength') {
-                    const dateEventArgs: { [key: string]: string | number } = {
-                        value: args.value,
-                        rowIndex: args.range[0],
-                        colIndex: args.range[1],
-                        sheetIndex: args.sheetIdx,
-                        updatedVal: ''
-                    };
-                    this.parent.notify(checkDateFormat, dateEventArgs);
-                    const updatedVal: string = dateEventArgs.updatedVal as string;
-                    if (updatedVal !== '') {
-                        value = updatedVal.toString().length.toString();
-                    } else {
-                        value = args.value.toString().length.toString();
-                    }
-                }
-                if (type === 'List') {
-                    if (value1.indexOf('=') !== -1) {
-                        for (let idx: number = 0; idx < this.data.length; idx++) {
-                            if (args.value.toString() === this.data[idx].text) {
-                                isValidate = true;
+                    if (type === 'List') {
+                        if (value1.indexOf('=') !== -1) {
+                            for (let idx: number = 0; idx < this.data.length; idx++) {
+                                if (args.value.toString() === this.data[idx].text) {
+                                    isValidate = true;
+                                }
+                            }
+                        } else {
+                            const values: string[] = (value1 as string).split(',');
+                            for (let idx: number = 0; idx < values.length; idx++) {
+                                if (args.value.toString() === values[idx]) {
+                                    isValidate = true;
+                                }
                             }
                         }
+                        if (!isValidate && ignoreBlank && args.value.toString() === '') {
+                            isValidate = true;
+                        }
                     } else {
-                        const values: string[] = (value1 as string).split(',');
-                        for (let idx: number = 0; idx < values.length; idx++) {
-                            if (args.value.toString() === values[idx]) {
-                                isValidate = true;
-                            }
-                        }
-                    }
-                    if (!isValidate && ignoreBlank && args.value.toString() === '') {
-                        isValidate = true;
-                    }
-                } else {
-                    if (type === 'Decimal' || type === 'Time') {
-                        value = parseFloat(value.toString());
-                        value1 = parseFloat(value1.toString());
-                        value2 = value2 ? parseFloat(value2.toString()) : null;
-                    } else {
-                        value = parseInt(value.toString(), 10);
-                        value1 = parseInt(value1.toString(), 10);
-                        value2 = value2 ? parseInt(value2.toString(), 10) : null;
-                    }
-                    switch (opt) {
-                    case 'EqualTo':
-                        if (value === value1) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
+                        if (type === 'Decimal' || type === 'Time') {
+                            value = parseFloat(value.toString());
+                            value1 = parseFloat(value1.toString());
+                            value2 = value2 ? parseFloat(value2.toString()) : null;
                         } else {
-                            isValidate = false;
+                            value = parseInt(value.toString(), 10);
+                            value1 = parseInt(value1.toString(), 10);
+                            value2 = value2 ? parseInt(value2.toString(), 10) : null;
                         }
-                        break;
-                    case 'NotEqualTo':
-                        if (value !== value1) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
+                        switch (opt) {
+                            case 'EqualTo':
+                                if (value === value1) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            case 'NotEqualTo':
+                                if (value !== value1) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            case 'Between':
+                                if (value >= value1 && value <= value2) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            case 'NotBetween':
+                                if (value >= value1 && value <= value2) {
+                                    isValidate = false;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = true;
+                                }
+                                break;
+                            case 'GreaterThan':
+                                if (value > value1) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            case 'LessThan':
+                                if (value < value1) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            case 'GreaterThanOrEqualTo':
+                                if (value >= value1) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            case 'LessThanOrEqualTo':
+                                if (value <= value1) {
+                                    isValidate = true;
+                                } else if (ignoreBlank && enterValue === '') {
+                                    isValidate = true;
+                                } else {
+                                    isValidate = false;
+                                }
+                                break;
+                            default:
+                                break;
                         }
-                        break;
-                    case 'Between':
-                        if (value >= value1 && value <= value2) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
-                        }
-                        break;
-                    case 'NotBetween':
-                        if (value >= value1 && value <= value2) {
-                            isValidate = false;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = true;
-                        }
-                        break;
-                    case 'GreaterThan':
-                        if (value > value1) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
-                        }
-                        break;
-                    case 'LessThan':
-                        if (value < value1) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
-                        }
-                        break;
-                    case 'GreaterThanOrEqualTo':
-                        if (value >= value1) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
-                        }
-                        break;
-                    case 'LessThanOrEqualTo':
-                        if (value <= value1) {
-                            isValidate = true;
-                        } else if (ignoreBlank && enterValue === '') {
-                            isValidate = true;
-                        } else {
-                            isValidate = false;
-                        }
-                        break;
-                    default:
-                        break;
                     }
                 }
             }

@@ -158,9 +158,6 @@ function terminateConnection(
                 }
             }
         }
-        else {
-            element.isBezierEditing = false;
-        }
     }
 
     if (sourceNode !== undefined && targetNode !== undefined) {
@@ -540,7 +537,8 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
         portdirection = getPortDirection(port, cornersPointsBeforeRotation(element.sourceWrapper), element.sourceWrapper.bounds, false);
     }
     const update: boolean = findSegmentDirection(element, source, target, portdirection);
-    if (element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined &&
+    // EJ2-65063 - Added below condition !selectedSegmentIndex to prevent the connector segment to split from two points into four points
+    if ((!element.selectedSegmentIndex) && element.sourcePortWrapper !== undefined && element.targetPortWrapper !== undefined &&
         target.direction === getOppositeDirection(portdirection) &&
         ((((target.direction === 'Left' && source.point.x > target.point.x) || (target.direction === 'Right' &&
             source.point.x < target.point.x)) && source.point.y >= source.corners.top &&
@@ -549,9 +547,9 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
 
         point = addPoints(element, source, target);
 
-    } else if (source.direction === target.direction) {
+    } else if ((!element.selectedSegmentIndex) && source.direction === target.direction) {
         point = orthoConnection3Segment(element, source, target);
-    } else if ((((target.direction === 'Left' && source.point.x > target.point.x) ||
+    } else if ((!element.selectedSegmentIndex) && (((target.direction === 'Left' && source.point.x > target.point.x) ||
         (target.direction === 'Right' && source.point.x < target.point.x)) && (source.direction === 'Top' || source.direction === 'Bottom')
         && ((source.point.y <= target.point.y) &&
             ((target.corners.top <= source.point.y && target.corners.bottom >= source.point.y)))) ||
@@ -560,7 +558,7 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
             ((target.corners.left <= source.point.x && target.corners.right >= source.point.x)))) {
         point = addPoints(element, source, target);
     } else {
-        if (element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
+        if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
             ((source.direction === 'Left' || source.direction === 'Right') &&
                 (source.point.y >= source.corners.top && source.point.y <= source.corners.bottom)
                 && (target.direction === 'Top' || target.direction === 'Bottom') &&
@@ -569,7 +567,7 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
             length = (target.direction === 'Top') ? (source.corners.bottom - source.point.y + 20) :
                 (source.point.y - source.corners.top + 20);
             point = orthoConnection3Segment(element, source, target, length);
-        } else if (element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
+        } else if ((!element.selectedSegmentIndex) && element.sourceWrapper !== undefined && element.targetWrapper !== undefined && element.targetPortWrapper !== undefined &&
             ((source.direction === 'Top' || source.direction === 'Bottom') &&
                 (source.point.x >= source.corners.left && source.point.x <= source.corners.right) &&
                 (target.direction === 'Left' || target.direction === 'Right') && (target.corners.center.y === source.corners.center.y))) {
@@ -1357,11 +1355,29 @@ function findIntermeditatePoints(
             seg.points = [];
             if (point.length >= 2) {
                 for (j = 0; j < point.length; j++) {
-                    seg.points.push(point[j]);
+                    if (!ele.selectedSegmentIndex) {
+                        seg.points.push(point[j]);
+                    } else {
+                        // EJ2-65063 - If point length is greater then 2 means then empty the last segment points and set it as two points instead of four points
+                        if (j === point.length - 1 && point.length > 2) {
+                            let point2: PointModel;
+                            point2 = { x: source.point.x, y: point[j].y };
+                            // EJ2 - 65063 - Empty the segment points
+                            seg.points = [];
+                            seg.points.push(point2);
+                            seg.points.push(point[j]);
+                            let segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
+                            segment.points[1] = point2;
+                        } else {
+                            seg.points.push(point[j]);
+                        }
+                    }
+
                 }
             } else { removeSegment = i; }
         }
-        if (removeSegment !== undefined) {
+        // EJ2-65063 - Added below condition !selectedSegmentIndex to restrict the connector segment to remove from its collection.
+        if (removeSegment !== undefined && !ele.selectedSegmentIndex) {
             if (removeSegment === ele.segments.length - 1) {
                 (ele.segments[removeSegment - 1] as OrthogonalSegment).direction = null;
                 (ele.segments[removeSegment - 1] as OrthogonalSegment).length = null;

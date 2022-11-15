@@ -1337,6 +1337,15 @@ export class Connector extends NodeBase implements IElement {
      public maxSegmentThumb: number;
 
     /**
+     * Specifies a value indicating whether to overlap the connector over with the source and target node.
+     * If the LineRouting is enabled in the diagram, then allowNodeOverlap property will not work.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowNodeOverlap: boolean;
+
+    /**
      * Sets the bezier settings of editing the segments.
      *
      * @default null
@@ -1372,6 +1381,8 @@ export class Connector extends NodeBase implements IElement {
     public status: Status = 'None';
     /** @private */
     public isBezierEditing: boolean;
+    /** @private */
+    public selectedSegmentIndex: number;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

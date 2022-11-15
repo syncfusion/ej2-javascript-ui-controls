@@ -308,9 +308,15 @@ export class Selection {
                 this.filteredList = this.searchingRecords;
             }
         }
-        let data: ITreeData[] = (!isNullOrUndefined(this.parent.filterModule) &&
-        (this.filteredList.length > 0)) ? this.filteredList :
-            this.parent.flatData;
+        let data: ITreeData[];
+        if (this.parent.filterModule.filteredResult.length === 0 && this.parent.getCurrentViewRecords().length === 0 &&
+        this.parent.filterSettings.columns.length > 0) {
+            data = this.filteredList;
+        }
+        else {
+            data = (!isNullOrUndefined(this.parent.filterModule) &&
+            (this.filteredList.length > 0)) ? this.filteredList : this.parent.flatData;
+        }
         data = isRemoteData(this.parent) ? this.parent.getCurrentViewRecords() : data;
         if (!isNullOrUndefined(checkAll)) {
             for (let i: number = 0; i < data.length; i++) {

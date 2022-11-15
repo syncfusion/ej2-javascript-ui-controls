@@ -812,7 +812,9 @@ export class Toolbar {
             if (this.formDesignerToolbarModule) {
                 this.formDesignerToolbarModule.destroy();
             }
-            this.toolbar.destroy();
+            if(this.toolbar){
+                this.toolbar.destroy();
+            } 
             this.toolbarElement.parentElement.removeChild(this.toolbarElement);
         }
     }

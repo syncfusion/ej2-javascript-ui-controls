@@ -953,8 +953,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             let current: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             const previous: number = this.instance.getNumberParser({ format: 'n' })(this.elementPrevValue);
             //EJ2-54963-if type "." or ".0" or "-.0" it converts to "0" automatically when binding v-model
-            const nonZeroRegex = new RegExp('[^1-9]+$');
-            if (nonZeroRegex.test(this.element.value)) {
+            const nonZeroRegex = new RegExp('[^0-9]+$');
+            if (nonZeroRegex.test(this.element.value) || ((this.elementPrevValue.indexOf('.') !== -1 || this.elementPrevValue.indexOf('-') !== -1) && this.element.value[this.element.value.length - 1] === '0')) {
                 current = this.value;
             }
             const eventArgs: object = {
@@ -1469,6 +1469,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 break;
             case 'enabled':
                 Input.setEnabled(newProp.enabled, this.element);
+                this.bindClearEvent();
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(newProp.enableRtl, [this.container]);

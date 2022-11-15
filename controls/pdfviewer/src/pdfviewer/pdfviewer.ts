@@ -4335,6 +4335,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(false)
     public hideEmptyDigitalSignatureFields: boolean;
 
+     /**
+     *  Show or hide the digital signature appearance in the document.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showDigitalSignatureAppearance: boolean;
+
     /**
      * Customize desired date and time format
      */
@@ -6167,11 +6175,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
             }
             if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
-                if (typeof fieldValue.signatureType === 'string') {
-                    fieldValue.signatureType = fieldValue.signatureType;
-                }
-                else {
-                    fieldValue.signatureType = fieldValue.signatureType[0];
+                if(fieldValue.signatureType || fieldValue.initialType){
+                    if (typeof fieldValue.signatureType === 'string') {
+                        fieldValue.signatureType = fieldValue.signatureType;
+                    }
+                    else {
+                        fieldValue.signatureType = fieldValue.initialType;
+                    }
                 }
                 fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName : fieldValue.fontFamily;
                 let currentValue = fieldValue.value;
@@ -6629,7 +6639,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param isLeftClick - becomes true on signature panel left click.
      * @private
      */
-    public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean ,isLeftClick?: boolean): Promise<void> {
+    public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean, isLeftClick?: boolean): Promise<void> {
         let eventArgs: FormFieldClickArgs = { name: name, field: field, cancel: cancel };
         if (isBlazor()) {
             eventArgs = await this.triggerEvent('formFieldClick', eventArgs) as FormFieldClickArgs || eventArgs;
@@ -6643,16 +6653,23 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             else
                 this.viewerBase.isInitialField = false;
             let target: any = document.getElementById(field.id);
-            if(target.style.visibility === "hidden"){
+            if (target.style.visibility === "hidden") {
                 target.disabled = true;
             }
             target = target ? target : (document.getElementById(field.id + '_content_html_element') ? document.getElementById(field.id + '_content_html_element').children[0].children[0] : null);
-            if (!this.signatureFieldSettings.isReadOnly && !eventArgs.cancel && target && !target.disabled && (target as any).classList.contains('e-pdfviewer-signatureformfields') && (isLeftClick || isNullOrUndefined(isLeftClick))) {
-                this.viewerBase.signatureModule.showSignatureDialog(true);
+            let formFieldCollectionsValue: any = this.formFieldCollections.filter(function (item) { return item.id === field.id; });
+            if (formFieldCollectionsValue) {
+                let readOnly: boolean = formFieldCollectionsValue[0].isReadOnly;
+                if ((!readOnly) && !eventArgs.cancel && target && !target.disabled && (target as any).classList.contains('e-pdfviewer-signatureformfields') && (isLeftClick || isNullOrUndefined(isLeftClick))) {
+                    this.viewerBase.signatureModule.showSignatureDialog(true);
+                }
+                else if (readOnly) {
+                    target.disabled = true;
+                }
             }
         }
     }
-
+    
     /**
      * @param name - Get the name of the event.
      * @param field - Event arguments for the form field add event.

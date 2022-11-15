@@ -1335,7 +1335,7 @@ export class ChartRows extends DateProcessor {
             for (let index: number = 0; index < this.parent.currentViewData.length; index++) {
                 const oldIndex: number = oldKeys[this.parent.currentViewData[index][key]];
                 const modifiedRecIndex: number = this.parent.modifiedRecords.indexOf(this.parent.currentViewData[index]);
-                if (isNullOrUndefined(oldIndex) || modifiedRecIndex !== -1) {
+                if (isNullOrUndefined(oldIndex) || modifiedRecIndex !== -1 || this.parent.isFromRenderBaseline) {
                     const tRow: Node = this.getGanttChartRow(index, this.parent.currentViewData[index]);
                     this.ganttChartTableBody.appendChild(tRow);
                     this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[index]);

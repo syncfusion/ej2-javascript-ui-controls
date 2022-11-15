@@ -2188,17 +2188,19 @@ export class DialogEdit {
         this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, toRecord.ganttProperties, true);
         this.parent.setRecordValue('work', fromRecord.ganttProperties.work, toRecord.ganttProperties, true);
         this.parent.setRecordValue('type', fromRecord.ganttProperties.taskType, toRecord.ganttProperties, true);
-        if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
-            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.startDate);
+        this.parent.setRecordValue('resourceNames',fromRecord.ganttProperties.resourceNames,toRecord.ganttProperties,true);
+        this.parent.setRecordValue('resourceInfo',fromRecord.ganttProperties.resourceInfo,toRecord.ganttProperties,true);
+       if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
+            this.parent.dataOperation.updateMappingData(toRecord, this.parent.taskFields.startDate);
         }
         if (!isNullOrUndefined(this.parent.taskFields.endDate)) {
-            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.endDate);
+            this.parent.dataOperation.updateMappingData(toRecord, this.parent.taskFields.endDate);
         }
         if (!isNullOrUndefined(this.parent.taskFields.duration)) {
-            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.duration);
+            this.parent.dataOperation.updateMappingData(toRecord, this.parent.taskFields.duration);
             this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, this.rowData, true);
             if (this.rowData.ganttProperties.duration === 0) {
-                this.parent.setRecordValue('isMilestone', true, this.rowData.ganttProperties, true);
+                this.parent.setRecordValue('isMilestone', true, toRecord.ganttProperties, true);
             } else {
                 this.parent.setRecordValue('isMilestone', false, this.rowData.ganttProperties, true);
             }
@@ -2211,6 +2213,9 @@ export class DialogEdit {
         }
         if (!isNullOrUndefined(this.parent.taskFields.type)) {
             this.parent.dataOperation.updateMappingData(this.rowData, "type");
+        }
+        if (!isNullOrUndefined(this.parent.taskFields.resourceInfo)) {
+            this.parent.dataOperation.updateMappingData(this.rowData, "resourceInfo");
         }
     }
     private updatePredecessorTab(preElement: HTMLElement): void {
@@ -2277,10 +2282,11 @@ export class DialogEdit {
         }
         const idArray: object[] = [];
         if (this.isEdit) {
-            this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);
-            this.parent.dataOperation.updateMappingData(this.rowData, 'resourceInfo');
-            this.parent.editModule.updateResourceRelatedFields(this.rowData, 'resource');
-            this.validateDuration(this.rowData);
+            this.parent.setRecordValue('resourceInfo', selectedItems, this.editedRecord.ganttProperties, true);
+            this.parent.dataOperation.updateMappingData(this.editedRecord, 'resourceInfo');
+            this.parent.editModule.updateResourceRelatedFields(this.editedRecord, 'resource');
+            this.validateDuration(this.editedRecord);
+            this.updateScheduleProperties(this.editedRecord, this.rowData);
         } else {
             for (let i: number = 0; i < selectedItems.length; i++) {
                 idArray.push(selectedItems[i][this.parent.resourceFields.id]);

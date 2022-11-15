@@ -253,7 +253,7 @@ export class Toolbar {
             const selectedRecords: number[] = this.parent.getSelectedRowIndexes();
             const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
             for (const item of this.toolbar.items) {
-                const toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
+                const toolbarEle: Element = (item.template as string).length? this.toolbar.element.querySelector(item.template as string) : this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {

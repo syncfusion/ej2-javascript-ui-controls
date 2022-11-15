@@ -5875,7 +5875,7 @@ console.log('Get Block from last cell');
     it('First paragraph in last row with out row', () => {
 console.log('First paragraph in last row with out row');
         let table: TableWidget = new TableWidget();
-        expect(selection.getFirstParagraphInLastRow(table)).toBe(undefined);
+        expect(documentHelper.getFirstParagraphInLastRow(table)).toBe(undefined);
     });
     it('First paragraph in last row with row', () => {
 console.log('First paragraph in last row with row');
@@ -5886,7 +5886,7 @@ console.log('First paragraph in last row with row');
         cell.childWidgets.push(table2);
         row.childWidgets.push(cell);
         table.childWidgets.push(row);
-        expect(selection.getFirstParagraphInLastRow(table)).toBe(undefined);
+        expect(documentHelper.getFirstParagraphInLastRow(table)).toBe(undefined);
     });
     it('First block from empty cell validation', () => {
 console.log('First block from empty cell validation');

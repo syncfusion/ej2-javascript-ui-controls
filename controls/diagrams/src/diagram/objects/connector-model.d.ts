@@ -892,6 +892,14 @@ export interface ConnectorModel extends NodeBaseModel{
     maxSegmentThumb?: number;
 
     /**
+     * Specifies a value indicating whether to overlap the connector over with the source and target node.
+     * If the LineRouting is enabled in the diagram, then allowNodeOverlap property will not work.
+     *
+     * @default false
+     */
+    allowNodeOverlap?: boolean;
+
+    /**
      * Sets the bezier settings of editing the segments.
      *
      * @default null

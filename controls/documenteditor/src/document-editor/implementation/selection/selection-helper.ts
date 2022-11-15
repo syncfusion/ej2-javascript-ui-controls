@@ -263,9 +263,9 @@ export class TextPosition {
                 } else {
                     //If table is shifted to previous text position then return the first paragraph within table.
                     if (child instanceof TableWidget) {
-                        return this.getLineWidget(this.selection.getFirstParagraphInFirstCell(child as TableWidget), position);
+                        return this.getLineWidget(this.documentHelper.getFirstParagraphInFirstCell(child as TableWidget), position);
                     } else if (child instanceof TableRowWidget && position.index.indexOf(';') === -1) {
-                        return this.selection.getFirstParagraphInFirstCell(child.ownerTable).childWidgets[0] as LineWidget;
+                        return this.documentHelper.getFirstParagraphInFirstCell(child.ownerTable).childWidgets[0] as LineWidget;
                     }
                     return undefined;
                 }
@@ -273,7 +273,7 @@ export class TextPosition {
         } else if (widget.nextRenderedWidget instanceof Widget) {
             position.index = '0';
             if (widget.nextRenderedWidget instanceof TableWidget) {
-                return this.selection.getFirstParagraphInFirstCell(widget.nextRenderedWidget as TableWidget).firstChild as LineWidget;
+                return this.documentHelper.getFirstParagraphInFirstCell(widget.nextRenderedWidget as TableWidget).firstChild as LineWidget;
             }
             return this.getLineWidget(widget.nextRenderedWidget as ParagraphWidget, position);
         }

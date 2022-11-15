@@ -1585,6 +1585,7 @@ export class FormDesigner {
             inputElement.className = "e-pv-formfield-input";
             inputElement.style.width = '100%';
             inputElement.style.height = '100%';
+            inputElement.style.borderStyle = "solid"
             inputElement.addEventListener('click', this.inputElementClick.bind(this));
             inputElement.addEventListener('change', this.getTextboxValue.bind(this));
             this.updatePasswordFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
@@ -2417,7 +2418,7 @@ export class FormDesigner {
             }
         }
         if (formFieldObject.formFieldAnnotationType) {
-            if (options.thickness !== null) {
+            if (!isNullOrUndefined(options.thickness)) {
                 if (formFieldObject.thickness !== options.thickness) {
                     isBorderWidthChanged = true;
                     oldValue = formFieldObject.thickness;
@@ -3870,6 +3871,7 @@ export class FormDesigner {
         textArea.className = 'e-pv-formfield-textarea';
         textArea.style.width = '100%';
         textArea.style.height = '100%';
+        textArea.style.borderStyle = "solid";
         textArea.addEventListener('click', this.inputElementClick.bind(this));
         textArea.addEventListener('change', this.getTextboxValue.bind(this));
         return textArea;
@@ -3884,6 +3886,7 @@ export class FormDesigner {
         inputElement.style.width = '100%';
         inputElement.style.height = '100%';
         inputElement.style.position = "absolute";
+        inputElement.style.borderStyle = "solid";
         inputElement.addEventListener('click', this.inputElementClick.bind(this));
         inputElement.addEventListener('change', this.getTextboxValue.bind(this));
         return inputElement;
@@ -6328,7 +6331,7 @@ export class FormDesigner {
         let initialFieldSettings: any = this.pdfViewer.initialFieldSettings;
         let signatureFieldSettings: any = this.pdfViewer.signatureFieldSettings;
         if (isInitialField) {
-            if (!isNullOrUndefined(initialFieldSettings.isReadOnly) && this.initialFieldPropertyChanged.isReadOnlyChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
+            if (!isNullOrUndefined(initialFieldSettings.isReadOnly) && this.initialFieldPropertyChanged.isReadOnlyChanged) {
                 signatureField.isReadonly = initialFieldSettings.isReadOnly;
             }
             if (!isNullOrUndefined(initialFieldSettings.isRequired) && this.initialFieldPropertyChanged.isRequiredChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
@@ -6351,7 +6354,7 @@ export class FormDesigner {
             }
         }
         else {
-            if (!isNullOrUndefined(signatureFieldSettings.isReadOnly) && this.signatureFieldPropertyChanged.isReadOnlyChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
+            if (!isNullOrUndefined(signatureFieldSettings.isReadOnly) && this.signatureFieldPropertyChanged.isReadOnlyChanged) {
                 signatureField.isReadonly = signatureFieldSettings.isReadOnly;
             }
             if (!isNullOrUndefined(signatureFieldSettings.isRequired) && this.signatureFieldPropertyChanged.isRequiredChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {

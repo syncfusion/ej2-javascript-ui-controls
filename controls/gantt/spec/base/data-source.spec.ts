@@ -7,6 +7,14 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
+export let filterdata: object[]=[
+    {
+        TaskID: 1,
+        TaskName: 'Launch and flight to lunar orbit',
+        StartDate: new Date('07/16/1969'),
+        EndDate: new Date('07/16/1969'),
+        Duration: 0,
+    }]
 
 export let baselineDatas: Object[] = [
     {

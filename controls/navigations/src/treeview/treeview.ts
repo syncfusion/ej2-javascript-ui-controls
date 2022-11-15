@@ -65,7 +65,7 @@ const ITEM_ANIMATION_ACTIVE: string = 'e-animation-active';
 const DISABLED: string = 'e-disabled';
 
 const treeAriaAttr: TreeAriaAttr = {
-    treeRole: 'tree',
+    treeRole: 'group',
     itemRole: 'treeitem',
     listRole: 'group',
     itemText: '',
@@ -1614,6 +1614,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.showCheckBox) {
             let checkboxEle: Element = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
             checkboxEle.setAttribute('role', 'checkbox');
+            checkboxEle.setAttribute('aria-label', 'checkbox');
             let icon: Element = select('div.' + ICON, e.item);
             let id: string = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNOU(icon) ? 0 : 1]);
@@ -4522,35 +4523,42 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.updateMapper(level);
         }
         let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, sNodes, this.listBaseOption, level);
+        let id: string = this.getId(dropLi);
+        let refNode: Node;
+        if(this.dataType !== 1) {
+            this.addChildData(this.treeData, this.fields, id, nodes, index);
+            this.isFirstRender = false;
+        }
         let dropUl: Element;
         if (!dropEle) {
             dropUl = dropLi ? this.expandParent(dropLi) : select('.' + PARENTITEM, this.element);
         } else {
             dropUl = dropEle;
         }
-        let refNode: Node = dropUl.childNodes[index];
-        if(refNode || this.sortOrder === 'None'){
-            for (let i: number = 0; i < li.length; i++) {
-                dropUl.insertBefore(li[i], refNode);
-            }
-        }
-        if(!refNode && ((this.sortOrder === 'Ascending')||(this.sortOrder ==='Descending')))
-        {
-            let cNodes:  NodeListOf<ChildNode> = dropUl.childNodes;
-            for (let i:number = 0; i < li.length; i++) 
-            {
-                for(let j:number=0; j<cNodes.length;j++)
-                {        
-                    let returnValue:boolean = (this.sortOrder === 'Ascending')?cNodes[j].textContent.toUpperCase()>li[i].innerText.toUpperCase():cNodes[j].textContent.toUpperCase()<li[i].innerText.toUpperCase();
-                    if (returnValue) {
-                        dropUl.insertBefore(li[i], cNodes[j]);
-                        break;
-                    }
-                    dropUl.insertBefore(li[i], cNodes[cNodes.length]);  
+        refNode = dropUl.childNodes[index];
+        if(!this.isFirstRender || (this.dataType === 1)){
+            if(refNode || this.sortOrder === 'None'){
+                for (let i: number = 0; i < li.length; i++) {
+                    dropUl.insertBefore(li[i], refNode);
                 }
             }
-        } 
-        let id: string = this.getId(dropLi);
+            if(!refNode && ((this.sortOrder === 'Ascending')||(this.sortOrder ==='Descending')))
+            {
+                let cNodes:  NodeListOf<ChildNode> = dropUl.childNodes;
+                for (let i:number = 0; i < li.length; i++) 
+                {
+                    for(let j:number=0; j<cNodes.length;j++)
+                    {        
+                        let returnValue:boolean = (this.sortOrder === 'Ascending')?cNodes[j].textContent.toUpperCase()>li[i].innerText.toUpperCase():cNodes[j].textContent.toUpperCase()<li[i].innerText.toUpperCase();
+                        if (returnValue) {
+                            dropUl.insertBefore(li[i], cNodes[j]);
+                            break;
+                        }
+                        dropUl.insertBefore(li[i], cNodes[cNodes.length]);  
+                    }
+                }
+            } 
+        }
         if (this.dataType === 1) {
             this.updateField(this.treeData, this.fields, id, 'hasChildren', true);
             let refId: string = this.getId(refNode as Element);
@@ -4563,8 +4571,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.treeData.splice(pos, 0, nodes[j]);
                 pos++;
             }
-        } else {
-            this.addChildData(this.treeData, this.fields, id, nodes, index);
         }
         this.finalizeNode(dropUl);
     }

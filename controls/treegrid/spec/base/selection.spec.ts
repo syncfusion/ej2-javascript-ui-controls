@@ -466,7 +466,37 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
+  
+  describe('EJ2-64603 - TreeColumnIndex cell was selected while performing Expand/Collapse action', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowSelection: true,
+          selectionSettings: { mode: 'Cell' },
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+          ],
+        },
+        done
+      );
+    });
 
+    it('TreeColumnIndex cellSelection on Expand/Collapse', () => {
+      gridObj.collapseRow(gridObj.getRows()[0], gridObj.getCurrentViewRecords()[0]);
+      expect(gridObj.getRows()[0].querySelector('.e-treerowcell').classList.contains('e-cellselectionbackground')).toBe(false);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
   describe('TreeGrid CheckBoxSelection5', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -827,6 +857,57 @@ describe('Selection module', () => {
     });
   });
 
+  describe('EJ2-64820 - selectedItems not getting properly after performing Filter and click the header checkbox', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowFiltering: true,
+          allowSelection: true,
+          filterSettings: {
+              type: 'Menu',
+              ignoreAccent: true,
+              hierarchyMode: 'Both',
+          },
+          editSettings: {
+              allowEditing: true,
+              mode: 'Row',
+          },
+          selectionSettings: { persistSelection: true },
+          height: 410,
+          enableCollapseAll : true,
+          autoCheckHierarchy :true,
+          treeColumnIndex: 1,
+          columns: [
+            { field:"", showCheckbox:true, width:"50", allowEditing:false},
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right', allowEditing:false},
+            { field: 'taskName', headerText: 'Task Name', width: 180, allowEditing:false },
+            { field: 'priority', headerText: 'Priority', width: 90, allowEditing:false },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right', allowEditing:false }
+          ],
+        },
+        done
+      );
+    });
+
+    it('CheckBox Selection with filtering', (done: Function) => {
+      actionComplete = (args?: CellSaveEventArgs): void => {
+        if (args.requestType === 'filtering') {
+          gridObj.filterByColumn('taskName', 'contains', 13);
+          expect(gridObj.selectionModule.getCheckedrecords().length == 0).toBe(true);
+          done();
+        }
+      };
+    gridObj.actionComplete = actionComplete;
+    done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   it('memory leak', () => {
     profile.sample();

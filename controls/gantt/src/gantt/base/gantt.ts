@@ -933,6 +933,11 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public isFromOnPropertyChange: boolean = false;
+    
+    /**
+     * @private
+     */
+     public isFromRenderBaseline: boolean = false;
 
     /**
      * @private
@@ -2347,8 +2352,10 @@ export class Gantt extends Component<HTMLElement>
             case 'labelSettings':
             case 'renderBaseline':
             case 'baselineColor':
+                this.isFromRenderBaseline = true;
                 this.chartRowsModule.initiateTemplates();
                 this.chartRowsModule.refreshGanttRows();
+                this.isFromRenderBaseline = false;
                 break;
             case 'resourceIDMapping':
             case 'resourceNameMapping':

@@ -6,7 +6,7 @@ import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu,
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest } from '@syncfusion/ej2-base';
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
@@ -411,6 +411,13 @@ export class Render {
             this.parent.keyboardModule.event = undefined;
         }
     }
+    private getCellElement(target: Element): Element {
+        let currentElement: Element = closest(target, 'td');
+        if (isNullOrUndefined(currentElement)) {
+            currentElement = closest(target, 'th');
+        }
+        return currentElement;
+    }
     /* eslint-disable */
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
         if (args.element && this.parent.cssClass) {
@@ -418,19 +425,10 @@ export class Render {
         }
         for (let item of args.items) {
             let cellTarget: Element = this.parent.lastCellClicked;
-            let elem: Element = null;
+            let elem: Element = this.getCellElement(cellTarget);
             let bool: boolean;
             let isGroupElement: boolean;
-            if (cellTarget.classList.contains('e-stackedheadercelldiv') || cellTarget.classList.contains('e-cellvalue') ||
-                cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
-                elem = cellTarget.parentElement;
-            } else if (cellTarget.classList.contains('e-headercell') || cellTarget.classList.contains('e-rowcell') || cellTarget.classList.contains('e-columnsheader') ||
-                cellTarget.classList.contains('e-rowsheader') || cellTarget.classList.contains('e-valuescontent') || cellTarget.classList.contains('e-valuesheader')) {
-                elem = cellTarget;
-            } else if (cellTarget.classList.contains('e-headertext')) {
-                elem = cellTarget.parentElement.parentElement;
-            }
-            if (!elem) {
+            if (!elem || (elem && Number(elem.getAttribute('index')) === 0 && Number(elem.getAttribute('data-colindex')) === 0)) {
                 args.cancel = true;
                 return;
             }
@@ -693,15 +691,7 @@ export class Render {
         });
         let exportArgs: BeforeExportEventArgs = {
         };
-        let ele: Element = null;
-        if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
-            target.classList.contains('e-headercelldiv') || target.classList.contains('e-icons') || target.classList.contains('e-rhandler')) {
-            ele = target.parentElement;
-        } else if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
-            ele = target;
-        } else if (target.classList.contains('e-headertext')) {
-            ele = target.parentElement.parentElement;
-        }
+        let ele: Element = this.getCellElement(target);
         let rowIndx: number = Number(ele.getAttribute('index'));
         let colIndx: number = Number(ele.getAttribute('data-colindex'));
         let pivotValue: IAxisSet = this.parent.pivotValues[rowIndx][colIndx] as IAxisSet;
@@ -941,7 +931,7 @@ export class Render {
         removeClass(this.parent.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR), [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
     }
 
-    private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number, column: Column): HTMLElement { 
+    private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number, column: Column): HTMLElement {
         if (this.parent.enableValueSorting && this.parent.dataType === 'pivot') {
             let vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
             let len: number = (cell.type === 'grand sum' &&
@@ -957,7 +947,7 @@ export class Render {
                     className: (vSort.sortOrder === 'Descending' ?
                         'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
                         'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
-                        styles: column.textAlign === 'Right' ? 'float: left' : ''
+                    styles: column.headerTextAlign === 'Right' ? 'float : left' : ''
                 }));
             }
             // return tCell;
@@ -1633,6 +1623,10 @@ export class Render {
         let parWidth: number | string = this.parent.width;
         let eleWidth: number = this.parent.element.getBoundingClientRect().width ?
             this.parent.element.getBoundingClientRect().width : this.parent.element.offsetWidth;
+        if (eleWidth === 0) {
+            eleWidth = this.parent.element.parentElement.getBoundingClientRect().width ?
+                this.parent.element.parentElement.getBoundingClientRect().width : this.parent.element.parentElement.offsetWidth;
+        }
         if (this.gridSettings.width === 'auto') {
             if (this.parent.width === 'auto') {
                 parWidth = eleWidth;
@@ -1695,6 +1689,13 @@ export class Render {
     }
 
     public frameStackedHeaders(): ColumnModel[] {
+        let pivotColumns: PivotColumn[] = this.parent.pivotColumns;
+        let gridColumns: ColumnModel[] = this.parent.grid['columnModel'];
+        let autoFitApplied: boolean = false;
+        let refreshColumn: boolean = this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && this.parent.engineModule.valueAxis === 1) ||
+            (this.parent.actionObj.actionName === 'Sort field' && this.parent.actionObj.fieldInfo.axis === 'columns') ||
+            (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.actionObj.actionName === 'Sort field' && this.parent.pivotFieldListModule.actionObj.fieldInfo.axis === 'columns')
+        ) : false;
         let singleValueFormat: string = this.parent.dataSourceSettings.values.length === 1 &&
             !this.parent.dataSourceSettings.alwaysShowValueHeader ?
             this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
@@ -1709,6 +1710,7 @@ export class Render {
                 let actualCnt: number = 0;
                 headerCnt--;
                 let colField: IAxisSet[] = this.engine.headerContent[headerCnt];
+                let colCount: number = colField ? Object.keys(colField).length : 0;
                 if (colField) {
                     for (let cCnt: number = 0; cCnt < Object.keys(colField).length + (colField[0] ? 0 : 1); cCnt++) {
                         let colSpan: number = (colField[cCnt] && colField[cCnt].colSpan) ?
@@ -1722,13 +1724,14 @@ export class Render {
                                     colField[cCnt].formattedText)) : '';
                         if (headerCnt === this.engine.headerContent.length - 1) {
                             colSpan = 1;
+                            autoFitApplied = pivotColumns.length - 1 !== colCount ? false : (!refreshColumn && !this.parent.isEmptyGrid && pivotColumns[actualCnt] && pivotColumns[actualCnt].autoFit);
                             columnModel[actualCnt] = {
                                 field: (cCnt + '.formattedText'),
                                 headerText: formattedText,
                                 customAttributes: { 'cell': colField[cCnt] },
                                 /* eslint-disable-next-line */
-                                width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
-                                minWidth: 30,
+                                width: autoFitApplied ? (gridColumns[actualCnt] as ColumnModel).width : colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
+                                minWidth: autoFitApplied && actualCnt === colCount ? (gridColumns[gridColumns.length - 1] as ColumnModel).minWidth : 30,
                                 format: cCnt === 0 ? '' : (isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt].actualText] : singleValueFormat),
                                 allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                 allowResizing: this.parent.gridSettings.allowResizing,
@@ -1755,8 +1758,8 @@ export class Render {
                                         field: colField[cCnt] ? (colField[cCnt].valueSort as any).levelName : '',
                                         customAttributes: { 'cell': colField[cCnt] },
                                         /* eslint-disable-next-line */
-                                        width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) :
-                                            this.resColWidth,
+                                        width: (autoFitApplied && actualCnt === 0 && !refreshColumn && !this.parent.isEmptyGrid && pivotColumns[0].autoFit) ? (gridColumns[0] as ColumnModel).width :
+                                            colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
                                         minWidth: 30,
                                         allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                         allowResizing: this.parent.gridSettings.allowResizing,
@@ -1782,7 +1785,7 @@ export class Render {
             } while (headerCnt > 0);
             integrateModel[0] = {
                 field: (0 + '.formattedText'),
-                width: this.resColWidth,
+                width: (autoFitApplied && !refreshColumn && !this.parent.isEmptyGrid && pivotColumns[0].autoFit) ? (gridColumns[0] as ColumnModel).width : this.resColWidth,
                 minWidth: 30,
                 headerText: '',
                 allowReordering: false,
@@ -1797,7 +1800,9 @@ export class Render {
             lastColumn.minWidth = lastColumn.width;
             lastColumn.width = 'auto';
             if (lastColumn.columns && lastColumn.columns.length > 0) {
-                this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
+                if (!(this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit)) {
+                    this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
+                }
             }
         }
         this.parent.triggerColumnRenderEvent(integrateModel);

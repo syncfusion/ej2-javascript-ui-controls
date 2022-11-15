@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.3.57 (2022-11-15)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I415271` - Now technical indicator visible property working properly .
+- `#I412377` - Space is not removed when removing the axis has been fixed .
+- `#I415516` - Chart height is not proper issue has been fixed .
+
 ## 20.3.56 (2022-11-08)
 
 ### Chart

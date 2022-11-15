@@ -195,8 +195,9 @@ export class TechnicalIndicator extends SeriesBase {
             this.points = (series as Series).points;
         }
         const type: string = firstToLowerCase(this.type);
-        chart[type + 'IndicatorModule'].initDataSource(this, chart);
-
+        if (this.visible) {
+            chart[type + 'IndicatorModule'].initDataSource(this, chart);
+        }
         chart.visibleSeriesCount += this.targetSeries.length;
     }
 }

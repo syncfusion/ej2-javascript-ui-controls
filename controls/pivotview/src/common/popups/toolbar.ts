@@ -1174,8 +1174,7 @@ export class Toolbar {
         if (chartSettings && chartSettings.legendSettings && chartSettings.legendSettings.visible !== undefined) {
             this.showLableState = chartSettings.legendSettings.visible;
         } else {
-            this.showLableState = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) > -1 ?
-                false : true;
+            this.showLableState = true;
         }
         return this.showLableState;
     }

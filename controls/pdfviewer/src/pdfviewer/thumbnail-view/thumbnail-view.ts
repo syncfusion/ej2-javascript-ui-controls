@@ -84,8 +84,21 @@ export class ThumbnailView {
         proxy.startIndex = proxy.thumbnailLimit;
         // eslint-disable-next-line max-len
         proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
+        let digitalSignaturePresent: boolean = false;
+        for (var i= proxy.startIndex; i < proxy.thumbnailLimit; i++)
+        {
+           if (proxy.pdfViewerBase.digitalSignaturePresent(i))
+           {
+              digitalSignaturePresent = true;
+           }
+        }
+        let digitalSignatureList: string = "";
+        if (digitalSignaturePresent)
+        {
+            digitalSignatureList = proxy.pdfViewerBase.digitalSignaturePages.toString();
+        }
         // eslint-disable-next-line max-len
-        const jsonObject: object = { startPage: proxy.startIndex.toString(), endPage: proxy.thumbnailLimit.toString(), sizeX: "99.7", sizeY: "141", hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId  };
+        const jsonObject: object = { startPage: proxy.startIndex.toString(), endPage: proxy.thumbnailLimit.toString(), sizeX: "99.7", sizeY: "141", hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId, digitalSignaturePresent: digitalSignaturePresent, digitalSignaturePageList: digitalSignatureList };
         if (this.pdfViewerBase.jsonDocumentId) {
             // eslint-disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;

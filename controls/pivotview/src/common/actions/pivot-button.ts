@@ -867,6 +867,9 @@ export class PivotButton implements IAction {
                         }
                     }
                     this.parent.pivotCommon.eventBase.updateSorting(args);
+                    if ((this.parent as PivotFieldList).staticPivotGridModule) {
+                        (this.parent as PivotFieldList).staticPivotGridModule.actionObj = this.parent.actionObj;
+                    }
                     if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() !== 'pivotfieldlist') {
                         let actionInfo: PivotActionInfo = {
                             sortInfo: this.parent.lastSortInfo

@@ -118,14 +118,14 @@ export class CollaborativeEditing {
             }
             if (start.paragraph.isInsideTable) {
                 const table: TableWidget = this.owner.documentHelper.layout.getParentTable(start.paragraph);
-                const firstPara: ParagraphWidget = this.owner.selection.getFirstParagraphBlock(table);
+                const firstPara: ParagraphWidget = this.owner.documentHelper.getFirstParagraphBlock(table);
                 start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
             } else {
                 start.paragraphStartInternal(this.owner.selection, false);
             }
             if (end.paragraph.isInsideTable) {
                 const table: TableWidget = this.owner.documentHelper.layout.getParentTable(end.paragraph);
-                const lastPara: ParagraphWidget = this.owner.selection.getLastParagraphBlock(table);
+                const lastPara: ParagraphWidget = this.owner.documentHelper.getLastParagraphBlock(table);
                 const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
                 end.setPositionParagraph((lastPara.lastChild as LineWidget), offset);
             } else {

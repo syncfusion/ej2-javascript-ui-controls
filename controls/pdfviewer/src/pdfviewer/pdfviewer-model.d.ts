@@ -3657,6 +3657,13 @@ export interface PdfViewerModel extends ComponentModel{
     hideEmptyDigitalSignatureFields?: boolean;
 
     /**
+     *  Show or hide the digital signature appearance in the document.
+     *
+     * @default true
+     */
+    showDigitalSignatureAppearance?: boolean;
+
+    /**
      * Customize desired date and time format
      */
     dateTimeFormat?: string;

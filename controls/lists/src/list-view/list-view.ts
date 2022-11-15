@@ -767,8 +767,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             headerTemplate: this.headerTemplate,
             groupTemplate: this.groupTemplate, expandCollapse: true, listClass: '',
             ariaAttributes: {
-                itemRole: 'option', listRole: 'presentation', itemText: '',
-                groupItemRole: 'option', wrapperRole: 'presentation'
+                itemRole: 'listitem', listRole: 'group', itemText: '',
+                groupItemRole: 'presentation', wrapperRole: 'presentation'
             },
             // eslint-disable-next-line
             fields: ((this.fields as any & { properties: Object }).properties) as FieldsMapping,
@@ -827,6 +827,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.checkInternally(args, checkboxElement);
             }
             checkboxElement.setAttribute('aria-checked', frameElement.classList.contains(classNames.checked) ? 'true' : 'false');
+            checkboxElement.setAttribute('aria-label', 'checkbox');
             if (this.checkBoxPosition === 'Left') {
                 checkboxElement.classList.add(classNames.checkboxLeft);
                 args.item.firstElementChild.classList.add(classNames.checkboxLeft);

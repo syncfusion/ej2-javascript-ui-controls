@@ -1,6 +1,5 @@
 import { ProgressBar, ProgressAnnotation } from '../src/index';
 ProgressBar.Inject(ProgressAnnotation);
-
 let inverseSemiProgress: ProgressBar = new ProgressBar({
     type: 'Circular',
     startAngle: 240,

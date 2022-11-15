@@ -856,7 +856,7 @@ export class FocusStrategy {
     public internalCellFocus(e: CellFocusArgs): void {
         if (!(e.byKey && e.container.isContent && e.keyArgs.action === 'enter'
             && (e.parent.classList.contains('e-detailcell') ||
-                e.parent.classList.contains('e-unboundcell') || e.parent.classList.contains('e-templatecell')))) {
+                e.parent.classList.contains('e-unboundcell')))) {
             return;
         }
         this.clearIndicator();
@@ -1309,8 +1309,7 @@ export class ContentFocus implements IFocus {
         if (!cell) { return true; }
         return e.action === 'enter' || e.action === 'shiftEnter' ?
             cell.classList.contains(literals.rowCell) && !cell.classList.contains('e-unboundcell')
-            && (!cell.classList.contains('e-templatecell') || cell.classList.contains('e-editedbatchcell'))
-            && !cell.classList.contains('e-detailcell') : true;
+            || cell.classList.contains('e-editedbatchcell') && !cell.classList.contains('e-detailcell') : true;
     }
     protected getGridSeletion(): boolean {
         return this.parent.allowSelection && this.parent.selectionSettings.allowColumnSelection;

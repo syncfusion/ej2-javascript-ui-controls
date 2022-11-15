@@ -7,6 +7,7 @@ import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
 import { getValue, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { TaskbarEdit } from './taskbar-edit';
 
 export class Dependency {
 
@@ -677,6 +678,11 @@ export class Dependency {
             return;
         }
         if (childGanttRecord.ganttProperties.predecessor) {
+            const taskBarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
+            let ganttProp: IGanttData;
+            if (taskBarModule) {
+               ganttProp = taskBarModule.taskBarEditRecord;
+            }
             const predecessorsCollection: IPredecessor[] = childGanttRecord.ganttProperties.predecessor;
             let parentGanttRecord: IGanttData; let record: IGanttData = null;
             let predecessor: IPredecessor;
@@ -725,10 +731,21 @@ export class Dependency {
                 }
                 if (record) { this.validatePredecessor(record, undefined, 'successor'); }
             }
-            if (record && record.hasChildRecords && record.ganttProperties.taskId !== this.isValidatedParentTaskID &&
-                this.parent.editModule['taskbarMoved']) {
-                this.parent.editModule['updateChildItems'](record);
-                this.isValidatedParentTaskID = record.ganttProperties.taskId;
+            if (record && record.ganttProperties.taskId !== this.isValidatedParentTaskID && ganttProp) {
+                if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction !== 'ChildDrag')) {
+                    if (!ganttProp.hasChildRecords && record.hasChildRecords) {
+                        this.parent.editModule['updateChildItems'](record);
+                        this.isValidatedParentTaskID = record.ganttProperties.taskId;
+                    }
+                }
+                else if ((record.hasChildRecords && taskBarModule.taskBarEditAction == 'ChildDrag') ||
+                       (!ganttProp.ganttProperties.predecessorsName && taskBarModule.taskBarEditAction == 'ParentDrag')) {
+                        this.parent.editModule['updateChildItems'](record);
+                        this.isValidatedParentTaskID = record.ganttProperties.taskId;
+                }
+                if (!ganttProp.hasChildRecords) {
+                    this.parent.dataOperation.updateParentItems(record, true);
+                }
             }
         }
     }

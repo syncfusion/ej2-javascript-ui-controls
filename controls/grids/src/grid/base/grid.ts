@@ -2986,7 +2986,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             } else if (this.enableVirtualization) {
                 content = content.querySelector('.e-virtualtable');
             }
-            this.contentMaskTable = this.createMaskTable(content, this.getContentMaskColumns(), axisDirection);
+            if (!isNullOrUndefined(content.querySelector('tbody'))) {
+                this.contentMaskTable = this.createMaskTable(content, this.getContentMaskColumns(), axisDirection);
+            }
         }
         if (!this.headerMaskTable && (this.isFrozenGrid() || (this.enableColumnVirtualization && axisDirection === 'X'))
             && !((this.isFrozenGrid() && ((this.enableVirtualization && axisDirection === 'Y')
@@ -3018,7 +3020,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.enableColumnVirtualization) {
                 content = content.querySelector('.e-virtualtable');
             }
-            this.movableContentMaskTable = this.createMaskTable(content, this.getMovableContentMaskColumns(), axisDirection);
+            if (!isNullOrUndefined(content.querySelector('tbody'))) {
+                this.movableContentMaskTable = this.createMaskTable(content, this.getMovableContentMaskColumns(), axisDirection);
+            }
         }
         if (!this.rightContentMaskTable && this.isFrozenGrid() && this.getFrozenMode() === 'Left-Right') {
             this.rightContentMaskTable = this.createMaskTable(gridContent
@@ -6269,10 +6273,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     return;
                 }
                 if (this.getTooltipStatus(element)) {
+                    const contentDiv: HTMLDivElement = this.createElement('div');
                     if (element.getElementsByClassName('e-headertext').length) {
-                        this.toolTipObj.content = (element.getElementsByClassName('e-headertext')[0] as HTMLElement).innerText;
+                        contentDiv.innerHTML = (element.getElementsByClassName('e-headertext')[0] as HTMLElement).innerText;
+                        this.toolTipObj.content = contentDiv;
                     } else {
-                        this.toolTipObj.content = element.innerText;
+                        contentDiv.innerHTML = element.innerText;
+                        this.toolTipObj.content = contentDiv;
                     }
                     this.prevElement = element;
                     const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
@@ -6534,7 +6541,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-input-group'))) {
+                isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group')))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

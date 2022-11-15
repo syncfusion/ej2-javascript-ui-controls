@@ -58,6 +58,9 @@ export class Pager {
     if (this.parent.isDestroyed) {
       return;
     }
+    if (isNullOrUndefined(this.parent.pagerSettings.template)) {
+      this.unWireEvent();
+    }
     this.parent.off(events.initPivotPager, this.createPager);
   }
 
@@ -174,9 +177,9 @@ export class Pager {
             this.columnPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'column' + '_size_list');
           }
         }
+        this.unWireEvent();
+        this.wireEvent();
       }
-      this.unWireEvent();
-      this.wireEvent();
     }
   }
 

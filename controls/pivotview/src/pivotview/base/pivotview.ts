@@ -629,7 +629,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timeOutObj: any;
     private savedDataSourceSettings: DataSourceSettingsModel;
-    private isEmptyGrid: boolean;
+    /** @hidden */
+    public isEmptyGrid: boolean;
     private shiftLockedPos: string[] = [];
     private savedSelectedCellsPos: { rowIndex: string; colIndex: string }[] = [];
     private cellSelectionPos: { rowIndex: string; colIndex: string }[] = [];
