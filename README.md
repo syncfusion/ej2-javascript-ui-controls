@@ -14,8 +14,6 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
  
  *Screens of [showcase applications](#showcase-applications) created using Syncfusion Essential JS 2 UI controls*
  
- [![Verified on Openbase](https://badges.openbase.com/js/verified/@syncfusion/ej2-grids.svg?token=ox5WciPRoByBTCpEeBe7wYUXAc+Vyt6cVOZ1PNgbPRk=)](https://openbase.com/js/@syncfusion/ej2-grids?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge)
- 
 ## Table of Contents
 * [Framework highlights](#framework-highlights)
 * [Control list](#control-list)
