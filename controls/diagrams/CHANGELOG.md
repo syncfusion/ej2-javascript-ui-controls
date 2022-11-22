@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I418455` - Now, the resize handle has been rendered properly while set node pivot as 0,0.
+- `#I418026` - Now, the annotation for the swimlane child node is updated properly after dragging it outside the swimlane.
+
 ## 20.3.57 (2022-11-15)
 
 ### Diagram

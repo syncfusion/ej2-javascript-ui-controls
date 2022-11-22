@@ -391,12 +391,12 @@ export class WorkbookNumberFormat {
         if (!(cell.format.indexOf('.') > -1)) {
             result = Math.round(result);
         }
-        cell.value = this.getFormattedNumber(cell.format.split(',').join(''), result);
-        cell.value = cell.value.replace(',', '');
+        let formattedText: string = this.getFormattedNumber(cell.format.split(',').join(''), result);
+        formattedText = formattedText.replace(',', '');
         if (result === 0) {
-            cell.value = cell.value.replace('0', '');
+            formattedText = formattedText.replace('0', '');
         }
-        return cell.value;
+        return formattedText;
     }
 
     private processDigits(cell: CellModel): string {
@@ -476,7 +476,7 @@ export class WorkbookNumberFormat {
             if (!isFormatted) {
                 formattedText = this.getFormattedNumber(customFormat, cellValue);
             }
-            if (customFormat != null && customFormat.split('.')[0].indexOf('#') > -1 && cellValue < 1) {
+            if (customFormat != null && customFormat.split('.')[0].indexOf('#') > -1 && cellValue > 0 && cellValue < 1) {
                 formattedText = formattedText.toString().replace(/^0+/, '');
             }
         }

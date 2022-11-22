@@ -501,6 +501,7 @@ export class Edit implements IAction {
         this.parent.focusModule.clearIndicator();
         this.parent.focusModule.restoreFocus();
         this.dialogObj.hide();
+        this.parent.notify('cancelcnfrmDlg', {});
     }
 
     private dlgOk(): void {

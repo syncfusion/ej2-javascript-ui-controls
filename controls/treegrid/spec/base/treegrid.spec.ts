@@ -1937,6 +1937,34 @@ describe('EJ2-58631 - Extra line adding when using setRowData method', () => {
   });
 });
 
+describe('EJ2-65573- The expanded or collapsed state is not read properly by the NVDA screen reader', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: '410',
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+          { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+          { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+        ]
+      },
+      done
+    );
+  });
+
+  it('aria-expanded attribute checked', () => {
+    expect((gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-treerowcell')[0] as any).hasAttribute('aria-expanded')).toBe(true);
+
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
 describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', () => {
 
   type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };

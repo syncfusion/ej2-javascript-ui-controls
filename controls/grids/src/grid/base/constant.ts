@@ -555,4 +555,6 @@ export const afterFilterColumnMenuClose: string = 'after-filter-column-menu-clos
 /** @hidden */
 export const beforeCheckboxfilterRenderer: string = 'beforeCheckboxfilterRenderer';
 /** @hidden */
-export const commandColumnDestroy: string = 'commandColumnDestroy'
+export const commandColumnDestroy: string = 'commandColumnDestroy';
+/** @hidden */
+export const batchCnfrmDlgCancel: string = 'cancelcnfrmDlg'

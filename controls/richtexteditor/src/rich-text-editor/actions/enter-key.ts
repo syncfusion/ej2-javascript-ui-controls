@@ -214,9 +214,14 @@ export class EnterKeyAction {
                                     if (!isNearBlockLengthZero) {
                                         let currentFocusElem: Node = insertElem;
                                         let finalFocusElem: Node;
-                                        while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text') {
+                                        if (this.range.startOffset === this.range.endOffset && this.range.startOffset != 0) {
+                                            while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text' &&
+                                            currentFocusElem.nodeName !== 'BR') {
+                                                finalFocusElem = currentFocusElem;
+                                                currentFocusElem = currentFocusElem.lastChild;
+                                            }
+                                        } else {
                                             finalFocusElem = currentFocusElem;
-                                            currentFocusElem = currentFocusElem.lastChild;
                                         }
                                         (finalFocusElem as HTMLElement).innerHTML = '<br>';
                                         if (!isImageNode) {

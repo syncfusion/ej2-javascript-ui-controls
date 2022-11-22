@@ -658,6 +658,9 @@ export class DateTimePicker extends DatePicker {
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         this.dateTimeFormat = this.cldrDateTimeFormat();
         this.initValue = this.value;
+        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            this.enabled = false;
+        }
         super.updateHtmlAttributeToElement();
         this.checkAttributes(false);
         const localeText: { placeholder: string } = { placeholder: this.placeholder };

@@ -909,6 +909,70 @@ describe('Selection module', () => {
     });
   });
 
+  describe('EJ2-65181- Accessibility issue - Checkbox column sample in audio mismatch ', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          height: '410',
+          autoCheckHierarchy: true,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left', showCheckbox: true },
+            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+          ]
+        },
+        done
+      );
+    });
+    it('aria-checked attribute checked', () => {
+      (gridObj.element.querySelectorAll('.e-row')[0].getElementsByClassName('e-frame e-icons')[0] as any).click();
+      expect((gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-treecheckselect')[0] as any).hasAttribute('aria-checked')).toBe(true);
+      expect((gridObj.element.querySelectorAll('.e-row')[0].querySelectorAll('.e-treecheckselect')[0] as any).hasAttribute('aria-label')).toBe(true);
+      expect((gridObj.element.querySelectorAll('.e-row')[0].getElementsByClassName('e-frame e-icons')[0] as any).hasAttribute('title')).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+  describe('EJ2-65673-When performing an expand or collapse operation the row is selected', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          height: 350,
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 70, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 200, textAlign: 'Left' },
+            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+
+          ],
+        },
+        done
+      );
+    });
+    it('checking the selection records while collapse the row', () => {
+      gridObj.selectRow(1);
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      expect(gridObj.getSelectedRowIndexes()[0]).toBe(1);
+    });
+    it('checking the selection records while expand the row', () => {
+      gridObj.selectRow(1);
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+      expect(gridObj.getSelectedRowIndexes()[0]).toBe(1);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

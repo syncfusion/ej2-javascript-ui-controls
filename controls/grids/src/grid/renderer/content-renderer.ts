@@ -507,7 +507,12 @@ export class ContentRender implements IRenderer {
                         tbdy = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     } else {
                         this.tbody.innerHTML = '';
-                        remove(this.tbody);
+                        if (!isNullOrUndefined(this.tbody.parentElement)) {
+                            remove(this.tbody);
+                        }
+                        else {
+                            remove(gObj.getContentTable().querySelector(literals.tbody));
+                        }
                         this.tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
                     }
                 }

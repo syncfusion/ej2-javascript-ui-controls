@@ -980,7 +980,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 currentX = this.getMaxWidth(panelModel) - this.elementWidth;
                 this.mOffX = dX - currentX;
             }
+            let initialWidth: number = this.elementWidth; 
             this.elementWidth += currentX;
+            let newSizeX: number = this.pixelsToColumns(this.elementWidth - (panelModel.sizeX) * this.cellSpacing[1], true);
+            if(this.columns < panelModel.col + newSizeX) {
+                this.elementWidth = initialWidth;
+            }
         }
         el.style.top = this.elementY + 'px';
         el.style.left = this.elementX + 'px';
@@ -1078,8 +1083,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 sizeY = this.pixelsToRows(this.elementHeight - (sizeY) * this.cellSpacing[0], true);
             }
         }
-        if (item.col + item.sizeX > this.columns) {
-            item.sizeX = item.sizeX - 1;
+        if (item.col + sizeX > this.columns) {
+            item.sizeX = sizeX - 1;
         }
         const canOccupy: boolean = row > -1 && col > -1 && sizeX + col <= this.maxCol() && sizeY + row <= this.maxRow();
         if (canOccupy && (this.collisions(row, col, sizeX, sizeY, this.getPanelBase(item.id)).length === 0)

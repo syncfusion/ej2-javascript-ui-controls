@@ -71,9 +71,9 @@ export class Row extends ChildProperty<Row> {
      * @returns {void}
      * @private
      */
-    public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column): void {
+    public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column, chart: Chart): void {
         let width: number = 0;
-        const innerPadding: number = 5;
+        const innerPadding: number = axis.labelPosition === 'Inside' && (chart.axes.indexOf(axis) > -1) ? -5 : 5;
         if (axis.visible && axis.internalVisibility) {
             width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
                 axis.findLabelSize(axis.crossInAxis, innerPadding, definition) + axis.lineStyle.width * 0.5);
@@ -133,7 +133,7 @@ export class Column extends ChildProperty<Column> {
      * @private
      */
 
-    public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column): void {
+    public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column, chart: Chart): void {
         let height: number = 0;
         const innerPadding: number = 5;
         if (axis.visible && axis.internalVisibility) {
@@ -1319,7 +1319,7 @@ export class Axis extends ChildProperty<Axis> {
             // To avoid overlap axis label with chart title or chart legend when it is outside.
             if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
-            } else {
+            } else if (!chart.stockChart) {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }
         } else if (this.angle !== 0 && this.orientation === 'Vertical') {
@@ -1330,7 +1330,7 @@ export class Axis extends ChildProperty<Axis> {
             // To avoid overlap axis label with chart title or chart legend when it is outside.
             if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
-            } else {
+            } else if (!chart.stockChart) {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }
         }

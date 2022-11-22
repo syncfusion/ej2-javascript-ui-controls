@@ -107,7 +107,7 @@ export class SvgRenderer implements IRenderer {
      */
     public drawRectangle(
         svg: SVGElement, options: RectAttributes, diagramId: string, onlyRect?: boolean,
-        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object):
+        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object, isCircularHandle?: boolean):
         void {
         if (options.shadow && !onlyRect) {
             this.renderShadow(options, svg, undefined, parentSvg);
@@ -131,15 +131,25 @@ export class SvgRenderer implements IRenderer {
                 shadowElement.parentNode.removeChild(shadowElement);
             }
         }
-
-
-        const attr: Object = {
-            'id': id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
-            'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
-            'transform': 'rotate(' + options.angle + ','
-                + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
-            'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
-        };
+        let attr: object;
+        // EJ2-65895 - Added below code to calculate the transform to render the circular handle
+        if (isCircularHandle) {
+            attr = {
+                'id': id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
+                'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
+                'transform': 'rotate(' + options.angle + ','
+                        + (options.x + options.width / 2) + ',' + (options.y + options.height / 2) + ')',
+                'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
+            };
+        } else {
+            attr = {
+                'id': id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
+                'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
+                'transform': 'rotate(' + options.angle + ','
+                    + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
+                'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
+            };
+        }
         if (ariaLabel) {
             // BLAZ-24062: Adding 'aria-label' without role attribute it causes violation in accessibility test
             attr['role'] = 'img';

@@ -259,9 +259,6 @@ export class CommentReviewPane {
                 this.commentPane.currentEditingComment.cancelReply();
             } else {
                 this.commentPane.currentEditingComment.cancelEditing();
-                if (isNewComment) {
-                    this.discardComment(this.commentPane.currentEditingComment.comment);
-                }
             }
             this.owner.documentHelper.currentSelectedComment = undefined;
             this.closeDialogUtils();

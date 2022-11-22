@@ -939,16 +939,19 @@ export class DiagramRenderer {
         options.class = className;
         options.width = handleSize;
         options.height = handleSize;
-        options.x = (newPoint.x - options.width/t.scale * options.pivotX + t.tx ) * t.scale;
-        options.y = (newPoint.y - options.height/t.scale * options.pivotY + t.ty ) * t.scale;
+        // EJ2-65895 - Added below code to calculate the rect x and y if node pivot is not equal to 0.5
+        options.x = (newPoint.x + t.tx) * t.scale;
+        options.y = (newPoint.y + t.ty) * t.scale;
+        options.x = options.x - options.width / 2;
+        options.y = options.y - options.height / 2;
         if (connected) {
             options.class += ' e-connected';
         }
         if (canMask) {
             options.visible = false;
         }
-        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
-       this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel );
+       const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
+       this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel, true);
     }
 
     /**

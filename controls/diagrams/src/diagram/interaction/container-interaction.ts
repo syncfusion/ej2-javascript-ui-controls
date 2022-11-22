@@ -127,6 +127,9 @@ export function removeChildInContainer(
                     diagram.clearSelection();
                     removeChildrenInLane(diagram, obj as Node);
                     (obj as Node).parentId = '';
+                    //EJ2-65676 - Exception throws on updating node annotation after drag and drop from swimlane to diagram canvas.
+                    (obj as LaneChildrenState).parentObj = diagram;
+                    (obj as LaneChildrenState).propName = 'nodes';
                     const entry: HistoryEntry = {
                         type: 'ChildCollectionChanged', category: 'Internal',
                         undoObject: undoObj, redoObject: cloneObject(obj)
@@ -528,6 +531,12 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
         };
         diagram.commandHandler.addHistoryEntry(entry);
     }
+}
+// To set the parentObj and propName while removing child from lane.
+/** @private */
+export interface LaneChildrenState {
+    parentObj:object;
+    propName:string;
 }
 
 //#end region

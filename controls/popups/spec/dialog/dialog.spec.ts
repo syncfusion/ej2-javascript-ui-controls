@@ -3857,3 +3857,30 @@ describe('EJ2-62999-In Dailog unique Id is not generated automatically when we d
             expect(dialogObj.element.hasAttribute('id')).toBe(true);
         });
 }); 
+
+describe('EJ2-65299-DialogUtility position property is not working properly', () => {
+    let dialogObj: Dialog;
+    const divElement: HTMLElement = createElement('div', {
+         });
+    beforeEach(()=>{
+        document.body.appendChild(divElement);      
+
+            dialogObj = DialogUtility.confirm({
+                title: 'dialog Header!',
+                showCloseIcon: false,
+                content: "dialog content Updated!!!",
+                okButton: { text: 'Okbtn' },
+                position: { X: 'right', Y: '100' },
+            });
+
+        dialogObj.hide();
+    });
+    afterEach(() => {
+        destroyDialog( dialogObj );
+    });
+    it('check width of confirm utility dialog  ', () =>{
+        dialogObj.show();
+        expect((document.getElementsByClassName('e-confirm-dialog')[0]as HTMLElement).style.width).toBe('');
+    });
+
+});

@@ -74,6 +74,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public dependencyCollection: string[] = [];
     /** @hidden */
     public uniqueRange: string[] = [];
+    private uniqueCells: string[];
 
     /**
      * @hidden
@@ -1612,7 +1613,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                         }
                                     }
                                 }
-                                stack.push(s);
+                                if (s) {
+                                    stack.push(s);
+                                }
                             }
                             break;
                         case this.parser.tokenAdd:
@@ -2964,7 +2967,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    public refresh(cellRef: string, uniqueCell?: string): void {
+    public refresh(cellRef: string, uniqueCell?: string, dependentCell?: string[]): void {
+        let refreshCells: boolean;
+        if (!dependentCell) {
+            refreshCells = true;
+            dependentCell = [];
+        }
         if (this.getDependentCells().has(cellRef)) {
             const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
             try {
@@ -2972,19 +2980,22 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 let i: number;
                 for (i = 0; i < dependentCells.length; i++) {
                     const dCell: string = dependentCells[i];
-                    if ((uniqueCell && dCell.indexOf(uniqueCell) > -1) || (dCell === cellRef)) {
+                    if ((uniqueCell && dCell.indexOf(uniqueCell) > -1) || dCell === cellRef || dependentCell.indexOf(dCell) > -1) {
                         continue;
                     }
                     const token: string = this.getSheetToken(dCell);
+                    const sheets: { name: string, id?: number, rows?: { cells?: { formula?: string }[] }[] }[] =
+                        (this.parentObject as { sheets: { name: string }[] }).sheets;
+                    let sheetIdx: number = (this.parentObject as { activeSheetIndex?: number }).activeSheetIndex;
                     if (token.length) {
                         this.grid = family.tokenToParentObject.get(token);
                         const sheetId: number = Number(this.grid);
-                        const sheets: { name: string, id?: number }[] = (this.parentObject as { sheets: { name: string }[] }).sheets;
                         let sheetName: string = '';
                         if (!this.isNaN(sheetId) && sheets) {
                             for (let i: number = 0; i < sheets.length; i++) {
                                 if (sheets[i].id === sheetId) {
                                     sheetName = sheets[i].name;
+                                    sheetIdx = i;
                                 }
                             }
                         }
@@ -2993,26 +3004,75 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         this.actCell = dCell.split(token)[1];
                     }
                     try {
+                        const calculateFormula: Function = (cell: string, formulaInfo: FormulaInfo): void => {
+                            if (formulaInfo) {
+                                this.cell = cell;
+                                this.parser.isFormulaParsed = true;
+                                formulaInfo.setFormulaValue(this.calculateFormula(formulaInfo.getParsedFormula(), true));
+                            }
+                        };
                         const rowIdx: number = this.rowIndex(dCell);
                         const colIdx: number = this.colIndex(dCell);
                         const formulaInfo: FormulaInfo = this.getFormulaInfoTable().get(dCell);
-                        let result: string | number;
-                        if (formulaInfo) {
-                            this.cell = dCell;
-                            this.parser.isFormulaParsed = true;
-                            result = this.calculateFormula(formulaInfo.getParsedFormula(), true);
-                            formulaInfo.setFormulaValue(result);
-                        }
                         if ((<{ setValueRowCol: Function }>this.parentObject).setValueRowCol === undefined) {
+                            calculateFormula(dCell, formulaInfo);
                             this.setValueRowCol(this.getSheetID(this.grid) + 1, formulaInfo.getFormulaValue(), rowIdx, colIdx);
                         } else {
+                            const cell: { formula?: string } = sheets && sheets[sheetIdx].rows && sheets[sheetIdx].rows[rowIdx - 1] &&
+                                sheets[sheetIdx].rows[rowIdx - 1].cells && sheets[sheetIdx].rows[rowIdx - 1].cells[colIdx - 1];
+                            let val: string | number;
+                            if (cell && cell.formula && cell.formula.toLowerCase().includes('unique')) {
+                                if (!this.uniqueCells || this.uniqueCells.indexOf(dCell) === -1) {
+                                    if (!this.uniqueCells) {
+                                        this.uniqueCells = [];
+                                    }
+                                    this.uniqueCells.push(dCell);
+                                    calculateFormula(dCell, formulaInfo);
+                                    val = formulaInfo.getFormulaValue();
+                                    this.uniqueCells.splice(this.uniqueCells.indexOf(dCell), 1);
+                                    if (!this.uniqueCells.length) {
+                                        this.uniqueCells = null;
+                                    }
+                                } else {
+                                    continue;
+                                }
+                            } else {
+                                if (dependentCell.indexOf(dCell) === -1) {
+                                    dependentCell.push(dCell);
+                                }
+                                val = null;
+                            }
                             (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
-                                this.getSheetId(this.grid), formulaInfo.getFormulaValue(), rowIdx, colIdx, formulaInfo.getFormulaText());
+                                this.getSheetId(this.grid), val, rowIdx, colIdx, formulaInfo.getFormulaText());
                         }
-                        this.refresh(dCell);
+                        this.refresh(dCell, null, dependentCell);
                     } catch (ex) {
                         continue;
                     }
+                }
+                if (refreshCells) {
+                    let sheetId: number; let sheetIdx: number; let rowIdx: number; let colIdx: number; let cellObj: { value: string };
+                    let sheets: [{ id: number, rows: [{ cells: [{ value: string }] }] }] =
+                        (<{ sheets: [{ id: number, rows: [{ cells: [{ value: string }] }] }] }>this.parentObject).sheets;
+                    if (!sheets) {
+                        dependentCell = [];
+                    }
+                    dependentCell.forEach((cell: string): void => {
+                        sheetId = this.getSheetId(family.tokenToParentObject.get(this.getSheetToken(cell)));
+                        for (let idx: number = 0; idx < sheets.length; idx++) {
+                            if (sheets[idx].id === sheetId) {
+                                sheetIdx = idx;
+                                break;
+                            }
+                        }
+                        rowIdx = this.rowIndex(cell) - 1;
+                        colIdx = this.colIndex(cell) - 1;
+                        cellObj = sheets[sheetIdx].rows[rowIdx] && sheets[sheetIdx].rows[rowIdx].cells[colIdx];
+                        if (cellObj) {
+                            (<{ notify: Function }>this.parentObject).notify(
+                                'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx });
+                        }
+                    });
                 }
             } finally {
                 this.grid = family.tokenToParentObject.get(this.getSheetToken(cellRef));

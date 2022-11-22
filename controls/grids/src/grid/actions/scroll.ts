@@ -471,6 +471,7 @@ export class Scroll implements IAction {
                 const parentTop: number = this.parentElement.getClientRects()[0].top;
                 const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
                 const left: number = contentRect.left;
+                let colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');
                 if (top < height && contentRect.bottom > 0) {
                     headerEle.classList.add('e-sticky');
                     let elemTop: number = 0;
@@ -483,6 +484,9 @@ export class Scroll implements IAction {
                         elemTop += toolbarEle.getClientRects()[0].height;
                     }
                     this.setSticky(headerEle, elemTop, contentRect.width, left, true);
+                    if (!isNullOrUndefined(colMenuEle)) {
+                        colMenuEle.style.position = 'fixed';
+                    }
                 }
                 else {
                     if (headerEle.classList.contains('e-sticky')) {
@@ -496,6 +500,9 @@ export class Scroll implements IAction {
                         const ccDlg: HTMLElement = this.parent.element.querySelector('.e-ccdlg');
                         if (ccDlg) {
                             ccDlg.classList.remove('e-sticky');
+                        }
+                        if (!isNullOrUndefined(colMenuEle)) {
+                            colMenuEle.style.position = 'absolute';
                         }
                     }
                 }

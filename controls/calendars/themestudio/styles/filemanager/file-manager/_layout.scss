@@ -80,25 +80,6 @@
         border-width: 0 0 1px;
       }
 
-      .e-toolbar-items .e-toolbar-item.e-template {
-        height: 30px;
-
-        .e-upload.e-fm-upload {
-          border: 0;
-
-          .e-file-select-wrap {
-            padding-left: 1px;
-            padding-right: 1px;
-
-            .e-css.e-btn:hover {
-              @if $fm-skin-name == 'material' {
-                box-shadow: none;
-              }
-            }
-          }
-        }
-      }
-
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
         border: 0;
         box-shadow: none;

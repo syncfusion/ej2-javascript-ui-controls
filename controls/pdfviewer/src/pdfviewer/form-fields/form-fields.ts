@@ -68,14 +68,14 @@ export class FormFields {
      * @param pageIndex
      * @private
      */
-    public renderFormFields(pageIndex: number): void {
+     public renderFormFields(pageIndex: number, isImportFormField: boolean): void {
         this.maxTabIndex = 0;
         this.minTabIndex = -1;
-        // eslint-disable-next-line
-        if (this.renderedPageList.indexOf(pageIndex) !== -1) {
+        // eslint-disable-next-line        
+        if (this.renderedPageList.indexOf(pageIndex) !== -1 && !isImportFormField) {
             this.data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
-            if (!this.data) {
-                this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+            if (!this.data || this.data === '[]') {
+                this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');                
             }
         }
         else {
@@ -1762,8 +1762,21 @@ export class FormFields {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         if (formFieldsData) {
-            for (let i: number = 0; i < formFieldsData.length; i++) {
-                this.pdfViewer.formDesignerModule.deleteFormField(formFieldsData[i].Key.split('_')[0]);
+            for (let i = 0; i < formFieldsData.length; i++) {
+                if (formFieldsData[i].FormField.formFieldAnnotationType === "RadioButton"){
+                    let buttonItem: any = [];
+                    buttonItem = formFieldsData[i].FormField.radiobuttonItem;
+                    let sameButtonItemId: string = formFieldsData[i].FormField.id.split('_')[0];
+                    for (var j = 0; j < buttonItem.length; j++) {
+                        let otherButton: any = buttonItem[j];
+                        if (otherButton.id.split('_')[0] !== sameButtonItemId) {
+                            this.pdfViewer.formDesignerModule.deleteFormField(otherButton.id.split('_')[0]);
+                        }
+                    }
+                }
+                if (formFieldsData[i].Key) {
+                    this.pdfViewer.formDesignerModule.deleteFormField(formFieldsData[i].Key.split('_')[0]);
+                }
             }
         }
     }

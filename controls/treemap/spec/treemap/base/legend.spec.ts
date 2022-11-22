@@ -218,7 +218,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with default legend without any customization', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById('legend-container_Legend_Text_Index_0');
-                expect(element.innerHTML).toBe('40 - 50');
+                expect(element.innerHTML).toBe('20 - 30');
             };
             treemap.refresh();
         });
@@ -226,7 +226,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend height and width ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById('legend-container_Legend_Text_Index_1');
-                expect(element.innerHTML).toBe('50 - 60');
+                expect(element.innerHTML).toBe('30 - 40');
             };
             treemap.legendSettings.mode = 'Default';
             treemap.legendSettings.width = '200px';
@@ -259,9 +259,9 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend position - Left ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('legend-container_Legend_Text_Index_0');
-                expect(element.innerHTML).toBe('40 - 50');
+                expect(element.innerHTML).toBe('20 - 30');
                 element = document.getElementById('legend-container_Legend_Text_Index_1');
-                expect(element.innerHTML).toBe('50 - 60');
+                expect(element.innerHTML).toBe('30 - 40');
             };
             treemap.legendSettings.position = 'Left';
             treemap.legendSettings.alignment = 'Near';
@@ -271,9 +271,9 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend position - Right ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('legend-container_Legend_Shape_Index_0');
-                expect(element.getAttribute('fill')).toBe('#669900');
+                expect(element.getAttribute('fill')).toBe('#ff9900');
                 element = document.getElementById('legend-container_Legend_Shape_Index_1');
-                expect(element.getAttribute('fill')).toBe('#669900');
+                expect(element.getAttribute('fill')).toBe('#999966');
             };
             treemap.legendSettings.position = 'Right';
             treemap.legendSettings.alignment = 'Far';
@@ -283,9 +283,9 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend orientation as vertical', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('legend-container_Legend_Text_Index_2');
-                expect(element.innerHTML).toBe('20 - 30');
+                expect(element.innerHTML).toBe('40 - 50');
                 element = document.getElementById('legend-container_Legend_Shape_Index_2');
-                expect(element.getAttribute('fill')).toBe('#ff9900');
+                expect(element.getAttribute('fill')).toBe('#669900');
             };
             treemap.legendSettings.orientation = 'Vertical';
             treemap.legendSettings.position = 'Left';
@@ -462,7 +462,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with interactive legend with multi colors ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_0');
-                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                
+                expect(element.getAttribute('fill')).toBe('url(#linear_2)');                
             };
             treemap.legendSettings.mode = 'Interactive';
             treemap.refresh();
@@ -548,7 +548,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking the legend with outofrange ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_0');
-                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                
+                expect(element.getAttribute('fill')).toBe('url(#linear_2)');                
             };
             treemap.legendSettings.mode = 'Interactive';
             treemap.refresh();
@@ -768,9 +768,9 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with interactive legend without any customization', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_0');
-                expect(element.getAttribute('fill')).toBe('#669900');
+                expect(element.getAttribute('fill')).toBe('#ff9900');
                 element = document.getElementById('interactive-container_Legend_Index_0_Text');
-                expect(element.innerHTML).toBe('40 - 50');
+                expect(element.innerHTML).toBe('20 - 30');
             };
             treemap.legendSettings.mode = 'Interactive';
             treemap.refresh();
@@ -779,9 +779,9 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend height and width ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_2');
-                expect(element.getAttribute('fill')).toBe('#ff9900');
+                expect(element.getAttribute('fill')).toBe('#669900');
                 element = document.getElementById('interactive-container_Legend_Index_2_Text');
-                expect(element.innerHTML).toBe('20 - 30');
+                expect(element.innerHTML).toBe('40 - 50');
             };
             treemap.legendSettings.height = '30px';
             treemap.legendSettings.width = '200px';
@@ -1105,7 +1105,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend shape - Star ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Shape_Index_0');
-                expect(element.getAttribute('fill')).toBe('#669900');
+                expect(element.getAttribute('fill')).toBe('#ff9900');
             };
             treemap.legendSettings.shape = 'Star';
             treemap.refresh();
@@ -1114,7 +1114,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend shape - Cross ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Shape_Index_2');
-                expect(element.getAttribute('fill')).toBe('#ff9900');
+                expect(element.getAttribute('fill')).toBe('#669900');
             };
             treemap.legendSettings.shape = 'Cross';
             treemap.refresh();
@@ -1141,7 +1141,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend shape - Diamond ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Shape_Index_3');
-                expect(element.getAttribute('fill')).toBe('#999966');
+                expect(element.getAttribute('fill')).toBe('#669900');
             };
             treemap.legendSettings.shape = 'Diamond';
             treemap.refresh();
@@ -1169,7 +1169,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend shape - InvertedTriangle ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Shape_Index_1');
-                expect(element.getAttribute('fill')).toBe('#669900');
+                expect(element.getAttribute('fill')).toBe('#999966');
             };
             treemap.legendSettings.shape = 'InvertedTriangle';
             treemap.refresh();
@@ -1178,7 +1178,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking with legend shape - Pentagon ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Shape_Index_2');
-                expect(element.getAttribute('fill')).toBe('#ff9900');
+                expect(element.getAttribute('fill')).toBe('#669900');
             };
             treemap.legendSettings.shape = 'Pentagon';
             treemap.refresh();
@@ -1678,14 +1678,14 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking interactive legend with RTL in colormapping ', () => {            
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_0');
-                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                
+                expect(element.getAttribute('fill')).toBe('url(#linear_2)');                
             };            
             treemap.refresh();
         });
         it('Checking Interactive legend with RTL with left position', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_0');
-                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                    
+                expect(element.getAttribute('fill')).toBe('url(#linear_2)');                    
                 
             };
             treemap.legendSettings.position='Left';
@@ -1694,7 +1694,7 @@ describe('TreeMap Component Base Spec', () => {
         it('Checking Interactive legend with RTL with right position', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('interactive-container_Legend_Index_0');
-                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                    
+                expect(element.getAttribute('fill')).toBe('url(#linear_2)');                    
                 
             };
             treemap.legendSettings.position='Right';

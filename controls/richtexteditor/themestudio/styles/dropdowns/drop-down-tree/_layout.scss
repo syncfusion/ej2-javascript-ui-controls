@@ -436,8 +436,16 @@
       box-shadow: $ddt-box-shadow;
       position: absolute;
 
+      .e-active .e-checkbox-wrapper {
+        .e-frame:not(.e-check) {
+          @if$ddt-skin-name == 'bootstrap5' {
+            background-color: $ddt-readonly-input-bg-color;
+          }
+        }
+      }
+
       .e-checkbox-wrapper {
-        .e-frame {
+        .e-frame:not(.e-check) {
           @if$ddt-skin-name == 'bootstrap5' {
             background-color: transparent;
           }

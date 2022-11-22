@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.3.57 (2022-11-15)
+## 20.3.58 (2022-11-22)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#FB38693` - The issue "Multiselect dropdown icon is not aligned properly" has been resolved.
+
+## 20.3.56 (2022-11-08)
 
 ### ListBox
 

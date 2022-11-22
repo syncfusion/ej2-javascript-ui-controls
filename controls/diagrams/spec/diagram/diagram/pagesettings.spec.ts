@@ -3320,3 +3320,80 @@ describe('Check whether connector segment overlap node-Left-Right - 2', () => {
     });
 
 });
+
+describe('Resize handle not rendered properly issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll(() => {
+
+        ele = createElement('div', { id: 'diagrampivot' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
+                pivot: { x: 0, y: 0 }
+            },
+            {
+                id: 'node2', height: 100, width: 100, offsetX: 300, offsetY: 100, annotations: [{ content: 'Node2' }],
+                pivot: { x: 0.5, y: 0.5 }
+            },
+            {
+                id: 'node3', height: 100, width: 100, offsetX: 300, offsetY: 200, annotations: [{ content: 'Node2' }],
+                pivot: { x: 1, y: 1 }
+            }
+        ];
+        diagram = new Diagram({
+            width: '900px', height: '500px', nodes: nodes,
+        });
+        diagram.appendTo('#diagrampivot');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether resize handle renders properly for node pivot - 0, 0', function (done) {
+        diagram.select([diagram.nodes[0]]);
+        let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
+        let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
+        let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
+        let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+        expect(northWestelement.getAttribute('x') === '93' && northWestelement.getAttribute('y') === '93').toBe(true);
+        expect(northEastelement.getAttribute('x') === '193' && northEastelement.getAttribute('y') === '93').toBe(true);
+        expect(southWestelement.getAttribute('x') === '93' && southWestelement.getAttribute('y') === '193').toBe(true);
+        expect(southEastelement.getAttribute('x') === '193' && southEastelement.getAttribute('y') === '193').toBe(true);
+        done();
+    });
+
+    it('Check whether resize handle renders properly for node pivot - 1, 1', function (done) {
+        diagram.select([diagram.nodes[2]]);
+        let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
+        let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
+        let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
+        let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+        expect(northWestelement.getAttribute('x') === '393' && northWestelement.getAttribute('y') === '193').toBe(true);
+        expect(northEastelement.getAttribute('x') === '493' && northEastelement.getAttribute('y') === '193').toBe(true);
+        expect(southWestelement.getAttribute('x') === '393' && southWestelement.getAttribute('y') === '293').toBe(true);
+        expect(southEastelement.getAttribute('x') === '493' && southEastelement.getAttribute('y') === '293').toBe(true);
+        done();
+    });
+
+    it('Check whether resize handle renders properly after rotate the node', function (done) {
+        diagram.clearSelection();
+        diagram.select([diagram.nodes[0]]);
+        diagram.nodes[0].rotateAngle = 90;
+        diagram.dataBind();
+        let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
+        let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
+        let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
+        let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+        expect(northWestelement.getAttribute('x') === '93' && northWestelement.getAttribute('y') === '93').toBe(true);
+        expect(northEastelement.getAttribute('x') === '93' && northEastelement.getAttribute('y') === '193').toBe(true);
+        expect(southWestelement.getAttribute('x') === '-7' && southWestelement.getAttribute('y') === '93').toBe(true);
+        expect(southEastelement.getAttribute('x') === '-7' && southEastelement.getAttribute('y') === '193').toBe(true);
+        done();
+    });
+
+});

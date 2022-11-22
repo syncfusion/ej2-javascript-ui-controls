@@ -464,6 +464,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 'data-role': 'calendar'
             });
         }
+        if (!isNullOrUndefined(closest(this.element, "fieldset") as HTMLFieldSetElement) && (closest(this.element, "fieldset") as HTMLFieldSetElement).disabled) {
+            this.enabled = false;
+        }
         this.createHeader();
         this.createContent();
         this.wireEvents();

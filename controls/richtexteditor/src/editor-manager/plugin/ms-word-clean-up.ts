@@ -355,8 +355,7 @@ export class MsWordPaste {
                                 }
                             }
                         }
-                        values[i] = valueSplit.join(';') + ';';
-                        const changedValue: string = styleProperty + values[i];
+                        const changedValue: string = styleProperty + valueSplit.join(';') + ';';
                         resultElem[j].setAttribute('style', changedValue);
                     } else {
                         values[i] = values[i].replace(/text-indent:-(.*?)(?=;|$)/gm, '');

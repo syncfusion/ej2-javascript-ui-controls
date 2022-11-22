@@ -912,27 +912,29 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     public gaugeResize(e: Event): boolean {
-        let args: IResizeEventArgs = {
-            gauge: this,
-            previousSize: this.availableSize,
-            name: resized,
-            cancel: false,
-            currentSize: this.calculateSvgSize()
-        };
-        this.trigger(resized, args);
-        if (!args.cancel) {
-            if (this.resizeTo) {
-                clearTimeout(this.resizeTo);
-            }
-            if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-circulargauge')) {            
-                this.animatePointer = false;
-                this.resizeTo = window.setTimeout(
-                    (): void => {
-                        this.createSvg();
-                        this.calculateBounds();
-                        this.renderElements();            
-                    },
-                    500);
+        if (!this.isDestroyed) {
+            let args: IResizeEventArgs = {
+                gauge: this,
+                previousSize: this.availableSize,
+                name: resized,
+                cancel: false,
+                currentSize: this.calculateSvgSize()
+            };
+            this.trigger(resized, args);
+            if (!args.cancel) {
+                if (this.resizeTo) {
+                    clearTimeout(this.resizeTo);
+                }
+                if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-circulargauge')) {
+                    this.animatePointer = false;
+                    this.resizeTo = window.setTimeout(
+                        (): void => {
+                            this.createSvg();
+                            this.calculateBounds();
+                            this.renderElements();
+                        },
+                        500);
+                }
             }
         }
         return false;
@@ -1299,7 +1301,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         const axis: Axis = <Axis>this.axes[axisIndex];
         const pointer: Pointer = <Pointer>axis.pointers[pointerIndex];
         const pointerRadius: number = pointer.currentRadius;
-        if (pointer.currentValue != value) {
+        if (!this.isDestroyed && pointer.currentValue != value) {
             const enableAnimation: boolean = pointer.animation.enable;
             value = value < axis.visibleRange.min ? axis.visibleRange.min : value;
             value = value > axis.visibleRange.max ? axis.visibleRange.max : value;
@@ -1357,19 +1359,21 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @param content - Specifies the content for the annotation in circular gauge.
      */
     public setAnnotationValue(axisIndex: number, annotationIndex: number, content: string): void {
-        const isElementExist: boolean = getElement(this.element.id + '_Annotations_' + axisIndex) !== null;
-        const element: HTMLElement = <HTMLElement>getElement(this.element.id + '_Annotations_' + axisIndex) ||
-            createElement('div', {
-                id: this.element.id + '_Annotations_' + axisIndex
-            });
-        const annotation: Annotation = <Annotation>this.axes[axisIndex].annotations[annotationIndex];
-        if (content !== null) {
-            removeElement(this.element.id + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex);
-            annotation.content = content;
-            this.annotationsModule.createTemplate(element, annotationIndex, axisIndex, this);
-            const secondaryElement: Element = getElement(this.element.id + '_Secondary_Element');
-            if (!isElementExist && !isNullOrUndefined(secondaryElement)) {
-                secondaryElement.appendChild(element);
+        if (!this.isDestroyed) {
+            const isElementExist: boolean = getElement(this.element.id + '_Annotations_' + axisIndex) !== null;
+            const element: HTMLElement = <HTMLElement>getElement(this.element.id + '_Annotations_' + axisIndex) ||
+                createElement('div', {
+                    id: this.element.id + '_Annotations_' + axisIndex
+                });
+            const annotation: Annotation = <Annotation>this.axes[axisIndex].annotations[annotationIndex];
+            if (content !== null) {
+                removeElement(this.element.id + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex);
+                annotation.content = content;
+                this.annotationsModule.createTemplate(element, annotationIndex, axisIndex, this);
+                const secondaryElement: Element = getElement(this.element.id + '_Secondary_Element');
+                if (!isElementExist && !isNullOrUndefined(secondaryElement)) {
+                    secondaryElement.appendChild(element);
+                }
             }
         }
     }
@@ -1617,82 +1621,84 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public onPropertyChanged(newProp: CircularGaugeModel, oldProp: CircularGaugeModel): void {
         // property method calculated
-        this.isPropertyChange = true;
-        let renderer: boolean = false;
-        let refreshBounds: boolean = false;
-        let refreshWithoutAnimation: boolean = false;
-        const isPointerValueSame: boolean = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
-            !isNullOrUndefined(this.activePointer));
-        for (const prop of Object.keys(newProp)) {
-            switch (prop) {
-            case 'height':
-            case 'width':
-            case 'centerX':
-            case 'centerY':
-            case 'margin':
-                this.createSvg();
-                refreshBounds = true;
-                break;
-            case 'title':
-                refreshBounds = (newProp.title === '' || oldProp.title === '');
-                renderer = !(newProp.title === '' || oldProp.title === '');
-                break;
-            case 'titleStyle':
-                if (newProp.titleStyle && newProp.titleStyle.size) {
-                    refreshBounds = true;
-                } else {
-                    renderer = true;
-                }
-                break;
-            case 'border':
-                renderer = true;
-                break;
-            case 'background':
-                renderer = true;
-                break;
-            case 'legendSettings':
-                refreshWithoutAnimation = true;
-                break;
-            case 'axes':
-                const axesPropertyLength: number = Object.keys(newProp.axes).length;
-                for (let x: number = 0; x < axesPropertyLength; x++) {
-                    if (!isNullOrUndefined(newProp.axes[x])) {
-                        const collection: string[] = Object.keys(newProp.axes[x]);
-                        for (const collectionProp of collection) {
-                            if (collectionProp === 'pointers') {
-                                const pointerPropertyLength: number = Object.keys(newProp.axes[x].pointers).length;
-                                for (let y: number = 0; y < pointerPropertyLength; y++) {
-                                    let index: number = parseInt(Object.keys(newProp.axes[x].pointers)[y]);
-                                    if (!isNullOrUndefined(Object.keys(newProp.axes[x].pointers[index]))) {
-                                        this.axes[x].pointers[index]['previousValue'] = this.axes[x].pointers[index]['currentValue'];
-                                        this.axes[x].pointers[index]['isPointerAnimation'] = Object.keys(newProp.axes[x].pointers[index]).indexOf('value') > -1;
+        if (!this.isDestroyed) {
+            this.isPropertyChange = true;
+            let renderer: boolean = false;
+            let refreshBounds: boolean = false;
+            let refreshWithoutAnimation: boolean = false;
+            const isPointerValueSame: boolean = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
+                !isNullOrUndefined(this.activePointer));
+            for (const prop of Object.keys(newProp)) {
+                switch (prop) {
+                    case 'height':
+                    case 'width':
+                    case 'centerX':
+                    case 'centerY':
+                    case 'margin':
+                        this.createSvg();
+                        refreshBounds = true;
+                        break;
+                    case 'title':
+                        refreshBounds = (newProp.title === '' || oldProp.title === '');
+                        renderer = !(newProp.title === '' || oldProp.title === '');
+                        break;
+                    case 'titleStyle':
+                        if (newProp.titleStyle && newProp.titleStyle.size) {
+                            refreshBounds = true;
+                        } else {
+                            renderer = true;
+                        }
+                        break;
+                    case 'border':
+                        renderer = true;
+                        break;
+                    case 'background':
+                        renderer = true;
+                        break;
+                    case 'legendSettings':
+                        refreshWithoutAnimation = true;
+                        break;
+                    case 'axes':
+                        const axesPropertyLength: number = Object.keys(newProp.axes).length;
+                        for (let x: number = 0; x < axesPropertyLength; x++) {
+                            if (!isNullOrUndefined(newProp.axes[x])) {
+                                const collection: string[] = Object.keys(newProp.axes[x]);
+                                for (const collectionProp of collection) {
+                                    if (collectionProp === 'pointers') {
+                                        const pointerPropertyLength: number = Object.keys(newProp.axes[x].pointers).length;
+                                        for (let y: number = 0; y < pointerPropertyLength; y++) {
+                                            let index: number = parseInt(Object.keys(newProp.axes[x].pointers)[y]);
+                                            if (!isNullOrUndefined(Object.keys(newProp.axes[x].pointers[index]))) {
+                                                this.axes[x].pointers[index]['previousValue'] = this.axes[x].pointers[index]['currentValue'];
+                                                this.axes[x].pointers[index]['isPointerAnimation'] = Object.keys(newProp.axes[x].pointers[index]).indexOf('value') > -1;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
+                        refreshWithoutAnimation = true;
+                        break;
                 }
-                refreshWithoutAnimation = true;
-                break;
             }
+            if (!isPointerValueSame && !this.isRangeUpdate) {
+                if (!refreshBounds && renderer) {
+                    this.removeSvg();
+                    this.renderElements();
+                }
+                if (refreshBounds) {
+                    this.removeSvg();
+                    this.calculateBounds();
+                    this.renderElements();
+                }
+                if (refreshWithoutAnimation && !renderer && !refreshBounds) {
+                    this.removeSvg();
+                    this.calculateBounds();
+                    this.renderElements(false);
+                }
+            }
+            this.isRangeUpdate = false;
         }
-        if (!isPointerValueSame && !this.isRangeUpdate) {
-            if (!refreshBounds && renderer) {
-                this.removeSvg();
-                this.renderElements();
-            }
-            if (refreshBounds) {
-                this.removeSvg();
-                this.calculateBounds();
-                this.renderElements();
-            }
-            if (refreshWithoutAnimation && !renderer && !refreshBounds) {
-                this.removeSvg();
-                this.calculateBounds();
-                this.renderElements(false);
-            }
-        }
-        this.isRangeUpdate = false;
     }
 
     /**

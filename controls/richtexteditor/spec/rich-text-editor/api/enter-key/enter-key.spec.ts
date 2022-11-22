@@ -290,7 +290,7 @@ describe('Enter key support - When `DIV` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[0], 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<div><strong><br></strong></div><div><strong>​Line 1</strong></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><br></div><div><strong>​Line 1</strong></div>');
     });
 
     it('Press enter at the middle of the line', function (): void {
@@ -356,7 +356,7 @@ describe('Enter key support - When `DIV` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[0], 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<div><strong>​Line 1</strong></div><div><strong><br></strong></div><div><strong>Line 2</strong></div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<div><strong>​Line 1</strong></div><div><br></div><div><strong>Line 2</strong></div>');
     });
 
     it('When multiple lines - Press enter by selecting the whole line 2', function (): void {
@@ -1578,7 +1578,7 @@ describe('EJ2-62206 - Enter Key press at the start of the line with multiple for
         const sel: void = new NodeSelection().setSelectionText(
             document, startNode, startNode, 0, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML === '<p><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="background-color: rgb(255, 255, 0);" class="focusNode"><br></span></span></span></em></strong></p><p><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="background-color: rgb(255, 255, 0);" class="focusNode">Hello</span></span></span></em></strong></p>').toBe(true);
+        expect(rteObj.inputElement.innerHTML === '<p><br></p><p><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="background-color: rgb(255, 255, 0);" class="focusNode">Hello</span></span></span></em></strong></p>').toBe(true);
     });
 
     afterAll(() => {
@@ -1869,3 +1869,27 @@ describe( 'EJ2-62200 Cursor position is wrong when pressing enter in the empty l
         expect( cursorElem.previousElementSibling === null && cursorElem.textContent.length === 0 ).toBe( true );
     } );
 } );
+
+describe( 'EJ2-64636 Duplicate text is created when deleting different nodes and pressing enter', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeEach(() => {
+        rteObj = renderRTE( {
+            height: '200px',
+            enterKey: "P",
+            value: '<p>Hello</p><p><span style="background-color: unset; text-align: inherit;" class="focusNode">Syncfusion</span><br></p>',
+        } );
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it( 'Duplicate text is created when deleting different nodes and pressing enter', () => {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.childNodes[1].childNodes[0].childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(document, startNode, 0);
+        let cursorElem: HTMLElement;
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p>Hello</p><p><br></p><p><span style="background-color: unset; text-align: inherit;" class="focusNode">Syncfusion</span><br></p>` ).toBe(true);
+    });
+});

@@ -374,6 +374,9 @@ export class Selection {
     }
 
     private addRemoveClass(records: number[]): void {
+        if(typeof(records)=="number"){
+            records = Array.from(String(records), (num:any)=>Number(num));
+            }
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
             const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>

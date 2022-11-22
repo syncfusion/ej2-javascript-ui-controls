@@ -826,11 +826,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.renderReactTemplates();
                 this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
                 attributes(this.inputElement, { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options'});
-                if(this.selectedElementID == null){
-                    this.inputElement.removeAttribute('aria-activedescendant');
-                }else{
-                    attributes(this.inputElement, { 'aria-activedescendant': this.selectedElementID});
-                }
+                this.updateAriaActiveDescendant();
                 if (this.isFirstClick) {
                     this.loadTemplate();
                 }
@@ -962,7 +958,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         return this.targetInputElement.value;
     }
 
-    private getForQuery(valuecheck: string[]): Query {
+    private getForQuery(valuecheck: string[] | number[] | boolean[]): Query {
         let predicate: Predicate;
         const field: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
         for (let i: number = 0; i < valuecheck.length; i++) {
@@ -991,13 +987,23 @@ export class MultiSelect extends DropDownBase implements IInput {
                     'li',
                     'data-value',
                     proxy.value[i]);
-                if (!checkEle) {
+                if (!checkEle && !(this.dataSource instanceof DataManager)) {
                     this.value.splice(i, 1);
                     i -= 1;
                 }
             }
         }
-        this.updateActionList(ulElement, list, e);
+        let valuecheck: string[] = [];
+        if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
+            valuecheck = this.presentItemValue(this.ulElement);
+        }
+        if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
+        && this.listData != null) {
+            this.addNonPresentItems(valuecheck, this.ulElement, this.listData) 
+        }
+        else {
+            this.updateActionList(ulElement, list, e);
+        }
         if (this.dataSource instanceof DataManager && this.mode === 'CheckBox' && this.allowFiltering) {
             this.removeFocus();
         }
@@ -1081,6 +1087,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             dropDownBaseClasses.li + ':not(.' + HIDE_LIST + ')');
                         if (listEle.length > 0) {
                             addClass([listEle[0]], dropDownBaseClasses.focus);
+                            this.updateAriaActiveDescendant();
                         } else {
                             //EJ2-57588 - for this task, we prevent the ul element cloning ( this.ulElement = this.ulElement.cloneNode ? <HTMLElement>this.ulElement.cloneNode(true) : this.ulElement;)
                             if (!(this.list && this.list.querySelectorAll('.' + dropDownBaseClasses.li).length > 0)) {
@@ -1531,6 +1538,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.tempValues = <string[]>this.value.slice();
         }
     }
+    private updateAriaActiveDescendant(): void {
+        if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])) {
+            attributes(this.inputElement, { 'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id });
+        }
+    }
     private getPagingCount(): number {
         const height: string = this.list.classList.contains(dropDownBaseClasses.noData) ? null :
             getComputedStyle(this.getItems()[0], null).getPropertyValue('height');
@@ -1676,6 +1688,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             const element: HTMLElement = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
             element.classList.add(dropDownBaseClasses.focus);
             this.scrollBottom(element);
+            this.updateAriaActiveDescendant();
         }
     }
 
@@ -2161,7 +2174,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private invokeCheckboxSelection(element: Element, eve: MouseEvent | KeyboardEventArgs, isClearAll?: boolean,): void {
         this.notify('updatelist', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', li: element, e: eve });
-        attributes(this.inputElement, { 'aria-activedescendant': element.id });
+        this.updateAriaActiveDescendant();
         if ((this.value && this.value.length !== this.mainData.length)
             && (this.mode === 'CheckBox' && this.showSelectAll && !(this.isSelectAll || isClearAll))) {
             this.notify(
@@ -3177,9 +3190,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enabled && this.isValidLI(element)) {
             this.removeFocus();
             addClass([element], dropDownBaseClasses.focus);
+            this.updateAriaActiveDescendant();
         } else {
             if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
                 addClass([element], dropDownBaseClasses.focus);
+                this.updateAriaActiveDescendant();
             }
         }
     }
@@ -3743,6 +3758,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         target.classList.remove('e-active');
                     }
                     target.classList.add('e-item-focus');
+                    this.updateAriaActiveDescendant();
                 }
                 this.textboxValueUpdate();
                 this.checkPlaceholderSize();
@@ -4117,11 +4133,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         return valuecheck;
     };
-    private addNonPresentItems(valuecheck: string[], ulElement: HTMLElement,
+    private addNonPresentItems(valuecheck: string[] | number[] | boolean[], ulElement: HTMLElement,
         list: { [key: string]: Object }[] | number[] | boolean[] | string[],
         event?: Object):  void {
         (this.dataSource as DataManager).executeQuery(this.getForQuery(valuecheck)).then((e: Object) => {
-            this.addItem((e as ResultData).result, list.length);
+            if ((e as ResultData).result.length > 0) {
+                this.addItem((e as ResultData).result, list.length);
+            }
             this.updateActionList(ulElement, list, event);
         });
     };
@@ -4359,7 +4377,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                 spellcheck: 'false',
                 type: 'text',
                 autocomplete: 'off',
-                tabindex: '0'
+                tabindex: '0',
+                role: 'combobox'
             }
         }) as HTMLInputElement;
         if (this.mode === 'Default' || this.mode === 'Box') {

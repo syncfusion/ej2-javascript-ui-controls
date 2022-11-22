@@ -3031,3 +3031,37 @@ describe('Comment insert, undo, redo validation', () => {
         expect(editor.element.getElementsByClassName('e-de-cmt-mark').length).toBe(1);
     });
 });
+describe('Discarding the unposted comment', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true, enableComment: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Add comment and close the comment review pane', () => {
+        editor.editorModule.insertText("Syncfusion software");
+        editor.selection.selectAll();
+        editor.editorModule.isUserInsert =  true;
+        editor.editorModule.insertComment('');
+        editor.editorModule.isUserInsert =  false;
+        editor.commentReviewPane.closePane();
+        expect(() => {((editor.commentReviewPane as any).discardButtonClick())}).not.toThrowError();
+    });
+});

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I412377` - Now axis labels are placed inside the chart properly.
+- `#I412377` - Margin gets added when adding the axes dynamically issue has been fixed .
+- `#F178666` - Now the data point aria label is proper.
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#I418512` - Console error when specifying `labelRotation` for stockchart issue has been fixed.
+
 ## 20.3.57 (2022-11-15)
 
 ### Chart

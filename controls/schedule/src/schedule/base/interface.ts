@@ -482,6 +482,8 @@ export interface NotifyEventArgs {
 export interface LayoutData {
     element: HTMLElement;
     selectedDate: Date;
+    renderDates: Date[];
+    colLevels: TdData[][];
 }
 
 /** @private */

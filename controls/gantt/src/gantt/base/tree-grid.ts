@@ -106,7 +106,8 @@ export class GanttTreeGrid {
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
             toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
         }
-        this.parent.treeGrid.height = this.parent.ganttHeight - toolbarHeight - 46;
+	this.parent.treeGrid.height =
+	       this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - 19;
     }
     private getContentDiv(): HTMLElement {
         return this.treeGridElement.querySelector('.e-content');

@@ -367,13 +367,15 @@ export class WorkbookFormula {
                 idx = i;
                 if (value.match(regx)) {
                     for (let j: number = i + 1; j < sheetCount; j++) {
-                        regxTemp = new RegExp(sheetInfo[j].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
-                        searchIdx = value.search(regxTemp); valSearchIdx = value.search(regx);
-                        if (searchIdx > -1 && (searchIdx < valSearchIdx || (searchIdx === valSearchIdx && sheetInfo[j].visibleName.length >
-                            sheetInfo[i].visibleName.length))) {
-                            regxVisible = new RegExp('Sheet', 'gi');
-                            if (sheetInfo[j].visibleName.search(regxVisible) !== 0) {
-                                regx = regxTemp; idx = j;
+                        if (sheetInfo[j].visibleName.includes(sheetInfo[i].visibleName)) {
+                            regxTemp = new RegExp(sheetInfo[j].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                            searchIdx = value.search(regxTemp); valSearchIdx = value.search(regx);
+                            if (searchIdx > -1 && (searchIdx < valSearchIdx || (searchIdx === valSearchIdx &&
+                                sheetInfo[j].visibleName.length > sheetInfo[i].visibleName.length))) {
+                                regxVisible = new RegExp('Sheet', 'gi');
+                                if (sheetInfo[j].visibleName.search(regxVisible) !== 0) {
+                                    regx = regxTemp; idx = j;
+                                }
                             }
                         }
                     }

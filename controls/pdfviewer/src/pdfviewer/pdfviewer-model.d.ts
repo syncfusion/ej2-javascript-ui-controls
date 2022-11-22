@@ -3217,6 +3217,13 @@ export interface PdfViewerModel extends ComponentModel{
     retryCount?: number;
 
     /**
+     * Specifies the status codes for retrying the request.The default setting is 500.
+     
+     * @default [500]
+     */
+    retryStatusCodes?: number[];
+
+    /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
      *
      * @default true

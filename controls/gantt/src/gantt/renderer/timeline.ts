@@ -1351,9 +1351,9 @@ export class Timeline {
                 const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
-                if (!isNullOrUndefined(maxStartLeft) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                if (!isNullOrUndefined(maxStartLeft)&&(minStartDate < this.timelineStartDate) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
                     isChanged = 'prevTimeSpan';
-                    minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
+                    minStartDate =  this.timelineStartDate;
                 } else {
                     minStartDate = this.timelineStartDate;
                 }

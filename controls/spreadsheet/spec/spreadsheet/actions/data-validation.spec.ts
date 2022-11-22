@@ -1401,7 +1401,7 @@ describe('Data validation ->', () => {
             });
         });
 
-        describe('SF-362574->', () => {
+        describe('SF-362574, EJ2-65349 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }]
@@ -1422,6 +1422,73 @@ describe('Data validation ->', () => {
                     expect(spreadsheet.sheets[0].rows[8].cells[4].validation.isHighlighted).toBeUndefined();
                     setTimeout((): void => {
                         done();
+                    });
+                });
+            });
+            it('To fix the issue with date formula (TODAY()) in data validation input field', (done: Function) => {
+                helper.edit('B9', '11/30/2022');
+                helper.getInstance().addDataValidation({ type: 'Date', operator: 'LessThanOrEqualTo', value1: '=TODAY()' }, 'B1:B11');
+                helper.getInstance().addDataValidation({ type: 'Time', operator: 'LessThanOrEqualTo', value1: '=TIME(10,56,00)' }, 'C1:C11');
+                expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('');
+                helper.invoke('selectRange', ['B1:B11']);
+                helper.switchRibbonTab(4);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                    expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                    expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    helper.click('.e-datavalidation-ddb li:nth-child(3)');
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                    setTimeout(() => {
+                        helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=DATE(2022,11,18)';
+                        helper.triggerKeyEvent('keyup', 89, null, null, null, helper.getElements('.e-datavalidation-dlg .e-values e-input')[0]);
+                        helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                        helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                        helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                        helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                            expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                            expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                            helper.click('.e-datavalidation-ddb li:nth-child(3)');
+                            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                            setTimeout(() => {
+                                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=DATEVALUE("11/18/2022")';
+                                helper.triggerKeyEvent('keyup', 89, null, null, null, helper.getElements('.e-datavalidation-dlg .e-values e-input')[0]);
+                                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                                setTimeout(() => {
+                                    expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                                    expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                                    expect(helper.invoke('getCell', [7, 1]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                                    expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                                    helper.click('.e-datavalidation-ddb li:nth-child(3)');
+                                    helper.invoke('selectRange', ['C1:C11']);
+                                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                                    helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                                    setTimeout(() => {
+                                        expect(helper.invoke('getCell', [0, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                                        expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                                        expect(helper.invoke('getCell', [8, 2]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                                        expect(helper.invoke('getCell', [9, 2]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                                        done();
+                                    });
+                                });
+                            });
+                        });
                     });
                 });
             });

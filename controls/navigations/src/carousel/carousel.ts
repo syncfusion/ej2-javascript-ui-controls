@@ -627,8 +627,10 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         const navigators: HTMLElement = this.createElement('div', { className: CLS_NAVIGATORS });
         const itemsContainer: HTMLElement = this.element.querySelector(`.${CLS_SLIDE_CONTAINER}`) as HTMLElement;
         itemsContainer.insertAdjacentElement('afterend', navigators);
-        this.renderNavigatorButton('Previous');
-        this.renderNavigatorButton('Next');
+        if (!isNullOrUndefined(this.slideItems) && this.slideItems.length > 1){
+            this.renderNavigatorButton('Previous');
+            this.renderNavigatorButton('Next');
+        }
         this.renderTemplates();
     }
 
@@ -664,7 +666,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderPlayButton(): void {
-        if (this.buttonsVisibility === 'Hidden' || !this.showPlayButton) {
+        if (isNullOrUndefined(this.slideItems) || this.buttonsVisibility === 'Hidden' || !this.showPlayButton || this.slideItems.length <= 1) {
             return;
         }
         const playPauseWrap: HTMLElement = this.createElement('div', {
@@ -767,6 +769,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private autoSlide(): void {
+        if (isNullOrUndefined(this.slideItems) || this.slideItems.length <= 1){
+            return;
+        }
         this.resetSlideInterval();
         this.applySlideInterval();
     }

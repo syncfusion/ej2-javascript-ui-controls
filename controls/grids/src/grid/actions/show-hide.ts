@@ -1,10 +1,11 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
-import { iterateArrayOrObject, isGroupAdaptive } from '../base/util';
+import { iterateArrayOrObject, isGroupAdaptive, isActionPrevent, addRemoveEventListener } from '../base/util';
 import * as events from '../base/constant';
 import { IGrid } from '../base/interface';
 import { ContentRender } from '../renderer';
 import { Grid } from '../base';
+import { TicksData } from '@syncfusion/ej2-inputs';
 
 /**
  * The `ShowHide` module is used to control column visibility.
@@ -12,6 +13,10 @@ import { Grid } from '../base';
 export class ShowHide {
 
     private parent: IGrid;
+    private colName : Column[] =[];
+    private changedCol: Column[];
+    private isShowHide: boolean = false;;
+    private evtHandlers: { event: string, handler: Function }[];
 
     /**
      * Constructor for the show hide module.
@@ -21,6 +26,33 @@ export class ShowHide {
      */
     constructor(parent: IGrid) {
         this.parent = parent;
+        this.addEventListener();
+    }
+
+    public addEventListener(): void {
+        if (this.parent.isDestroyed) { return; }
+         this.evtHandlers = [ { event: events.batchCancel, handler: this.batchChanges },
+            { event: events.batchCnfrmDlgCancel, handler: this.resetColumnState }
+        ];
+         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
+       
+    }
+     /**
+     * @returns {void}
+     * @hidden
+     */
+      public removeEventListener(): void {
+        if (this.parent.isDestroyed) { return; }
+        addRemoveEventListener(this.parent, this.evtHandlers, false);
+    }
+
+    private batchChanges(){
+        if(this.isShowHide){
+            this.isShowHide = false;
+            this.setVisible(this.colName, this.changedCol);
+            this.changedCol= this.colName = [];
+             
+        }
     }
 
     /**
@@ -93,6 +125,24 @@ export class ShowHide {
         return columns;
     }
 
+private batchActionPrevent(columns?: Column[], changedStateColumns: Column[] = []){
+    if(isActionPrevent(this.parent)){
+        this.colName = columns;
+        this.changedCol =changedStateColumns;
+        this.parent.closeEdit();
+        return false;
+    }
+ return true;
+}
+
+public resetColumnState(){   
+    if(this.isShowHide){
+        for(let i =0; i< this.colName.length; i++){
+            this.colName[i].visible = !this.colName[i].visible;
+        }
+    } 
+}
+
     /**
      * Shows or hides columns by given column collection.
      *
@@ -102,6 +152,10 @@ export class ShowHide {
      * @returns {void}
      */
     public setVisible(columns?: Column[], changedStateColumns: Column[] = []): void {
+        this.isShowHide = true;
+        if(!this.batchActionPrevent(columns, changedStateColumns)){
+            return;
+           }
         changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns : columns;
         const args: Object = {
             requestType: 'columnstate',

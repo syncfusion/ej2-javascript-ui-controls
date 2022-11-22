@@ -488,7 +488,7 @@ export interface TooltipSettingsModel {
     fill?: string;
 
     /**
-     * Header for tooltip.
+     * Header for tooltip. By default, the shared tooltip displays the point x value and the series name for each individual tooltip.
      *
      * @default null
      */

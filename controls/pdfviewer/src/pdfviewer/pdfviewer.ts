@@ -3837,6 +3837,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public retryCount: number;
 
     /**
+     * Specifies the status codes for retrying the request.The default setting is 500.
+     
+     * @default [500]
+     */
+    @Property([500])
+    public retryStatusCodes: number[];
+
+    /**
      * If it is set as false then error message box is not displayed in PDF viewer control.
      *
      * @default true
@@ -5614,7 +5622,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             case 'enableFormFields':
                 if (this.enableFormFields && this.formFieldsModule) {
                     for (let m: number = 0; m < this.pageCount; m++) {
-                        this.formFieldsModule.renderFormFields(m);
+                        this.formFieldsModule.renderFormFields(m, false);
                     }
                 } else {
                     this.formFieldsModule = new FormFields(this, this.viewerBase);

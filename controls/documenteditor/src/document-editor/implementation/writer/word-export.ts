@@ -846,17 +846,11 @@ export class WordExport {
     private retrieveCommentText(text: string): any[] {
         const blocks: any = [];
         let multiText: string[] = text.split('\n');
-        multiText = multiText.filter((x: string) => x !== '');
-        const block: any = {};
-        if (multiText.length === 0) {
-            block.inlines = [{ text: '' }];
+        while (multiText.length > 0) {
+            let block: any = {};
+            block.inlines = [{ text: multiText[0] }];
             blocks.push(block);
-        } else {
-            while (multiText.length > 0) {
-                block.inlines = [{ text: multiText[0] }];
-                blocks.push(block);
-                multiText.splice(0, 1);
-            }
+            multiText.splice(0, 1);
         }
         return blocks;
     }
@@ -1541,16 +1535,9 @@ export class WordExport {
     //Serialize Revision start
     private serializeRevisionStart(writer: XmlWriter, item: any, previousNode: any): void {
         if (item.hasOwnProperty('revisionIds')) {
-            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && previousNode.fieldType === 0) {
-                return;
-            }
-            if (item.hasOwnProperty('fieldType') && item.fieldType === 1) {
-                return;
-            }
             if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('bookmarkType') && (previousNode.bookmarkType === 0 && !(previousNode.name.indexOf('_Toc') >= 0) && isNullOrUndefined(item.revisionIds))) {
                 return;
             }
-
             const ids: string[] = item.revisionIds;
 
             for (let i: number = 0; i < ids.length; i++) {
@@ -1836,12 +1823,7 @@ export class WordExport {
     //Serialize Revision end
     private serializeRevisionEnd(writer: XmlWriter, item: any, previousNode: any): void {
         if (item.hasOwnProperty('revisionIds')) {
-            //skip revision end for field begin as we combine to end with field code text
-            if (item.hasOwnProperty('fieldType') && item.fieldType === 0) {
-                return;
-            }
-            //skip revision end for field result text as we need to only on field end.
-            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && (previousNode.fieldType === 2 || (previousNode.fieldType === 0 && item.text.indexOf('TOC') >= 0))) {
+            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty('fieldType') && (previousNode.fieldType === 0 && item.text.indexOf('TOC') >= 0)) {
                 return;
             }
             for (let i: number = 0; i < item.revisionIds.length; i++) {
@@ -3578,7 +3560,7 @@ export class WordExport {
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, lineWeight.toString());
         if ((!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')
-            || shape.lineFormat.line) {
+            && shape.lineFormat.line) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));
@@ -5976,9 +5958,9 @@ export class WordExport {
             case 'None':
                 patternType = 'none';
                 break;
-            // case 'Ordinal':
-            //     patternType = 'ordinal';
-            //     break;
+            case 'Ordinal':
+                patternType = 'ordinal';
+                break;
             // case 'Number':
             //     patternType = 'cardinalText';
             //     break;

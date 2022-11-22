@@ -159,6 +159,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private mouseMoveTarget: HTMLElement = null;
     private containerElement: HTMLElement = null;
     private isBodyContainer: boolean = true;
+    private targetsList: Element[];
 
     // Tooltip Options
     /**
@@ -1215,6 +1216,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (opensOn === 'Custom') { return; }
             if (opensOn === 'Focus') {
                 this.wireFocusEvents();
+                EventHandler.add(this.element, 'DOMNodeInserted', this.updateTarget, this);
             }
             if (opensOn === 'Click') {
                 EventHandler.add(this.element, Browser.touchStartEvent, this.targetClick, this);
@@ -1236,6 +1238,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
         EventHandler.add(document, 'keydown', this.keyDown, this);
     }
+    private updateTarget(e: Event): void {
+        if (!isNullOrUndefined(this.targetsList) && !isNullOrUndefined(this.target)) {
+            const target: Element[] = [].slice.call(selectAll(this.target, this.element));
+            if (target.length !== this.targetsList.length) {
+                this.unwireEvents(this.opensOn);
+                this.wireEvents(this.opensOn);
+            }
+        }
+    }
     private getTriggerList(trigger: string): string[] {
         if (trigger === 'Auto') {
             trigger = (Browser.isDevice) ? 'Hover' : 'Hover Focus';
@@ -1245,6 +1256,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private wireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
+            this.targetsList = targetList;
             for (const target of targetList) {
                 target.setAttribute('tabindex', '0');
                 EventHandler.add(target, 'focus', this.targetHover, this);
@@ -1288,6 +1300,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (opensOn === 'Custom') { return; }
             if (opensOn === 'Focus') {
                 this.unwireFocusEvents();
+                EventHandler.remove(this.element, 'DOMNodeInserted', this.updateTarget);
             }
             if (opensOn === 'Click') {
                 EventHandler.remove(this.element, Browser.touchStartEvent, this.targetClick);

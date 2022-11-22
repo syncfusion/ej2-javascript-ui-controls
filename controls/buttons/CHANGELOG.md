@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### Checkbox
+
+#### Bug Fixes
+
+- The Issue with the checkbox label size in the Fluent theme has been fixed.
+
 ## 20.3.57 (2022-11-15)
 
 ### Chips

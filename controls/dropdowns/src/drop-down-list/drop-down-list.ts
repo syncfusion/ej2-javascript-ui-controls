@@ -1353,9 +1353,14 @@ export class DropDownList extends DropDownBase implements IInput {
             this.setScrollPosition(e as KeyboardEventArgs);
         }
         if (Browser.info.name !== 'mozilla') {
-            attributes(this.inputElement, { 'aria-label': this.inputElement.value });
+            attributes(this.targetElement(), { 'aria-label': this.inputElement.value });
             attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id != '' ? this.inputElement.id : this.element.id});
             this.targetElement().removeAttribute('aria-live');
+        }
+        if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])){
+            attributes(this.targetElement(), {'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id});
+        } else if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-active')[0])) { 
+            attributes(this.targetElement(), { 'aria-activedescendant':  this.ulElement.getElementsByClassName('e-active')[0].id });
         }
     }
 
@@ -1553,6 +1558,9 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.preventAutoFill = false;
                 }
                 this.preventAltUp = false;
+                if (this.getModuleName() === 'autocomplete' && !isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])){
+                    attributes(this.targetElement(), {'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id});
+                } 
                 e.preventDefault();
                 break;
             case 46:  //delete
@@ -2052,19 +2060,12 @@ export class DropDownList extends DropDownBase implements IInput {
                 for (const element of scrollParentElements) {
                     EventHandler.add(element, 'scroll', this.scrollHandler, this);
                 }
-                if (Browser.isDevice && this.isFilterLayout()) {
-                    EventHandler.add(this.list, 'scroll', this.listScroll, this);
-                }
                 if (!isNullOrUndefined(this.list)) {
                     this.unWireListEvents(); this.wireListEvents();
                 }
                 this.selectedElementID = this.selectedLI ? this.selectedLI.id : null
-                attributes(this.targetElement(), { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options', 'aria-activedescendant': this.selectedElementID});
+                attributes(this.targetElement(), { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options'});
                 this.inputElement.setAttribute('aria-expanded', 'true');
-                if(this.selectedElementID == null)
-                {
-                    this.targetElement().removeAttribute('aria-activedescendant');
-                }
                 const inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
                 const animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
@@ -2128,6 +2129,11 @@ export class DropDownList extends DropDownBase implements IInput {
                 const actionList: HTMLElement = this.actionCompleteData && this.actionCompleteData.ulElement &&
                     this.actionCompleteData.ulElement.querySelector('li');
                 const ulElement: HTMLElement = this.list.querySelector('ul li');
+                if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])){
+                    attributes(this.targetElement(), {'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id});
+                } else if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-active')[0])) { 
+                    attributes(this.targetElement(), { 'aria-activedescendant':  this.ulElement.getElementsByClassName('e-active')[0].id });
+                }
                 if (this.isFiltering() && this.itemTemplate && (this.element.tagName === this.getNgDirective()) &&
                     (actionList && ulElement && actionList.textContent !== ulElement.textContent) &&
                     this.element.tagName !== 'EJS-COMBOBOX') {
@@ -2290,10 +2296,6 @@ export class DropDownList extends DropDownBase implements IInput {
         this.searchLists(null);
     }
 
-    private listScroll(): void {
-        this.filterInput.blur();
-    }
-
     private setEleWidth(width: string | number): void {
         if (!isNullOrUndefined(width)) {
             if (typeof width === 'number') {
@@ -2320,7 +2322,6 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (Browser.isDevice && this.isFilterLayout()) {
             removeClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
-            EventHandler.remove(this.list, 'scroll', this.listScroll);
         }
         if (this.isFilterLayout()) {
             if (!Browser.isDevice) {
@@ -2901,11 +2902,6 @@ export class DropDownList extends DropDownBase implements IInput {
 
         if (!isNullOrUndefined(this.list.children[0]) || this.list.classList.contains(dropDownBaseClasses.noData)) {
             this.renderPopup(e);
-        }
-        attributes(this.targetElement(), { 'aria-activedescendant': this.selectedElementID});
-        if(this.selectedElementID == null)
-        {
-            this.targetElement().removeAttribute('aria-activedescendant');
         }
     }
 

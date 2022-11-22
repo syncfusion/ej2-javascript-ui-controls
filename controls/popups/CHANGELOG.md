@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I415386` - The Tooltip not shown for dynamically added target while pressing Tab key has been resolved.
+
 ## 20.3.56 (2022-11-08)
 
 ### Tooltip
@@ -9,8 +17,6 @@
 #### Bug Fixes
 
 - `#F177524` - The script error "When setting `opensOn` as `Click` with a dynamic content in the React Tooltip component" has been resolved.
-
-- `#I415386` - The Tooltip not shown for dynamically added target while pressing Tab key has been resolved.
 
 ## 20.3.50 (2022-10-18)
 

@@ -2347,7 +2347,7 @@ export namespace DialogUtility {
         options.cssClass = !isNullOrUndefined(option.cssClass) ? option.cssClass : '';
         options.zIndex = !isNullOrUndefined(option.zIndex) ? option.zIndex : 1000;
         options.open = !isNullOrUndefined(option.open) ? option.open : null;
-        options.width = !isNullOrUndefined(option.width) ? option.width : '100%';
+        options.width = !isNullOrUndefined(option.width) ? option.width : 'auto';
         options.height = !isNullOrUndefined(option.height) ? option.height : 'auto';
         return options;
     }

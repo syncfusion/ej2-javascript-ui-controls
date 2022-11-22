@@ -3098,10 +3098,6 @@ describe('DDList', () => {
             listObj.searchLists();
             expect(clearElement.style.visibility).toBe('visible');
         })
-        it('active state change on scrolling', () => {
-            listObj.listScroll();
-            expect(document.activeElement !== listObj.filterInput).toBe(true);
-        })
     });
     describe('Remote Data Binding', () => {
         let ddlObj: any;

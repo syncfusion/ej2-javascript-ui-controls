@@ -417,11 +417,13 @@ export class Resize extends ActionBase {
                 resizeTime.setHours(eventEnd.getHours(), eventEnd.getMinutes(), eventEnd.getSeconds());
             }
         }
+        const isNotHourSlot: boolean = ['TimelineMonth', 'Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1 ||
+            !this.parent.activeViewOptions.timeScale.enable;
         if (isLeft) {
             if ((eventEnd.getTime() - resizeTime.getTime()) <= 0) {
                 resizeTime = isWithoutScale ? util.resetTime(eventEnd) : eventStart;
             }
-            this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
+            this.actionObj.start = !isNotHourSlot ? this.calculateIntervalTime(resizeTime) : resizeTime;
         } else {
             const isTimeScaleViews: boolean = isTimeViews && this.parent.activeViewOptions.timeScale.enable;
             let resizeEnd: Date = ((!isTimeScaleViews || isDateHeader || isTimeViews && ['Week', 'Month', 'Year'].indexOf(headerName) > -1)
@@ -429,8 +431,7 @@ export class Resize extends ActionBase {
             if (isWithoutScale && (resizeEnd.getTime() - eventStart.getTime()) <= 0) {
                 resizeEnd = util.addDays(util.resetTime(eventStart), 1);
             }
-            this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
-                this.calculateIntervalTime(resizeEnd) : resizeEnd;
+            this.actionObj.end = !isNotHourSlot ? this.calculateIntervalTime(resizeEnd) : resizeEnd;
         }
     }
 

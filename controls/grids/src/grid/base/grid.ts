@@ -3944,17 +3944,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private updateColumnModel(columns: Column[]): void {
+    private updateColumnModel(columns: Column[], isRecursion?: boolean): void {
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             if (columns[i].columns) {
-                this.updateColumnModel(columns[i].columns as Column[]);
+                this.updateColumnModel(columns[i].columns as Column[], true);
             } else {
                 this.columnModel.push(columns[i] as Column);
             }
         }
-        this.updateColumnLevelFrozen();
-        this.updateFrozenColumns();
-        this.updateLockableColumns();
+        if(isNullOrUndefined(isRecursion) || !isRecursion) {
+            this.updateColumnLevelFrozen();
+            this.updateFrozenColumns();
+            this.updateLockableColumns();
+        }
     }
 
     private updateColumnLevelFrozen(): void {

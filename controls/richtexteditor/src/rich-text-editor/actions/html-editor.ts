@@ -309,6 +309,11 @@ export class HtmlEditor {
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
             currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
             currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
+            let checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
+            if (!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
+                !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') {
+                return;
+            }
             this.rangeElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
             if (this.rangeElement.tagName === 'OL' || this.rangeElement.tagName === 'UL') {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);

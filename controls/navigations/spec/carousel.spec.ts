@@ -1911,6 +1911,47 @@ describe('Carousel Testing', () => {
             (carousel as any).keyHandler(keyEventArgs);
         });
     });
+
+    describe('Carousel with single element', () => {
+        beforeEach((): void => {
+            const carouselElement: HTMLElement = document.createElement('div');
+            carouselElement.id = 'carousel';
+            document.body.appendChild(carouselElement);
+            jasmine.clock().install();
+        });
+        const items: CarouselItemModel[] = [
+            { template: 'base/demos/carousel/images/bird.jpg' }
+        ];
+        afterEach(() => {
+            carousel.destroy();
+            carousel.element.remove();
+            carousel = null;
+            jasmine.clock().uninstall();
+        });
+        it('test case for only one item is rendered', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({ items: items, animationEffect: 'Fade' }, carouselElement);
+            expect(carouselElement.querySelector('.e-carousel-items').children.length).toEqual(1);
+            expect(carouselElement.querySelector('.e-carousel-navigators').childNodes.length).toEqual(0);
+            expect(carouselElement.querySelector('.e-indicator-bars').children.length).toEqual(1);
+            expect(carousel.selectedIndex).toEqual(0);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[0].classList.contains('e-active')).toBe(true);
+            jasmine.clock().tick(carousel.interval + 1500);
+            expect(carousel.selectedIndex).toEqual(0);
+        });
+        it('test case for no item is rendered', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            const items: CarouselItemModel[] = [];
+            carousel = new Carousel({ items: items, animationEffect: 'Fade' }, carouselElement);
+            expect(carouselElement.querySelector('.e-carousel-items').children.length).toEqual(0);
+            expect(carouselElement.querySelector('.e-carousel-navigators').childNodes.length).toEqual(0);
+            expect(carouselElement.querySelector('.e-indicator-bars').children.length).toEqual(0);
+            expect(carousel.selectedIndex).toEqual(0);
+            jasmine.clock().tick(carousel.interval + 1500);
+            expect(carousel.selectedIndex).toEqual(0);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

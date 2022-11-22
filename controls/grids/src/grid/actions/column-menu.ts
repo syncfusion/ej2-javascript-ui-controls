@@ -130,9 +130,11 @@ export class ColumnMenu implements IAction {
             pos.left = ((window.innerWidth / 2) - (elePos.width / 2));
         } else {
             if (this.parent.enableRtl) {
-                pos = calculatePosition(this.headerCell, 'left', 'bottom');
+                pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'left', 'bottom', true) :
+                    calculatePosition(this.headerCell, 'left', 'bottom');
             } else {
-                pos = calculatePosition(this.headerCell, 'right', 'bottom');
+                pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'right', 'bottom', true) :
+                    calculatePosition(this.headerCell, 'right', 'bottom');
                 pos.left -= elePos.width;
                 if ((pos.left + elePos.width + 1) >= gClient.right) {
                     pos.left -= 35;
@@ -310,6 +312,9 @@ export class ColumnMenu implements IAction {
             if (args.element.offsetHeight > window.innerHeight || this.parent.element.offsetHeight > window.innerHeight) {
                 args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
                 args.element.style.overflowY = 'auto';
+                if (this.parent.enableStickyHeader) {
+                    args.element.style.position = 'fixed';
+                }
             }
         }
     }

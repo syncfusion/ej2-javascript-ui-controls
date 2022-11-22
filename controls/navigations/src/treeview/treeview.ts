@@ -4525,6 +4525,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, sNodes, this.listBaseOption, level);
         let id: string = this.getId(dropLi);
         let refNode: Node;
+        let dropIcon1: Element
+        if (!isNullOrUndefined(dropLi)) {
+            dropIcon1 = select('div.' + ICON, dropLi);
+        }
+        if (this.dataType === 1 && dropIcon1 && dropIcon1.classList.contains(EXPANDABLE)) { this.preventExpand = true; }
         if(this.dataType !== 1) {
             this.addChildData(this.treeData, this.fields, id, nodes, index);
             this.isFirstRender = false;
@@ -4540,6 +4545,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if(refNode || this.sortOrder === 'None'){
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[i], refNode);
+                }
+                if (this.dataType === 1 && !isNullOrUndefined(dropLi)) {
+                    this.preventExpand = false;
+                    let dropIcon: Element = select('div.' + ICON, dropLi);
+                    if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {
+                        this.expandAction(dropLi, dropIcon, null);
+                    }
                 }
             }
             if(!refNode && ((this.sortOrder === 'Ascending')||(this.sortOrder ==='Descending')))

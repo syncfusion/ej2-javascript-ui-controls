@@ -1063,7 +1063,11 @@ export class TextPosition {
                         }
                     }
                     endSelection = true;
-                    if (wordEndIndex < txt.length) {
+                    let nextNodeText : string;
+                    if (!isNullOrUndefined(span.nextNode)) {
+                        nextNodeText = (span.nextNode as TextElementBox).text;
+                    }
+                    if (wordEndIndex < txt.length || (spaceCharacter.indexOf(txt[txt.length - 1]) !== -1 && !isNullOrUndefined(nextNodeText) && spaceCharacter.indexOf(nextNodeText[0]) === -1)) {
 
                         endPosition.setPositionParagraph(span.line, span.line.getOffset(span, wordEndIndex + indexInInline));
                     } else if (!isNullOrUndefined(span.nextNode)) {

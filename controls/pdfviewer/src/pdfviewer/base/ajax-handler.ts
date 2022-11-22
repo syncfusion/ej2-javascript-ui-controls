@@ -41,6 +41,7 @@ export class AjaxHandler {
     private httpRequest: XMLHttpRequest;
     private pdfViewer: PdfViewer;
     private retryCount: number;
+    private retryStatusCodes : number[];
 
     /**
      * Constructor for Ajax class
@@ -50,6 +51,7 @@ export class AjaxHandler {
     constructor(pdfviewer: PdfViewer) {
         this.pdfViewer = pdfviewer;
         this.retryCount = pdfviewer.retryCount;
+        this.retryStatusCodes = pdfviewer.retryStatusCodes;
     }
 
     /**
@@ -103,7 +105,7 @@ export class AjaxHandler {
     private resendRequest(proxy: AjaxHandler, jsonObj: any): boolean {
         let isSkip: boolean = false;
         const status: number = proxy.httpRequest.status;
-        const statusString: string = status.toString().split('')[0];
+        let statusString : boolean = this.retryStatusCodes.indexOf(status) !== -1;
         if (proxy.httpRequest.readyState === 4 && status === 200) {
             // eslint-disable-next-line
             let data: any;
@@ -125,7 +127,7 @@ export class AjaxHandler {
                 }
             }
         }
-        if (statusString === '5' || isSkip) {
+        if (statusString || isSkip) {
             isSkip = true;
             this.retryCount--;
             proxy.pdfViewer.fireAjaxRequestFailed(status, proxy.httpRequest.statusText, jsonObj.action, true);

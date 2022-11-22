@@ -95,6 +95,9 @@ export class TreeMapLegend {
             this.findPaletteLegendItems(LevelsData.levelsData[0], 'Parent');
         }
         if (this.legendCollections.length > 0) {
+            this.legendCollections.sort((firstItem, nextItem) => (firstItem.levelIndex > nextItem.levelIndex) ? 1 : (firstItem.levelIndex < nextItem.levelIndex) ? -1 : 0);
+            this.legendCollections.sort((firstItem, nextItem) => (firstItem.groupIndex > nextItem.groupIndex) ? 1 : (firstItem.groupIndex < nextItem.groupIndex) ? -1 : 0);
+            this.legendCollections.sort((firstItem, nextItem) => (firstItem.leafIndex > nextItem.leafIndex) ? 1 : (firstItem.leafIndex < nextItem.leafIndex) ? -1 : 0);
             const defaultSize: number = 25; const textPadding: number = 10; const position: LegendPosition = legend.position;
             const legendTitle: string = legend.title.text; const titleTextStyle: FontModel = legend.titleStyle;
             const legendMode: LegendMode = legend.mode; let shapeX: number = 0; let shapeY: number = 0;
@@ -389,7 +392,8 @@ export class TreeMapLegend {
             groupIndex = data[i]['groupIndex'];
             isLeafItem = (this.treemap.levels.length === 0 || groupIndex === this.treemap.levels.length);
             colorMapping = isLeafItem ? leaf.colorMapping : levels[groupIndex].colorMapping;
-            for (const colorMap of colorMapping) {
+            for (let j = 0; j < colorMapping.length; j ++) {
+                let colorMap: ColorMappingModel = colorMapping[j];
                 gradientElement = null;
                 rangeValue = Number(currentData[this.treemap.rangeColorValuePath]);
                 equalValue = currentData[this.treemap.equalColorValuePath];
@@ -445,8 +449,8 @@ export class TreeMapLegend {
                     fill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]')) && isNullOrUndefined(gradientElement)
                         && isNullOrUndefined(colorMap.value) ? this.legendGradientColor(colorMap, legendIndex) : fill;
                     this.legendCollections.push({
-                        actualValue: actualValue,
-                        legendName: legendText, legendFill: fill, legendData: [],
+                        actualValue: actualValue, levelIndex: !isLeafItem ? j : -1, leafIndex: isLeafItem ? j : -1,
+                        legendName: legendText, legendFill: fill, legendData: [], groupIndex: !isLeafItem ? groupIndex : -1,
                         gradientElement: !isNullOrUndefined(gradientElement) ? gradientElement : isNullOrUndefined(colorMap.value)
                             ? this.legendLinearGradient : null, name: data[i]['name'],
                         opacity: this.treemap.legendSettings.opacity, borderColor: this.treemap.legendSettings.border.color,

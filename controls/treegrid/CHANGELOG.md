@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I417095` - NVDA screen reader problem for expand/collapse action has been resolved.
+- `#I418121` - Resolved row selected issue while performing expand/collapse operation.
+
 ## 20.3.57 (2022-11-15)
 
 ### Tree Grid

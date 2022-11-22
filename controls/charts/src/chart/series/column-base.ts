@@ -265,12 +265,12 @@ export class ColumnBase {
             options, new Int32Array([series.clipRect.x, series.clipRect.y])
         ) as HTMLElement;
         switch (series.seriesType) {
-        case 'XY':
-            element.setAttribute('aria-label', series.xName + ':' + point.yValue + ', ' + series.name);
-            break;
-        case 'HighLow':
-            element.setAttribute('aria-label', series.xName + ':' + point.high + ', ' + point.low + ', ' + series.name);
-            break;
+            case 'XY':
+                element.setAttribute('aria-label', point.x + ':' + point.yValue + ', ' + series.name);
+                break;
+            case 'HighLow':
+                element.setAttribute('aria-label', point.x + ':' + point.high + ', ' + point.low + ', ' + series.name);
+                break;
         }
         appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);
         if (!series.chart.enableCanvas) {

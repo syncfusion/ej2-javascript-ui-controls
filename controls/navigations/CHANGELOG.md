@@ -2,14 +2,25 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### Carousel
+
+#### Bug Fixes
+
+- `#I419341` - The Blank carousel item displayed on `autoplay` when a single item alone is rendered has been resolved.
+
 ## 20.3.57 (2022-11-15)
 
 ### TreeView
 
 #### Bug Fixes
 
-- `#I417236` - The accessibility issue mentioned in the TreeView component has been resolved.
 - `#I415849` - The issue with "Expand animation is not working for the dynamically added node on initial expanding in TreeView" has been resolved.
+
+## 20.3.57 (2022-11-15)
+
+- `#I417236` - The accessibility issue mentioned in the TreeView component has been resolved.
 
 ## 20.3.50 (2022-10-18)
 

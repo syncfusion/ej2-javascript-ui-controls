@@ -4045,7 +4045,7 @@ export class Layout {
             case 'OrdinalText':
                 return (listValue).toString();
             case 'Ordinal':
-                return (listValue).toString();
+                return this.getAsOrdinal(listValue, listLevel.characterFormat).toString();
             case 'FarEast':
                 return (listValue).toString();
             case 'Special':
@@ -4105,6 +4105,178 @@ export class Layout {
         retval += this.generateNumber(this.value, 4, 'IV');
         retval += this.generateNumber(this.value, 1, 'I');
         return retval.toString();
+    }
+
+    private getAsOrdinal(number: number, characterFormat: WCharacterFormat): string {
+        switch (characterFormat.localeIdAscii) {
+            case 1069:
+            case 8218:
+            case 5146:
+            case 4122:
+            case 1050:
+            case 1029:
+            case 1061:
+            case 1035:
+            case 3079:
+            case 1031:
+            case 5127:
+            case 4103:
+            case 2055:
+            case 1038:
+            case 1060:
+            case 1055:
+            case 1044:
+            case 2068:
+            case 1045:
+            case 6170:
+            case 2074:
+                //Returns ordinal in Czech
+                return number.toString() + ".";
+            case 2060:
+            case 11276:
+            case 3084:
+            case 9228:
+            case 12300:
+            case 1036:
+            case 15372:
+            case 5132:
+            case 13324:
+            case 6156:
+            case 14348:
+            case 8204:
+            case 10252:
+            case 4108:
+                //Returns Ordinal in French
+                if (number == 1)
+                    return number.toString() + "er";
+                else
+                    return number.toString() + "e";
+            case 2067:
+            case 1043:
+                //Returns Ordinal in Dutch
+                return number.toString() + "e";
+            case 1032:
+                //Returns Ordinal in Greek 
+                return number.toString() + "o";
+            case 1040:
+            case 2064:
+                //Returns Ordinal in Italian
+                return number.toString() + String.fromCharCode(176);
+            case 5130:
+            case 7178:
+            case 12298:
+            case 17418:
+            case 4106:
+            case 1046:
+            case 2070:
+            case 11274:
+            case 16394:
+            case 13322:
+            case 9226:
+            case 18442:
+            case 2058:
+            case 19466:
+            case 6154:
+            case 15370:
+            case 10250:
+            case 20490:
+            case 3082:
+            case 1034:
+            case 21514:
+            case 14346:
+            case 8202:
+                //Returns Ordinal in Spanish
+                return number.toString() + String.fromCharCode(186);
+            case 1049:
+            case 2073:
+                //Returns Ordinal in Russian
+                return number.toString() + "-" + String.fromCharCode(1081);
+            case 2077:
+            case 1053:
+                //Returns Ordinal in Swedish
+                return this.getOrdinalInSwedish(number);
+            case 1027:
+                //Returns Ordinal in Catalan
+                return this.getOrdinalInCatalan(number);
+            case 1030:
+                //Returns Ordinal in Danish
+                return this.getOrdinalInDanish(number);
+            default:
+                //Returns Ordinal in English (Default)
+                return this.getOrdinalInEnglish(number);
+        }
+    }
+
+    private getOrdinalInEnglish(number: number): string {
+        switch (number % 100) {
+            case 11:
+            case 12:
+            case 13:
+                return number.toString() + "th";
+        }
+        switch (number % 10) {
+            case 1:
+                return number.toString() + "st";
+            case 2:
+                return number.toString() + "nd";
+            case 3:
+                return number.toString() + "rd";
+            default:
+                return number.toString() + "th";
+        }
+    }
+
+    private getOrdinalInSwedish(number: number): string {
+        if (number == 11 || number == 12) {
+            return number.toString() + ":e";
+        }
+        else if ((number % 10) == 1 || (number % 10) == 2) {
+            return number.toString() + ":a";
+        }
+        else
+            return number.toString() + ":e";
+    }
+
+    private getOrdinalInCatalan(number: number): string {
+        switch (number) {
+            case 1:
+                return number.toString() + ".";
+            case 2:
+                return number.toString() + "n";
+            case 3:
+                return number.toString() + "r";
+            case 4:
+                return number.toString() + "t";
+            case 14:
+                return number.toString() + String.fromCharCode(232) + "h";
+            default:
+                return number.toString() + String.fromCharCode(232);
+        }
+    }
+
+    private getOrdinalInDanish(number: number): string {
+        if (number == 0)
+            return number.toString() + "te";
+        switch (number % 100) {
+            case 0:
+                return number.toString() + "ende";
+            case 1:
+                return number.toString() + "ste";
+            case 2:
+                return number.toString() + "nden";
+            case 3:
+                return number.toString() + "dje";
+            case 4:
+                return number.toString() + "rde";
+            case 5:
+            case 6:
+            case 11:
+            case 12:
+            case 30:
+                return number.toString() + "te";
+            default:
+                return number.toString() + "nde";
+        }
     }
 
     public getListLevel(list: WList, listLevelNumber: number): WListLevel {
@@ -6997,7 +7169,7 @@ export class Layout {
         if (this.viewer instanceof WebLayoutViewer) {
             table.containerWidget.height += table.height;
         }
-        if (table.bodyWidget instanceof HeaderFooterWidget) {
+        if (table.bodyWidget instanceof HeaderFooterWidget && !table.wrapTextAround) {
             table.containerWidget.height += table.height;
             if (this.viewer.owner.enableHeaderAndFooter && table.bodyWidget.headerFooterType.indexOf('Footer') !== -1) {
                 this.shiftFooterChildLocation(table.bodyWidget, this.viewer);

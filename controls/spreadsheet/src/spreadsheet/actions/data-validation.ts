@@ -1066,10 +1066,9 @@ export class DataValidation {
                             if (args.value !== '') {
                                 this.parent.notify(checkDateFormat, dateEventArgs);
                             }
-                            const updatedVal: string = dateEventArgs.updatedVal as string;
-                            if (idx === 0 && updatedVal === '') {
-                                value = args.value;
-                            } else if (idx === 0) {
+                            let updatedVal: string = dateEventArgs.updatedVal as string;
+                            updatedVal = updatedVal === '' ? args.value : updatedVal;
+                            if (idx === 0) {
                                 value = updatedVal;
                             } else if (idx === 1) {
                                 value1 = updatedVal;

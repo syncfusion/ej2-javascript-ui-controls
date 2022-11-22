@@ -201,7 +201,7 @@ export class Splitter extends Component<HTMLElement> {
     private previousPane: HTMLElement;
     private nextPane: HTMLElement;
     private prevPaneIndex: number;
-    private previousPaneHeightWidth: string;
+    private previousPaneHeightWidth: any;
     private updatePrePaneInPercentage: boolean;
     private updateNextPaneInPercentage: boolean;
     private prePaneDimenson: number;
@@ -458,6 +458,9 @@ export class Splitter extends Component<HTMLElement> {
             case 'paneSettings': {
                 if (!(newProp.paneSettings instanceof Array && oldProp.paneSettings instanceof Array)) {
                     const paneCounts: Object[] = Object.keys(newProp.paneSettings);
+                    if ((this as any).isReact) {
+                        this.clearTemplate();
+                    }
                     for (let i: number = 0; i < paneCounts.length; i++) {
                         const index: number = parseInt(Object.keys(newProp.paneSettings)[i], 10);
                         const changedPropsCount: number = Object.keys(newProp.paneSettings[index]).length;
@@ -1382,9 +1385,11 @@ export class Splitter extends Component<HTMLElement> {
         }
         const avgDiffWidth: number = diff / flexPaneIndexes.length;
         for ( let j: number = 0, len: number = flexPaneIndexes.length; j < len; j++){
-            this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
-                (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
-                (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
+            if ( this.allPanes[flexPaneIndexes[j]].style.flexBasis !== ''){
+                this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
+                    (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
+                    (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
+            }
         }
         if (this.allPanes.length === 2 && iswindowResize) {
             const paneCount: number = this.allPanes.length;
@@ -1919,6 +1924,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private convertPixelToNumber(value: string): number {
+        value = value.toString();
         if (value.indexOf('p') > -1) {
             return parseFloat(value.slice(0, value.indexOf('p')));
         } else {
@@ -2079,7 +2085,10 @@ export class Splitter extends Component<HTMLElement> {
         this.nextPaneHeightWidth =
             (typeof (this.nextPaneHeightWidth) === 'string' && this.nextPaneHeightWidth.indexOf('p') > -1) ?
                 this.convertPixelToNumber(this.nextPaneHeightWidth) : parseInt(this.nextPaneHeightWidth, 10);
-        this.prevPaneCurrentWidth = separatorNewPosition + this.convertPixelToNumber(this.previousPaneHeightWidth);
+        this.previousPaneHeightWidth =
+            ( typeof ( this.previousPaneHeightWidth ) === 'string' && this.previousPaneHeightWidth.indexOf( 'p' ) > -1 ) ?
+                this.convertPixelToNumber( this.previousPaneHeightWidth ) : parseInt( this.previousPaneHeightWidth, 10 );
+        this.prevPaneCurrentWidth = separatorNewPosition + this.previousPaneHeightWidth;
         this.nextPaneCurrentWidth = this.nextPaneHeightWidth - separatorNewPosition;
         this.validateMinMaxValues();
         if (this.nextPaneCurrentWidth < 0) {
@@ -2105,9 +2114,45 @@ export class Splitter extends Component<HTMLElement> {
         }
         this.calculateCurrentDimensions();
         this.addStaticPaneClass();
-        this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
-        this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
-        if (!(this.allPanes.length > 2)) {
+        let flexPaneCount : number = 0;
+        for( let i=0; i < this.paneSettings.length ; i++){
+            if( this.paneSettings[i].size === '' ){
+                flexPaneCount = flexPaneCount + 1;
+            }
+        }
+        const allFlexiblePanes : boolean = flexPaneCount === this.allPanes.length;
+        // Two flexible Pane Case.
+        if ( this.previousPane.style.flexBasis == '' && this.nextPane.style.flexBasis == '' && !allFlexiblePanes){
+            const middlePaneIndex: number = this.allPanes.length % this.allBars.length;
+            if ( this.prevPaneIndex === middlePaneIndex ){
+                this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+                addClass( [ this.nextPane ], STATIC_PANE );
+            }
+            else if ( this.nextPaneIndex == middlePaneIndex ){
+                this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
+                addClass( [ this.previousPane ], STATIC_PANE );
+            }
+            else{
+                this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+                addClass( [ this.nextPane ], STATIC_PANE );
+            }
+        } // All panes are flexible
+        else if( allFlexiblePanes ){
+            this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
+            addClass( [ this.previousPane ], STATIC_PANE );
+            this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+            addClass( [ this.nextPane ], STATIC_PANE );
+        } // Two Panesa are Static Pane 
+        else{
+            if ( this.previousPane.style.flexBasis !== "" && this.previousPane.classList.contains(STATIC_PANE) ){
+                this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
+            }
+            if ( this.nextPane.style.flexBasis !== "" && this.nextPane.classList.contains(STATIC_PANE)){
+                this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+            }
+        }
+        const isStaticPanes : boolean = this.previousPane.style.flexBasis !== "" && this.nextPane.style.flexBasis !== "";
+        if (!(this.allPanes.length > 2) && isStaticPanes) {
             this.updateSplitterSize();
         }
     }
@@ -2215,10 +2260,10 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private addStaticPaneClass(): void {
-        if (!this.previousPane.classList.contains(STATIC_PANE)) {
+        if ( !this.previousPane.classList.contains( STATIC_PANE ) && !( this.previousPane.style.flexBasis === '' ) &&  !this.previousPane.classList.contains( EXPAND_PANE )) {
             this.previousPane.classList.add(STATIC_PANE);
         }
-        if (!this.nextPane.classList.contains(STATIC_PANE)) {
+        if ( !this.nextPane.classList.contains( STATIC_PANE ) && !( this.nextPane.style.flexBasis === '' ) && !this.nextPane.classList.contains( EXPAND_PANE )) {
             this.nextPane.classList.add(STATIC_PANE);
         }
     }

@@ -378,7 +378,7 @@ export class ResourceBase {
     }
 
     private resourceTreeCreated(): void {
-        if ((this as any).parent.portals) {
+        if (this.parent.activeViewOptions.resourceHeaderTemplate && (this as any).parent.portals && (this.treeViewObj as any).portals) {
             (this as any).parent.portals = (this as any).parent.portals.concat((this.treeViewObj as any).portals);
             this.parent.renderTemplates();
         }

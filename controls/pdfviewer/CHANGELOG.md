@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I412460` - Now, the ability to support retrying Ajax requests with a status code collection.
+
+#### Bug Fixes
+
+- `#I418731` - Now, for fields with the same name, the export and import form fields' values have been properly updated.
+- `#I411856` - The issue with programmatically updating the initial indicator properties has been resolved.
+- `#F178660` - Fixed issue with `RenderAnnotationComments` on `.NET 6.0` platform.
+
 ## 20.3.57 (2022-11-15)
 
 ### PDF Viewer

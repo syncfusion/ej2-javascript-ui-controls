@@ -260,6 +260,28 @@ describe('EJ2-57147: Change width property', () => {
     });
 });
 
+describe('EJ2-65467: Backspace key press inbetween 2 inline nodes seperated by BR', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Backspace key press inbetween 2 inline nodes seperated by BR', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p style="margin-bottom:7.5pt;line-height:normal;background:
+            white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><u><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">Lower abdomen</span></u></b><b><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">:</span></b></p><p style="margin-bottom:7.5pt;line-height:normal;background:
+            white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">Axial</span><br><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;" class="focusNode">-</span><br><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">T2FS, T1</span></p>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.focusNode').childNodes[0];
+        setCursorPoint(document, node, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.innerHTML === `<p style="margin-bottom:7.5pt;line-height:normal;background:\n            white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><u><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">Lower abdomen</span></u></b><b><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">:</span></b></p><p style="margin-bottom:7.5pt;line-height:normal;background:\n            white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">Axial</span><br><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;" class="focusNode">-</span><br><span lang="EN-IN" style="font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;color:#333333;">T2FS, T1</span></p>`).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};

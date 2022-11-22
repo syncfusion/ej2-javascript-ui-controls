@@ -6045,13 +6045,17 @@ export class Editor {
         if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
-        if (isNullOrUndefined(width)) {
-            width = 100;
+        if (isNullOrUndefined(width) && isNullOrUndefined(height)) {
+            const image: HTMLImageElement = document.createElement('img');
+            let editor: Editor = this;
+            image.addEventListener('load', function (): void {
+                editor.insertPicture(imageString, this.width, this.height, true);
+            });
+            image.src = imageString;
         }
-        if (isNullOrUndefined(height)) {
-            height = 100;
+        else {
+            this.insertPicture(imageString, width, height, isUiInteracted);
         }
-        this.insertPicture(imageString, width, height, isUiInteracted);
         setTimeout((): void => {
             if (!isNullOrUndefined(this.viewer)) {
                 this.viewer.updateScrollBars();

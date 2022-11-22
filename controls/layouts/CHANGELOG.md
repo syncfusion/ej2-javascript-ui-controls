@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.3.58 (2022-11-22)
+
+### DashboardLayout
+
+#### Bug Fixes
+
+- `#I417930` - The panel exceeding the parent container while dragging or resizing in the DashboardLayout component has been resolved.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I413810` - The issue with the custom component does not get unmounted with the property update, when placed inside the content template has been resolved.
+
 ## 20.3.57 (2022-11-15)
 
 ### Dashboard Layout

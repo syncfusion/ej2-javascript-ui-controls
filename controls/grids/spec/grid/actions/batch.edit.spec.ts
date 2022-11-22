@@ -3891,3 +3891,71 @@ describe('EJ2-63046-Script error while batch adding if the primary key column is
         destroy(gridObj);
     });
 });
+
+describe('EJ2-65238 - Show/hide column after batch editing confirm using cancel button', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                allowGrouping: true,
+                dataSource: data,
+                showColumnChooser: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'ColumnChooser'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: "Batch" },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10, isPrimaryKey: true },
+                    { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10, allowEditing: false },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10 }
+                ]
+            }, done);
+    });
+    it('Batch- cancel', () => {
+        gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
+    });
+    it('Column chooser - show column', () => {
+        gridObj.hideColumns('Customer ID');
+        expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+        selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[1].click();
+        expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeFalsy();
+        expect(gridObj.getVisibleColumns().length).toBe(5);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-65238 - Show/hide column after batch editing confirm using ok button', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                allowGrouping: true,
+                dataSource: data,
+                showColumnChooser: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'ColumnChooser'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: "Batch" },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10, isPrimaryKey: true },
+                    { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10, allowEditing: false },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10 }
+                ]
+            }, done);
+    });
+    it('Batch- ok', () => {
+        gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
+    });
+    it('Column chooser - hide column', () => {
+        gridObj.hideColumns('Customer ID');
+        expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeTruthy();
+        selectAll('#' + gridObj.element.id + 'EditConfirm button', gridObj.element)[0].click();
+        expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-popup-open')).toBeFalsy();
+        expect(gridObj.getVisibleColumns().length).toBe(4);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

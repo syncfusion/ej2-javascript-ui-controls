@@ -304,7 +304,7 @@ export class BasicFormulas {
             const dt: Date = new Date(Date.now());
             if ((this.parent.parentObject as { getModuleName: Function }).getModuleName() === 'spreadsheet') {
                 str = (this.parent.parentObject as { dateToInt: Function }).dateToInt(dt);
-                if ((this.parent.parser as unknown as { storedStringText: string }).storedStringText.toUpperCase().indexOf('TODAY') === 0) {
+                if (((this.parent.parser as unknown as { storedStringText: string }).storedStringText.toUpperCase().indexOf('TODAY') === 0) && this.parent.cell !== "") {
                     (this.parent.parentObject as { setDateFormat: Function }).setDateFormat((this.parent as unknown as { getSheetId: Function }).getSheetId(this.parent.grid),
                         this.parent.rowIndex(this.parent.cell) - 1, this.parent.colIndex(this.parent.cell) - 1);
                 }

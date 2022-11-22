@@ -5100,16 +5100,16 @@ export class PdfViewerBase {
             this.renderTextContent(data, pageIndex);
         }
         if (this.pdfViewer.formFieldsModule && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
-            this.pdfViewer.formFieldsModule.renderFormFields(pageIndex);
+            this.pdfViewer.formFieldsModule.renderFormFields(pageIndex, false);
         }
         if (this.pdfViewer.formDesignerModule && !this.isDocumentLoaded) {
             this.pdfViewer.formDesignerModule.rerenderFormFields(pageIndex);
         }
         if (this.pdfViewer.formFieldsModule && !this.isDocumentLoaded && !this.pdfViewer.formDesignerModule) {
-            this.pdfViewer.formFieldsModule.renderFormFields(pageIndex);
+            this.pdfViewer.formFieldsModule.renderFormFields(pageIndex, false);
         }
         if (this.pdfViewer.formDesignerModule && this.isDocumentLoaded && this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
-            this.pdfViewer.formFieldsModule.renderFormFields(pageIndex);
+            this.pdfViewer.formFieldsModule.renderFormFields(pageIndex, false);
             this.pdfViewer.magnificationModule.isFormFieldPageZoomed = false;
         }
         if (this.pdfViewer.enableHyperlink && this.pdfViewer.linkAnnotationModule) {
@@ -6144,7 +6144,7 @@ export class PdfViewerBase {
                 window.sessionStorage.removeItem(this.documentId + '_formDesigner');
                 proxy.saveFormfieldsData(data);
                 for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
-                    this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[i]);
+                    this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[i], true);
                 }
             } else {
                 proxy.pdfViewer.fireFormImportFailed(source, result.statusText);

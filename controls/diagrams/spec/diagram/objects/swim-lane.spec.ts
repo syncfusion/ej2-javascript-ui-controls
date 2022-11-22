@@ -11418,3 +11418,90 @@ describe('Swimlane Save and Load', () => {
 
 });
 
+describe('Checking annotation updation at runtime for swimlane children', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneObject' });
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    addInfo : [{text : "orderaddinfo",typeId :"adefcd75-3613-4417-9dd6-424cd8bdb882" }],
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase2', offset: 450,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+        diagram.appendTo('#diagramSwimlaneObject');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Changing annotation for swimlane child', (done: Function) => {
+        diagram.select([diagram.nameTable['Order']]);
+        var node = diagram.selectedItems.nodes[0];
+        if(node.annotations && node.annotations.length>0)
+        {
+            if(node.annotations[0].content)
+            {
+                node.annotations[0].content = node.annotations[0].content+' changed';
+            }
+        }
+        var nodeAnn1 = node.annotations[0].content;
+        diagram.drag(node,0,100);
+        (node as Node).parentId = '';
+        node.annotations[0].content = node.annotations[0].content+' changed again';
+        var nodeAnn2 = node.annotations[0].content;
+        expect(nodeAnn1 === 'ORDER changed' && nodeAnn2 === 'ORDER changed changed again').toBe(true);
+        done();
+    });
+
+});
+

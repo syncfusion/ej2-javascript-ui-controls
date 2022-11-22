@@ -949,7 +949,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private createSecondHandle(): void {
         this.secondHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0', 'aria-label':'slider'
             }
         });
         this.secondHandle.classList.add(classNames.sliderSecondHandle);
@@ -959,7 +959,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private createFirstHandle(): void {
         this.firstHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0', 'aria-label':'slider'
             }
         });
         this.firstHandle.classList.add(classNames.sliderFirstHandle);

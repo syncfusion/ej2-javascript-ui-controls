@@ -160,7 +160,7 @@ export class CheckBoxFilterBase {
     private searchBoxClick(e: MouseEvent): void {
         const target: Element = e.target as Element;
         if (target.classList.contains('e-searchclear')) {
-            this.sInput.value = '';
+            this.sInput.value = target.classList.contains('e-chkcancel-icon') ? '' : this.sInput.value;
             if (this.isCheckboxFilterTemplate) {
                 this.parent.notify('refreshCheckbox', { event: e });
             } else {

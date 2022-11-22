@@ -168,7 +168,7 @@ export class CartesianAxisLayoutPanel {
                 || axis.scrollbarSettings.enable) ? ele : 0;
             axis.getModule(chart);
             axis.baseModule.calculateRangeAndInterval(size, axis);
-            definition.computeSize(axis, axis.scrollBarHeight, definition);
+            definition.computeSize(axis, axis.scrollBarHeight, definition, chart);
         }
         if (definition.farSizes.length > 0) {
             definition.farSizes[definition.farSizes.length - 1] -= axisPadding;
@@ -869,6 +869,10 @@ export class CartesianAxisLayoutPanel {
                 elementSize.width > intervalLength) ? intervalLength : elementSize.width;
             pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight + textPadding)
                 : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? pointY + textPadding :  pointY));
+            if (axis.labelPosition === 'Inside' && ((i === 0 && !axis.isInversed) || (i === len - 1 && axis.isInversed))) {
+                if (chart.stockChart) { pointY -= (textPadding); }
+                else { pointY -= (textPadding + labelHeight / 2); }
+            }
             if (axis.majorGridLines.width > axis.majorTickLines.width) {
                 maxLineWidth = axis.majorGridLines.width;
             } else {

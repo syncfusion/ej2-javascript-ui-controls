@@ -1354,7 +1354,8 @@ export class FormDesigner {
                  indicatorSettings = options.signatureIndicatorSettings;
             }
             if(formFieldObject.formFieldAnnotationType === 'InitialField'){
-                 objIndicatorSettings = formFieldObject.parentObj.InidicatorStyle.initialIndicatorSettings;
+                // eslint-disable-next-line
+                 objIndicatorSettings = formFieldObject.signatureIndicatorSettings ? formFieldObject.signatureIndicatorSettings : this.pdfViewer.initialFieldSettings.initialIndicatorSettings;
                  indicatorSettings  = options.initialIndicatorSettings;
             }
             spanElement.style.width = '';
@@ -1393,11 +1394,8 @@ export class FormDesigner {
                 }   
             }
             this.updateSignatureFieldProperties(formFieldObject, htmlElement, formFieldObject.isPrint);
-            if(formFieldObject.formFieldAnnotationType === 'SignatureField'){
+            if(formFieldObject.signatureIndicatorSettings && objIndicatorSettings){
                 formFieldObject.signatureIndicatorSettings = objIndicatorSettings;
-            }
-            if(formFieldObject.formFieldAnnotationType === 'InitialField'){
-                formFieldObject.parentObj.InidicatorStyle.initialIndicatorSettings = objIndicatorSettings;
             }
             return formFieldObject;
         }

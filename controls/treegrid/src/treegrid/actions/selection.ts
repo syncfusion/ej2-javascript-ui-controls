@@ -144,7 +144,7 @@ export class Selection {
     }
 
     private renderColumnCheckbox(args: QueryCellInfoEventArgs): Element {
-        const rowChkBox: Element = this.parent.createElement('input', { className: 'e-treecheckselect', attrs: { 'type': 'checkbox'}});
+        const rowChkBox: Element = this.parent.createElement('input', { className: 'e-treecheckselect', attrs: { 'type': 'checkbox', 'aria-label': 'checkbox' }});
         const data: ITreeData = <ITreeData>args.data;
         args.cell.classList.add('e-treegridcheckbox');
         args.cell.setAttribute('aria-label', 'checkbox');
@@ -371,9 +371,9 @@ export class Selection {
         let checkedRecord: ITreeData;
         const recordIndex: number = this.parent.getCurrentViewRecords().indexOf(record[0]);
         const checkboxRecord: ITreeData = getParentData(this.parent, currentRecord.uniqueID);
+        const tr: HTMLElement = this.parent.getRows()[recordIndex];
         let checkbox: HTMLElement;
-        if (recordIndex > -1) {
-            const tr: HTMLElement = this.parent.getRows()[recordIndex];
+        if (recordIndex > -1) {           
             let movableTr: Element;
             if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
                 movableTr = this.parent.getMovableDataRows()[recordIndex];
@@ -422,6 +422,9 @@ export class Selection {
         if (recordIndex > -1) {
             if (!isNullOrUndefined(checkbox)) {
                 checkbox.classList.add(checkBoxclass);
+                let chkstate: string = checkState == 'check' ? 'checked' : checkState == 'uncheck' ? 'unchecked' : 'mixed';
+                tr.querySelector('.e-treecheckselect').setAttribute("aria-checked", checkState == 'check' ? 'true' : checkState == 'uncheck' ? 'false' : 'mixed');
+                tr.querySelector('.e-frame').setAttribute("title", "checkbox" + chkstate);
             }
         }
     }

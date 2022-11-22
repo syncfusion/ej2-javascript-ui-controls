@@ -831,7 +831,7 @@
         it('Add new record beyond project dates', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.action === 'TimescaleUpdate') {
-                    expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'M/d/yyyy')).toEqual('3/18/2019');
+                    expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'M/d/yyyy')).toEqual('3/25/2019');
                 }
             };
             ganttObj.dataBind();

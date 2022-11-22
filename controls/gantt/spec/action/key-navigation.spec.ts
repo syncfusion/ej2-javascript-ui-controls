@@ -187,12 +187,12 @@ describe('Gantt Selection support', () => {
             ganttObj.keyboardModule.keyAction(args1); 
             expect(ganttObj.currentViewData[3].ganttProperties.taskName).toBe('Plan budget');
         }); 
-        it('focusTask key testing', () => { 
-            ganttObj.selectionModule.selectRow(19);
-            let args1: any = { action: 'focusTask', preventDefault: preventDefault };
-            ganttObj.keyboardModule.keyAction(args1); 
-            expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(907);
-        }); 
+        // it('focusTask key testing', () => { 
+        //     ganttObj.selectionModule.selectRow(19);
+        //     let args1: any = { action: 'focusTask', preventDefault: preventDefault };
+        //     ganttObj.keyboardModule.keyAction(args1); 
+        //     expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(907);
+        // }); 
 
       
 

@@ -66,7 +66,9 @@ export class ScheduleTouch {
                 this.renderPanel(cls.NEXT_PANEL_CLASS, 'next');
                 this.nextPanel = {
                     element: this.parent.activeView.getPanel(),
-                    selectedDate: new Date(this.parent.selectedDate.getTime())
+                    selectedDate: new Date(this.parent.selectedDate.getTime()),
+                    renderDates: this.parent.activeView.renderDates,
+                    colLevels: this.parent.activeView.colLevels
                 };
                 this.setDimensions(this.nextPanel.element);
             }
@@ -78,7 +80,9 @@ export class ScheduleTouch {
                 this.renderPanel(cls.PREVIOUS_PANEL_CLASS, 'previous');
                 this.previousPanel = {
                     element: this.parent.activeView.getPanel(),
-                    selectedDate: new Date(this.parent.selectedDate.getTime())
+                    selectedDate: new Date(this.parent.selectedDate.getTime()),
+                    renderDates: this.parent.activeView.renderDates,
+                    colLevels: this.parent.activeView.colLevels
                 };
                 this.setDimensions(this.previousPanel.element);
                 prevWidth = this.previousPanel.element.offsetWidth;
@@ -126,7 +130,9 @@ export class ScheduleTouch {
         if (!this.currentPanel) {
             this.currentPanel = {
                 element: this.parent.activeView.getPanel(),
-                selectedDate: new Date(this.parent.selectedDate.getTime())
+                selectedDate: new Date(this.parent.selectedDate.getTime()),
+                renderDates: this.parent.activeView.renderDates,
+                colLevels: this.parent.activeView.colLevels
             };
             this.setDimensions(this.currentPanel.element);
         } else {
@@ -172,6 +178,8 @@ export class ScheduleTouch {
                 } else {
                     translateX = swipeDirection === this.touchLeftDirection ? -this.currentPanel.element.offsetLeft : 0;
                 }
+                this.parent.activeView.renderDates = this.currentPanel.renderDates;
+                this.parent.activeView.colLevels = this.currentPanel.colLevels;
                 addClass([this.element], cls.TRANSLATE_CLASS);
                 this.element.style.transform = 'translatex(' + translateX + 'px)';
                 if (this.parent.headerModule) {
@@ -186,8 +194,8 @@ export class ScheduleTouch {
     private cancelSwipe(): void {
         this.parent.activeView.setPanel(this.currentPanel.element);
         this.parent.setProperties({ selectedDate: this.currentPanel.selectedDate }, true);
-        this.parent.activeView.getRenderDates();
-        this.parent.activeView.generateColumnLevels();
+        this.parent.activeView.renderDates = this.currentPanel.renderDates;
+        this.parent.activeView.colLevels = this.currentPanel.colLevels;
         addClass([this.element], cls.TRANSLATE_CLASS);
         const prevWidth: number = this.previousPanel ? this.previousPanel.element.offsetWidth : 0;
         this.element.style.transform = 'translatex(' + (this.parent.enableRtl ? prevWidth : -this.currentPanel.element.offsetLeft) + 'px)';

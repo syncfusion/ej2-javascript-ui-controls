@@ -1944,13 +1944,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger(getObject('name', args), args);
     }
     private IsExpandCollapseClicked(args: RowDeselectEventArgs): void {
-        if (args['name'] === 'rowSelecting' && !isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
-			|| args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell')) && (isNullOrUndefined(args['previousRowIndex']))) {
-            args.cancel = true;
-            return;
-        }
-        else if (args['name'] === 'rowDeselecting' && !isNullOrUndefined(args.target) && ((!isNullOrUndefined((args.row as Element[])) && (!(args.row as Element[]).length)) && (args.target.classList.contains('e-treegridexpand')
-        || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell')))) {
+        if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
+			|| args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))) {
             args.cancel = true;
             return;
         }
@@ -4099,6 +4094,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 removeClass([targetEle], 'e-treegridexpand');
             }
+	    row.querySelectorAll('.e-treerowcell')[0].setAttribute("aria-expanded", action == 'expand' ? 'true' : 'false');	
             const detailrows: HTMLTableRowElement[] = gridRows.filter(
                 (r: HTMLTableRowElement) =>
                     r.classList.contains(
