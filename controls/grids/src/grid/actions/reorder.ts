@@ -216,11 +216,17 @@ export class Reorder implements IAction {
         let cols: Column[] = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid() ? this.parent.getColumns() :
             this.parent.columns as Column[];
         const headers: Element[] = this.getHeaderCells();
+        const visibleStackedHdrCell: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-stackedheadercell');
+        const stackedHdrColumn: Column[] = this.parent.getStackedColumns(cols);
+        let hiddenStackedColCount: number = 0;
+        if (visibleStackedHdrCell && stackedHdrColumn && visibleStackedHdrCell.length < stackedHdrColumn.length) {
+            hiddenStackedColCount = stackedHdrColumn.length - visibleStackedHdrCell.length;
+        }
         const flatColumns: Column[] = this.getColumnsModel(cols);
-        const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
+        const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers) + hiddenStackedColCount], cols);
 
         cols = parent ? parent.columns as Column[] : cols;
-        return inArray(flatColumns[getElementIndex(destElem, headers)], cols);
+        return inArray(flatColumns[getElementIndex(destElem, headers) + hiddenStackedColCount], cols);
 
     }
 

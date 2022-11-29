@@ -868,6 +868,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     index -= (this.viewport.leftIndex + frozenCol);
                     return index;
                 }
+            } else {
+                index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns');
+                index -= this.viewport.leftIndex;
             }
         } else {
             if (frozenRow) {
@@ -881,12 +884,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     index -= (this.viewport.topIndex + frozenRow);
                     return index;
                 }
-            }
-        }
-        if (this.scrollSettings.enableVirtualization) {
-            if (isCol) {
-                index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns');
-                index -= this.viewport.leftIndex;
             } else {
                 index -= this.hiddenCount(this.viewport.topIndex, index);
                 index -= this.viewport.topIndex;

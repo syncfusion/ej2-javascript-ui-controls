@@ -172,6 +172,11 @@ export class DrawingElement {
     /** @private */
     public corners: Corners;
 
+    /**
+     * Gets/Sets the print id
+     */
+    /** @private */
+    public printID: string;
 
     /**
      * Defines whether the element has to be measured or not

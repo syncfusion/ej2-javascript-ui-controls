@@ -10308,18 +10308,20 @@ export class Selection {
      */
     public navigateToNextEditingRegion(): void {
         let editRange: EditRangeStartElementBox = this.getEditRangeStartElement();
-        this.sortEditRangeCollection();
-        let length: number = this.editRangeCollection.length;
-        let index: number = length;
-        if (!isNullOrUndefined(editRange)) {
-            index = this.editRangeCollection.indexOf(editRange);
+        if(this.editRangeCollection.length > 0){
+            this.sortEditRangeCollection();
+            let length: number = this.editRangeCollection.length;
+            let index: number = length;
+            if (!isNullOrUndefined(editRange)) {
+                index = this.editRangeCollection.indexOf(editRange);
+            }
+            let editRangeStart: EditRangeStartElementBox = index < length - 1 ?
+                this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
+            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            this.selectRange(startPosition, endPosition);
         }
-        let editRangeStart: EditRangeStartElementBox = index < length - 1 ?
-            this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
-        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
-        let startPosition: TextPosition = positionInfo.startPosition;
-        let endPosition: TextPosition = positionInfo.endPosition;
-        this.selectRange(startPosition, endPosition);
     }
     private sortEditRangeCollection() {
         //Sort based on position

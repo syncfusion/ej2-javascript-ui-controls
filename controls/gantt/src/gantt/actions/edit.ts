@@ -1072,7 +1072,9 @@ export class Edit {
             (isNullOrUndefined(previousData) && !isNullOrUndefined(previousData.ganttProperties))) {
             previousStartDate = new Date(ganttRecord.ganttProperties.startDate.getTime());
         } else {
-            previousStartDate = new Date(previousData.ganttProperties.startDate.getTime());
+            if(!isNullOrUndefined(previousData.ganttProperties.startDate)){
+                previousStartDate = new Date(previousData.ganttProperties.startDate.getTime());
+                }
         }
         const currentStartDate: Date = ganttRecord.ganttProperties.startDate;
         const childRecords: IGanttData[] = [];
@@ -1085,7 +1087,7 @@ export class Edit {
         if (childRecords.length === 0) {
             return;
         }
-        if (previousStartDate.getTime() > currentStartDate.getTime()) {
+        if (!isNullOrUndefined(previousStartDate)&&!isNullOrUndefined(currentStartDate)&& previousStartDate.getTime() > currentStartDate.getTime()) {
             validStartDate = this.parent.dateValidationModule.checkStartDate(currentStartDate);
             validEndDate = this.parent.dateValidationModule.checkEndDate(previousStartDate, ganttRecord.ganttProperties);
             isRightMove = false;
@@ -1095,7 +1097,7 @@ export class Edit {
             isRightMove = true;
         }
         //Get Duration
-        if (validStartDate.getTime() >= validEndDate.getTime()) {
+        if (!isNullOrUndefined(validStartDate)&& !isNullOrUndefined(validEndDate)&& validStartDate.getTime() >= validEndDate.getTime()){
             durationDiff = 0;
         } else {
             durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true, false);

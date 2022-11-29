@@ -115,6 +115,7 @@ export class DrawingRenderer {
         (options as ImageAttributes).source = element.source;
         (options as ImageAttributes).alignment = element.imageAlign;
         (options as ImageAttributes).scale = element.imageScale;
+        (options as ImageAttributes).printID = element.printID;
         this.renderer.drawImage(canvas as HTMLCanvasElement, options as ImageAttributes, parentSvg, fromPalette);
     }
 

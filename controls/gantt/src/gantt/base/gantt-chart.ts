@@ -395,6 +395,9 @@ export class GanttChart {
      * @private
      */
     private mouseUp(e: PointerEvent): void {
+        if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
+            this.parent.editModule.taskbarEditModule.removeFalseLine(false);
+        }
         if (this.parent.allowRowDragAndDrop) {
             const ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
             if (ganttDragElemet) {

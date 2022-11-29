@@ -1759,16 +1759,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {boolean} - It return `true`, if the insert / delete action happens between the provided range, otherwise `false`.
      * @hidden
      */
-    public updateRangeOnInsertDelete(args: InsertDeleteEventArgs, index: number[]): boolean {
+    public updateRangeOnInsertDelete(args: InsertDeleteEventArgs, index: number[], isRangeFormula?: boolean): boolean {
         let diff: number; let updated: boolean = false;
         if (args.isInsert) {
             diff = (args.endIndex - args.startIndex) + 1;
             if (args.modelType === 'Row') {
                 if (args.startIndex <= index[0]) { index[0] += diff; updated = true; }
-                if (args.startIndex <= index[2]) { index[2] += diff; updated = true; }
+                if ((args.startIndex <= index[2]) || (isRangeFormula && args.startIndex === index[2] + 1)) { index[2] += diff; updated = true; }
             } else {
                 if (args.startIndex <= index[1]) { index[1] += diff; updated = true; }
-                if (args.startIndex <= index[3]) { index[3] += diff; updated = true; }
+                if (args.startIndex <= index[3] || (isRangeFormula && args.startIndex === index[3] + 1)) { index[3] += diff; updated = true; }
             }
         } else {
             if (args.modelType === 'Row') {

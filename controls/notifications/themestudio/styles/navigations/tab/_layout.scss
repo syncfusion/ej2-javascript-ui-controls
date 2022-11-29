@@ -13,11 +13,6 @@
         height: auto;
         min-height: auto;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' or $tbar-skin == 'FluentUI' {
-          height: $tab-big-height;
-          min-height: $tab-big-height;
-        }
-
         &:not(.e-tbar-pos) .e-toolbar-item:first-child,
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-first-item-margin;
@@ -733,11 +728,11 @@
 
     &.e-vertical-icon {
 
-      .e-tab-header {
+      > .e-tab-header {
         height: $tab-big-tb-icon-height;
         min-height: $tab-big-tb-icon-height;
 
-        .e-toolbar-items {
+        > .e-toolbar-items {
           height: $tab-big-tb-icon-height;
         }
 
@@ -1213,7 +1208,7 @@
 
       &.e-vertical-icon {
 
-        .e-tab-header {
+        > .e-tab-header {
           height: $tab-big-tb-icon-height - 2;
           min-height: $tab-big-tb-icon-height - 2;
         }
@@ -1490,16 +1485,8 @@
         min-height: $tab-nrml-height;
         position: relative;
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' or $tbar-skin == 'FluentUI' {
-          height: $tab-nrml-height;
-          min-height: $tab-nrml-height;
-        }
-
         @media screen and (max-width: 480px) {
           min-height: $tab-big-height;
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            height: $tab-big-height;
-          }
         }
 
         &:not(.e-tbar-pos) .e-toolbar-item:first-child,
@@ -2808,7 +2795,7 @@
 
     &.e-vertical-icon {
 
-      .e-tab-header {
+      > .e-tab-header {
         height: $tab-nrml-tb-icon-height;
         min-height: $tab-nrml-tb-icon-height;
 
@@ -2820,7 +2807,7 @@
           }
         }
 
-        .e-toolbar-items {
+        > .e-toolbar-items {
           height: $tab-nrml-tb-icon-height;
         }
 
@@ -3456,7 +3443,7 @@
 
       &.e-vertical-icon {
 
-        .e-tab-header {
+        > .e-tab-header {
           height: $tab-nrml-tb-icon-height - 2;
           min-height: $tab-nrml-tb-icon-height - 2;
         }

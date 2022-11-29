@@ -1490,4 +1490,326 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+    describe('EJ2-65615-> Row wise', () => {
+        const model: SpreadsheetModel = {
+            sheets: [{
+                rows: [{ cells: [{ value: '1' }, { value: '1' }] }, { cells: [{ value: '2' }, { value: '' }] }, { cells: [{ value: '3' }, { value: '1' }] }, { cells: [{ value: '4' }, { value: '1' }] }, { cells: [{ value: '5' }, { value: '1' }] }]
+            }]
+        };
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('COUNT formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=COUNT(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNT(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(5);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNT(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(5);
+                helper.edit('A6', '1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(6);
+                done();
+            })
+        });
+        it('COUNTIF formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=COUNTIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNTIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(0);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNTIF(A1:A6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
+                helper.edit('A6', '0');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
+                done();
+            })
+        });
+        it('COUNTIFS formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=COUNTIFs(A1:A5,"=1",B1:B5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNTIFs(A1:A5,"=1",B1:B5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(1);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=COUNTIFs(A1:A6,"=1",B1:B6,"=1")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
+                helper.edit('A6', '1');
+                helper.edit('B6', '1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(2);
+                done();
+            })
+        });
+        it('SUM function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=SUM(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUM(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(15);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUM(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(15);
+                helper.edit('A6', '6');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(21);
+                done();
+            })
+        });
+        it('SUMIF function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=SUMIF(A1:A5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUMIF(A1:A5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(1);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUMIF(A1:A6,"=1")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(1);
+                helper.edit('A6', '1');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(2);
+                done();
+            })
+        });
+        it('SUMIFS function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=SUMIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUMIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(0);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=SUMIFS(A1:A6,B1:B6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
+                helper.edit('A6', '6');
+                helper.edit('B2', '0');
+                helper.edit('B6', '0');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(8);
+                done();
+            })
+        });
+        it('AVERAGE formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=AVERAGE(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGE(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('3');
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGE(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('3');
+                helper.edit('A6', '6');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('3.5');
+                done();
+            })
+        });
+        it('AVERAGEIF formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A2', '');
+            helper.edit('A6', '=AVERAGEIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(NaN);
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIF(A1:A6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(NaN);
+                helper.edit('A6', '0');
+                helper.edit('A2', '0');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(0);
+                done();
+            })
+        });
+        it('AVERAGEIFS formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=AVERAGEIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=AVERAGEIFS(A1:A6,B1:B6,"=0")');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('#DIV/0!');
+                helper.edit('A6', '6');
+                helper.edit('B2', '0');
+                helper.edit('B6', '0');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual(4);
+                done();
+            })
+        });
+        it('MAX formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=MAX(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=MAX(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('5');
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=MAX(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('5');
+                helper.edit('A6', '6');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('6');
+                done();
+            })
+        });
+        it('MIN formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('A6', '=MIN(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=MIN(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('1');
+            helper.invoke('insertRow', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].formula).toEqual('=MIN(A1:A6)');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('1');
+                helper.edit('A6', '0');
+                expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toEqual('0');
+                done();
+            })
+        });
+    });
+    describe('EJ2-65615-> Column wise ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '3' }, { value: '4' }, { value: '5' }] }, { cells: [{ value: '1' }, { value: '' }, { value: '1' }, { value: '1' }, { value: '1' }] }] }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('COUNT formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=COUNT(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=COUNT(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(5);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNT(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(5);
+                helper.edit('F1', '1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(6);
+                done();
+            })
+        });
+        it('COUNTIF formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=COUNTIF(A1:E1,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=COUNTIF(A1:E1,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(0);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNTIF(A1:F1,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
+                helper.edit('F1', '0');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
+                done();
+            })
+        });
+        it('COUNTIFS formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=COUNTIFS(A1:E1,"=1",A2:E2,"=1")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=COUNTIFS(A1:E1,"=1",A2:E2,"=1")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(1);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=COUNTIFS(A1:F1,"=1",A2:F2,"=1")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
+                helper.edit('F1', '1');
+                helper.edit('F2', '1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(2);
+                done();
+            })
+        });
+        it('SUM function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=SUM(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=SUM(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(15);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUM(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(15);
+                helper.edit('F1', '6');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(21);
+                done();
+            })
+        });
+        it('SUMIF function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=SUMIF(A1:E1,"=1")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=SUMIF(A1:E1,"=1")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(1);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUMIF(A1:F1,"=1")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(1);
+                helper.edit('F1', '1');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(2);
+                done();
+            })
+        });
+        it('SUMIFS function is not value updated properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=SUMIFS(A1:E1,A2:E2,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=SUMIFS(A1:E1,A2:E2,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(0);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=SUMIFS(A1:F1,A2:F2,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
+                helper.edit('F1', '6');
+                helper.edit('B2', '0');
+                helper.edit('F2', '0');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(8);
+                done();
+            })
+        });
+        it('AVERAGE formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=AVERAGE(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=AVERAGE(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('3');
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGE(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('3');
+                helper.edit('F1', '6');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('3.5');
+                done();
+            })
+        });
+        it('AVERAGEIF formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('B1', '');
+            helper.edit('F1', '=AVERAGEIF(A1:E1,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=AVERAGEIF(A1:E1,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual(NaN);
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIF(A1:F1,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(NaN);
+                helper.edit('F1', '0');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(0);
+                done();
+            })
+        });
+        it('AVERAGEIFS formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=AVERAGEIFS(A1:E1,A2:E2,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=AVERAGEIFS(A1:E1,A2:E2,"=0")');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('#DIV/0!');
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=AVERAGEIFS(A1:F1,A2:F2,"=0")');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('#DIV/0!');
+                helper.edit('F1', '6');
+                helper.edit('B2', '0');
+                helper.edit('F2', '0');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual(4);
+                done();
+            })
+        });
+        it('MAX formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=MAX(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=MAX(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('5');
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=MAX(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('5');
+                helper.edit('F1', '6');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('6');
+                done();
+            })
+        });
+        it('MIN formula is not updated value properly while the new insert and update the value', (done: Function) => {
+            helper.edit('F1', '=MIN(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].formula).toEqual('=MIN(A1:E1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('1');
+            helper.invoke('insertColumn', [5]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].formula).toEqual('=MIN(A1:F1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('1');
+                helper.edit('F1', '0');
+                expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('0');
+                done();
+            })
+        });
+    });
 });

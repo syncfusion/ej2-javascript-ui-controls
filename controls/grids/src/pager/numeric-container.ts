@@ -149,7 +149,7 @@ export class NumericContainer implements IRender {
                 attrs: {
                     title: this.pagerModule.getLocalizedLabel('firstPageTooltip'),
                     'aria-label': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
-                    tabindex: '-1'
+                    tabindex: '-1', role: 'button'
                 }
             });
         this.prev = createElement(
@@ -158,7 +158,7 @@ export class NumericContainer implements IRender {
                 attrs: {
                     title: this.pagerModule.getLocalizedLabel('previousPageTooltip'),
                     'aria-label': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
-                    tabindex: '-1'
+                    tabindex: '-1', role: 'button'
                 }
             });
         append([this.first, this.prev], pagerContainer);
@@ -205,7 +205,7 @@ export class NumericContainer implements IRender {
                 attrs: {
                     title: this.pagerModule.getLocalizedLabel('nextPageTooltip'),
                     'aria-label': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
-                    tabindex: '-1'
+                    tabindex: '-1', role: 'button'
                 }
             });
         this.last = createElement(
@@ -214,7 +214,7 @@ export class NumericContainer implements IRender {
                 attrs: {
                     title: this.pagerModule.getLocalizedLabel('lastPageTooltip'),
                     'aria-label': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
-                    tabindex: '-1'
+                    tabindex: '-1', role: 'button'
                 }
             });
         append([this.next, this.last], pagerContainer);

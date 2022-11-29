@@ -5087,6 +5087,8 @@ describe('Focus strategy coverage', () =>{
         }, done);
     });
     it('focus navigation by Tab and ShiftTab', () => {
+        const firstHeaderCell: HTMLElement = gridObj.getHeaderContent().querySelector('.e-headercell');
+        expect(firstHeaderCell.getAttribute('tabindex')).toBe('0');
         rows = gridObj.getRows();
         (rows[0] as HTMLTableRowElement).cells[0].focus();
         gridObj.focusModule.setActive(true);

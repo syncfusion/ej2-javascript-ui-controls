@@ -1114,5 +1114,94 @@ describe('Filter ->', () => {
                 });
             });
         });
+        describe('EJ2-65848 ->', () => {
+            let selectAll: HTMLElement;
+            let checkboxList: HTMLElement;
+            let filterTable: HTMLElement;
+            let filterRow: HTMLElement;
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    scrollSettings: { isFinite: true, enableVirtualization: false }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Check string value filtering is not working properly in the finite mode while setting virtualization as false ', (done: Function) => {
+                const id: string = '#' + helper.id;
+                helper.getElement(`${id}_sorting`).click();
+                helper.getElement(`${id}_applyfilter`).click();
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                setTimeout(() => {
+                    setTimeout(() => {
+                        selectAll = helper.getElement('.e-checkboxlist .e-selectall');
+                        selectAll.click();
+                        checkboxList = helper.getElement('.e-checkboxlist');
+                        setTimeout(() => {
+                            const list: HTMLElement = checkboxList.children[1].querySelector('.e-frame');
+                            list.click();
+                            helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                            setTimeout(() => {
+                                filterTable = helper.getInstance().getContentTable().rows;
+                                filterRow = helper.getInstance().sheets[0].rows;
+                                expect(filterTable[1].cells[0].innerText).toBe('Casual Shoes');
+                                expect(filterTable[1].hidden).toBeFalsy();
+                                expect(filterTable[1].isFiltered).toBeFalsy();
+                                expect(filterTable[2].cells[0].innerText).toBe('');
+                                expect(filterRow[2].hidden).toBeTruthy();
+                                expect(filterRow[2].isFiltered).toBeTruthy();
+                                expect(filterTable[3].cells[0].innerText).toBe('');
+                                expect(filterRow[3].hidden).toBeTruthy();
+                                expect(filterRow[3].isFiltered).toBeTruthy();
+                                expect(filterTable[4].cells[0].innerText).toBe('');
+                                expect(filterRow[4].hidden).toBeTruthy();
+                                expect(filterRow[4].isFiltered).toBeTruthy();
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+            it('Check number value filtering is not working properly in the finite mode while setting virtualization as false ', (done: Function) => {
+                const id: string = '#' + helper.id;
+                helper.getElement(`${id}_sorting`).click();
+                helper.getElement(`${id}_applyfilter`).click();
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                helper.invoke('selectRange', ['G1']);
+                helper.invoke('getCell', [0, 0]).focus();
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                setTimeout(() => {
+                    setTimeout(() => {
+                        selectAll = helper.getElement('.e-checkboxlist .e-selectall');
+                        selectAll.click();
+                        checkboxList = helper.getElement('.e-checkboxlist');
+                        setTimeout(() => {
+                            const list: HTMLElement = checkboxList.children[2].querySelector('.e-frame');
+                            list.click();
+                            helper.getElement('.e-filter-popup .e-btn.e-primary').click();
+                            setTimeout(() => {
+                                filterTable = helper.getInstance().getContentTable().rows;
+                                filterRow = helper.getInstance().sheets[0].rows;
+                                expect(filterTable[1].cells[6].innerText).toBe('3');
+                                expect(filterTable[1].hidden).toBeFalsy();
+                                expect(filterTable[1].isFiltered).toBeFalsy();
+                                expect(filterTable[2].cells[0].innerText).toBe('');
+                                expect(filterRow[2].hidden).toBeTruthy();
+                                expect(filterRow[2].isFiltered).toBeTruthy();
+                                expect(filterTable[3].cells[0].innerText).toBe('');
+                                expect(filterRow[3].hidden).toBeTruthy();
+                                expect(filterRow[3].isFiltered).toBeTruthy();
+                                expect(filterTable[4].cells[0].innerText).toBe('');
+                                expect(filterRow[4].hidden).toBeTruthy();
+                                expect(filterRow[4].isFiltered).toBeTruthy();
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 });

@@ -260,6 +260,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private items;
     private customOperators;
     private operators;
+    private sqlOperators;
     private ruleElem;
     private groupElem;
     private dataColl;
@@ -726,24 +727,27 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Sets the rules from the sql query.
      *
      * @param {string} sqlString - 'sql String' to be passed to set the rule.
+     * @param {boolean} sqlLocale -  Set `true` if Localization for Sql query.
      * @returns {void}
      */
-    setRulesFromSql(sqlString: string): void;
+    setRulesFromSql(sqlString: string, sqlLocale?: boolean): void;
     /**
      * Get the rules from SQL query.
      *
      * @param {string} sqlString - 'sql String' to be passed to get the rule.
+     * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
      * @returns {object} - Rules from SQL query
      */
-    getRulesFromSql(sqlString: string): RuleModel;
+    getRulesFromSql(sqlString: string, sqlLocale?: boolean): RuleModel;
     /**
      * Gets the sql query from rules.
      *
      * @param {RuleModel} rule - 'rule' to be passed to get the sql.
      * @param {boolean} allowEscape - Set `true` if it exclude the escape character.
+     * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
      * @returns {object} - Sql query from rules.
      */
-    getSqlFromRules(rule?: RuleModel, allowEscape?: boolean): string;
+    getSqlFromRules(rule?: RuleModel, allowEscape?: boolean, sqlLocale?: boolean): string;
     private sqlParser;
     private parseSqlStrings;
     private checkLiteral;

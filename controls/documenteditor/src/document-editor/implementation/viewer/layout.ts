@@ -4318,6 +4318,7 @@ export class Layout {
         let isList: boolean = false;
         let sectionFormat: WSectionFormat = paragraph.bodyWidget.sectionFormat;
         let leftMargin: number = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+        let tabBeforeLeftIndent: boolean = false;
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             let listFormat: WParagraphFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
             if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent) {
@@ -4339,8 +4340,21 @@ export class Layout {
         if (clientActiveX < clientWidth) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
-        if (lineWidget.isFirstLine()
-            && leftIndent > 0 && firstLineIndent < 0) {
+        let position: number = viewer.clientActiveArea.x -
+            (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
+        for (let i: number = 0; i < tabs.length; i++) {
+            let tabStop: WTabStop = tabs[i];
+            let tabStopPosition: number = HelperMethods.convertPointToPixel(tabStop.position);
+            if (tabStopPosition < leftIndent) {
+                if (parseFloat(position.toFixed(2)) < parseFloat(tabStopPosition.toFixed(2))) {
+                    tabBeforeLeftIndent = true;
+                } else {
+                    tabBeforeLeftIndent = false;
+                }
+            }
+        }
+        if (lineWidget.isFirstLine() && leftIndent > 0 && firstLineIndent < 0
+            && (element instanceof ListTextElementBox || !tabBeforeLeftIndent)) {
             if ((viewer.clientArea.x - viewer.clientActiveArea.x) > 0) {
                 return viewer.clientArea.x - viewer.clientActiveArea.x;
             } else if (tabs.length === 0 && paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listLevel) {
@@ -4348,8 +4362,6 @@ export class Layout {
             }
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
-        let position: number = viewer.clientActiveArea.x -
-            (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
         if (tabs.length === 0 && (position > 0 && defaultTabWidth > Math.round(position) && isList ||
             defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > Math.round(position))) {

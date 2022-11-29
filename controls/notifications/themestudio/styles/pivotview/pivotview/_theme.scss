@@ -23,7 +23,6 @@
 
     .e-valuescontent {
       padding-right: 8px;
-      text-align: right;
     }
 
     .e-grid .e-rowcell {
@@ -927,7 +926,7 @@
     .e-expand,
     .e-collapse {
       cursor: pointer;
-      display: inline-block;
+      display: inline;
       height: 18px;
       margin-top: 5px;
       text-align: center;
@@ -1308,7 +1307,6 @@
 
       .e-grid .e-headercelldiv,
       .e-grid .e-columnsheader {
-        padding-left: $pivotview-value-sort-rtl-padding !important;
         padding-right: 8px !important;
       }
 
@@ -1323,10 +1321,6 @@
       .e-rowsheader .e-cellvalue {
         margin-left: 0;
         margin-right: 7px;
-      }
-
-      .e-valuescontent {
-        text-align: left;
       }
 
       .e-group-values,
@@ -1849,7 +1843,6 @@
 
       .e-grid .e-headercelldiv,
       .e-grid .e-columnsheader {
-        padding-left: $pivotview-value-sort-rtl-padding !important;
         padding-right: 8px !important;
       }
 

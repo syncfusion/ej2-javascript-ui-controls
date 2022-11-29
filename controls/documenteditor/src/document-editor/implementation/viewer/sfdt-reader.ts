@@ -1793,7 +1793,7 @@ export class SfdtReader {
         }
     }
     public parseMajorMinorFontScheme(sourceFormat: any, majorMinor: MajorMinorFontScheme): void {
-        if (!isNullOrUndefined(sourceFormat.fontTypeface) && sourceFormat.fontTypeface.length > 0) {
+        if (!isNullOrUndefined(sourceFormat.fontTypeface) && Object.keys(sourceFormat.fontTypeface).length > 0) {
             let keys: string[] = Object.keys(sourceFormat.fontTypeface);
             for (let key of keys) {
                 majorMinor.fontTypeface.add(key, sourceFormat.fontTypeface[key]);

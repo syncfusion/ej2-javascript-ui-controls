@@ -4,28 +4,28 @@
 $msg-font-family: $font-family !default;
 $msg-font-weight: 400 !default;
 $msg-font-style: normal !default;
-$msg-padding: 7px 7px !default;
+$msg-padding: 9px 7px !default;
 $msg-border-radius: 4px !default;
 $msg-icon-size: 16px !default;
-$msg-icon-margin: 5px 4px !default;
-$msg-close-icon-margin: 5px 4px 5px auto !default;
+$msg-icon-margin: 3px 4px !default;
+$msg-close-icon-margin: 3px 4px 3px auto !default;
 $msg-close-icon-size: $msg-icon-size !default;
 $msg-content-font-size: 14px !default;
 $msg-content-line-height: 22px !default;
-$msg-content-padding: 2px 4px !default;
+$msg-content-padding: 0 4px !default;
 
-$msg-rtl-close-icon-margin: 5px auto 5px 4px !default;
+$msg-rtl-close-icon-margin: 3px auto 3px 4px !default;
 
-$msg-bigger-padding: 9px 9px !default;
+$msg-bigger-padding: 13px 9px !default;
 $msg-bigger-icon-size: 18px !default;
-$msg-bigger-icon-margin: 5px 6px !default;
-$msg-bigger-close-icon-margin: 5px 6px 5px auto !default;
+$msg-bigger-icon-margin: 3px 6px !default;
+$msg-bigger-close-icon-margin: 3px 6px 3px auto !default;
 $msg-bigger-close-icon-size: $msg-bigger-icon-size !default;
 $msg-bigger-content-font-size: 16px !default;
 $msg-bigger-content-line-height: 24px !default;
-$msg-bigger-content-padding: 4px 6px !default;
+$msg-bigger-content-padding: 0 6px !default;
 
-$msg-bigger-rtl-close-icon-margin: 5px auto 5px 6px !default;
+$msg-bigger-rtl-close-icon-margin: 3px auto 3px 6px !default;
 
 // Color variables
 // Text

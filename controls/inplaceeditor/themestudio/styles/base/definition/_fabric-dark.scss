@@ -88,7 +88,7 @@ $msg-success-color-alt1: lighten($success-bg, 40%) !default;
 $msg-success-bg-color-alt1: transparent !default;
 $msg-success-border-color-alt1: lighten($success-bg, 40%) !default;
 $msg-success-color-alt2: $theme-dark-font !default;
-$msg-success-bg-color-alt2: darken($success-bg, 17%) !default;
+$msg-success-bg-color-alt2: #286038 !default;
 $msg-success-border-color-alt2: darken($success-bg, 17%) !default;
 
 $msg-success-icon-color: lighten($success-bg, 40%) !default;

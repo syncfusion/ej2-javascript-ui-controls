@@ -1,11 +1,11 @@
 /*! component's theme wise override definitions and variables */
 $tbar-skin: 'bootstrap' !default;
-$tbar-btn-bgr-line-height: calc(100% - 6px) !default;
+$tbar-btn-bgr-line-height: 35px !default;
 $tbar-zero-value: 0 !default;
 $tbar-separator-bgr-minheight: 36px !default;
 $tbar-btn-bgr-minwidth: 0 !default;
 $tbar-btn-nrml-minwidth: 0 !default;
-$tbar-btn-nrml-line-height: calc(100% - 10px) !default;
+$tbar-btn-nrml-line-height: 25px !default;
 $tbar-btn-weight: 400 !default;
 $tbar-border-radius: $border-radius !default;
 $tbar-pop-btn-nrml-padding: $tbar-zero-value 4px !default;
@@ -91,10 +91,10 @@ $tbar-item-pop-nrml-padding: 0 !default;
 $tbar-item-pop-bgr-padding: 0 !default;
 $tbar-item-nrml-mrgn: 3px !default;
 $tbar-item-bgr-mrgn: 3px !default;
-$tbar-btn-nrml-height: $tbar-btn-nrml-line-height !default;
+$tbar-btn-nrml-height: calc(100% - 10px) !default;
 $tbar-btn-nrml-mrgn: 0 !default;
 $tbar-v-btn-nrml-mrgn: 0 !default;
-$tbar-btn-bgr-height: $tbar-btn-bgr-line-height !default;
+$tbar-btn-bgr-height: calc(100% - 6px) !default;
 $tbar-btn-bgr-mrgn: 2px 0 !default;
 $tbar-v-btn-bgr-mrgn: 2px auto !default;
 $tbar-btn-nrml-minheight: 32px !default;

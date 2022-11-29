@@ -3168,7 +3168,7 @@ export class PivotEngine {
                 if (isDateType) {
                     return this.sortHeaders(fieldName, childrens, hierarchy, childrens.sort, 'date');
                 } else {
-                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string') && hierarchy[0].actualText.match(/[a-z]+/g)) {
+                    if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string') && hierarchy[0].actualText.match(/[a-zA-Z]+/g)) {
                         let stringValue: IAxisSet[] = [];
                         let outOfRange: IAxisSet;
                         let alphaNumbervalue: IAxisSet[] = [];

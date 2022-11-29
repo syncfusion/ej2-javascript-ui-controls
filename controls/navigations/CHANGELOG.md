@@ -10,8 +10,6 @@
 
 - `#I419341` - The Blank carousel item displayed on `autoplay` when a single item alone is rendered has been resolved.
 
-## 20.3.57 (2022-11-15)
-
 ### TreeView
 
 #### Bug Fixes

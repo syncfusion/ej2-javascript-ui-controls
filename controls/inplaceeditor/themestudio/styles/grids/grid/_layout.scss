@@ -327,7 +327,7 @@
       }
       @else if $grid-skin == 'bootstrap5' {
         margin-bottom: -12px;
-        margin-top: -15px;
+        margin-top: -12px;
       }
     }
 
@@ -1631,6 +1631,7 @@
     }
 
     &.e-responsive .e-rowcell.e-gridchkbox,
+    &.e-responsive .e-rowcell.e-gridchkbox-cell,
     &.e-responsive .e-headercelldiv.e-headerchkcelldiv {
       text-overflow: clip;
     }
@@ -3478,7 +3479,7 @@
 
     &.e-responsive .e-rowcell.e-gridclip,
     &.e-responsive .e-gridclip .e-headercelldiv,
-    &.e-responsive .e-stackedheadercelldiv.e-gridclip {
+    &.e-responsive .e-gridclip .e-stackedheadercelldiv {
       text-overflow: clip;
     }
 
@@ -3526,7 +3527,6 @@
     }
 
     & .e-mask {
-      background-color: $grid-maskedcell-virtual-background-color;
       display: inline-block;
       height: 10px;
       width: 80%;
@@ -3564,6 +3564,10 @@
 
       .e-table {
         border-spacing: .25px;
+      }
+
+      span.e-ungroupbutton.e-icons {
+        margin-left: $grid-group-ungroupicon-margin-left;
       }
 
       .e-rowcell.e-frozen-right-border,

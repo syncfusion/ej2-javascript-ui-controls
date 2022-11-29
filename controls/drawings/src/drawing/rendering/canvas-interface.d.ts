@@ -124,4 +124,5 @@ export interface ImageAttributes extends BaseAttributes {
     sourceHeight: number;
     scale: Scale;
     alignment: ImageAlignment;
+    printID?: string;
 }

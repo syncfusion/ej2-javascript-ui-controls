@@ -30,6 +30,24 @@ describe('Resize ->', () => {
         //     helper.getInstance().sheets[0].columns[1].width = 64;
         //     done();
         // });
+        it('Apply autofit on rows and columns which contains wrap cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth(30, 3, 0);
+            helper.invoke('updateCell', [{ wrap: true }, 'D2']);
+            spreadsheet.autoFit('D');
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(58);
+            helper.invoke('updateCell', [{ value: 'Text Data Text Data Text Data Text Data Text Data Text Data Text Data' }, 'D2']);
+            spreadsheet.setColWidth(228, 3, 0);
+            spreadsheet.autoFit('D');
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(214);
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(256);
+            spreadsheet.autoFit('2');
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(35);
+            spreadsheet.setColWidth(260, 3, 0);
+            spreadsheet.autoFit('D');
+            expect(spreadsheet.sheets[0].columns[3].width).toBe(245);
+            done();
+        });
     });
     describe('CR-Issues ->', () => {
         describe('I274109 ->', () => {

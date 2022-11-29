@@ -747,9 +747,11 @@ export class ConnectTool extends ToolBase {
                 inPort = getInOutConnectPorts((args.target as Node), true); outPort = getInOutConnectPorts((args.target as Node), false);
             }
             if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
-                this.blocked = !this.commandHandler.dragConnectorEnds(
-                    this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
-                this.commandHandler.updateSelector();
+                if(!arg.cancel){
+                    this.blocked = !this.commandHandler.dragConnectorEnds(
+                        this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+                    this.commandHandler.updateSelector();
+                }
                 if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
                     || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
                     if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {

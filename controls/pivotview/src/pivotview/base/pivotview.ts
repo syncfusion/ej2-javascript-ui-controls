@@ -624,6 +624,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public scrollDirection: string;
     /** @hidden */
     public isInitial: boolean = true;
+    /** @hidden */
+    public isTableRender: boolean = false;
 
     private defaultLocale: Object;  /* eslint-disable-line */
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -3302,6 +3304,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             this.toolbarModule.action = '';
         }
+        this.isTableRender = false;
     }
 
     /**
@@ -4442,10 +4445,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /* eslint-disable-next-line */
     /** @hidden */
     public setGridColumns(gridcolumns: ColumnModel[]): void {
-        if (!isNullOrUndefined(this.totColWidth) && this.totColWidth > 0) {
+        if ((!isNullOrUndefined(this.totColWidth) && this.totColWidth > 0) || this.renderModule.isAutoFitEnabled) {
             for (let column of gridcolumns) {
                 if (column.columns && column.columns.length > 0) {
                     this.setGridColumns(column.columns as ColumnModel[]);
+                } else if (this.renderModule.isAutoFitEnabled) {
+                    column.autoFit = this.pivotColumns[this.posCount].autoFit;
+                    this.posCount++;
                 } else {
                     /* eslint-disable */
                     let levelName: string = column.field === '0.formattedText' ? '' :
@@ -4455,10 +4461,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     column.autoFit = this.pivotColumns[this.posCount].autoFit;
                     let calcWidth = this.renderModule.setSavedWidth(column.field === '0.formattedText' ? column.field :
                         levelName, Number(this.pivotColumns[this.posCount].width));
-                    if (column.width !== 'auto') {
-                        column.width = calcWidth;
-                    } else {
-                        column.minWidth = calcWidth;
+                    if (!column.autoFit) {
+                        if (column.width !== 'auto') {
+                            column.width = calcWidth;
+                        } else {
+                            column.minWidth = calcWidth;
+                        }
                     }
                     this.posCount++;
                     if (column.allowReordering) {
@@ -4525,10 +4533,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (column.columns) {
                     this.setCommonColumnsWidth(column.columns as ColumnModel[], width);
                 } else {
-                    if (column.width !== 'auto') {
-                        column.width = width;
-                    } else {
-                        column.minWidth = width;
+                    if (!column.autoFit) {
+                        if (column.width !== 'auto') {
+                            column.width = width;
+                        } else {
+                            column.minWidth = width;
+                        }
                     }
                 }
             } else {
@@ -4920,7 +4930,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.isEmptyGrid = true;
         this.notEmpty = false;
         this.isInitial = true;
-        this.renderModule = this.renderModule ? this.renderModule : new Render(this);
+        this.isTableRender = true,
+            this.renderModule = this.renderModule ? this.renderModule : new Render(this);
         if (this.grid && this.grid.element && this.element.querySelector('.e-grid')) {
             this.notEmpty = true;
             this.grid.setProperties({

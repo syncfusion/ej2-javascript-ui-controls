@@ -12,7 +12,7 @@ import { Freeze } from '../../../src/grid/actions/freeze';
 import { Group } from '../../../src/grid/actions/group';
 import { Page } from '../../../src/grid/actions/page';
 import { Reorder } from '../../../src/grid/actions/reorder';
-import { data } from '../base/datasource.spec';
+import { data, employeeData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
@@ -425,6 +425,111 @@ describe('Reorder module', () => {
         afterAll((done) => {
             destroy(gridObj);
             gridObj = headers = columns = null;
+        });
+    });
+
+    // reorder stackedheader after hiding issue
+    describe('Reorder stackedheader after hiding issue', () => {
+        let gridObj: Grid;
+        window['browserDetails'].isIE = false;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: employeeData,
+                allowReordering: true,
+                columns: [
+                    {
+                        field: 'EmployeeID',
+                        headerText: 'Employee ID',
+                        textAlign: 'Right',
+                        width: 140
+                    },
+                    {
+                        headerText: 'Contact',
+                        columns: [
+                            { field: 'Extension', headerText: 'Extension', width: 110 },
+                            { field: 'HomePhone', headerText: 'Home phone', width: 110 },
+                        ]
+                    },
+                    {
+                        headerText: 'History',
+                        columns: [
+                            {
+                                field: 'HireDate',
+                                headerText: 'Hire Date',
+                                textAlign: 'Right',
+                                width: 135,
+                                format: { skeleton: 'yMd', type: 'date' },
+                            }
+                        ]
+                    },
+                    {
+                        headerText: 'Employee Details',
+                        columns: [
+                            { field: 'FirstName', headerText: 'Given Name', width: 125 },
+                            { field: 'LastName', headerText: 'Surname', width: 125 },
+                            { field: 'Title', headerText: 'Title', width: 190 },
+                            { field: 'Region', headerText: 'Region', width: 90 },
+                            { field: 'City', headerText: 'City', width: 110 }
+                        ]
+                    },
+                    {
+                        field: 'PostalCode',
+                        headerText: 'Postal Code',
+                        textAlign: 'Right',
+                        width: 140
+                    },
+                    {
+                        field: 'Country',
+                        headerText: 'Country',
+                        textAlign: 'Right',
+                        width: 140
+                    },
+                    {
+                        field: 'BirthDate',
+                        headerText: 'Birthday',
+                        textAlign: 'Right',
+                        width: 140
+                    },
+                    {
+                        field: 'TitleOfCourtesy',
+                        headerText: 'Prefix',
+                        textAlign: 'Right',
+                        width: 90
+                    }
+                ]
+            }, done);
+        });
+
+        it('hide and simulate reorder action', () => {
+            gridObj.showHider.hide('Extension', 'field');
+            gridObj.showHider.hide('HomePhone', 'field');
+            gridObj.dataBind();
+            let dropClone = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('LastName') } });
+            document.body.appendChild(dropClone);
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('LastName');
+            (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('LastName') } });
+            (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('LastName').children[0], event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('LastName').children[0] } });
+            (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('LastName'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('LastName').children[0] } });
+            (gridObj.headerModule as any).drag({ target: gridObj.getColumnHeaderByField('Title'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('Title').children[0] } });
+            (gridObj.headerModule as any).dragStop({
+                target: gridObj.getColumnHeaderByField('Title'),
+                element: gridObj.getHeaderTable().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('Title').children[0] }
+            });
+            (gridObj.reorderModule as any).element = gridObj.getColumnHeaderByField('LastName');
+            (gridObj.reorderModule as any).chkDropPosition = () => true;
+            (gridObj.reorderModule as any).chkDropAllCols = () => true;
+            (gridObj.headerModule as any).drop({ target: gridObj.getColumnHeaderByField('Title'), droppedElement: dropClone });
+        });
+
+        it("check reorder element dropped index", () => {
+            const stackedHdrElem: NodeListOf<Element> = document.querySelectorAll(".e-headercell.e-firstcell");
+            const reorderElem: Element = gridObj.getColumnHeaderByField('LastName');
+            expect(stackedHdrElem[3]).toBe(reorderElem);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 

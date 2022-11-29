@@ -28,6 +28,8 @@ export class Toolbar {
     public toolbar: tool;
     /** @hidden */
     public isMultiAxisChange: boolean = false;
+    /** @hidden */
+    public isReportChange: boolean = false;
 
     private parent: PivotView;
     private dialog: Dialog;
@@ -269,6 +271,7 @@ export class Toolbar {
 
     private reportChange(args: ChangeEventArgs): void {
         this.parent.actionObj.actionName = events.reportChange;
+        this.isReportChange = true;
         if (this.parent.actionBeginMethod()) {
             args.cancel = true;
             return;

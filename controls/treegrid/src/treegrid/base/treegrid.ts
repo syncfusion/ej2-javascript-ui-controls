@@ -4094,7 +4094,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 removeClass([targetEle], 'e-treegridexpand');
             }
-	    row.querySelectorAll('.e-treerowcell')[0].setAttribute("aria-expanded", action == 'expand' ? 'true' : 'false');	
+            row.querySelectorAll('.e-treerowcell')[0].setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
             const detailrows: HTMLTableRowElement[] = gridRows.filter(
                 (r: HTMLTableRowElement) =>
                     r.classList.contains(

@@ -1,8 +1,8 @@
 import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
 import { closest, detach, EventHandler } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange } from '../common/index';
-import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
+import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth } from '../common/index';
+import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected } from '../../workbook/common/index';
@@ -284,114 +284,130 @@ export class Resize {
         }
     }
 
-    private setAutofit(idx: number, isCol?: boolean, prevData?: string): void {
-        let index: number = 0;
+    private getWrapText(text: string, colwidth: number, style: CellStyleModel): string {
+        const textArr: string[] = text.toString().split(' ');
+        const spaceWidth: number = getTextWidth(' ', style, this.parent.cellStyle);
+        let width: number; let textWidth: number = 0; let prevWidth: number = 0; let displayText: string = text; let val: string = '';
+        const setDisplayText: Function = (): void => {
+            const curWidth: number = parseInt(prevWidth.toString(), 10);
+            if (curWidth > textWidth || (curWidth === textWidth && getTextWidth(val.trim(), style, this.parent.cellStyle) >
+                getTextWidth(displayText, style, this.parent.cellStyle))) {
+                displayText = val.trim();
+                textWidth = curWidth;
+            }
+        };
+        textArr.forEach((txt: string, index: number): void => {
+            width = getTextWidth(txt, style, this.parent.cellStyle);
+            if ((prevWidth + width) / colwidth > 1) {
+                setDisplayText();
+                val = '';
+                prevWidth = width;
+            } else {
+                width += ((prevWidth + width + spaceWidth) / colwidth >= 1 ? 0 : spaceWidth);
+                prevWidth += width;
+            }
+            val += txt + ' ';
+            if (index === textArr.length - 1) {
+                setDisplayText();
+            }
+        });
+        return displayText;
+    }
+
+    private setAutofit(idx: number, isCol: boolean, prevData?: string): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const mainContent: Element = this.parent.getMainContent();
-        const oldValue: string = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
-            `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
-        const contentClone: HTMLElement[] = [];
-        let oldHeight: number = 0;
-        const contentTable: HTMLElement = mainContent.getElementsByClassName('e-content-table')[0] as HTMLElement;
-        let isWrap: boolean = false; let wrapCount: number = 0;
+        let oldValue: number; let cell: CellModel; let cellEle: HTMLElement; let colGrp: HTMLElement; let wrapCell: boolean;
+        const table: HTMLElement = this.parent.createElement(
+            'table', { className: this.parent.getContentTable().className + ' e-resizetable', styles: 'height: auto' });
+        const tBody: HTMLElement = this.parent.createElement('tbody');
+        const rowEle: HTMLElement = this.parent.createElement('tr', { className: 'e-row' });
+        const tdEle: HTMLElement = this.parent.createElement('td', { className: 'e-cell' });
         if (isCol) {
-            const rowLength: number = sheet.rows.length;
-            for (let rowIdx: number = 0; rowIdx < rowLength; rowIdx++) {
-                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[idx]) {
-                    if (getCell(rowIdx, idx, sheet).wrap) {
-                        isWrap = true;
-                        wrapCount++;
+            let row: HTMLElement;
+            table.style.width = 'auto';
+            for (let rowIdx: number = 0, len: number = sheet.rows.length; rowIdx < len; rowIdx++) {
+                cell = getCell(rowIdx, idx, sheet);
+                if (cell) {
+                    cellEle = tdEle.cloneNode() as HTMLElement;
+                    if (cell.wrap) {
+                        wrapCell = true;
+                        cellEle.textContent = this.getWrapText(this.parent.getDisplayText(cell), getExcludedColumnWidth(
+                            sheet, idx, idx, cell.colSpan > 1 ? idx + cell.colSpan - 1 : idx), cell.style);
+                    } else {
+                        cellEle.textContent = this.parent.getDisplayText(cell);
                     }
-                    const td: HTMLElement = this.parent.createElement('td', { className: 'e-cell' });
-                    td.textContent = this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx]);
-                    if (sheet.rows[rowIdx].cells[idx].style) {
-                        const style: CellStyleModel = sheet.rows[rowIdx].cells[idx].style;
-                        if (style.fontFamily) {
-                            td.style.fontFamily = style.fontFamily;
-                        }
-                        if (style.fontSize) {
-                            td.style.fontSize = style.fontSize;
-                        }
-                    }
-                    contentClone[index] = td;
-                    index++;
+                    cellEle.style.fontFamily = (cell.style && cell.style.fontFamily) || this.parent.cellStyle.fontFamily;
+                    cellEle.style.fontSize = (cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize;
+                    row = <HTMLElement>rowEle.cloneNode();
+                    row.appendChild(cellEle);
+                    tBody.appendChild(row);
                 }
             }
+            oldValue = getColumnWidth(sheet, idx);
         } else {
             const colLength: number = sheet.rows[idx] && sheet.rows[idx].cells ? sheet.rows[idx].cells.length : 0;
+            colGrp = this.parent.createElement('colgroup');
             for (let colIdx: number = 0; colIdx < colLength; colIdx++) {
-                if (sheet.rows[idx] && sheet.rows[idx].cells[colIdx]) {
-                    if (getCell(idx, colIdx, sheet).wrap) {
-                        isWrap = true;
-                        wrapCount++;
+                cell = getCell(idx, colIdx, sheet);
+                if (cell) {
+                    cellEle = tdEle.cloneNode() as HTMLElement;
+                    if (cell.wrap) {
+                        cellEle.classList.add('e-wraptext');
                     }
-                    const td: HTMLElement = this.parent.createElement('td');
-                    td.textContent = this.parent.getDisplayText(sheet.rows[idx].cells[colIdx]);
-                    if (sheet.rows[idx].cells[colIdx].style) {
-                        const style: CellStyleModel = sheet.rows[idx].cells[colIdx].style;
-                        if (style.fontFamily) {
-                            td.style.fontFamily = style.fontFamily;
-                        }
-                        if (style.fontSize) {
-                            td.style.fontSize = style.fontSize;
-                        }
-                    }
-                    contentClone[index] = td;
-                    index++;
+                    cellEle.textContent = this.parent.getDisplayText(cell);
+                    cellEle.style.fontFamily = (cell.style && cell.style.fontFamily) || this.parent.cellStyle.fontFamily;
+                    cellEle.style.fontSize = (cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize;
+                    rowEle.appendChild(cellEle);
+                    colGrp.appendChild(this.parent.createElement(
+                        'col', { styles: `width:${getColumnWidth(sheet, colIdx, false, true)}px` }));
                 }
+            }
+            table.appendChild(colGrp);
+            tBody.appendChild(rowEle);
+            oldValue = getRowHeight(sheet, idx);
+        }
+        table.appendChild(tBody);
+        const wrapper: HTMLElement = this.parent.createElement(
+            'div', { className: this.parent.element.className, styles: 'display: block' });
+        wrapper.appendChild(table);
+        document.body.appendChild(wrapper);
+        const offset: ClientRect = table.getBoundingClientRect();
+        document.body.removeChild(wrapper);
+        let fitSize: number = Math.ceil(isCol ? offset.width : offset.height);
+        let autofitValue: number = (isCol ? this.getFloatingElementWidth(fitSize + (wrapCell ? 1 : 0), idx) : fitSize) || oldValue;
+        let threshold: number;
+        if (isCol) {
+            if (autofitValue > 0) {
+                threshold = -(oldValue - autofitValue);
+            } else {
+                threshold = -oldValue;
+            }
+            const frozenCol: number = this.parent.frozenColCount(sheet);
+            if ((frozenCol && idx >= getRangeIndexes(sheet.topLeftCell)[1] && idx < frozenCol) ||
+                (idx >= this.parent.viewport.leftIndex + frozenCol && idx <= this.parent.viewport.rightIndex)) {
+                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+                this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
+                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+            } else {
+                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
+                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+            }
+        } else {
+            const frozenRow: number = this.parent.frozenRowCount(sheet);
+            autofitValue = autofitValue > 20 ? autofitValue : 20;
+            threshold = -(oldValue - autofitValue);
+            if ((frozenRow && idx >= getRangeIndexes(sheet.topLeftCell)[0] && idx < frozenRow) ||
+                (idx >= this.parent.viewport.topIndex + frozenRow && idx <= this.parent.viewport.bottomIndex)) {
+                setRowHeight(sheet, idx, autofitValue);
+                setRow(sheet, idx, { customHeight: false });
+                this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
+                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+            } else {
+                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                setRowHeight(sheet, idx, autofitValue);
             }
         }
-        if (wrapCount === 0) {
-            let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent, prevData, isWrap);
-            if (isCol) {
-                contentFit = this.getFloatingElementWidth(contentFit, idx);
-            }
-            let autofitValue: number = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
-            let threshold: number = parseInt(oldValue, 10) > autofitValue ?
-                -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
-            if (isCol) {
-                if (idx >= this.parent.viewport.leftIndex && idx <= this.parent.viewport.rightIndex) {
-                    getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
-                    this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
-                    this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
-                } else {
-                    const oldWidth: number = getColumnWidth(sheet, idx);
-                    let threshold: number;
-                    if (autofitValue > 0) {
-                        threshold = -(oldWidth - autofitValue);
-                    } else {
-                        threshold = -oldWidth;
-                    }
-                    this.parent.notify(colWidthChanged, { threshold, colIdx: idx });
-                    getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
-                }
-            } else if (!isCol) {
-                if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
-                    autofitValue = autofitValue > 20 ? autofitValue : 20;
-                    oldHeight = getRowHeight(sheet, idx);
-                    if (autofitValue > 0) {
-                        threshold = -(oldHeight - autofitValue);
-                    } else {
-                        threshold = -oldHeight;
-                    }
-                    setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
-                    setRow(sheet, idx, { customHeight: false });
-                    this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
-                    this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
-                } else {
-                    oldHeight = getRowHeight(sheet, idx);
-                    let threshold: number;
-                    if (autofitValue > 0) {
-                        threshold = -(oldHeight - autofitValue);
-                    } else {
-                        threshold = -oldHeight;
-                    }
-                    this.parent.notify(rowHeightChanged, { threshold, rowIdx: idx });
-                    setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
-                }
-            }
-        }
-        this.parent.selectRange(this.parent.getActiveSheet().selectedRange);
+        this.parent.selectRange(sheet.selectedRange);
     }
 
     private createResizeHandler(trgt: HTMLElement, className: string): void {

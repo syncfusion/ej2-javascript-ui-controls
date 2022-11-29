@@ -433,10 +433,10 @@ export class Group implements IAction {
                 (e.target as Element).parentElement.parentElement : e.target as Element;
             if (e.type === 'focusin') {
                 addClass([target as Element], ['e-focused', 'e-focus']);
-                (target as HTMLElement).tabIndex = 0;
+                (e.target as HTMLElement).tabIndex = 0;
             } else {
                 removeClass([target as Element], ['e-focused', 'e-focus']);
-                (target as HTMLElement).tabIndex = -1;
+                (e.target as HTMLElement).tabIndex = -1;
             }
         }
     }

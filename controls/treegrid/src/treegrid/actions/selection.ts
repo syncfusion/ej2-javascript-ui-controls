@@ -373,7 +373,7 @@ export class Selection {
         const checkboxRecord: ITreeData = getParentData(this.parent, currentRecord.uniqueID);
         const tr: HTMLElement = this.parent.getRows()[recordIndex];
         let checkbox: HTMLElement;
-        if (recordIndex > -1) {           
+        if (recordIndex > -1) {
             let movableTr: Element;
             if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
                 movableTr = this.parent.getMovableDataRows()[recordIndex];
@@ -422,9 +422,9 @@ export class Selection {
         if (recordIndex > -1) {
             if (!isNullOrUndefined(checkbox)) {
                 checkbox.classList.add(checkBoxclass);
-                let chkstate: string = checkState == 'check' ? 'checked' : checkState == 'uncheck' ? 'unchecked' : 'mixed';
-                tr.querySelector('.e-treecheckselect').setAttribute("aria-checked", checkState == 'check' ? 'true' : checkState == 'uncheck' ? 'false' : 'mixed');
-                tr.querySelector('.e-frame').setAttribute("title", "checkbox" + chkstate);
+                const chkstate: string = checkState === 'check' ? 'checked' : checkState === 'uncheck' ? 'unchecked' : 'mixed';
+                tr.querySelector('.e-treecheckselect').setAttribute('aria-checked', checkState === 'check' ? 'true' : checkState === 'uncheck' ? 'false' : 'mixed');
+                tr.querySelector('.e-frame').setAttribute('title', 'checkbox' + chkstate);
             }
         }
     }

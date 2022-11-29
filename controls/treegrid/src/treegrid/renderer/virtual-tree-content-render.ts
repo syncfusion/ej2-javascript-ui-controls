@@ -578,7 +578,7 @@ export class TreeInterSectionObserver extends InterSectionObserver {
         this.lastPos = null;
     }
     private virtualScrollHandlers(callback: Function, onEnterCallback: Function, instance: IGrid) : Function {
-        const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
+        //const delay: number = Browser.info.name === 'chrome' ? 200 : 100;
         const options: string = 'options'; const movableEle: string = 'movableEle';
         const element: string = 'element'; const fromWheel: string = 'fromWheel';
         //const debounced100: Function = debounce(callback, delay);

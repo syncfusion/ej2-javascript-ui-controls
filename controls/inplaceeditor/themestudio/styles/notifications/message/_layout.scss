@@ -18,19 +18,27 @@
     .e-msg-close-icon {
       box-sizing: border-box;
       display: flex;
-      height: $msg-icon-size;
       line-height: $msg-icon-size;
     }
 
     .e-msg-icon {
       font-size: $msg-icon-size;
+      height: $msg-icon-size;
       margin: $msg-icon-margin;
     }
 
     .e-msg-close-icon {
+      border-width: 0;
+      cursor: pointer;
       font-size: $msg-close-icon-size;
       margin: $msg-close-icon-margin;
-      cursor: pointer;
+      padding: 0;
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast') {
+        height: $msg-close-icon-size;
+      }
+      @else {
+        height: $msg-icon-size;
+      }
     }
 
     .e-msg-content {
@@ -68,18 +76,24 @@
 
     .e-msg-icon,
     .e-msg-close-icon {
-      height: $msg-bigger-icon-size;
       line-height: $msg-bigger-icon-size;
     }
 
     .e-msg-icon {
       font-size: $msg-bigger-icon-size;
+      height: $msg-bigger-icon-size;
       margin: $msg-bigger-icon-margin;
     }
 
     .e-msg-close-icon {
       font-size: $msg-bigger-close-icon-size;
       margin: $msg-bigger-close-icon-margin;
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast') {
+        height: $msg-bigger-close-icon-size;
+      }
+      @else {
+        height: $msg-bigger-icon-size;
+      }
     }
 
     .e-msg-content {

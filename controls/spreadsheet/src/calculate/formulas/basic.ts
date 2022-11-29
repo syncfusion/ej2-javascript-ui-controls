@@ -544,7 +544,7 @@ export class BasicFormulas {
                 for (let j: number = 0; j < cellColl.length; j++) {
                     cellValue = this.parent.getValueFromArg(cellColl[j]);
                     if (!isNaN(this.parent.parseFloat(cellValue))) {
-                        if (argVal.length > 0 && argVal !== '' && argVal !== ' ') {
+                        if (argVal.length > 0 && argVal !== '' && argVal !== ' ' && cellValue !== '') {
                             result++;
                         }
                     }

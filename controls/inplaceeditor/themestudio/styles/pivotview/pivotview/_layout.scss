@@ -849,9 +849,8 @@
     }
 
     .e-drillthrough-body-header {
-      color: $pivotgrid-editor-label-color;
+      color: $pivotgrid-drillthrough-header-font-color;
       font-weight: $pivotgrid-drillthrough-header-font-weight;
-      opacity: $pivotgrid-editor-label-opacity;
     }
 
     .e-drillthrough-body-header-value {

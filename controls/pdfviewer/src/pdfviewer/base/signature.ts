@@ -54,6 +54,8 @@ export class Signature {
     private mouseX: number;
     private oldY: number;
     private mouseY: number;
+    private imageSignatureDataUrl: any = '' ;
+    private drawSignatureDataUrl : any = '';
     // eslint-disable-next-line
     private newObject: any = [];
     /**
@@ -139,6 +141,8 @@ export class Signature {
      */
     public createSignaturePanel(): void {
         let maximumWidth: number = 750;
+        this.imageSignatureDataUrl = "";
+        this.drawSignatureDataUrl = "";
         if (!isBlazor()) {
             const elementID: string = this.pdfViewer.element.id;
             const dialogDiv: HTMLElement = createElement('div', { id: elementID + '_signature_window', className: 'e-pv-signature-window' });
@@ -950,12 +954,16 @@ export class Signature {
             let drawCheckbox = document.getElementById("checkbox");
             this.hideSignatureCheckbox(drawCheckbox);
         } else if (headerText.toLocaleLowerCase() === 'type') {
+            let canvas :any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            this.drawSignatureDataUrl = canvas.toDataURL();
             this.updateSignatureTypeValue();
             this.signaturetype = 'Type';
             this.enableCreateSignatureButton();
             let typeCheckbox = document.getElementById("checkbox1");
             this.hideSignatureCheckbox(typeCheckbox);
         } else if (headerText.toLocaleLowerCase() === 'upload') {
+            let canvas :any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            this.drawSignatureDataUrl = canvas.toDataURL();
             this.signaturetype = 'Image';
             this.enableCreateSignatureButton();
             let imageCheckbox = document.getElementById("checkbox2");
@@ -963,6 +971,11 @@ export class Signature {
         } 
         if (this.pdfViewer.element.offsetWidth < maximumWidth)
             this.updateCanvasSize();
+            this.drawSignOnTabSwitch();
+            if (headerText.toLocaleLowerCase() === 'upload' && this.imageSignatureDataUrl)
+            {
+               this.imageSignOnTabSwitch();
+            }
     }
     private enableCreateSignatureButton(): void {
         if (this.outputString !== "") {
@@ -1047,6 +1060,7 @@ export class Signature {
                     };
                     image.src = e.currentTarget.result;
                     proxy.outputString =  e.currentTarget.result;
+                    proxy.switchTabImageSignature =  e.currentTarget.result;
                 };
                 reader.readAsDataURL(uploadedFile);
             }
@@ -1077,6 +1091,7 @@ export class Signature {
         this.enableClearbutton(false);
         if (this.pdfViewer.element.offsetWidth < maximumWidth)
            this.updateCanvasSize();
+           this.drawSignOnTabSwitch();
     }
     private typeSignatureclick(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
@@ -1346,6 +1361,36 @@ export class Signature {
                 fontDiv.style.width = ((canvas.width / 2) - margin) + 'px';
             }
         }
+    }
+    private drawSignOnTabSwitch() {
+        let proxy = this;
+        let image = new Image();
+        image.onload = (): void => {
+            let canvas: any = document.getElementById(proxy.pdfViewer.element.id + '_signatureCanvas_');
+            if (canvas) {
+                let context: any = canvas.getContext('2d');
+                context.drawImage(image, 0, 0);
+            }
+        };
+        image.src = this.drawSignatureDataUrl;
+    }
+
+    private imageSignOnTabSwitch() {
+        let proxy = this;
+        let image = new Image();
+        image.onload = function () {
+            let canvas: any = document.getElementById(proxy.pdfViewer.element.id + '_signatureuploadCanvas_');
+            if (canvas) {
+                let context: any = canvas.getContext('2d');
+                var signbutton = document.getElementById(proxy.pdfViewer.element.id + '_e-pv-upload-button');
+                signbutton.style.visibility = 'hidden';
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                proxy.enableCreateButton(false);
+                proxy.signatureImageHeight = image.naturalHeight;
+                proxy.signatureImageWidth = image.naturalWidth;
+            }
+        };
+        image.src = this.imageSignatureDataUrl;
     }
 
     private signaturePanelMouseDown(e: MouseEvent | TouchEvent): void {

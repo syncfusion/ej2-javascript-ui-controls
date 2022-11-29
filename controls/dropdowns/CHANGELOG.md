@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.59 (2022-11-29)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F37860` - Issue with "Command button not working properly for multiselect in ListBox in Mac" has been resolved.
+
 ## 20.3.58 (2022-11-22)
 
 ### MultiSelect

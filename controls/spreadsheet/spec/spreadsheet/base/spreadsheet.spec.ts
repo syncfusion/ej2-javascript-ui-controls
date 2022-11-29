@@ -1093,13 +1093,14 @@ describe('Spreadsheet base module ->', () => {
 
         it('Delete sheet after applying freeze pane ', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.freezePanes(3,3,0);
-            spreadsheet.insertSheet(1,1);
-            spreadsheet.delete(0,0,"Sheet");
+            spreadsheet.freezePanes(3, 3, 0);
+            spreadsheet.insertSheet(1, 1);
+            helper.invoke('updateCell', [{ formula: '=Sheet1!A1' }, 'Sheet2!A1']);
+            spreadsheet.delete(0, 0, 'Sheet');
             setTimeout((): void => {
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
-            done();
-            },0);
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('#REF!');
+                done();
+            });
         });
     });
 

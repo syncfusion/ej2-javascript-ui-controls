@@ -489,7 +489,7 @@ export class ComboBox extends DropDownList {
         this.itemData = this.getDataByValue(this.value);
         const dataItem: { [key: string]: string } = this.getItemData();
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value, 'text': dataItem.text }, !this.allowCustom);
+            this.setProperties({ 'value': dataItem.value }, !this.allowCustom);
         }
     }
     /**

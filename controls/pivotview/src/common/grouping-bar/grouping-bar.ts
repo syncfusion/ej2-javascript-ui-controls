@@ -309,7 +309,7 @@ export class GroupingBar implements IAction {
             if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
                 let chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
                 this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
-                    this.chartPanel.refreshOverflow();
+                this.chartPanel.refreshOverflow();
             }
             this.updateChartAxisHeight();
             if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
@@ -324,7 +324,7 @@ export class GroupingBar implements IAction {
             if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
                 let gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
                 this.gridPanel.width = gridPanelWidth < 400 ? '398px' : gridPanelWidth;
-                    this.gridPanel.refreshOverflow();
+                this.gridPanel.refreshOverflow();
             }
             this.groupingTable.style.minWidth = '400px';
             let colGroupElement: HTMLElement =
@@ -419,8 +419,9 @@ export class GroupingBar implements IAction {
                     this.parent.element.querySelector('.e-frozencontent').querySelector('colgroup').children[0] as HTMLElement;
                 let colwidth: number = parseInt(buttonWidth, 10);
                 let gridColumn: Column[] = this.parent.grid.columns as Column[];
+                let hasPivotColumns: boolean = this.parent.pivotColumns.length > 0;
                 if (gridColumn && gridColumn.length > 0) {
-                    gridColumn[0].width = (gridColumn[0].width >= this.resColWidth ?
+                    gridColumn[0].width = gridColumn[0].autoFit ? gridColumn[0].width : (gridColumn[0].width >= this.resColWidth ?
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth) :
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth));
                 }
@@ -437,13 +438,13 @@ export class GroupingBar implements IAction {
                 for (let cCnt: number = 0; cCnt < gridColumn.length; cCnt++) {
                     if (cCnt !== 0) {
                         if ((gridColumn[cCnt] as Column).columns) {
-                            this.setColWidth((gridColumn[cCnt] as Column).columns as Column[], valueColWidth);
+                            this.setColWidth((this.parent.renderModule.pivotColumns[cCnt] as Column).columns as Column[], valueColWidth);
                         } else {
                             if ((gridColumn[cCnt] as Column).width !== 'auto') {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 let levelName: string = gridColumn[cCnt].customAttributes ?
                                     (gridColumn[cCnt].customAttributes as any).cell.valueSort.levelName : '';
-                                gridColumn[cCnt].width = this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
+                                gridColumn[cCnt].width = (gridColumn[cCnt].autoFit || (hasPivotColumns && this.parent.pivotColumns[cCnt].autoFit)) ? gridColumn[cCnt].width : this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
                                 /* eslint-enable @typescript-eslint/no-explicit-any */
                             } else {
                                 (gridColumn[cCnt] as Column).minWidth = valueColWidth;
@@ -455,6 +456,7 @@ export class GroupingBar implements IAction {
                 this.parent.setGridColumns(this.parent.grid.columns as ColumnModel[]);
                 this.parent.grid.headerModule.refreshUI();
                 if (!this.parent.firstColWidth) {
+                    buttonWidth = gridColumn[0].autoFit ? gridColumn[0].width.toString() : buttonWidth;
                     colGroupElement.style.width = buttonWidth;
                     rowContent.style.width = buttonWidth;
                     rowHeaderTable.style.width = buttonWidth;
@@ -489,10 +491,12 @@ export class GroupingBar implements IAction {
                 this.setColWidth(columns[cCnt].columns as Column[], width);
             }
             else {
-                if (columns[cCnt].width != "auto") {
-                    columns[cCnt].width = width;
-                } else {
-                    columns[cCnt].minWidth = width;
+                if (!columns[cCnt].autoFit) {
+                    if (columns[cCnt].width != "auto") {
+                        columns[cCnt].width = width;
+                    } else {
+                        columns[cCnt].minWidth = width;
+                    }
                 }
             }
         }

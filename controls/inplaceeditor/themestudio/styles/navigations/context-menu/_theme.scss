@@ -46,19 +46,5 @@
         }
       }
     }
-
-    &.e-inherit {
-      & ul {
-        background: inherit;
-        color: inherit;
-        box-shadow: none;
-
-        .e-menu-item .e-menu-icon,
-        .e-menu-item.e-focused .e-menu-icon,
-        .e-menu-item .e-caret {
-          color: inherit;
-        }
-      }
-    }
   }
 }

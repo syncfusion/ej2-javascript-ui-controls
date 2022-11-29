@@ -399,8 +399,13 @@ export class CanvasRenderer {
         ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number):
         void {
         this.rotateContext(canvas, obj.angle, pivotX, pivotY);
-        let image: HTMLImageElement = new Image();
-        image.src = obj.source;
+        let image: HTMLImageElement;
+        if ((<any>window).customStampCollection && (<any>window).customStampCollection.get(obj.printID)) {
+            image = (<any>window).customStampCollection.get(obj.printID);
+        } else {
+            image = new Image();
+            image.src = obj.source;
+        }
         this.image(ctx, image, obj.x, obj.y, obj.width, obj.height, obj);
     }
     /**   @private  */

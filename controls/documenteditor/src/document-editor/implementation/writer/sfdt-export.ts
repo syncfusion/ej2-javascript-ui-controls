@@ -821,7 +821,9 @@ export class SfdtExport {
                 inline.text = element.text;
             }
         } else if (element instanceof EditRangeStartElementBox) {
-            inline.user = element.user;
+            if(element.user !== ''){
+                inline.user = element.user;
+            }
             inline.group = element.group;
             inline.columnFirst = element.columnFirst;
             inline.columnLast = element.columnLast;

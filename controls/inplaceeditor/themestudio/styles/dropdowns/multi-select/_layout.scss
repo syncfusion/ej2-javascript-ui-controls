@@ -263,7 +263,11 @@
   font-family: 'e-icons';
   height: $ddl-chip-close-square;
   margin: $ddl-chip-close-margin;
-  width: $ddl-chip-close-square;
+  width: $ddl-chip-close-width;
+}
+
+.e-rtl .e-multi-select-wrapper .e-chips-close {
+  margin: $ddl-chip-close-rtl-margin;
 }
 
 .e-multi-select-wrapper .e-mob-chip.e-chips .e-chips-close {
@@ -278,7 +282,7 @@
   position: absolute;
   right: $ddl-chip-hooker-right;
   top: $ddl-closer-hooker-top;
-  width: $ddl-chip-hooker-square;
+  width: $ddl-chip-hooker-width;
 }
 
 .e-multiselect .e-down-icon .e-chips-close.e-close-hooker,
@@ -994,7 +998,7 @@ ejs-multiselect {
 .e-bigger .e-multi-select-wrapper .e-chips-close {
   @if $ddl-multiselect-skin-name == 'tailwind' {
     height: $ddl-bigger-chip-close-square;
-    width: $ddl-bigger-chip-close-square;
+    width: $ddl-bigger-chip-close-width;
   }
 }
 
@@ -1016,7 +1020,7 @@ ejs-multiselect {
 
 .e-small .e-multi-select-wrapper .e-chips-close {
   height: $ddl-small-chip-close-square;
-  width: $ddl-small-chip-close-square;
+  width: $ddl-small-chip-close-width;
 }
 
 .e-small .e-multi-select-wrapper {
@@ -1085,7 +1089,10 @@ ejs-multiselect {
 
 .e-bigger.e-small .e-multi-select-wrapper .e-chips-close {
   height: $ddl-bigger-small-chip-close-square;
-  width: $ddl-bigger-small-chip-close-square;
+  width: $ddl-bigger-small-chip-close-width;
+  @if $ddl-multiselect-skin-name == 'bootstrap4' {
+    margin: 3px 10px 10px 0;
+  }
 }
 
 .e-bigger.e-small .e-multi-select-wrapper {
@@ -1992,4 +1999,8 @@ ejs-multiselect {
 .e-multiselect.e-readonly.e-control-wrapper.e-input-group.e-control-container :not(.e-disabled).e-multi-select-wrapper:hover .e-clear-icon,
 .e-multiselect.e-readonly.e-control-wrapper.e-input-group.e-control-container.e-input-group :not(.e-disabled).e-multi-select-wrapper:hover .e-clear-icon {
   display: none;
+}
+
+.e-multiselect.e-input-group.e-control-wrapper .e-input-group-icon {
+  margin-right: 0;
 }

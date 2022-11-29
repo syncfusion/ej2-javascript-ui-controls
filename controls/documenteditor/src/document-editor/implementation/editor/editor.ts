@@ -1943,12 +1943,19 @@ export class Editor {
             selection.isSkipLayouting = true;
             selection.skipFormatRetrieval = true;
             let endPosition: TextPosition = undefined;
+            let endParagraphInfo : ParagraphInfo = undefined;
+            let endOffset : number = 0;
+            let paragraphLength : number = 0;
             if (this.owner.enableTrackChanges) {
                 if (!this.selection.start.isExistBefore(this.selection.end)) {
+                    endParagraphInfo = this.selection.getParagraphInfo(selection.start);
                     endPosition = this.selection.start.clone();
                 } else {
+                    endParagraphInfo = this.selection.getParagraphInfo(selection.end);
                     endPosition = this.selection.end.clone();
                 }
+                paragraphLength = endParagraphInfo.paragraph.getLength();
+                endOffset = endParagraphInfo.offset;
                 this.skipReplace = true;
             }
             isRemoved = this.removeSelectedContents(selection);
@@ -1957,11 +1964,12 @@ export class Editor {
                 this.owner.search.isRepalceTracking = false;
                 this.selection.start.setPositionInternal(this.selection.start);
                 this.selection.end.setPositionInternal(endPosition);
-            } else {
-                if (!isNullOrUndefined(endPosition)) {
-                    this.selection.start.setPositionInternal(endPosition);
-                    this.selection.end.setPositionInternal(endPosition);
+            } else if (endOffset > 0) {
+                let updatedParagraphLength: number = endParagraphInfo.paragraph.getLength();
+                if (paragraphLength !== updatedParagraphLength) {
+                    endOffset -= paragraphLength - updatedParagraphLength;
                 }
+                this.setPositionParagraph(endParagraphInfo.paragraph, endOffset, true);
             }
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
@@ -2596,7 +2604,8 @@ export class Editor {
         revision.revisionID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         if (!isNullOrUndefined(spittedRange) && spittedRange.length > 0) {
             this.clearAndUpdateRevisons(spittedRange, revision, spittedRange.indexOf(item));
-        } else {
+        } 
+        if (!isNullOrUndefined(item)) {
             item.revisions.push(revision);
             revision.range.push(item);
         }
@@ -16260,23 +16269,23 @@ export class Editor {
     private applyBorder(sourceBorder: WBorder, applyBorder: WBorder): void {
         if (!isNullOrUndefined(sourceBorder) && !isNullOrUndefined(applyBorder)) {
             if (!isNullOrUndefined(applyBorder.color)
-                && sourceBorder.color !== applyBorder.color && applyBorder.hasValue('color')) {
+                && sourceBorder.color !== applyBorder.color) {
                 sourceBorder.color = applyBorder.color;
             }
             if (!isNullOrUndefined(applyBorder.lineStyle)
-                && sourceBorder.lineStyle !== applyBorder.lineStyle && applyBorder.hasValue('lineStyle')) {
+                && sourceBorder.lineStyle !== applyBorder.lineStyle) {
                 sourceBorder.lineStyle = applyBorder.lineStyle;
             }
             if (!isNullOrUndefined(applyBorder.lineWidth)
-                && sourceBorder.lineWidth !== applyBorder.lineWidth && applyBorder.hasValue('lineWidth')) {
+                && sourceBorder.lineWidth !== applyBorder.lineWidth) {
                 sourceBorder.lineWidth = applyBorder.lineWidth;
             }
             if (!isNullOrUndefined(applyBorder.shadow)
-                && sourceBorder.shadow !== applyBorder.shadow && applyBorder.hasValue('shadow')) {
+                && sourceBorder.shadow !== applyBorder.shadow) {
                 sourceBorder.shadow = applyBorder.shadow;
             }
             if (!isNullOrUndefined(applyBorder.space)
-                && sourceBorder.space !== applyBorder.space && applyBorder.hasValue('space')) {
+                && sourceBorder.space !== applyBorder.space) {
                 sourceBorder.space = applyBorder.space;
             }
         }
@@ -17146,13 +17155,21 @@ export class Editor {
         return fieldBegin;
     }
 
+    private getPageNumber(widget: ParagraphWidget): number {
+        let pageNumber: number;
+        if (widget.bodyWidget.sectionFormat.restartPageNumbering) {
+            pageNumber = widget.bodyWidget.page.currentPageNum;
+        }
+        else {
+            pageNumber = this.documentHelper.pages.indexOf(widget.bodyWidget.page) + 1;
+        }
+        return pageNumber;
+    }
 
     private insertTocPageNumber(bookMarkname: string, lineWidget: LineWidget, isRightAlign: boolean, widget: ParagraphWidget): FieldElementBox {
         const fieldCode: string = ' PAGEREF' + bookMarkname + ' \\h ';
         const fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
-        let bodyWidget : BodyWidget = widget.containerWidget as BodyWidget;
-        let text: string = (bodyWidget.page.currentPageNum).toString();
-        //text element.
+        let text: string = (this.getPageNumber(widget)).toString();
         const span: FieldTextElementBox = new FieldTextElementBox();
         span.fieldBegin = fieldBegin;
         if (!isRightAlign) {
@@ -17169,8 +17186,7 @@ export class Editor {
         for (const key of Object.keys(this.pageRefFields)) {
             if (this.documentHelper.bookmarks.containsKey(key)) {
                 const bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(key);
-                let bodyWidget : BodyWidget = bookmark.paragraph.containerWidget as BodyWidget;
-                const pageRef: string = (bodyWidget.page.currentPageNum).toString();
+                let pageRef: string = (this.getPageNumber(bookmark.paragraph)).toString();
                 const span: FieldTextElementBox = this.pageRefFields[key];
                 if (pageRef !== span.text) {
                     span.text = pageRef;

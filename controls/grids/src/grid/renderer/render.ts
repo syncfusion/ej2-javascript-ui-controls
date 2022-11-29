@@ -534,6 +534,9 @@ export class Render {
         }
         this.parent.currentViewData = [];
         this.renderEmptyRow();
+        if (!this.parent.isInitialLoad) {
+            this.parent.focusModule.setFirstFocusableTabIndex();
+        }
         this.parent.log('actionfailure', { error: e });
     }
 

@@ -1368,7 +1368,7 @@ export class ListBox extends DropDownBase {
         EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
     }
 
-    private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean }, isKey?: boolean): void {
+    private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean, metaKey?: boolean }, isKey?: boolean): void {
         let isSelect: boolean = true;
         let currSelIdx: number;
         const li: Element = closest(e.target as Element, '.' + 'e-list-item');
@@ -1376,11 +1376,11 @@ export class ListBox extends DropDownBase {
         if (li && li.parentElement) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
             if (!this.selectionSettings.showCheckbox) {
-                if ((e.ctrlKey || Browser.isDevice) && this.isSelected(li)) {
+                if ((e.ctrlKey || e.metaKey || Browser.isDevice) && this.isSelected(li)) {
                     li.classList.remove(cssClass.selected);
                     li.removeAttribute('aria-selected');
                     isSelect = false;
-                } else if (!(this.selectionSettings.mode === 'Multiple' && (e.ctrlKey || Browser.isDevice))) {
+                } else if (!(this.selectionSettings.mode === 'Multiple' && (e.ctrlKey || e.metaKey || Browser.isDevice))) {
                     this.getSelectedItems().forEach((ele: Element) => {
                         ele.removeAttribute('aria-selected');
                     });
@@ -1832,14 +1832,23 @@ export class ListBox extends DropDownBase {
         return listObj;
     }
 
-    private getGrabbedItems(): Element[] {
+    private getGrabbedItems(args: DragEventArgs): Element[] {
+        let grabbItems : boolean = false;
         for (let i: number = 0; i < this.value.length; i++) {
-            const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
-            for (let j: number = 0; j < liColl.length; j++) {
-                if(this.value[i] === liColl[j].textContent) {
-                    liColl[j].classList.add('e-grabbed');
-                }
-            }   
+            if (this.value[i as number] === this.getFormattedValue(args.target.getAttribute('data-value')) as string) {
+                grabbItems = true;
+                break;
+            }
+        }
+        if (grabbItems) {
+            for (let i: number = 0; i < this.value.length; i++) {
+                const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
+                for (let j: number = 0; j < liColl.length; j++) {
+                    if(this.value[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
+                        liColl[j as number].classList.add('e-grabbed');
+                    }
+                }   
+            }
         }
         let elems: Element[];
         if (this.isAngular) {
@@ -1851,7 +1860,7 @@ export class ListBox extends DropDownBase {
     }
 
     private getDragArgs(args: DragEventArgs , isDragEnd?: boolean): DragEventArgs {
-        let elems: Element[] = this.getGrabbedItems();
+        let elems: Element[] = this.getGrabbedItems(args);
         if (elems.length) {
             if (isDragEnd) {
                 elems.push(args.target);

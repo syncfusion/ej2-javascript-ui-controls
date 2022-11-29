@@ -18,6 +18,12 @@ export class ImageElement extends DrawingElement {
     private imageSource: string = '';
 
     /**
+     * sets or gets the print id
+     * @private
+     */
+    public printID: string = '';
+
+    /**
      * Gets the source for the image element
      */
     public get source(): string {

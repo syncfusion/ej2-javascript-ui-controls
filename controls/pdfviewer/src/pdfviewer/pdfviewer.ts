@@ -5484,10 +5484,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     protected preRender(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
+        if(!isNullOrUndefined(this.element) && this.element.id == ""){
+            //Set unique id, if id is empty
+            this.element.id = this.getUniqueElementId();
+        }
         if(Browser.isDevice){
             //EJ2-63562 - Reduced the touchPadding of mobile devices to 16 to improve selection of fields without affecting resizing ability.
             this.touchPadding = 16;
         }
+    }
+    private getUniqueElementId(): string{
+        return 'pdfViewer_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
 
     protected render(): void {
@@ -6126,8 +6133,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
             if (currentField) {
                 if ((field.type === "SignatureField" || field.type === "InitialField") && this.formDesignerModule) {
-                    let y: number = field.bounds.y;
-                    let height: number = this.viewerBase.getPageHeight(field.pageIndex);
+                    let focusFieldElement = this.formFieldCollection.filter(function(value){return value.id == field.id});
+                    let y: number = focusFieldElement[0].bounds.y;
+                    let height: number = this.viewerBase.pageSize[field.pageIndex].height;
                     this.bookmark.goToBookmark(field.pageIndex, height - y);
                 } else {
                     currentField.focus();
@@ -6203,7 +6211,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 if (!fieldValue.signatureType || !fieldValue.value){
                     fieldValue.value = currentValue;
-                    fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+                    if(fieldValue.value){
+                        fieldValue.signatureType = (fieldValue.value.indexOf('base64')) > -1 ? 'Image' : ((fieldValue.value.startsWith('M') && fieldValue.value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+                    }
                 }
                 if(!isSameValue)
                     this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);

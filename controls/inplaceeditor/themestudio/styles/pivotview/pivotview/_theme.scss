@@ -23,7 +23,6 @@
 
     .e-valuescontent {
       padding-right: 8px;
-      text-align: right;
     }
 
     .e-grid .e-rowcell {
@@ -168,46 +167,46 @@
     /* stylelint-disable */
 
     .e-sortfilterdiv {
-      float: right;
-      margin: $pivotgrid-vsort-mouse-margin !important;
-      @if ($pivotgrid-skin == 'bootstrap4') {
-        font-size: 10px !important;
-        padding: 15px;
-      }
-      @if ($skin-name == 'bootstrap5') {
-        font-size: 12px !important;
-        padding: 15px;
-      }
-      @if ($skin-name == 'FluentUI') {
-        font-size: 14px !important;
-      }
-
-      &.e-value-sort-icon {
-        font-size: $pivotgrid-value-sort-icon-font-size !important;
-        @if ($skin-name == 'tailwind') {
-          padding-top: 14px !important;
+      .e-value-sort-icon {
+        float: right;
+        @if ($pivotgrid-skin == 'bootstrap4') {
+          font-size: 10px !important;
         }
         @if ($skin-name == 'bootstrap5') {
-          padding-right: 5px !important;
+          font-size: 12px !important;
+        }
+        @if ($skin-name == 'FluentUI') {
+          font-size: 14px !important;
+        }
+
+        &.e-value-sort-icon {
+          font-size: $pivotgrid-value-sort-icon-font-size !important;
         }
       }
+
+      &:not(.e-value-sort-icon) {
+        display: none;
+      }
+    }
+
+    .e-stackedheadercelldiv .e-sortfilterdiv, .e-headercelldiv .e-sortfilterdiv {
+      margin: $pivotgrid-vsort-column-margin !important;
+    }
+
+    .e-stackedheadercelldiv .e-sortfilterdiv.e-value-sort-align, .e-headercelldiv .e-sortfilterdiv.e-value-sort-align {
+      margin: $pivotgrid-vsort-column-parent-margin !important;
     }
 
     .e-rowsheader .e-sortfilterdiv {
-      margin: -10px 0 !important;
+      margin: $pivotgrid-vsort-row-margin !important;
     }
 
     .e-rowsheader .e-sortfilterdiv.e-value-sort-align {
-      margin: $pivotgrid-vsort-row-margin !important;
+      margin: $pivotgrid-vsort-row-parent-margin !important;
     }
 
     .e-pivotchart > svg, .e-pivotchart-inner > svg {
       border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
-    }
-
-    .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
-    .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-mouse-wrap-margin !important;
     }
 
     .e-grid .e-icons {
@@ -309,12 +308,12 @@
     }
 
     .e-stackedheadercelldiv {
-      display: inline;
+      display: block;
     }
 
     .e-stackedheadertext.e-cellvalue,
     .e-stackedheadercelldiv.e-cellvalue {
-      display: inline;
+      display: inline-block;
       padding-left: 12px !important;
       margin-top: 5px;
 
@@ -999,7 +998,14 @@
           .e-icon-last {
             font-size: $pivotpager-page-icon-size;
             padding: $pivotpager-page-icon-padding;
+           
+          /* stylelint-disable */
+          @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+            margin: 0 !important;
           }
+        }
+
+        /* stylelint-enable */
 
           .e-pivotview-text-div {
             display: flex;
@@ -1033,6 +1039,9 @@
 
             .e-pagercontainer {
               margin-top: $pivotpager-page-container-marging-top;
+              @if ($pivotgrid-skin == 'material-dark') or ($pivotgrid-skin == 'material') {
+                margin: $pivotpager-page-container-marging-top 0 0 0;
+              }
 
               &.e-pivot-pager-info-container,
               &.e-pager-dropdown {
@@ -1122,6 +1131,10 @@
 
               .e-pagercontainer {
                 margin-top: 0;
+
+                @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+                  margin-top: $pivotpager-touch-page-container-marging-top;
+                }
               }
 
               .e-pivotview-row-size,
@@ -1294,7 +1307,6 @@
 
       .e-grid .e-headercelldiv,
       .e-grid .e-columnsheader {
-        padding-left: $pivotview-value-sort-rtl-padding !important;
         padding-right: 8px !important;
       }
 
@@ -1309,10 +1321,6 @@
       .e-rowsheader .e-cellvalue {
         margin-left: 0;
         margin-right: 7px;
-      }
-
-      .e-valuescontent {
-        text-align: left;
       }
 
       .e-group-values,
@@ -1401,6 +1409,10 @@
 
       .e-sortfilterdiv {
         float: left;
+      }
+
+      th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border) {
+        border-left-width: 1px !important;
       }
       /* stylelint-enable */
     }
@@ -1625,8 +1637,7 @@
         font-size: $pivotview-bigger-grid-header-font-size !important;
       }
     }
-    .e-bigger .e-stackedheadercelldiv
-    {
+    .e-bigger .e-stackedheadercelldiv {
       padding-left: 16px !important;
     }
 
@@ -1780,7 +1791,6 @@
     }
 
     .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-touch-margin !important;
       @if ($pivotgrid-skin == 'bootstrap4') or ($skin-name == 'bootstrap5') {
         font-size: 12px !important;
       }
@@ -1788,15 +1798,6 @@
       @if ($pivotgrid-skin == 'tailwind') {
         font-size: 16px !important;
       }
-      
-      @if ($pivotgrid-skin == 'bootstrap5') or ($skin-name == 'FluentUI') {
-        padding-top: 28px;
-      }
-    }
-
-    .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
-    .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
-      margin: $pivotgrid-vsort-touch-wrap-margin !important;
     }
 
     /* stylelint-enable */
@@ -1842,7 +1843,6 @@
 
       .e-grid .e-headercelldiv,
       .e-grid .e-columnsheader {
-        padding-left: $pivotview-value-sort-rtl-padding !important;
         padding-right: 8px !important;
       }
 
@@ -1906,6 +1906,11 @@
             padding: $pivotpager-touch-page-icon-padding;
           }
 
+          .e-pivot-row-of-string-maindiv,
+          .e-pivot-column-of-string-maindiv {
+            line-height: $pivotpager-touch-single-title-line-height;
+          }
+
           .e-pivotview-row-pagerString,
           .e-pivotview-column-pagerString,
           .e-pivotview-row-size,
@@ -1950,6 +1955,10 @@
           .e-pivot-pager-column-maindiv {
             .e-pagercontainer {
               margin-top: 0;
+
+              @if ($pivotgrid-skin =='material-dark') or ($pivotgrid-skin =='material') {
+                margin-top: $pivotpager-touch-page-container-marging-top;
+              }
             }
 
             .e-pivotview-row-pagerString,

@@ -52,10 +52,15 @@ $sd-disabled-li-bg: $content-bg-color-disabled !default;
 $sd-disabled-li-border-color: $border-disabled !default;
 $sd-disabled-font-color: $content-text-color-disabled !default;
 
-$sd-active-li-bg: $content-bg-color-focus !default;
-$sd-active-li-border-color: $border-focus !default;
-$sd-active-font-color: $content-text-color-focus !default;
+$sd-focus-li-bg: $content-bg-color-focus !default;
+$sd-focus-li-border-color: $border-focus !default;
+$sd-focus-font-color: $content-text-color-focus !default;
+$sd-focus-box-shadow: $secondary-shadow-focus !default;
 
 $sd-hover-li-bg: $content-bg-color-hover !default;
 $sd-hover-li-border-color: $border-hover !default;
 $sd-hover-font-color: $content-text-color-hover !default;
+
+$sd-active-li-bg: $content-bg-color-pressed !default;
+$sd-active-li-border-color: $content-bg-color-pressed !default;
+$sd-active-font-color: $content-text-color-focus !default;

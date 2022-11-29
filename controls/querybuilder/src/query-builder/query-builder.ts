@@ -301,6 +301,7 @@
      private items: ItemModel[];
      private customOperators: Object;
      private operators: Object;
+     private sqlOperators: Object;
      private ruleElem: Element;
      private groupElem: Element;
      private dataColl: object[];
@@ -3323,6 +3324,8 @@
              StartsWith: 'Starts With',
              EndsWith: 'Ends With',
              Contains: 'Contains',
+             NotLike: 'Not Like',
+             Like : 'Like',
              Equal: 'Equal',
              NotEqual: 'Not Equal',
              LessThan: 'Less Than',
@@ -3402,6 +3405,16 @@
              lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE',
              isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
              notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
+         };
+         this.sqlOperators = {
+            equal: '=', notequal: '!=', greaterthan: '>', greaterthanorequal: '>=', lessthan: '<', in: this.l10n.getConstant('In').toUpperCase(),
+            notin: this.l10n.getConstant('NotIn').toUpperCase(), lessthanorequal: '<=', startswith: this.l10n.getConstant('Like').toUpperCase(),
+            endswith: this.l10n.getConstant('Like').toUpperCase(), between: this.l10n.getConstant('Between').toUpperCase(),
+            notbetween: this.l10n.getConstant('NotBetween').toUpperCase(), contains: this.l10n.getConstant('Like').toUpperCase(),
+            isnull: this.l10n.getConstant('IsNull').toUpperCase(), isnotnull: this.l10n.getConstant('IsNotNull').toUpperCase(),
+            isempty: this.l10n.getConstant('IsEmpty').toUpperCase(), isnotempty: this.l10n.getConstant('IsNotEmpty').toUpperCase(),
+            notstartswith: this.l10n.getConstant('NotLike').toUpperCase(), notendswith: this.l10n.getConstant('NotLike').toUpperCase(),
+            notcontains: this.l10n.getConstant('NotLike').toUpperCase()
          };
          if (!this.fields) {
              this.fields = { text: 'label', value: 'field'};
@@ -4403,7 +4416,7 @@
          }
          return false;
      }
-     private getSqlString(rules: RuleModel, enableEscape?: boolean, queryStr?: string): string {
+     private getSqlString(rules: RuleModel, enableEscape?: boolean, queryStr?: string, sqlLocale?: boolean): string {
          let isRoot: boolean = false;
          if (!queryStr && queryStr !== '') {
              queryStr = '';
@@ -4413,23 +4426,29 @@
          }
          let condition: string = rules.condition;
          if (rules.not) {
+            let rulesNotCondition: string;
              if (isRoot) {
-                 queryStr += 'NOT (';
+                 rulesNotCondition = sqlLocale ? this.l10n.getConstant('NOT').toUpperCase() + ' (' : 'NOT (';
+                 queryStr += rulesNotCondition;
              } else {
-                 queryStr += ' NOT (';
+                 rulesNotCondition = sqlLocale ? ' ' + this.l10n.getConstant('NOT').toUpperCase() + ' (' : ' NOT (';
+                 queryStr += rulesNotCondition;
              }
          }
          for (let j: number = 0, jLen: number = rules.rules.length; j < jLen; j++) {
              if (rules.rules[j].rules) {
-                 queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr);
+                 queryStr = this.getSqlString(rules.rules[j], enableEscape, queryStr, sqlLocale);
              } else {
                  const rule: RuleModel = rules.rules[j]; let valueStr: string = '';
+                 let ruleOpertor: string;
+                 ruleOpertor = sqlLocale ? this.sqlOperators[rule.operator] : this.operators[rule.operator];
                  if (rule.value instanceof Array) {
                      if (rule.operator.toString().indexOf('between') > -1) {
+                         let ruleCondition: string = sqlLocale ? ' ' +this.l10n.getConstant('AND').toUpperCase() + ' ' : ' ' + 'AND' + ' ';
                          if (rule.type === 'date' && !this.isDateFunction(rule.value[0] as string)) {
-                             valueStr += '"' + rule.value[0] + '" AND "' + rule.value[1] + '"';
+                             valueStr += '"' + rule.value[0] + '"' + ruleCondition + '"' + rule.value[1] + '"';
                          } else {
-                             valueStr += rule.value[0] + ' AND ' + rule.value[1];
+                             valueStr += rule.value[0] + ruleCondition + rule.value[1];
                          }
                      } else {
                          if (typeof rule.value[0] === 'string' && rule.value !== null) {
@@ -4465,7 +4484,7 @@
                              rule.field = '"' + rule.field + '"';
                          }
                      }
-                     queryStr += rule.field + ' ' + this.operators[rule.operator];
+                     queryStr += rule.field + ' ' + ruleOpertor;
                  } else {
                      if (enableEscape) {
                          rule.field = '`' + rule.field + '`';
@@ -4474,7 +4493,7 @@
                              rule.field = '"' + rule.field + '"';
                          }
                      }
-                     queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
+                     queryStr += rule.field + ' ' + ruleOpertor + ' ' + valueStr;
                  }
                  if (rule.condition && rule.condition !== '') {
                      condition = rule.condition;
@@ -4484,7 +4503,8 @@
                  if (condition === '') {
                      condition = rules.rules[j].condition;
                  }
-                 queryStr += ' ' + condition.toUpperCase() + ' ';
+                 condition = sqlLocale ? this.l10n.getConstant(condition.toUpperCase()).toUpperCase() : condition.toUpperCase();
+                 queryStr += ' ' + condition + ' ';
              }
          }
          if (!isRoot) {
@@ -4499,24 +4519,26 @@
       * Sets the rules from the sql query.
       *
       * @param {string} sqlString - 'sql String' to be passed to set the rule.
+      * @param {boolean} sqlLocale -  Set `true` if Localization for Sql query.
       * @returns {void}
       */
-     public setRulesFromSql(sqlString: string): void {
+     public setRulesFromSql(sqlString: string, sqlLocale?: boolean): void {
          sqlString = sqlString.replace(/`/g, '');
-         const ruleModel: RuleModel = this.getRulesFromSql(sqlString);
+         const ruleModel: RuleModel = this.getRulesFromSql(sqlString, sqlLocale);
          this.setRules({ condition: ruleModel.condition, not: ruleModel.not, rules: ruleModel.rules });
      }
      /**
       * Get the rules from SQL query.
       *
       * @param {string} sqlString - 'sql String' to be passed to get the rule.
+      * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
       * @returns {object} - Rules from SQL query
       */
-     public getRulesFromSql(sqlString: string): RuleModel {
+     public getRulesFromSql(sqlString: string, sqlLocale?: boolean): RuleModel {
          this.parser = [];
-         this.sqlParser(sqlString);
+         this.sqlParser(sqlString, sqlLocale);
          this.rule = { condition: 'and', not: false, rules: [] };
-         const rule: RuleModel = this.processParser(this.parser, this.rule, [0]);
+         const rule: RuleModel = this.processParser(this.parser, this.rule, [0], sqlLocale);
          if (this.enableNotCondition) {
              return {condition: rule.condition, not: rule.not, rules: rule.rules};
          } else {
@@ -4528,28 +4550,43 @@
       *
       * @param {RuleModel} rule - 'rule' to be passed to get the sql.
       * @param {boolean} allowEscape - Set `true` if it exclude the escape character.
+      * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
       * @returns {object} - Sql query from rules.
       */
-     public getSqlFromRules(rule?: RuleModel, allowEscape?: boolean): string {
+     public getSqlFromRules(rule?: RuleModel, allowEscape?: boolean, sqlLocale?: boolean): string {
          if (!rule) {
              rule = this.getValidRules();
          }
          rule = this.getRuleCollection(rule, false);
-         return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
+         return this.getSqlString(this.getValidRules(rule), allowEscape, null, sqlLocale).replace(/"/g, '\'');
      }
-     private sqlParser(sqlString: string): string[][] {
+     private sqlParser(sqlString: string, sqlLocale?: boolean): string[][] {
          let st: number = 0;
          let str: string;
          do {
              str = sqlString.slice(st);
-             st += this.parseSqlStrings(str);
+             st += this.parseSqlStrings(str, sqlLocale);
          } while (str !== '');
          return this.parser;
      }
-     private parseSqlStrings(sqlString: string): number {
+     private parseSqlStrings(sqlString: string, sqlLocale?: boolean): number {
          const operators: string[] = ['=', '!=', '<=', '>=', '<', '>'];
-         const conditions: string[] = ['AND', 'OR', 'NOT']; const subOp: string[] =
-         ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL', 'IS EMPTY', 'IS NOT EMPTY'];
+         let conditions: string[];
+         if (sqlLocale) {
+            conditions = [this.l10n.getConstant('AND').toUpperCase(), this.l10n.getConstant('OR').toUpperCase(), this.l10n.getConstant('NOT').toUpperCase()];
+         } else {
+            conditions = ['AND', 'OR', 'NOT'];
+         }
+         let subOp: string[];
+         if (sqlLocale) {
+            subOp = [this.l10n.getConstant('In').toUpperCase(), this.l10n.getConstant('NotIn').toUpperCase(),
+            this.l10n.getConstant('Like').toUpperCase(), this.l10n.getConstant('NotLike').toUpperCase(),
+            this.l10n.getConstant('Between').toUpperCase(), this.l10n.getConstant('NotBetween').toUpperCase(),
+            this.l10n.getConstant('IsNull').toUpperCase(), this.l10n.getConstant('IsNotNull').toUpperCase(),
+            this.l10n.getConstant('IsEmpty').toUpperCase(), this.l10n.getConstant('IsNotEmpty').toUpperCase()];    
+         } else {
+            subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL', 'IS EMPTY', 'IS NOT EMPTY'];
+         }
          let regexStr: string; let regex: RegExp; let matchValue: string;
          for (let i: number = 0, iLen: number = operators.length; i < iLen; i++) {
              regexStr = /^\w+$/.test(operators[i]) ? '\\b' : '';
@@ -4614,7 +4651,7 @@
              this.parser.push(['Literal', matchValue]);
              return matchValue.length + 2;
          }
-         if (this.checkNumberLiteral(sqlString)) {
+         if (this.checkNumberLiteral(sqlString, sqlLocale)) {
              matchValue = /^[0-9]+(\.[0-9]+)?/.exec(sqlString)[0];
              this.parser.push(['Literal', matchValue]);
              return matchValue.length;
@@ -4657,7 +4694,7 @@
          }
          return false;
      }
-     private checkNumberLiteral(sqlString: string): boolean {
+     private checkNumberLiteral(sqlString: string, sqlLocale?: boolean): boolean {
          const lastParser: string[] = this.parser[this.parser.length - 1];
          if (!lastParser) {
              return true;
@@ -4668,19 +4705,36 @@
                  if (lastParser[0] === 'Left' && (secParser && secParser[0] === 'Conditions')) {
                      return true;
                  }
-                 if (lastParser[0] === 'Conditions' && (betweenParser && betweenParser[1].indexOf('between') < 0)) {
+                 let betweenOperator: string = sqlLocale ? this.l10n.getConstant('Between').toLowerCase() : 'between';
+                 if (lastParser[0] === 'Conditions' && (betweenParser && betweenParser[1].indexOf(betweenOperator) < 0)) {
                      return true;
                  }
              }
          }
          return false;
      }
-     private getOperator(value: string, operator: string): string {
+     private getOperator(value: string, operator: string, sqlLocale?: boolean): string {
          const operators: object = {
              '=': 'equal', '!=': 'notequal', '<': 'lessthan', '>': 'greaterthan', '<=': 'lessthanorequal',
              '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
              'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
          };
+         if (sqlLocale) {
+            let localeOperator: string[] = Object.keys(this.sqlOperators);
+            for (let i: number = 0; i < localeOperator.length; i++) {
+                if(this.sqlOperators[localeOperator[i]] === operator.toUpperCase()) {
+                    if (value && value.indexOf('%') === 0 && value[value.length - 1] === '%') {
+                        return (localeOperator[i] === 'notcontains') ? 'notcontains' : 'contains';
+                    } else if (value && value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
+                        return (localeOperator[i] === 'notstartswith') ? 'notstartswith' : 'startswith';
+                    } else if (value && value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
+                        return (localeOperator[i] === 'notendswith') ? 'notendswith' : 'endswith';
+                    }
+                   return localeOperator[i];
+                }
+            }
+            return null;
+         }
          if (value) {
              if (value.indexOf('%') === 0 && value[value.length - 1] === '%') {
                  return (operator === 'not like') ? 'notcontains' : 'contains';
@@ -4701,7 +4755,10 @@
  
      private getTypeFromColumn(rules: RuleModel): string {
          const columnData: ColumnsModel = this.getColumn(rules.field);
-         return columnData.type;
+         if (!isNullOrUndefined(columnData)) {
+            return columnData.type;
+         }
+         return null;
      }
  
      private getLabelFromColumn(field: string): string {
@@ -4734,7 +4791,7 @@
          return this.getColumn(fieldName).label;
      }
  
-     private processParser(parser: string[][], rules: RuleModel, levelColl: number[]): RuleModel {
+     private processParser(parser: string[][], rules: RuleModel, levelColl: number[], sqlLocale?: boolean): RuleModel {
          let j: number; let jLen: number; let rule: RuleModel; let subRules: RuleModel; let numVal: number[] = []; let strVal: string[] = [];
          let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number;
          let operator: string; let isLeftOpened: boolean = false;
@@ -4743,12 +4800,19 @@
                  rule = { label: parser[i][1], field: parser[i][1] };
                  if (parser[i + 1][0] === 'SubOperators') {
                      if (parser[i + 1][1].indexOf('null') > -1 || parser[i + 1][1].indexOf('empty') > -1) {
-                         rule.operator = this.getOperator(' ', parser[i + 1][1]);
+                         rule.operator = this.getOperator(' ', parser[i + 1][1], sqlLocale);
                          rule.value = null; rule.type = this.getTypeFromColumn(rule);
                      } else {
                          const oper: string = parser[i + 3][1] ? parser[i + 3][1].replace(/'/g, '') : parser[i + 3][1];
-                         rule.operator = this.getOperator(oper, parser[i + 1][1]); }
+                         rule.operator = this.getOperator(oper, parser[i + 1][1], sqlLocale); }
                      operator = parser[i + 1][1]; i++; j = i + 1; jLen = iLen;
+                     if (sqlLocale && rule.operator === 'contains' || rule.operator === 'startswith' || rule.operator === 'endswith') {
+                        operator = 'like';
+                     } else if(sqlLocale && rule.operator === 'notcontains' || rule.operator === 'notstartswith' || rule.operator === 'notendswith') {
+                        operator = 'not like';
+                     } else if (sqlLocale) {
+                        operator = rule.operator;
+                     }
                      for (j = i + 1; j < jLen; j++) {
                          if (operator.indexOf('between') < 0 && parser[j][0] === 'Left') {
                              isLeftOpened = true;
@@ -4798,7 +4862,7 @@
                          numVal = []; strVal = []; rule.type = this.getTypeFromColumn(rule);
                      }
                  } else if (parser[i + 1][0] === 'Operators') {
-                     rule.operator = this.getOperator(parser[i + 2][1], parser[i + 1][1]);
+                     rule.operator = this.getOperator(parser[i + 2][1], parser[i + 1][1], sqlLocale);
                      if (parser[i + 2][0] === 'Number') {
                          rule.type = 'number'; rule.value = Number(parser[i + 2][1]);
                      } else {
@@ -4808,7 +4872,7 @@
                  }
                  rules.rules.push(rule);
              } else if (parser[i][0] === 'Left') {
-                 if (!(parser[0][0] === 'Left') && parser[i - 1][1] === 'not') { continue; }
+                 if (!(parser[0][0] === 'Left') && (parser[i - 1][1] === 'not'|| sqlLocale && this.l10n.getConstant('NOT').toLowerCase() === parser[i - 1][1])) { continue; }
                  this.parser = parser.splice(i + 1, iLen - (i + 1));
                  if (this.enableNotCondition) {
                      subRules = { condition: 'and', rules: [], not: false };
@@ -4821,10 +4885,10 @@
                          grpCount++;
                      }
                  }
-                 levelColl.push(grpCount); rules.rules.push(subRules); subRules = this.processParser(this.parser, subRules, levelColl);
+                 levelColl.push(grpCount); rules.rules.push(subRules); subRules = this.processParser(this.parser, subRules, levelColl, sqlLocale);
                  return rules;
              } else if (parser[i][0] === 'Conditions') {
-                 if (parser[i][1] === 'not') {
+                 if (parser[i][1] === 'not' || (sqlLocale && this.l10n.getConstant('NOT').toLowerCase() === parser[i][1])) {
                      rules.not = true;
                  } else {
                      rules.condition = parser[i][1];
@@ -4836,7 +4900,7 @@
                  for (l = 0; l < lLen; l++) {
                      rules = this.findGroupByIdx(levelColl[l], rules, l === 0);
                  }
-                 return this.processParser(this.parser, rules, levelColl);
+                 return this.processParser(this.parser, rules, levelColl, sqlLocale);
              }
          }
          return rules;

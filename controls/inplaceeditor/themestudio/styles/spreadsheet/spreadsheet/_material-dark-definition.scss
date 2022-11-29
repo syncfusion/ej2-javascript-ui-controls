@@ -80,7 +80,7 @@ $bigger-cpicker-btn-width: 31px !default;
 $menu-extension-padding: 10px !default;
 $ribbon-item-hover-border-color: transparent !default;
 $ribbon-item-active-border-color: transparent !default;
-$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
+$font-family-collection: ('Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier', 'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto', 'Tahoma', 'Times New Roman', 'Verdana') !default;
 $normal-btn-padding: 7px !default;
 
 //End Ribbon
@@ -108,7 +108,7 @@ $find-tool-dlg-width: 330px !default;
 $find-tool-dlg-height: 46px !default;
 $find-dlg-width: 470px !default;
 $bigger-find-tool-dlg-width: 403px !default;
-$bigger-find-tool-dlg-height: 59px !default;
+$bigger-find-tool-dlg-height: 62px !default;
 $bigger-find-goto-dlg-height: 241px !default;
 
 //End Find And Replace
@@ -146,4 +146,8 @@ $custom-listview-color: #ddd;
 //File Name Dialog
 $open-dlg-width: 340px !default;
 
-//File Name Dialog
+//End File Name Dialog
+//Data Validation
+$bigger-validation-list-icon-bottom: 12px !default;
+
+//End Data Validation

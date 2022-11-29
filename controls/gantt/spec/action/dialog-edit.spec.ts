@@ -831,7 +831,7 @@
         it('Add new record beyond project dates', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.action === 'TimescaleUpdate') {
-                    expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'M/d/yyyy')).toEqual('3/25/2019');
+                    expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'M/d/yyyy')).toEqual('3/18/2019');
                 }
             };
             ganttObj.dataBind();
@@ -2223,6 +2223,63 @@
         it('changing inner html value', () => {
             expect(document.getElementsByClassName('e-rowcell e-ellipsistooltip')[5].innerHTML).toBe('2')
         });
-    });	 	 	 
+    });
+    describe('Cr string convert to integer issue', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: [],
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                taskFields: {
+                    id: 'secondaryId',
+                    name: 'name',
+                    startDate: 'currentStartDate',
+                    endDate: 'currentFinishDate',
+                    duration: 'duration',
+                    progress: 'percentComplete',
+                    parentID: 'secondaryParentId',
+                    baselineStartDate: 'targetStart',
+                    baselineEndDate: 'targetFinish',
+                    resourceInfo: 'assignees',
+                    expandState: 'isExpanded',
+                    dependency: 'dependency',
+                },
+                columns: [
+                    { field: 'name' },
+                    { field: 'duration' },
+                    { field: 'currentStartDate' },
+                    { field: 'currentFinishDate' },
+                    { field: 'targetStart' },
+                    { field: 'targetFinish' },
+                    { field: 'percentComplete' },
+                    { field: 'secondaryId', visible:false ,headerText: 'Secondary ID'},
+                    { field: 'taskType' },
+                ],
+                projectStartDate: new Date('03/25/2022'),
+                projectEndDate: new Date('05/30/2022'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: true
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('checking edit type', () => {
+            expect(document.getElementsByClassName('e-gantt')[0]['ej2_instances'][0].columnByField['secondaryId'].editType).toBe('stringedit')
+        });
+    });	 	 	 	 	 	 
  });
  

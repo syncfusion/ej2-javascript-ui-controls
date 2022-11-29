@@ -379,7 +379,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
-     * > Check the [`Filter Menu Operator`](../../grid/how-to/#customizing-filter-menu-operators-list/) customization.
+     * > Check the [`Filter Menu Operator`](../../grid/filtering/filter-menu/#customizing-filter-menu-operators-list/) customization.
      *
      * @default null
      */
@@ -389,7 +389,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter/) filtering.
      *
      * @default false
      */
@@ -571,7 +571,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter/) filtering.
      *
      * @default false
      */
@@ -1155,7 +1155,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * If `enableAltRow` is set to true, the grid will render with `e-altrow` CSS class to the alternative tr elements.
-     * > Check the [`AltRow`](../../grid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
+     * > Check the [`AltRow`](../../grid/row/row/#using-css-customize-alternate-rows/) to customize the styles of alternative rows.
      * {% codeBlock src='grid/enableAltRow/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -1337,7 +1337,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `allowExcelExport` set to true, then it will allow the user to export grid to Excel file.
      *
-     * > Check the [`ExcelExport`](../../grid/excel-exporting/) to configure exporting document.
+     * > Check the [`ExcelExport`](../../grid/excel-export/excel-exporting/) to configure exporting document.
      * {% codeBlock src='grid/allowExcelExport/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1347,7 +1347,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `allowPdfExport` set to true, then it will allow the user to export grid to Pdf file.
      *
-     * > Check the [`Pdfexport`](../../grid/pdf-export/) to configure the exporting document.
+     * > Check the [`Pdfexport`](../../grid/pdf-export/pdf-export/) to configure the exporting document.
      * {% codeBlock src='grid/allowPdfExport/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1405,7 +1405,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If set to false the filter bar will not be displayed.
      * Filter bar allows the user to filter grid records with required criteria.
      *
-     * > Check the [`Filtering`](../../grid/filtering/) to customize its default behavior.
+     * > Check the [`Filtering`](../../grid/filtering/filtering/) to customize its default behavior.
      * {% codeBlock src='grid/allowFiltering/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1481,7 +1481,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowGrouping` set to true, then it will allow the user to dynamically group or ungroup columns.
      * Grouping can be done by drag and drop columns from column header to group drop area.
      *
-     * > Check the [`Grouping`](../../grid/grouping/) to customize its default behavior.
+     * > Check the [`Grouping`](../../grid/grouping/grouping/) to customize its default behavior.
      * {% codeBlock src='grid/allowGrouping/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1501,7 +1501,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      *
-     * > Check the [`Column menu`](../../grid/columns/#column-menu/) for its configuration.
+     * > Check the [`Column menu`](../../grid/columns/column-menu/) for its configuration.
      * {% codeBlock src='grid/showColumnMenu/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1531,7 +1531,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Configures the Grid aggregate rows.
      * {% codeBlock src='grid/aggregates/index.md' %}{% endcodeBlock %}
-     * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
+     * > Check the [`Aggregates`](../../grid/aggregates/aggregates/) for its configuration.
      *
      * @default []
      */
@@ -1541,7 +1541,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.
      *
-     * > Check the [`ColumnChooser`](../../grid/columns/#column-chooser/) for its configuration.
+     * > Check the [`ColumnChooser`](../../grid/columns/column-chooser/) for its configuration.
      * {% codeBlock src='grid/showColumnChooser/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1602,7 +1602,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.
      * > * The row template must be a table row.
      *
-     * > Check the [`Row Template`](../../grid/row/) customization.
+     * > Check the [`Row Template`](../../grid/row/row-template/) customization.
      */
     @Property()
     public rowTemplate: string;
@@ -1718,7 +1718,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * CsvExport - Export the Grid to CSV(csvExport() method manually to make export.)<br><br>
      * The following code example implements the custom toolbar items.
      *
-     *  > Check the [`Toolbar`](../../grid/tool-bar/#custom-toolbar-items/) to customize its default items.
+     *  > Check the [`Toolbar`](../../grid/tool-bar/tool-bar-items/#custom-toolbar-items/) to customize its default items.
      *
      * {% codeBlock src="grid/toolbar-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src='grid/toolbar/index.md' %}{% endcodeBlock %}
@@ -6543,7 +6543,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group')))) {
+                parentsUntil(relatedTarget, 'e-input-group')) && !isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

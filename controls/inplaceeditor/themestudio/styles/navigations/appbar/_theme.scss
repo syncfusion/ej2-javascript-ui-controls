@@ -8,6 +8,7 @@
       background: $appbar-bg-color-alt1;
       color: $appbar-color-alt1;
       border-color: $appbar-border-color-alt1;
+      border: $appbar-border;
 
       .e-appbar-separator {
         border-left: 1px solid $appbar-color-alt1;
@@ -30,6 +31,11 @@
       .e-menu-wrapper,
       .e-menu-container {
         &.e-inherit {
+          background: $appbar-bg-color-alt1;
+          color: $appbar-color-alt1;
+          border-color: $appbar-border-color-alt1;
+          box-shadow: none;
+
           & .e-menu .e-menu-item.e-selected,
           & .e-menu .e-menu-item.e-focused {
             background: $appbar-hover-bg-color-alt1;
@@ -64,6 +70,11 @@
       .e-menu-wrapper,
       .e-menu-container {
         &.e-inherit {
+          background: $appbar-bg-color-alt2;
+          color: $appbar-color-alt2;
+          border-color: $appbar-border-color-alt2;
+          box-shadow: none;
+
           & .e-menu .e-menu-item.e-selected,
           & .e-menu .e-menu-item.e-focused {
             background: $appbar-hover-bg-color-alt2;
@@ -80,6 +91,16 @@
       .e-appbar-separator {
         border-left: 1px solid $appbar-color-primary;
       }
+
+      .e-menu-wrapper,
+      .e-menu-container {
+        &.e-inherit {
+          background: $appbar-bg-color-primary;
+          color: $appbar-color-primary;
+          border-color: $appbar-border-color-primary;
+          box-shadow: none;
+        }
+      }
     }
 
     &.e-inherit {
@@ -91,6 +112,16 @@
       .e-appbar-separator {
         border-left: 1px solid;
       }
+
+      .e-menu-wrapper,
+      .e-menu-container {
+        &.e-inherit {
+          background: inherit;
+          color: inherit;
+          border-color: inherit;
+          box-shadow: none;
+        }
+      }
     }
 
     &.e-horizontal-bottom {
@@ -99,39 +130,6 @@
   }
 
   .e-light {
-    &.e-inherit.e-dropdown-popup,
-    &.e-inherit.e-menu-container,
-    &.e-inherit.e-menu-wrapper,
-    &.e-inherit.e-menu-wrapper .e-ul,
-    &.e-inherit.e-menu-container .e-ul {
-      background: $appbar-bg-color-alt1;
-      color: $appbar-color-alt1;
-      border-color: $appbar-border-color-alt1;
-      box-shadow: none;
-    }
-
-    &.e-inherit.e-dropdown-popup {
-      & ul {
-        & .e-item {
-
-          &:hover,
-          &.e-focused {
-            background: $appbar-hover-bg-color-alt1;
-          }
-        }
-      }
-    }
-
-    &.e-menu-wrapper,
-    &.e-menu-container {
-      &.e-inherit {
-        & .e-ul .e-menu-item.e-focused,
-        & .e-ul .e-menu-item.e-selected {
-          background: $appbar-hover-bg-color-alt1;
-        }
-      }
-    }
-
     &.e-inherit.e-input-group,
     &.e-inherit.e-input-group.e-control-wrapper,
     &.e-inherit.e-float-input,
@@ -146,39 +144,6 @@
   }
 
   .e-dark {
-    &.e-inherit.e-dropdown-popup,
-    &.e-inherit.e-menu-container,
-    &.e-inherit.e-menu-wrapper,
-    &.e-inherit.e-menu-wrapper .e-ul,
-    &.e-inherit.e-menu-container .e-ul {
-      background: $appbar-bg-color-alt2;
-      color: $appbar-color-alt2;
-      border-color: $appbar-border-color-alt2;
-      box-shadow: none;
-    }
-
-    &.e-inherit.e-dropdown-popup {
-      & ul {
-        & .e-item {
-
-          &:hover,
-          &.e-focused {
-            background: $appbar-hover-bg-color-alt2;
-          }
-        }
-      }
-    }
-
-    &.e-menu-wrapper,
-    &.e-menu-container {
-      &.e-inherit {
-        & .e-ul .e-menu-item.e-focused,
-        & .e-ul .e-menu-item.e-selected {
-          background: $appbar-hover-bg-color-alt2;
-        }
-      }
-    }
-
     &.e-inherit.e-input-group,
     &.e-inherit.e-input-group.e-control-wrapper,
     &.e-inherit.e-float-input,
@@ -193,17 +158,6 @@
   }
 
   .e-primary {
-    &.e-inherit.e-dropdown-popup,
-    &.e-inherit.e-menu-container,
-    &.e-inherit.e-menu-wrapper,
-    &.e-inherit.e-menu-wrapper .e-ul,
-    &.e-inherit.e-menu-container .e-ul {
-      background: $appbar-bg-color-primary;
-      color: $appbar-color-primary;
-      border-color: $appbar-border-color-primary;
-      box-shadow: none;
-    }
-
     &.e-inherit.e-input-group,
     &.e-inherit.e-input-group.e-control-wrapper,
     &.e-inherit.e-float-input,
@@ -250,15 +204,5 @@
   .e-inherit.e-input-group .e-clear-icon,
   .e-inherit.e-input-group.e-control-wrapper .e-clear-icon {
     color: inherit;
-  }
-
-  .e-inherit.e-menu-container,
-  .e-inherit.e-menu-wrapper,
-  .e-inherit.e-menu-wrapper .e-ul,
-  .e-inherit.e-menu-container .e-ul {
-    background: inherit;
-    color: inherit;
-    border-color: inherit;
-    box-shadow: none;
   }
 }

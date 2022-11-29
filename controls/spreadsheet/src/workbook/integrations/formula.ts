@@ -355,11 +355,11 @@ export class WorkbookFormula {
         // eslint-disable-next-line no-useless-escape
         const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
         let i: number = 0;
-        const sheetCount: number = this.parent.sheets.length;
+        const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
+        const sheetCount: number = sheetInfo.length;
         const temp: number[] = [];
         temp.length = 0;
         let regxTemp: RegExp; let searchIdx: number; let idx: number; let valSearchIdx: number; let regxVisible: RegExp;
-        const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
         for (i = 0; i < sheetCount; i++) {
             if (sheetInfo[i].sheet !== sheetInfo[i].visibleName) {
@@ -769,7 +769,7 @@ export class WorkbookFormula {
 
     private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, otherSheet?: boolean,
         formulaSheet?: SheetModel): void {
-        let ref: string; let pVal: string; let index: number[]; let updated: boolean; let range: number[];
+        let ref: string; let pVal: string; let index: number[]; let updated: boolean; let range: number[]; let isRangeFormula: boolean;
         if (cell.formula && cell.formula.includes('UNIQUE')) {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
@@ -780,6 +780,7 @@ export class WorkbookFormula {
         for (let i: number = 0; i < formulaArr.length; i++) {
             ref = formulaArr[i].trim().replace(/[$]/g, '');
             if (this.calculateInstance.isCellReference(ref)) {
+                isRangeFormula = ref.includes(':');
                 pVal = i && formulaArr[i - 1].trim();
                 if (pVal && pVal[pVal.length - 1] === '!') {
                     pVal = pVal.replace(/['!]/g, '');
@@ -790,7 +791,7 @@ export class WorkbookFormula {
                     continue;
                 }
                 index = getRangeIndexes(ref);
-                updated = this.parent.updateRangeOnInsertDelete(args, index);
+                updated = this.parent.updateRangeOnInsertDelete(args, index, isRangeFormula);
                 range = getSwapRange(index);
                 if (updated) {
                     formulaArr[i] = range[2] < range[0] || range[3] < range[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref]

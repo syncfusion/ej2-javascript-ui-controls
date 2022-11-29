@@ -310,7 +310,7 @@ export class FormFields {
             if (currentField) {
                 if ((this.pdfViewerBase.focusField.type === "SignatureField" || this.pdfViewerBase.focusField.type === "InitialField")  && this.pdfViewer.formDesignerModule) {
                     let y: number = this.pdfViewerBase.focusField.bounds.y;
-                    let height: number = this.pdfViewerBase.getPageHeight(this.pdfViewerBase.focusField.pageIndex);
+                    let height: number = this.pdfViewerBase.pageSize[pageIndex].height;
                     this.pdfViewer.bookmark.goToBookmark(this.pdfViewerBase.focusField.pageIndex, height - y);
                 } else {
                     currentField.focus();
@@ -2288,7 +2288,9 @@ export class FormFields {
         // eslint-disable-next-line
         span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor : 'orange') : 'orange';
         span.style.opacity = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity : 1) : 1;
-        textLayer.appendChild(span);
+        if(!isNullOrUndefined(textLayer)){
+            textLayer.appendChild(span);
+        }
         this.addSignaturePath(data, count);
         return inputField;
     }

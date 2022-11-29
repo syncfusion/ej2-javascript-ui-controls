@@ -11,6 +11,10 @@
     @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap5' {
       color: $fe-tb-active-color;
     }
+
+    @if $fm-skin-name == 'highcontrast' {
+      color: $fe-active-font-color;
+    }
   }
 }
 
@@ -45,6 +49,15 @@
           @include active-icon-color;
           background: $fe-tb-focus-bg;
           border-color: $fe-tb-focus-border-color;
+          @if $fm-skin-name == 'highcontrast' {
+            background: $fe-active-bg-color;
+          }
+
+          &:hover {
+            @if $fm-skin-name == 'highcontrast' {
+              background: $fe-active-bg-color;
+            }
+          }
         }
 
         &:hover {
@@ -58,6 +71,9 @@
           @include active-icon-color;
           background: $fe-tb-focus-bg;
           border-color: $fe-tb-hover-border-color;
+          @if $fm-skin-name == 'highcontrast' {
+            background: $fe-active-bg-color;
+          }
         }
       }
     }

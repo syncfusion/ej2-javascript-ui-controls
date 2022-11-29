@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, FieldElementBox, FieldInfo, ListTextElementBox, TableWidget, TextElementBox } from '../../../src/index';
+import { BordersAndShadingDialog, Editor, FieldElementBox, FieldInfo, ListTextElementBox, TableWidget, TextElementBox } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { LineWidget, ImageElementBox,ParagraphWidget } from '../../../src/index';
@@ -1001,5 +1001,43 @@ describe('To check cell index updated properly after delete columns', () => {
         editor.selection.select('0;45;0;2;0;11','0;45;0;2;0;11');
         editor.editor.deleteColumn();
         expect(editor.selection.start.paragraph.associatedCell.index).toBe(2);
+    });
+});
+describe('To Check table format while applied border style as None', () => {
+    let editor: DocumentEditor = undefined;
+    let borderAndShadingDialog: BordersAndShadingDialog;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true, enableComment: true , enableBordersAndShadingDialog: true});
+        editor.acceptTab = true;
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, BordersAndShadingDialog);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        borderAndShadingDialog = editor.bordersAndShadingDialogModule;
+    });
+    afterAll((done) => {
+        if (editor) {
+            editor.destroy();
+        }
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        borderAndShadingDialog.destroy();
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('To Check table format while changing border style as None', () => {
+        console.log('To Check table format while applied border style as None');
+        editor.openBlank();
+        editor.editor.insertTable(1,1);
+        borderAndShadingDialog.show();
+        (borderAndShadingDialog as any).borderStyle = 'None';
+        (borderAndShadingDialog as any).applyBordersShadingsProperties();
+        expect(editor.selection.tableFormat.table.tableFormat.borders.top.lineStyle).toBe('None');
     });
 });

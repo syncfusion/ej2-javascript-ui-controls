@@ -425,9 +425,13 @@
           }
           /* stylelint-disable */
           float: right !important;
-          margin: 0;          
-          margin-right: 12px !important;
+          margin: 0 12px 0 0;
           /* stylelint-enable */
+          &.e-edit,
+          &.e-edited,
+          &.e-remove-report {
+            margin-top: $field-list-calc-list-icon;
+          }
         }
       }
 
@@ -570,8 +574,8 @@
       .e-treeview .e-list-item div.e-edit.e-icons,
       .e-treeview .e-list-item div.e-edited.e-icons,
       .e-treeview .e-list-item div.e-remove-report.e-icons {
-        margin-right: 0;
         transform: rotate(0deg);
+        margin: $field-list-calc-list-icon-rtl 0 0 0;
       }
 
       .e-treeview ul {

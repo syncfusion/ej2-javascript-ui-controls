@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.3.59 (2022-11-29)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I421694` - Now, Angular applications may render PDF Viewer controls without ID properties.
+- `#I409823` - Support was given for a custom margin property in the free text annotation.
+
+#### Bug Fixes
+
+- `#I419557` - Now, the `IsPrint` property values for text markup annotation have been properly updated.
+- `#I418726` - Now, the draw and image signature is now preserved while changing tabs on mobile devices.
+- `#I420588` - Now, the Script error does not occur while printing the document contains signature fields on non-rendered pages.
+- `#I420304` - Now, the script error does not occur while updating read only property programmatically.
+
 ## 20.3.58 (2022-11-22)
 
 ### PDF Viewer
@@ -13,6 +29,7 @@
 #### Bug Fixes
 
 - `#I418731` - Now, for fields with the same name, the export and import form fields' values have been properly updated.
+- `#I416298` - Now, the focus for signature and initial fields are proper in different zoom levels.
 - `#I411856` - The issue with programmatically updating the initial indicator properties has been resolved.
 - `#F178660` - Fixed issue with `RenderAnnotationComments` on `.NET 6.0` platform.
 

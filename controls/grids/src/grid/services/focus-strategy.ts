@@ -89,7 +89,56 @@ export class FocusStrategy {
             parseInt((e.target as Element).getAttribute('index'), 10) === 0)) { return; }
         this.removeFocus(); this.skipFocus = true; this.currentInfo.skipAction = false;
         this.setLastContentCellTabIndex();
-        this.parent.element.tabIndex = 0;
+        this.setFirstFocusableTabIndex();
+    }
+
+    /**
+     * @returns {void}
+     * @hidden */
+    public setFirstFocusableTabIndex(): void {
+        const gObj: Grid = this.parent as Grid;
+        gObj.element.tabIndex = -1;
+        if (gObj.allowGrouping && gObj.groupSettings.showDropArea) {
+            const groupModule: Group = gObj.groupModule;
+            const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();
+            if (focusableGroupedItems.length > 0) {
+                groupModule.element.tabIndex = -1;
+                (focusableGroupedItems[0] as HTMLElement).tabIndex = 0;
+            } else {
+                groupModule.element.tabIndex = 0;
+            }
+            return;
+        }
+        if (gObj.toolbar || gObj.toolbarTemplate) {
+            const toolbarElement: Element = gObj.toolbarModule.element;
+            const focusableToolbarItems: NodeListOf<Element> = toolbarElement
+                .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+            if (focusableToolbarItems.length > 0) {
+                (toolbarElement as HTMLElement).tabIndex = -1;
+                (focusableToolbarItems[0].querySelector('.e-btn,.e-input') as HTMLElement).tabIndex = 0;
+            } else {
+                (toolbarElement as HTMLElement).tabIndex = 0;
+            }
+            return;
+        }
+        if (gObj.getColumns().length) {
+            const firstHeaderCell: HTMLElement = gObj.getHeaderContent().querySelector('.e-headercell');
+            firstHeaderCell.tabIndex = 0;
+            if (this.parent.isFrozenGrid() && (this.parent.getFrozenMode() === 'Left'
+                || this.parent.getFrozenMode() === literals.leftRight)) {
+                this.setActive(false, true);
+            } else {
+                this.setActive(false);
+            }
+            if (!isNullOrUndefined(this.active)) {
+                let firstHeaderCellIndex: number[] = [0, 0];
+                if (this.active.matrix.matrix[firstHeaderCellIndex[0]][firstHeaderCellIndex[1]] === 0) {
+                    firstHeaderCellIndex = findCellIndex(this.active.matrix.matrix, firstHeaderCellIndex, true);
+                }
+                this.active.matrix.current = firstHeaderCellIndex;
+            }
+            return;
+        }
     }
 
     private setLastContentCellTabIndex(): void {
@@ -202,21 +251,24 @@ export class FocusStrategy {
                 return;
             }
             if (parentsUntil(e.target as Element, 'e-groupdroparea')) {
-                e.preventDefault();
-                this.parent.element.focus();
+                if (this.parent.element.classList.contains('e-childgrid')) {
+                    e.preventDefault();
+                    this.parent.element.focus();
+                }
                 return;
             }
             if (parentsUntil(e.target as Element, 'e-toolbar')) {
-                e.preventDefault();
-                if (this.parent.allowGrouping) {
+                if (this.parent.allowGrouping && this.parent.groupSettings.showDropArea) {
                     const groupModule: Group = (this.parent as Grid).groupModule;
                     const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();
+                    e.preventDefault();
                     if (focusableGroupedItems.length > 0) {
                         (focusableGroupedItems[focusableGroupedItems.length - 1] as HTMLElement).focus();
                     } else {
                         groupModule.element.focus();
                     }
-                } else {
+                } else if (this.parent.element.classList.contains('e-childgrid')) {
+                    e.preventDefault();
                     this.parent.element.focus();
                 }
                 return;
@@ -385,7 +437,7 @@ export class FocusStrategy {
         const parentGrid: Grid = (parentsUntil(parentTable, 'e-grid') as EJ2Intance).ej2_instances[0] as Grid;
         const parentCell: Element = parentsUntil(this.parent.element, 'e-detailcell');
         const uid: string = parentsUntil(this.parent.element, 'e-detailrow').getAttribute('data-uid');
-        const parentRows: Element[] = parentGrid.getRows();
+        const parentRows: Element[] = [].slice.call((parentGrid.getContentTable() as HTMLTableElement).rows);
         const parentRowIndex: number = parentRows.map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
         if (e.action === 'tab' && parentRowIndex >= parentRows.length - 1) { return; }
         removeClass([this.parent.element], ['e-focus']);
@@ -416,12 +468,12 @@ export class FocusStrategy {
     }
 
     private focusOutFromHeader(e: KeyboardEventArgs): void {
-        e.preventDefault();
         this.removeFocus();
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
             const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
             const focusableToolbarItems: NodeListOf<Element> = toolbarElement
                 .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+            e.preventDefault();
             if (focusableToolbarItems.length > 0) {
                 (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-btn,.e-input') as HTMLElement).focus();
             } else {
@@ -432,6 +484,7 @@ export class FocusStrategy {
         if (this.parent.allowGrouping && this.parent.groupSettings.showDropArea) {
             const groupModule: Group = (this.parent as Grid).groupModule;
             const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();
+            e.preventDefault();
             if (focusableGroupedItems.length > 0) {
                 (focusableGroupedItems[focusableGroupedItems.length - 1] as HTMLElement).focus();
             } else {
@@ -439,7 +492,10 @@ export class FocusStrategy {
             }
             return;
         }
-        this.parent.element.focus();
+        if (this.parent.element.classList.contains('e-childgrid')) {
+            e.preventDefault();
+            this.parent.element.focus();
+        }
     }
 
     private allowToPaging(e: KeyboardEventArgs): boolean {

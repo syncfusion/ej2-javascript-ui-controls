@@ -174,7 +174,7 @@
     .e-treecell {
       display: table-cell;
       @if $skin-name == 'bootstrap5' or $skin-name == 'boostrap5-dark' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
-        line-height: 26px;
+        line-height: 19px;
       }
       @else {
         line-height: normal;

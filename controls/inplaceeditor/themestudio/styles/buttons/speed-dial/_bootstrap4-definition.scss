@@ -42,7 +42,7 @@ $sd-bigger-small-li-icon-height: 32px !default;
 $sd-bigger-small-li-icon-width: 32px !default;
 
 $sd-overlay-bg: rgba(107, 114, 128, .5) !default;
-$sd-li-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 1px 3px rgba(0, 0, 0, .1) !default;
+$sd-li-shadow: 0 4px 6px -1px rgba(0, 0, 0, .05), 0 10px 15px -3px rgba(0, 0, 0, .1) !default;
 
 $sd-li-bg: $content-bg !default;
 $sd-li-border-color: $white !default;
@@ -52,10 +52,14 @@ $sd-disabled-li-bg: $gray-600 !default;
 $sd-disabled-li-border-color: $gray-600 !default;
 $sd-disabled-font-color: $white !default;
 
-$sd-active-li-bg: $gray-600 !default;
-$sd-active-li-border-color: $gray-600 !default;
-$sd-active-font-color: $white !default;
+$sd-focus-li-bg: $gray-600 !default;
+$sd-focus-li-border-color: $gray-600 !default;
+$sd-focus-font-color: $white !default;
 
-$sd-hover-li-bg: $gray-500 !default;
+$sd-hover-li-bg: $gray-200 !default;
 $sd-hover-li-border-color: $gray-600 !default;
 $sd-hover-font-color: $secondary !default;
+
+$sd-active-li-bg: $gray-300 !default;
+$sd-active-li-border-color: $gray-600 !default;
+$sd-active-font-color: $secondary !default;

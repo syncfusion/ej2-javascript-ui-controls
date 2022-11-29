@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 20.3.59 (2022-11-29)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I397894` - When pressing Tab Key, the first focusable element in the grid is need to be focused, instead of grid container issue has been fixed.
+
+## 20.3.58 (2022-11-22)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I413206` - Unsaved batch changes gets deleted when grouping enabled and perform show/hide column using column chooser has been fixed.
+- `#I413517` - column menu is now rendering properly with sticky header.
+- `#I414774` - Grid checkbox filter issue while pasting text and search has been resolved.
+- `#I415399` - Row Template issue while using react states to set grid datasource has been resolved.
+
 ## 20.3.57 (2022-11-15)
 
 ### Grid

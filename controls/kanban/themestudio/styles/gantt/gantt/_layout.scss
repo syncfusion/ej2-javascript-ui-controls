@@ -622,12 +622,12 @@
       }
 
       .e-zero-spacing {
-        border-spacing: 0;
+        border-spacing: .25px;
       }
 
       .e-chart-row:first-child .e-chart-row-border {
         //border-width: 0;
-        border-top-color: transparent;
+        border-top: 0;
       }
 
       .e-chart-row {
@@ -907,6 +907,7 @@
 
       .e-task-table {
         overflow: hidden;
+        border-collapse: separate;
       }
 
       .e-left-resize-gripper,

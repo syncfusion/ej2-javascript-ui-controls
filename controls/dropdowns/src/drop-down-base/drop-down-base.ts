@@ -1121,18 +1121,20 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected setFloatingHeader(e: Event): void {
-        if (isNullOrUndefined(this.fixedHeaderElement)) {
-            this.fixedHeaderElement = this.createElement('div', { className: dropDownBaseClasses.fixedHead });
-            if (!this.list.querySelector('li').classList.contains(dropDownBaseClasses.group)) {
-                this.fixedHeaderElement.style.display = 'none';
+        if (!isNullOrUndefined(this.list) && !this.list.classList.contains(dropDownBaseClasses.noData)) {
+            if (isNullOrUndefined(this.fixedHeaderElement)) {
+                this.fixedHeaderElement = this.createElement('div', { className: dropDownBaseClasses.fixedHead });
+                if (!this.list.querySelector('li').classList.contains(dropDownBaseClasses.group)) {
+                    this.fixedHeaderElement.style.display = 'none';
+                }
+                prepend([this.fixedHeaderElement], this.list);
+                this.setFixedHeader();
             }
-            prepend([this.fixedHeaderElement], this.list);
-            this.setFixedHeader();
+            if (!isNullOrUndefined(this.fixedHeaderElement) && this.fixedHeaderElement.style.zIndex === '0') {
+                this.setFixedHeader();
+            }
+            this.scrollStop(e);
         }
-        if (!isNullOrUndefined(this.fixedHeaderElement) && this.fixedHeaderElement.style.zIndex === '0') {
-            this.setFixedHeader();
-        }
-        this.scrollStop(e);
     }
 
     protected scrollStop(e?: Event): void {

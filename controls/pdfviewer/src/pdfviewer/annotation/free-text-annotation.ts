@@ -647,6 +647,7 @@ export class FreeTextAnnotation {
                             // eslint-disable-next-line max-len
                             pageAnnotationObject.annotations[z].rectangleDifference = JSON.stringify(pageAnnotationObject.annotations[z].rectangleDifference);
                         }
+                        pageAnnotationObject.annotations[z].padding = this.getPaddingValues(this.fontSize);
                     }
                     newArray = pageAnnotationObject.annotations;
                 }

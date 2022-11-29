@@ -327,7 +327,7 @@
       }
       @else if $grid-skin == 'bootstrap5' {
         margin-bottom: -12px;
-        margin-top: -15px;
+        margin-top: -12px;
       }
     }
 
@@ -1631,6 +1631,7 @@
     }
 
     &.e-responsive .e-rowcell.e-gridchkbox,
+    &.e-responsive .e-rowcell.e-gridchkbox-cell,
     &.e-responsive .e-headercelldiv.e-headerchkcelldiv {
       text-overflow: clip;
     }

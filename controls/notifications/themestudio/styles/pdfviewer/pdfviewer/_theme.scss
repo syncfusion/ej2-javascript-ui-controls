@@ -4073,7 +4073,7 @@
     }
   }
 
-  .e-pv-signature-dialog-height {
+  .e-dialog.e-pv-signature-dialog-height {
     height: $pv-signature-dialog-height;
     @if ($skin-name == 'FluentUI') {
       min-height: $pv-signature-dialog-height;
@@ -4126,5 +4126,8 @@
       padding: 0 6px;
       width: 28px;
     }
+  }
+  .e-pv-toolbar-tooltip {
+    pointer-events: none;
   }
 }

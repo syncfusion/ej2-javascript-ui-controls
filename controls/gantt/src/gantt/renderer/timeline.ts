@@ -7,6 +7,7 @@ import { CriticalPath } from '../actions/critical-path';
 import { TimelineViewMode } from '../base/enum';
 import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, ZoomTimelineSettings } from '../base/interface';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { TaskbarEdit } from '../actions/taskbar-edit';
 /**
  * Configures the `Timeline` of the gantt.
  */
@@ -1351,9 +1352,10 @@ export class Timeline {
                 const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
-                if (!isNullOrUndefined(maxStartLeft)&&(minStartDate < this.timelineStartDate) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+               if (!isNullOrUndefined(maxStartLeft) && ((minStartDate < this.timelineStartDate) ||(!isNullOrUndefined(this.parent.editModule.taskbarEditModule))&& (!isNullOrUndefined(this.parent.editModule.taskbarEditModule.taskBarEditAction))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
                     isChanged = 'prevTimeSpan';
-                    minStartDate =  this.timelineStartDate;
+
+                    minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {
                     minStartDate = this.timelineStartDate;
                 }

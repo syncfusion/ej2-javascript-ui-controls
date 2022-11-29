@@ -120,7 +120,7 @@ export class Render {
             }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
-                args.cell.setAttribute("aria-expanded", data.expanded ? "true" : "false");
+                args.cell.setAttribute('aria-expanded', data.expanded ? 'true' : 'false');
                 const expandIcon: Element = createElement('span', { className: 'e-icons' });
                 let expand: boolean;
                 if (this.parent.initialRender) {

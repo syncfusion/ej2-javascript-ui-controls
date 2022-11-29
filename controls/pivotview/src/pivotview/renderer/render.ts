@@ -42,6 +42,10 @@ export class Render {
     public resColWidth: number;
     /** @hidden */
     public isOverflows: boolean;
+    /** @hidden */
+    public isAutoFitEnabled: boolean = false;
+    /** @hidden */
+    public pivotColumns: ColumnModel[] = [];
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
     private colPos: number = 0;
@@ -120,6 +124,9 @@ export class Render {
             this.parent.grid.refreshColumns();
             if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
                 this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+                for (let i = 0; i < this.parent.grid['columnModel'].length; i++) {
+                    this.parent.grid['columnModel'][i].autoFit = this.parent.pivotColumns[i].autoFit;
+                }
                 this.parent.groupingBarModule.setGridRowWidth();
             }
             let e: HTMLElement = this.parent.element.querySelector('.e-movablecontent') as HTMLElement;
@@ -1692,14 +1699,14 @@ export class Render {
         let pivotColumns: PivotColumn[] = this.parent.pivotColumns;
         let gridColumns: ColumnModel[] = this.parent.grid['columnModel'];
         let autoFitApplied: boolean = false;
-        let refreshColumn: boolean = this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && this.parent.engineModule.valueAxis === 1) ||
+        let refreshColumn: boolean = this.parent.toolbarModule && this.parent.toolbarModule.isReportChange ? true : this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && this.parent.engineModule.valueAxis === 1) ||
             (this.parent.actionObj.actionName === 'Sort field' && this.parent.actionObj.fieldInfo.axis === 'columns') ||
             (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.actionObj.actionName === 'Sort field' && this.parent.pivotFieldListModule.actionObj.fieldInfo.axis === 'columns')
         ) : false;
         let singleValueFormat: string = this.parent.dataSourceSettings.values.length === 1 &&
             !this.parent.dataSourceSettings.alwaysShowValueHeader ?
             this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
-        let integrateModel: ColumnModel[] = [];
+        this.pivotColumns = [];
         if ((this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
             let headerSplit: Object[] = []; /* eslint-disable-line */
@@ -1747,10 +1754,10 @@ export class Render {
                             let innerPos: number = cCnt;
                             while (tmpSpan > 0) {
                                 if (columnModel[actualCnt]) {
-                                    if (!integrateModel[splitPos[innerPos] as number]) {
+                                    if (!this.pivotColumns[splitPos[innerPos] as number]) {
                                         break;
                                     }
-                                    innerModel.push(integrateModel[splitPos[innerPos] as number]);
+                                    innerModel.push(this.pivotColumns[splitPos[innerPos] as number]);
                                 } else {
                                     columnModel[actualCnt] = {
                                         headerText: formattedText,
@@ -1765,8 +1772,9 @@ export class Render {
                                         allowResizing: this.parent.gridSettings.allowResizing,
                                         visible: true
                                     };
-                                    innerModel = [integrateModel[splitPos[innerPos] as number] as Column];
+                                    innerModel = [this.pivotColumns[splitPos[innerPos] as number] as Column];
                                 }
+                                this.isAutoFitEnabled = this.isAutoFitEnabled ? true : autoFitApplied;
                                 tmpSpan = tmpSpan - (headerSplit[innerPos] as number);
                                 innerPos = innerPos + (headerSplit[innerPos] as number);
                             }
@@ -1781,9 +1789,9 @@ export class Render {
                         cCnt = cCnt + colSpan - 1;
                     }
                 }
-                integrateModel = columnModel.length > 0 ? columnModel : integrateModel;
+                this.pivotColumns = columnModel.length > 0 ? columnModel : this.pivotColumns;
             } while (headerCnt > 0);
-            integrateModel[0] = {
+            this.pivotColumns[0] = {
                 field: (0 + '.formattedText'),
                 width: (autoFitApplied && !refreshColumn && !this.parent.isEmptyGrid && pivotColumns[0].autoFit) ? (gridColumns[0] as ColumnModel).width : this.resColWidth,
                 minWidth: 30,
@@ -1793,10 +1801,10 @@ export class Render {
                 visible: true
             };
         } else {
-            integrateModel = this.frameEmptyColumns();
+            this.pivotColumns = this.frameEmptyColumns();
         }
-        if (integrateModel.length > 1) {
-            let lastColumn: ColumnModel = integrateModel[integrateModel.length - 1];
+        if (this.pivotColumns.length > 1) {
+            let lastColumn: ColumnModel = this.pivotColumns[this.pivotColumns.length - 1];
             lastColumn.minWidth = lastColumn.width;
             lastColumn.width = 'auto';
             if (lastColumn.columns && lastColumn.columns.length > 0) {
@@ -1805,8 +1813,11 @@ export class Render {
                 }
             }
         }
-        this.parent.triggerColumnRenderEvent(integrateModel);
-        return integrateModel;
+        if (this.parent.toolbarModule && this.parent.showToolbar) {
+            this.parent.toolbarModule.isReportChange = false;
+        }
+        this.parent.triggerColumnRenderEvent(this.pivotColumns);
+        return this.pivotColumns;
     }
 
     private configLastColumnWidth(column: ColumnModel): void {

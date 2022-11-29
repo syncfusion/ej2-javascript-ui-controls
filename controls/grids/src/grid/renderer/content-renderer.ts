@@ -107,6 +107,9 @@ export class ContentRender implements IRenderer {
                     : this.movableRows;
             }
             this.parent.notify(events.contentReady, { rows: rows, args: arg });
+            if (!this.parent.isInitialLoad) {
+                this.parent.focusModule.setFirstFocusableTabIndex();
+            }
             if (this.isLoaded) {
                 this.parent.isManualRefresh = false;
                 if (this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'sorting') {

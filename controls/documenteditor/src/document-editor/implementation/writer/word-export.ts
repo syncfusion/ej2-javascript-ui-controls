@@ -5589,18 +5589,26 @@ export class WordExport {
             if (!isNullOrUndefined(characterFormat.fontFamilyAscii)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyAscii) ? 'asciiTheme' : 'ascii';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamily);
+            } else {
+                writer.writeAttributeString(undefined, 'ascii', this.wNamespace, characterFormat.fontFamily);
             }
             if (!isNullOrUndefined(characterFormat.fontFamilyFarEast)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyFarEast) ? 'eastAsiaTheme' : 'eastAsia';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyFarEast);
+            } else {
+                writer.writeAttributeString(undefined, 'eastAsia', this.wNamespace, characterFormat.fontFamily);
             }
             if (!isNullOrUndefined(characterFormat.fontFamilyNonFarEast)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyNonFarEast) ? 'hAnsiTheme' : 'hAnsi';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyNonFarEast);
+            } else {
+                writer.writeAttributeString(undefined, 'hAnsi', this.wNamespace, characterFormat.fontFamily);
             }
             if (!isNullOrUndefined(characterFormat.fontFamilyBidi)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyBidi) ? 'cstheme' : 'cs';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyBidi);
+            } else {
+                writer.writeAttributeString(undefined, 'cs', this.wNamespace, characterFormat.fontFamily);
             }
             writer.writeEndElement(); //end         
         }

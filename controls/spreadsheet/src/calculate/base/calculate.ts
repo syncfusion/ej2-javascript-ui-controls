@@ -1825,9 +1825,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (operator === 'equal') {
             val1 = stack.pop().toString();
             val2 = stack.pop().toString();
-            if (val2 === '' && val1 !== '') {
-                val2 = '0';
-            }
             result = val1 === val2 ? this.trueValue : this.falseValue;
         }
         if (operator === 'or') {
@@ -2797,7 +2794,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 avgVal = 0;
                 for (let i: number = 0; i < cellVal.length; i++) {
                     const value: string = this.getValueFromArg(cellVal[i]);
-                    if (isNullOrUndefined(value) || isNaN(this.parseFloat(value))) {
+                    if (isNullOrUndefined(value) || isNaN(this.parseFloat(value)) || value === '') {
                         continue;
                     }
                     avgVal = avgVal + this.parseFloat(value);
