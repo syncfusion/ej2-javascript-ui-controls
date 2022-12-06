@@ -3837,8 +3837,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public retryCount: number;
 
     /**
-     * Specifies the status codes for retrying the request.The default setting is 500.
-     
+     * Specifies the response status codes for retrying a failed request with a "3xx", "4xx", or "5xx" response status code.
+     * The value can have multiple values, such as [500, 401, 400], and the default value is 500.
+     *
      * @default [500]
      */
     @Property([500])
@@ -3922,7 +3923,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
      *
-     * @private
+     * @public
      * @default false
      */
     @Property(false)
@@ -5687,6 +5688,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         this.formDesignerModule.updateListBoxFieldSettings(newProp[prop]);
                     }
                     break;
+                case 'isFormDesignerToolbarVisible':
+                    if(this.formDesignerModule && !oldProp.isFormDesignerToolbarVisible && newProp.isFormDesignerToolbarVisible){
+                        if(this.isAnnotationToolbarVisible){
+                            this.isAnnotationToolbarVisible = false;
+                            this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                        }
+                        this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
+                    }
+                    break;  
             }
         }
     }

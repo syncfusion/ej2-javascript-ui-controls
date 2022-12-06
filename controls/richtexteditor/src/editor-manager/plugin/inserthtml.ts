@@ -371,7 +371,8 @@ export class InsertHtml {
                         detach(currentNode.nextSibling);
                     }
                 } else if (currentNode.nodeName === '#text' && !isNOU(currentNode.parentElement) &&
-                currentNode.parentElement.nodeName === 'LI' && currentNode.parentElement.textContent.trim().length > 0) {
+                (currentNode.parentElement.nodeName === 'LI' || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
+                currentNode.parentElement.textContent.trim().length > 0) {
                     splitedElm = currentNode;
                     if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
                     currentNode.nextSibling.nodeName === 'BR') {

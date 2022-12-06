@@ -1110,7 +1110,7 @@ export interface ColumnModel {
     editType?: string;
 
     /**
-     * `editType`(../../grid/edit/#cell-edit-type-and-its-params) Defines rules to validate data before creating and updating.
+     * `editType`(../../grid/editing/edit-types/#customize-editors-using-params) Defines rules to validate data before creating and updating.
      *
      * @default null
      */
@@ -1125,7 +1125,7 @@ export interface ColumnModel {
     defaultValue?: string;
 
     /**
-     * Defines the `IEditCell`(../../grid/edit/#cell-edit-template) object to customize default edit cell.
+     * Defines the `IEditCell`(../../grid/editing/edit-types/#custom-editors-using-template) object to customize default edit cell.
      *
      * @default {}
      */

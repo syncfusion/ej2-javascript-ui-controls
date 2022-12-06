@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I421349` - Now chart axis is removing properly on dynamic update.
+- `#I421251` - Now Pie chart render properly when the width is less than 20% for the parent div.
+- `#I421251` - Pie chart gets crashed when setting the datalabel has been fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#I413509` - Now period selectors are updating properly for the range selector changes.
+
 ## 20.3.58 (2022-11-22)
 
 ### Chart

@@ -1111,6 +1111,8 @@ export class AnnotationToolbar {
                 this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
                 if(args.element && args.element.className.indexOf("e-separator")!==-1) {
                     args.element.style.margin = "8px 0";
+                    args.element.setAttribute('role','menuitem');
+                    args.element.setAttribute('aria-label','separator')
                 }
                 if (args.item.text === 'ADD SIGNATURE') {
                     args.element.innerHTML = '';
@@ -1160,6 +1162,7 @@ export class AnnotationToolbar {
                                     (signatureImage as HTMLImageElement).style.paddingTop= '12px';
                                     (signatureImage as HTMLImageElement).style.paddingBottom= '12px';
                                     (signatureImage as HTMLImageElement).style.boxSizing= 'content-box';
+                                    signatureImage.setAttribute('alt', 'Saved Signature');
                                 }
                                 signatureImage.addEventListener('mouseover', this.hoverSignatureImage.bind(this));
                                 signatureImage.addEventListener('mouseleave', this.leaveSignatureImage.bind(this));
@@ -1191,6 +1194,7 @@ export class AnnotationToolbar {
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
                     args.element.style.alignItems = 'center';
+                    args.element.setAttribute('role','menuitem');
                 }
 
                 if (args.item.text === 'ADD INITIAL') {
@@ -1239,6 +1243,7 @@ export class AnnotationToolbar {
                                     (signatureImage as HTMLImageElement).style.paddingTop= '12px';
                                     (signatureImage as HTMLImageElement).style.paddingBottom= '12px';
                                     (signatureImage as HTMLImageElement).style.boxSizing= 'content-box';
+                                    signatureImage.setAttribute('alt', 'Saved Initial');
                                 }
                                 signatureImage.addEventListener('mouseover', this.hoverSignatureImage.bind(this));
                                 signatureImage.addEventListener('mouseleave', this.leaveSignatureImage.bind(this));
@@ -1274,6 +1279,7 @@ export class AnnotationToolbar {
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
                     args.element.style.alignItems = 'center';
+                    args.element.setAttribute('role','menuitem');
                 }
             },
             select: (args: MenuEventArgs): void => {

@@ -14,6 +14,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * * groupBy - Group the list items with it's related items by mapping groupBy field
      *
      * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
+     * 
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
      *
      * @default { value: null, iconCss: null, groupBy: null}

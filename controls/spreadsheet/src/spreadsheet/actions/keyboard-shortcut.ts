@@ -44,7 +44,7 @@ export class KeyboardShortcut {
     }
 
     private ribbonShortCuts(e: KeyboardEvent): void {//switch between ribbon tabs
-        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        if (this.parent.showRibbon && e.altKey && !e.ctrlKey && !e.shiftKey) {
             const tabObj: Tab = this.parent.ribbonModule.ribbon.tabObj;
             if (e.keyCode == 72) { /*alt + H =home*/
                 e.preventDefault();

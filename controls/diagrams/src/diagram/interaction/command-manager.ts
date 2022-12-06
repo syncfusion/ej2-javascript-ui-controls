@@ -5679,7 +5679,9 @@ Remove terinal segment in initial
                     if (isBlazor()) {
                         previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }
+                    if(connector.sourceID != connector.targetID ){
                     this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
+                    }
                     if (isBlazor()) {
                         updateConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }

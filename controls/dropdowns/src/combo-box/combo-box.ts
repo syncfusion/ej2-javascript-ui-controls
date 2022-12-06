@@ -450,8 +450,10 @@ export class ComboBox extends DropDownList {
         if ((Browser.isDevice && !this.isDropDownClick || !Browser.isDevice) &&
             !isNullOrUndefined(this.liCollections) && this.liCollections.length > 0) {
             const inputValue: string = this.inputElement.value;
-            const activeItem: { [key: string]: Element | number } = Search(inputValue, this.liCollections, this.filterType, true);
-            const activeElement: Element = activeItem.item as Element;
+            const dataSource: { [key: string]: Object }[] = this.sortedData as { [key: string]: Object }[];
+            const type: string = this.typeOfData(dataSource).typeof as string;
+            const activeItem: { [key: string]: Element | number } = Search(inputValue, this.liCollections, this.filterType, true, dataSource, this.fields, type);
+            const activeElement : Element = activeItem.item as Element;
             if (!isNullOrUndefined(activeElement)) {
                 const count: number = this.getIndexByValue(activeElement.getAttribute('data-value')) - 1;
                 const height: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
@@ -848,7 +850,7 @@ export class ComboBox extends DropDownList {
      * Adds a new item to the combobox popup list. By default, new item appends to the list as the last item,
      * but you can insert based on the index parameter.
      *
-     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { Object[] } items - Specifies an array of JSON data or a JSON data.
      * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
      * @returns {void}
      * @deprecated
@@ -861,9 +863,9 @@ export class ComboBox extends DropDownList {
     /**
      * To filter the data from given data source by using query
      *
-     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
-     * @param  {Query} query - Specify the query to filter the data.
-     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @param {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param {Query} query - Specify the query to filter the data.
+     * @param {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @returns {void}
      * @deprecated
      */
@@ -912,10 +914,12 @@ export class ComboBox extends DropDownList {
                 return;
             }
             if (this.getModuleName() === 'combobox' && this.inputElement.value.trim() !== '') {
-                const searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, this.liCollections, 'Equal', true);
+                const dataSource: { [key: string]: Object }[] = this.sortedData as { [key: string]: Object }[];
+                const type: string = this.typeOfData(dataSource).typeof as string;
+                const searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, this.liCollections, 'Equal', true, dataSource, this.fields, type);
                 this.selectedLI = searchItem.item as HTMLElement;
                 if (isNullOrUndefined(searchItem.index)) {
-                    searchItem.index = Search(this.inputElement.value, this.liCollections, 'StartsWith', true).index as number;
+                    searchItem.index = Search(this.inputElement.value, this.liCollections, 'StartsWith', true, dataSource, this.fields, type).index as number;
                 }
                 this.activeIndex = searchItem.index as number;
                 if (!isNullOrUndefined(this.selectedLI)) {

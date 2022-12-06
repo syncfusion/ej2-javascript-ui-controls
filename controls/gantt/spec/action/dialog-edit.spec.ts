@@ -2280,6 +2280,55 @@
         it('checking edit type', () => {
             expect(document.getElementsByClassName('e-gantt')[0]['ej2_instances'][0].columnByField['secondaryId'].editType).toBe('stringedit')
         });
-    });	 	 	 	 	 	 
+    });
+    describe('CR-issues', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                allowSorting: true,
+                allowSelection: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'subtasks',
+                    resourceInfo: 'Resource',
+                },
+                actionBegin(args) {
+                    if (args.requestType == 'beforeOpenEditDialog') {
+                        args.General.TaskName.enabled = false;
+                        args.General.StartDate.enabled = false;
+                        args.General.Duration.enabled = false;
+                    }
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+	it('EJ2-48816 - Adding new task with empty string', () => {
+	ganttObj.actionComplete = (args: any): void => {
+              if (args.requestType == 'openEditDialog') {
+                  expect(document.getElementsByClassName('e-disabled').length).toBe(8);
+              }
+        };
+	ganttObj.dataBind();
+        ganttObj.openEditDialog(3);
+        });
+    }); 
  });
  

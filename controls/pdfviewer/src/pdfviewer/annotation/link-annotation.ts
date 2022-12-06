@@ -88,7 +88,7 @@ export class LinkAnnotation {
         const proxy: LinkAnnotation = this;
         let isHyperlinkClicked :boolean = false;
         for (let i: number = 0; i < hyperlinks.length; i++) {
-            let aTag: HTMLAnchorElement = createElement('a', { id: 'weblinkdiv_' + i }) as HTMLAnchorElement;
+            let aTag: HTMLAnchorElement = createElement('a', { id: 'weblinkdiv_' + i + '_' + pageIndex }) as HTMLAnchorElement;
             // eslint-disable-next-line
             let rect: any = hyperlinksBounds[i];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
@@ -181,7 +181,7 @@ export class LinkAnnotation {
     private renderDocumentLink(linkAnnotation: number[], linkPage: number[], annotationY: number[], pageIndex: number): void {
         const proxy: LinkAnnotation = this;
         for (let i: number = 0; i < linkAnnotation.length; i++) {
-            let aTag: HTMLAnchorElement = createElement('a', { id: 'linkdiv_' + i }) as HTMLAnchorElement;
+            let aTag: HTMLAnchorElement = createElement('a', { id: 'linkdiv_' + i + '_' + pageIndex }) as HTMLAnchorElement;
             // eslint-disable-next-line
             let rect: any = linkAnnotation[i];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
@@ -203,6 +203,7 @@ export class LinkAnnotation {
                 }
                 if (scrollValue !== undefined) {
                     aTag.name = scrollValue.toString();
+                    aTag.setAttribute('aria-label', scrollValue.toString())
                     aTag.onclick = () => {
                         if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                             return false;

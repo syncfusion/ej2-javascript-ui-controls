@@ -926,4 +926,49 @@ describe('Treegrid Row Drop as Child', () => {
     });
   });
 
+  describe('EJ2-66304- Navigate over the cells through Tab when record is in collapsed state)', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          allowRowDragAndDrop: true,
+          childMapping: 'subtasks',
+          height: '400',
+          allowSelection: true,
+          selectionSettings: { type: 'Multiple' },
+          treeColumnIndex: 1,
+          columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+                { field: 'taskName', headerText: 'Task Name', width: 250 },
+                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+                { field: 'endDate', headerText: 'End Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+                { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+                { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+                { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+            ],
+        },
+        done
+      );
+    });
+
+    it('Collapsing the record and navigate over the cells through Tab', (done: Function) => {
+      gridObj.collapseRow(gridObj.getRows()[0]);
+      let event: MouseEvent = new MouseEvent('click', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 5).dispatchEvent(event);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-rowcell.e-focus') });
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-rowcell.e-focus') });
+      expect(gridObj.grid.contentModule['rows'][2].visible).toBe(false);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 });

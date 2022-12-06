@@ -273,7 +273,7 @@ export class FormDesigner {
     /**
      * @private
      */
-    public drawHTMLContent(formFieldAnnotationType: string, element: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel, pageIndex?: number, commandHandler?: PdfViewer): HTMLElement {
+    public drawHTMLContent(formFieldAnnotationType: string, element: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel, pageIndex?: number, commandHandler?: PdfViewer,fieldId?: string): HTMLElement {
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
         const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
         let formFieldElement = document.getElementById("form_field_" + element.id + '_html_element');
@@ -368,6 +368,14 @@ export class FormDesigner {
                 );
             }
             this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
+            if(formFieldAnnotationType === "SignatureField" || formFieldAnnotationType === "InitialField"){
+                    if(drawingObject.value){
+                        var elementId = fieldId +"_content";
+                        var value =  (this.pdfViewer.nameTable as any)[elementId].value;
+                        var signatureType = (value.indexOf('base64')) > -1 ? 'Image' : ((value.startsWith('M') && value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
+                        this.pdfViewer.formFieldsModule.drawSignature(signatureType,value,element.template,drawingObject.fontFamily)
+                    }
+                }
             let field: IFormField = {
                 name: drawingObject.name, id: drawingObject.id, value: drawingObject.value, fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
                 color: drawingObject.color, backgroundColor: drawingObject.backgroundColor, alignment: drawingObject.alignment, isReadonly: drawingObject.isReadonly, visibility: drawingObject.visibility,
@@ -1254,12 +1262,12 @@ export class FormDesigner {
         }
         //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
         var indicatorSettings;
-        if(signatureField.isInitialField){
-            indicatorSettings = initialFieldSettings.initialIndicatorSettings;
-        }
-        else{
-            indicatorSettings = signatureFieldSettings.signatureIndicatorSettings;
-        }
+        if (signatureField.isInitialField) {
+            indicatorSettings = signatureField.signatureIndicatorSettings?signatureField.signatureIndicatorSettings:initialFieldSettings.initialIndicatorSettings;
+         }
+         else {
+            indicatorSettings = signatureField.signatureIndicatorSettings?signatureField.signatureIndicatorSettings:signatureFieldSettings.signatureIndicatorSettings;
+         }
         let defaultWidth = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (signatureField.isInitialField ? 30 : 25) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
         let signatureFieldIndicatorWidth: number = indicatorSettings.width ? indicatorSettings.width : (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.width) ? signatureField.signatureIndicatorSettings.width : defaultWidth;
         let defaultHeight = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height === 10 ? 13 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height;
@@ -1288,7 +1296,7 @@ export class FormDesigner {
             initialFieldSettings.initialDialogSettings = { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }
         }
         let fieldText: string = signatureField.signatureIndicatorSettings ? signatureField.signatureIndicatorSettings.text : null;
-        if (signatureField.isInitialField) {
+        if (signatureField.formFieldAnnotationType == "InitialField") {
             spanElement.id = "initialIcon_" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.initialFieldSettings.initialIndicatorSettings.text, "Initial");
         } else {
@@ -1426,6 +1434,7 @@ export class FormDesigner {
         select.addEventListener('change', this.dropdownChange.bind(this));
         select.id = drawingObject.id;
         select.name = "editabledropdown" + this.pdfViewerBase.activeElements.activePageID + dropdownElement.id;
+        select.setAttribute("aria-label","editabledropdown" + this.pdfViewerBase.activeElements.activePageID + dropdownElement.id );
         select.className = "e-pv-formfield-dropdown";
         select.style.width = "100%";
         select.style.height = "100%";
@@ -1462,6 +1471,7 @@ export class FormDesigner {
         select.addEventListener('click', this.listBoxChange.bind(this));
         select.id = drawingObject.id;
         select.name = "editabledropdown" + this.pdfViewerBase.activeElements.activePageID + listBoxElement.id;
+        select.setAttribute("aria-label","editabledropdown" + this.pdfViewerBase.activeElements.activePageID + listBoxElement.id );
         select.className = "e-pv-formfield-listbox";
         select.style.width = "100%";
         select.style.height = "100%";
@@ -1722,9 +1732,9 @@ export class FormDesigner {
                     formFieldsData[i].FormField.selectedIndex.push(oldValueIndex);
                 }
                 let oldValue = formFieldsData[i].FormField.option[oldValueIndex].itemValue;
-                formFieldsData[i].FormField.selectedIndex.push(selectIndex);
-                (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].selectedIndex = selectIndex;
                 this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.push(selectIndex);
+                formFieldsData[i].FormField.selectedIndex = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex;
+                (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].selectedIndex = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex;
                 let newValue = formFieldsData[i].FormField.option[selectIndex].itemValue;
                 this.pdfViewerBase.formFieldCollection[i].FormField.value = newValue;
                 if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
@@ -2017,10 +2027,11 @@ export class FormDesigner {
                 obj.isRequired = options.isRequired ? options.isRequired : false;
                 obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
                 obj.thickness = !isNullOrUndefined((options as any).thickness) ? (options as any).thickness : 1;
-                obj.signatureIndicatorSettings = (options as SignatureFieldSettings).signatureIndicatorSettings ? {opacity: (options as SignatureFieldSettings).signatureIndicatorSettings.opacity ? (options as SignatureFieldSettings).signatureIndicatorSettings.opacity: 1 ,
-                    backgroundColor: (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor ? (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor : 'orange', width: (options as SignatureFieldSettings).signatureIndicatorSettings.width ? (options as SignatureFieldSettings).signatureIndicatorSettings.width : 19,
-                    height: (options as SignatureFieldSettings).signatureIndicatorSettings.height ? (options as SignatureFieldSettings).signatureIndicatorSettings.height : 10, fontSize: (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize ? (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize : 10,
-                    text: (options as SignatureFieldSettings).signatureIndicatorSettings.text? (options as SignatureFieldSettings).signatureIndicatorSettings.text: null,  color: (options as SignatureFieldSettings).signatureIndicatorSettings.color? (options as SignatureFieldSettings).signatureIndicatorSettings.color: 'black'  }: null;
+                let indicatorSettings: any = (options as SignatureFieldSettings).signatureIndicatorSettings ? (options as SignatureFieldSettings).signatureIndicatorSettings : (options as InitialFieldSettings).initialIndicatorSettings;
+                obj.signatureIndicatorSettings = indicatorSettings ? {opacity: indicatorSettings.opacity ? indicatorSettings.opacity: 1 ,
+                    backgroundColor: indicatorSettings.backgroundColor ?indicatorSettings.backgroundColor : 'orange', width: indicatorSettings.width ? indicatorSettings.width : 19,
+                    height: indicatorSettings.height ? indicatorSettings.height : 10, fontSize: indicatorSettings.fontSize ? indicatorSettings.fontSize : 10,
+                    text: indicatorSettings.text? indicatorSettings.text: null,  color: indicatorSettings.color? indicatorSettings.color: 'black'  }: null;
                 break;
             case 'InitialField':
                 obj.formFieldAnnotationType = formFieldType;
@@ -2033,10 +2044,11 @@ export class FormDesigner {
                 (obj as any).isRequired = options.isRequired ? options.isRequired : false;
                 (obj as any).isReadonly = options.isReadOnly ? options.isReadOnly : false;
                 (obj as any).isInitialField = true;
-                obj.signatureIndicatorSettings = (options as SignatureFieldSettings).signatureIndicatorSettings ? {opacity: (options as SignatureFieldSettings).signatureIndicatorSettings.opacity ? (options as SignatureFieldSettings).signatureIndicatorSettings.opacity: 1 ,
-                    backgroundColor: (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor ? (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor : 'orange', width: (options as SignatureFieldSettings).signatureIndicatorSettings.width ? (options as SignatureFieldSettings).signatureIndicatorSettings.width : 19,
-                    height: (options as SignatureFieldSettings).signatureIndicatorSettings.height ? (options as SignatureFieldSettings).signatureIndicatorSettings.height : 10, fontSize: (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize ? (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize : 10,
-                    text: (options as SignatureFieldSettings).signatureIndicatorSettings.text? (options as SignatureFieldSettings).signatureIndicatorSettings.text: null,  color: (options as SignatureFieldSettings).signatureIndicatorSettings.color? (options as SignatureFieldSettings).signatureIndicatorSettings.color: 'black'  }: null;
+                let indicatorSettingsInitial: any = (options as InitialFieldSettings).initialIndicatorSettings ? (options as InitialFieldSettings).initialIndicatorSettings : (options as SignatureFieldSettings).signatureIndicatorSettings;
+                obj.signatureIndicatorSettings = indicatorSettingsInitial ? { opacity: indicatorSettingsInitial.opacity ? indicatorSettingsInitial.opacity : 1,
+                        backgroundColor: indicatorSettingsInitial.backgroundColor ? indicatorSettingsInitial.backgroundColor : 'orange', width: indicatorSettingsInitial.width ? indicatorSettingsInitial.width : 19,
+                        height: indicatorSettingsInitial.height ? indicatorSettingsInitial.height : 10, fontSize: indicatorSettingsInitial.fontSize ? indicatorSettingsInitial.fontSize : 10,
+                        text: indicatorSettingsInitial.text ? indicatorSettingsInitial.text : null, color: indicatorSettingsInitial.color ? indicatorSettingsInitial.color : 'black' } : null;
                 break;
         }
         obj.tooltip = !isNullOrUndefined(options.tooltip) ? options.tooltip : '';
@@ -3616,8 +3628,9 @@ export class FormDesigner {
         let eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.classList.contains('e-pv-hyperlink')) {
             eventTarget = eventTarget.parentElement;
-        } else if (eventTarget.parentElement.classList.contains('foreign-object')) {
-            eventTarget = eventTarget.parentElement.parentElement.parentElement.parentElement;
+        } 
+        else if (eventTarget.parentElement.classList.contains('foreign-object') || (eventTarget.parentElement.classList.contains('e-pv-radiobtn-container'))) {
+            eventTarget = (eventTarget as any).closest('.e-pv-text-layer');
         }
         // eslint-disable-next-line
         let pageString: string = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];

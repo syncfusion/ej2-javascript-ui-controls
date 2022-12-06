@@ -2383,13 +2383,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         let isAlpha: boolean = false;
         let isNum: boolean = false;
+        let isError: boolean;
         if (args.indexOf(':') !== args.lastIndexOf(':')) {
             return false;
         }
         const charArray: string[] = (args.split('').join(this.getParseArgumentSeparator())).split(this.getParseArgumentSeparator());
         for (let c: number = 0; c < charArray.length; c++) {
             if (this.isChar(charArray[c])) {
-                isAlpha = true;
+                if (!isNum) {
+                    isAlpha = true;
+                } else {
+                    isError = true;
+                }
             } else if (this.isDigit(charArray[c])) {
                 isNum = true;
             } else if (charArray[c] === ':') {
@@ -2401,6 +2406,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             } else {
                 return false;
             }
+        }
+        if (isError) {
+            throw this.getErrorStrings()[1]; // Added for wrong cell reference address in formula like '1B' instead of 'B1'.
         }
         if (args.indexOf(':') > -1 && args.indexOf(this.tic) === -1) {
             if (containsBoth && isAlpha && isNum) {

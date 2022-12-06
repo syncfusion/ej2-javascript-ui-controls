@@ -21,7 +21,7 @@ export class Toolbar {
     public toolbar: tool;
     private searchElement: HTMLInputElement;
     private gridID: string;
-    protected sIcon: Element;
+    protected sIcon: HTMLElement;
     private isSearched: boolean = false;
     // module declarations
     private parent: IGrid;
@@ -145,15 +145,15 @@ export class Toolbar {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<div class="' + classList + '" role="search">\
                     <input id="' + this.gridID + '_searchbar" class="e-input e-search" name="input" type="search" \
                     placeholder= "' + this.l10n.getConstant('Search') + '"/>\
-                    <span id="' + this.gridID + '_clearbutton" class="e-input-group-icon e-icons e-sicon e-clear-icon e-clear-icon-hide" \
-                    tabindex="-1" title="' + this.l10n.getConstant('Clear') + '" aria-label= "clear" role= "clear"></span>\
+                    <span id="' + this.gridID + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
+                    tabindex="-1" aria-label= "clear" role= "clear" style="cursor: default"></span>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search" role= "search"></span> \
                     </div>';
             } else {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<span id="' + this.gridID
-                + '_clearbutton" class="e-input-group-icon e-icons e-sicon e-clear-icon e-clear-icon-hide" \
-                    tabindex="-1" title="' + this.l10n.getConstant('Clear') + '" aria-label= "clear"></span>\
+                + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
+                    tabindex="-1" aria-label= "clear" style="cursor: default"></span>\
                     <span id="' + this.gridID
                     + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
@@ -253,7 +253,7 @@ export class Toolbar {
             const selectedRecords: number[] = this.parent.getSelectedRowIndexes();
             const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
             for (const item of this.toolbar.items) {
-                const toolbarEle: Element = (item.template as string).length? this.toolbar.element.querySelector(item.template as string) : this.toolbar.element.querySelector('#' + item.id);
+                const toolbarEle: Element = (item.template as string).length ? this.toolbar.element.querySelector(item.template as string) : this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {
@@ -430,9 +430,11 @@ export class Toolbar {
                             || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
                         this.renderResponsiveSearch(true);
                     }
-                    else if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
+                        else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
                         this.searchElement.value = '';
-                        this.sIcon.classList.add('e-clear-icon-hide');
+                        this.sIcon.classList.remove('e-clear-icon');
+                        this.sIcon.removeAttribute('title');
+                        this.sIcon.style.cursor = 'default';
                         if (this.isSearched) {
                             this.parent.search(this.searchElement.value);
                             this.isSearched = false;
@@ -484,12 +486,16 @@ export class Toolbar {
             this.search();
         }
         if (this.searchElement) {
-            this.sIcon = this.searchElement.parentElement.querySelector('.e-clear-icon');
+            this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
             if (this.searchElement.value.length && !isNullOrUndefined(this.sIcon)) {
-                this.sIcon.classList.remove('e-clear-icon-hide');
+                this.sIcon.classList.add('e-clear-icon');
+                this.sIcon.setAttribute('title', 'Clear');
+                this.sIcon.style.cursor = 'pointer';
             }
             else {
-                this.sIcon.classList.add('e-clear-icon-hide');
+                this.sIcon.classList.remove('e-clear-icon');
+                this.sIcon.removeAttribute('title');
+                this.sIcon.style.cursor = 'default';
             }
         }
     }

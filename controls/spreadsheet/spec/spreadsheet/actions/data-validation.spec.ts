@@ -1426,7 +1426,7 @@ describe('Data validation ->', () => {
                 });
             });
             it('To fix the issue with date formula (TODAY()) in data validation input field', (done: Function) => {
-                helper.edit('B9', '11/30/2022');
+                helper.edit('B9', '11/30/2050');
                 helper.getInstance().addDataValidation({ type: 'Date', operator: 'LessThanOrEqualTo', value1: '=TODAY()' }, 'B1:B11');
                 helper.getInstance().addDataValidation({ type: 'Time', operator: 'LessThanOrEqualTo', value1: '=TIME(10,56,00)' }, 'C1:C11');
                 expect(helper.invoke('getCell', [0, 1]).style.backgroundColor).toBe('');

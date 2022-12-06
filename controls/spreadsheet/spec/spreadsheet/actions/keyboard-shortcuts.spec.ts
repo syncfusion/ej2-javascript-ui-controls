@@ -234,6 +234,8 @@ describe('Spreadsheet formula bar module ->', () => {
             helper.click(`#${helper.id}_applyfilter`);
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => {} })
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeFalsy();
+            helper.getInstance().showRibbon = false; //If the ribbon is not visible keyboard action should be prevented
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 18, altKey: true, preventDefault: (): void => { } })
             done();
         });
     });

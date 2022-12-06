@@ -63,39 +63,107 @@ export class TextLayer {
      * @private
      */
     // eslint-disable-next-line
-    public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
+    public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any, rtldoc: any): void {
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
         const canvasElement: HTMLElement = createElement("canvas");
+        let linebounds = [];
+        var lineContent = [];
+        var yValue;
+        var heightValue;
+        if (textBounds.length > 1) {
+            if (textBounds[0].Width === 0 && textBounds.length > 2) {
+                yValue = textBounds[1].Y;
+                heightValue = textBounds[1].Height;
+            } else {
+                yValue = textBounds[0].Y;
+                heightValue = textBounds[0].Height;
+            }
+        }
+        let idNumber = 0;
         if (canvasElement && textLayer && textLayer.childNodes.length === 0) {
             for (let i: number = 0; i < textContents.length; i++) {
                 // eslint-disable-next-line
-                let bounds: any = textBounds[i];
-                // eslint-disable-next-line max-len
-                const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '-1' } });
-                const textContent: string = textContents[i];
-                textDiv.textContent = textContent.replace(/&nbsp;/g, ' ');
-                // eslint-disable-next-line
-                let newLine: string = textContents[i].replace(/  +/g, ' ');
-                if (newLine !== ' ') {
-                    textDiv.style.whiteSpace = 'pre';
-                }
-                if (bounds) {
-                    this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
-                }
-                this.setTextElementProperties(textDiv);
-                const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
-                context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
-                const contextWidth: number = context.measureText(textContents[i].replace(/(\r\n|\n|\r)/gm, '')).width;
-                if (bounds) {
-                    const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                    this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
-                }
-                textLayer.appendChild(textDiv);
-                this.resizeExcessDiv(textLayer, textDiv);
-                // eslint-disable-next-line max-len
-                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields'
-                && textDiv.className !== 'e-pdfviewer-signatureformfields' && textDiv.className !== 'e-pdfviewer-signatureformfields-signature') {
-                    textDiv.classList.add('e-pv-cursor');
+                if ((!(textContents[i].includes("\r\n")) && !(textContents[i].includes("\u0002"))) && i != textBounds.length - 1 && rotation ===0 && !rtldoc) {
+                    linebounds.push(textBounds[i]);
+                    lineContent.push(textContents[i]);
+                    if (yValue > textBounds[i].Y && textBounds[i].Width !== 0) {
+                        yValue = textBounds[i].Y;
+                    }
+                    if (heightValue < textBounds[i].Height && textBounds[i].Width !== 0) {
+                        heightValue = textBounds[i].Height;
+                    }
+                } else {
+                    linebounds.push(textBounds[i]);
+                    lineContent.push(textContents[i]);
+                    if (yValue > textBounds[i].Y && textBounds[i].Width !== 0) {
+                        yValue = textBounds[i].Y;
+                    }
+                    if (heightValue < textBounds[i].Height && textBounds[i].Width !== 0) {
+                        heightValue = textBounds[i].Height;
+                    }
+                    for (let j: number = 0; j < linebounds.length; j++) {
+                        let bounds: any = linebounds[j];
+                        // eslint-disable-next-line max-len
+                        const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + idNumber, className: 'e-pv-text', attrs: { 'tabindex': '-1' } });
+                        const textContent: string = lineContent[j];
+                        if (textContent === " " && j != linebounds.length - 1 && j != 0) {
+                            bounds.Height = linebounds[j - 1].Height;
+                            bounds.Y = linebounds[j - 1].Y;
+                        }
+                        textDiv.textContent = textContent.replace(/&nbsp;/g, ' ');
+                        // eslint-disable-next-line
+                        let newLine: string = lineContent[j].replace(/  +/g, ' ');
+                        if (newLine !== ' ') {
+                            textDiv.style.whiteSpace = 'pre';
+                        }
+                        if (bounds.Width === 0 && j != linebounds.length - 1 && j != 0) {
+                            if (linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width) < 30 && (!lineContent[j - 1].includes("\r\n") && !(textContents[j].includes("\u0002")))) {
+                                bounds.Width = linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width);
+                                bounds.X = linebounds[j - 1].X + linebounds[j - 1].Width;
+                                if (bounds.Width < 0) {
+                                    bounds.Width = 0;
+                                } else {
+                                    textDiv.style.whiteSpace = 'pre';
+                                }
+                            }
+                        }
+                        if ((j != 0 || linebounds.length - 1 === 0 || (bounds.Y - yValue) > 20 && bounds.Width != 0) && idNumber != 0 && ((textBounds[idNumber - 1].Y - textBounds[idNumber].Y) > 11 || ((textBounds[idNumber].Y - textBounds[idNumber - 1].Y) > 11)) && lineContent[j] != " ") {
+                            yValue = linebounds[j].Y;
+                            heightValue = linebounds[j].Height;
+                        }
+                        if (bounds) {
+                            bounds.Y = yValue;
+                            bounds.Height = heightValue;
+                            this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                        }
+                        this.setTextElementProperties(textDiv);
+                        const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
+                        context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
+                        const contextWidth: number = context.measureText(lineContent[j].replace(/(\r\n|\n|\r)/gm, '')).width;
+                        if (bounds) {
+                            const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                            this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                        }
+                        textLayer.appendChild(textDiv);
+                        this.resizeExcessDiv(textLayer, textDiv);
+                        // eslint-disable-next-line max-len
+                        if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields'
+                            && textDiv.className !== 'e-pdfviewer-signatureformfields' && textDiv.className !== 'e-pdfviewer-signatureformfields-signature') {
+                            textDiv.classList.add('e-pv-cursor');
+                        }
+                        idNumber++;
+                    }
+                    linebounds = [];
+                    lineContent = [];
+                    if (i < textBounds.length - 1) {
+                        if (textBounds[i + 1].Width === 0 && !isNullOrUndefined(textBounds[i + 2])) {
+                            yValue = textBounds[i + 2].Y;
+                            heightValue = textBounds[i + 2].Height;
+                        } else {
+                            yValue = textBounds[i + 1].Y;
+                            heightValue = textBounds[i + 1].Height;
+                        }
+                    }
                 }
             }
         }

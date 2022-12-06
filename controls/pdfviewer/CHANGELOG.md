@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I369895`,`#I403367`,`#I406191` - Now, improvements in text selection `strikethrough` for specific document.
+- `#I419679` - Provided the ability to display or hide the `FormDesignerToolbar` after document loading.
+
+#### Bug Fixes
+
+- `#F178453` - Now, cut, copy and paste of form field are working properly on downloading.
+
 ## 20.3.59 (2022-11-29)
 
 ### PDF Viewer
@@ -17,6 +30,9 @@
 - `#I418726` - Now, the draw and image signature is now preserved while changing tabs on mobile devices.
 - `#I420588` - Now, the Script error does not occur while printing the document contains signature fields on non-rendered pages.
 - `#I420304` - Now, the script error does not occur while updating read only property programmatically.
+- `#I416032` - The radio button now triggers the form field click event.
+- `#I420423` - Now, the background color of the initial indicator settings is now applied when adding form fields programmatically.
+- `#I422736` - Fixed issue with saving PDF document on form fields export.
 
 ## 20.3.58 (2022-11-22)
 

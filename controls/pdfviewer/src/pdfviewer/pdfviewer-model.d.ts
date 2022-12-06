@@ -3217,8 +3217,9 @@ export interface PdfViewerModel extends ComponentModel{
     retryCount?: number;
 
     /**
-     * Specifies the status codes for retrying the request.The default setting is 500.
-     
+     * Specifies the response status codes for retrying a failed request with a "3xx", "4xx", or "5xx" response status code.
+     * The value can have multiple values, such as [500, 401, 400], and the default value is 500.
+     *
      * @default [500]
      */
     retryStatusCodes?: number[];
@@ -3292,7 +3293,7 @@ export interface PdfViewerModel extends ComponentModel{
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
      * and get the annotation Toolbar Visible status.
      *
-     * @private
+     * @public
      * @default false
      */
     isFormDesignerToolbarVisible?: boolean;

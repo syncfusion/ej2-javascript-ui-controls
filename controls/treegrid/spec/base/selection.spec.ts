@@ -973,6 +973,39 @@ describe('Selection module', () => {
     });
   });
   
+  describe('Performing expand/collapse operation with paging', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          height: 350,
+          allowPaging: true,
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 70, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 200, textAlign: 'Left' },
+            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+
+          ],
+        },
+        done
+      );
+    });
+    it('checking the selection records while collapse the row', () => {
+      gridObj.selectRow(1);
+      gridObj.selectRow(2);
+      gridObj.selectRow(3);
+      gridObj.selectRow(4);
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      expect(gridObj.getSelectedRowIndexes().length === 0).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

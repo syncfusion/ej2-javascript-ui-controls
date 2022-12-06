@@ -584,8 +584,8 @@ export function locateElem(
             left = freezeFillOpt && freezeFillOpt.left ? freezeFillOpt.left : left;
             attrs = {
                 'top': top + otdiff + 'px',
-                'left': left + oldiff + 'px'
             };
+            attrs[isRtl ? 'right' : 'left'] = left + oldiff + 'px';
             if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }], preventAnimation); }
         } else {
             attrs = {

@@ -539,6 +539,9 @@ export class RangeNavigator extends Component<HTMLElement> {
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
+        if (this.periodSelectorModule) {
+            this.periodSelectorModule.selectedIndex = null;
+        }
         if (this.element.id === '') {
             const collection : number = document.getElementsByClassName('e-rangenavigator').length;
             this.element.id = 'rangenavigator_' + this.chartid + '_' + collection;
@@ -717,6 +720,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     private renderSlider(resize: boolean): void {
         this.rangeSlider.render(this);
+        if (this.periodSelectorModule) {
+            this.startValue = this.periodSelectorModule.control.startValue;
+            this.endValue = this.periodSelectorModule.control.endValue;
+        }
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, true,
             this.tooltip.enable && this.tooltip.displayMode === 'Always', resize

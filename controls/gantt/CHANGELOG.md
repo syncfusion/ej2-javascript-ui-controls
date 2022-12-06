@@ -2,12 +2,25 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I420414` - Unable to disable edit dialog fields in general tab issue has been fixed.
+- `#I420280` - The `actionBegin` event receives more records as modified data when a task is resized issue has been fixed.
+- `#I420126` - Error thrown when deleting a Unassigned task in the Resource View issue has been fixed.
+- `#I415400` - Cell Edit does not save when clicking on the chart side issue has been fixed.
+- `#I419273` - End Key not working as expected when selection type set to Both.
+
 ## 20.3.59 (2022-11-29)
 
 ### Gantt
 
 #### Bug Fixes
 
+- `#I413261` - Dependency values for the parent task are not properly updated issue has been fixed.
 - `#I419062` - Edit type issue when datasource is undefined issue has been fixed.
 - `#I417042` - A console error is thrown when updating the parent task's start date.
 - `#I419262` - The dependency line is rendered even after cancel.

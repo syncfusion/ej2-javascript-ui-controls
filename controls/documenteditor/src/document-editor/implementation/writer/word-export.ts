@@ -5546,7 +5546,13 @@ export class WordExport {
             writer.writeAttributeString('w', 'styleId', this.wNamespace, style.name);
             //name
             writer.writeStartElement(undefined, 'name', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, style.name);
+            let list:string[] =["TOC 1" , "TOC 2" , "TOC 3" , "TOC 4", "TOC 5" , "TOC 6" ,"TOC 7" ,"TOC 8" ,"TOC 9"];
+            if(list.indexOf(style.name) != -1){
+                writer.writeAttributeString('w', 'val', this.wNamespace, style.name.toLowerCase());
+            }
+            else {
+                writer.writeAttributeString('w', 'val', this.wNamespace, style.name);
+            }
             writer.writeEndElement();
             //basedOn
             if (!isNullOrUndefined(style.basedOn)) {

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I416708` - Now, pasting the content from MS Word will maintain the DOM structure properly.
+
+- `#I418749` - Now, pasted texts get inside the `contentEditable div` when using the `enterKey` as `BR` or `DIV`.
+
 ## 20.3.59 (2022-11-29)
 
 ### RichTextEditor
@@ -15,6 +25,8 @@
 - `#I412540` - Now, the indentation format is maintained properly when pasting content from MS Word.
 
 - `#I416708` - Now, pressing the backspace key after pasting contents from MS Word works properly.
+
+- `#I417838` - Now, Underline and Strike through toolbar styles will work properly when we change the font size in RTE.
 
 ## 20.3.47 (2022-09-29)
 

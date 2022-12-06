@@ -2229,7 +2229,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
             }
+            if((this.connectors as ConnectorModel).sourceID != (this.connectors as ConnectorModel).targetID ){
             this.lineRoutingModule.lineRouting(this);
+            }
             if (isBlazor()) {
                 for (const obj of this.connectors) {
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
@@ -10081,7 +10083,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (actualObject.type === 'Orthogonal' && this.lineRoutingModule && this.diagramActions &&
                 (this.constraints & DiagramConstraints.LineRouting) && !(this.diagramActions & DiagramAction.ToolAction)) {
                 this.lineRoutingModule.renderVirtualRegion(this, true);
+                if(actualObject.sourceID != actualObject.targetID ){
                 this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
+                }
             }
             points = this.getPoints(actualObject);
         }//Add prop change for zindex, alignments and margin

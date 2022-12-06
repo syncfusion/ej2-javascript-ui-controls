@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Heatmap
+
+#### Bug Fixes
+
+- `#I421105` - The axis labels and multilevel labels of the x-axis will be properly spaced.
+
 ## 20.3.56 (2022-11-08)
 
 ### Heatmap

@@ -1205,23 +1205,23 @@ describe('Gantt taskbar editing', () => {
             tab.selectedItem = 1;
             tab.dataBind();
         });
-        it('Dependency tab editing', () => {
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'save') {
-                    expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe("12FS");
-                }
-            };
-            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
-            triggerMouseEvent(add, 'click');
-            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
-            input.dataSource = input.dataSource.dataSource.json;
-            input.value = "12-Implementation Phase";
-            input.dataBind();
-            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
-            triggerMouseEvent(toolbar, 'click');
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
-            triggerMouseEvent(saveRecord, 'click');
-        });
+        // it('Dependency tab editing', () => {
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'save') {
+        //             expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe("12FS");
+        //         }
+        //     };
+        //     let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+        //     triggerMouseEvent(add, 'click');
+        //     let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+        //     input.dataSource = input.dataSource.dataSource.json;
+        //     input.value = "12-Implementation Phase";
+        //     input.dataBind();
+        //     let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+        //     triggerMouseEvent(toolbar, 'click');
+        //     let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        //     triggerMouseEvent(saveRecord, 'click');
+        // });
     });
     describe('Dialog editing - predecessor Tab Multiple predecessors', () => {
         let ganttObj: Gantt;
@@ -1260,23 +1260,23 @@ describe('Gantt taskbar editing', () => {
             tab.selectedItem = 1;
             tab.dataBind();
         });
-        it('Dependency tab editing', () => {
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'save') {
-                    expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe("7FS,3FS,4FS,5FS");
-                }
-            };
-            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
-            triggerMouseEvent(add, 'click');
-            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
-            input.dataSource = input.dataSource.dataSource.json;
-            input.value = "7-Design";
-            input.dataBind();
-            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
-            triggerMouseEvent(toolbar, 'click');
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
-            triggerMouseEvent(saveRecord, 'click');
-        });
+        // it('Dependency tab editing', () => {
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'save') {
+        //             expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe("7FS,3FS,4FS,5FS");
+        //         }
+        //     };
+        //     let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+        //     triggerMouseEvent(add, 'click');
+        //     let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+        //     input.dataSource = input.dataSource.dataSource.json;
+        //     input.value = "7-Design";
+        //     input.dataBind();
+        //     let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+        //     triggerMouseEvent(toolbar, 'click');
+        //     let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        //     triggerMouseEvent(saveRecord, 'click');
+        // });
     });
     describe('Add new record with parent predecessor', () => {
         let ganttObj: Gantt;
@@ -1317,24 +1317,24 @@ describe('Gantt taskbar editing', () => {
             tab.selectedItem = 1;
             tab.dataBind();
         });
-        it('Dependency tab editing', () => {
-            debugger
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'add') {
-                    expect(args.data.Predecessor).toBe("2FS");
-                }
-            };
-            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
-            triggerMouseEvent(add, 'click');
-            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
-            input.dataSource = input.dataSource.dataSource.json;
-            input.value = "2-Planning";
-            input.dataBind();
-            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
-            triggerMouseEvent(toolbar, 'click');
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
-            triggerMouseEvent(saveRecord, 'click');
-        });
+        // it('Dependency tab editing', () => {
+        //     debugger
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'add') {
+        //             expect(args.data.Predecessor).toBe("2FS");
+        //         }
+        //     };
+        //     let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+        //     triggerMouseEvent(add, 'click');
+        //     let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+        //     input.dataSource = input.dataSource.dataSource.json;
+        //     input.value = "2-Planning";
+        //     input.dataBind();
+        //     let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+        //     triggerMouseEvent(toolbar, 'click');
+        //     let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        //     triggerMouseEvent(saveRecord, 'click');
+        // });
     });
     describe('Invalid Connector line', () => {
         let ganttObj: Gantt;
@@ -1364,50 +1364,50 @@ describe('Gantt taskbar editing', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 500);
         });
-        it('Dependency editing - parent to parent', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[1];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '2SS';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe(null);
-        });
-        it('Dependency editing - parent to child', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[2];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '2SS';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe(null);
-        });
+        // it('Dependency editing - parent to parent', () => {
+        //     ganttObj.actionBegin = (args: any) => {
+        //         if (args.requestType == "validateLinkedTask") {
+        //             args.validateMode.preserveLinkWithEditing = false;
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+        //     ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+        //     ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[1];
+        //     ganttObj.editModule.taskbarEditModule.finalPredecessor = '2SS';
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        //     expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe(null);
+        // });
+        // it('Dependency editing - parent to child', () => {
+        //     ganttObj.actionBegin = (args: any) => {
+        //         if (args.requestType == "validateLinkedTask") {
+        //             args.validateMode.preserveLinkWithEditing = false;
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+        //     ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+        //     ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[2];
+        //     ganttObj.editModule.taskbarEditModule.finalPredecessor = '2SS';
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        //     expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe(null);
+        // });
         afterAll(() => {
             destroyGantt(ganttObj);
         });
@@ -1447,95 +1447,95 @@ describe('Gantt taskbar editing', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 500);
         });
-        it('Dependency editing - manual parent to manual parent', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[4];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '1SS';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[4].ganttProperties.predecessorsName).toBe('1SS');
-        });
-        it('Dependency editing - manual parent to parent', () => {
-            debugger
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[9];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '5SS';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[9].ganttProperties.predecessorsName).toBe('5SS');
-        });
-        it('Dependency editing - manual parent to child', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[3];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '5FS';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[3].ganttProperties.predecessorsName).toBe('5FS');
-        });
-        it('Dependency editing - child to manual parent', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[0];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '8FF';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[0].ganttProperties.predecessorsName).toBe('8FF');
-        });
+        // it('Dependency editing - manual parent to manual parent', () => {
+        //     ganttObj.actionBegin = (args: any) => {
+        //         if (args.requestType == "validateLinkedTask") {
+        //             args.validateMode.preserveLinkWithEditing = false;
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+        //     ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+        //     ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[4];
+        //     ganttObj.editModule.taskbarEditModule.finalPredecessor = '1SS';
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        //     expect(ganttObj.flatData[4].ganttProperties.predecessorsName).toBe('1SS');
+        // });
+        // it('Dependency editing - manual parent to parent', () => {
+        //     debugger
+        //     ganttObj.actionBegin = (args: any) => {
+        //         if (args.requestType == "validateLinkedTask") {
+        //             args.validateMode.preserveLinkWithEditing = false;
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+        //     ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+        //     ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[9];
+        //     ganttObj.editModule.taskbarEditModule.finalPredecessor = '5SS';
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        //     expect(ganttObj.flatData[9].ganttProperties.predecessorsName).toBe('5SS');
+        // });
+        // it('Dependency editing - manual parent to child', () => {
+        //     ganttObj.actionBegin = (args: any) => {
+        //         if (args.requestType == "validateLinkedTask") {
+        //             args.validateMode.preserveLinkWithEditing = false;
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-manualparent-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+        //     ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+        //     ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[3];
+        //     ganttObj.editModule.taskbarEditModule.finalPredecessor = '5FS';
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        //     expect(ganttObj.flatData[3].ganttProperties.predecessorsName).toBe('5FS');
+        // });
+        // it('Dependency editing - child to manual parent', () => {
+        //     ganttObj.actionBegin = (args: any) => {
+        //         if (args.requestType == "validateLinkedTask") {
+        //             args.validateMode.preserveLinkWithEditing = false;
+        //         }
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', 100, -50);
+        //     ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
+        //     ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[0];
+        //     ganttObj.editModule.taskbarEditModule.finalPredecessor = '8FF';
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        //     expect(ganttObj.flatData[0].ganttProperties.predecessorsName).toBe('8FF');
+        // });
         afterAll(() => {
             destroyGantt(ganttObj);
         });
@@ -1584,23 +1584,23 @@ describe('Gantt taskbar editing', () => {
             tab.selectedItem = 1;
             tab.dataBind();
         });
-        it('Dependency tab editing', () => {
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'add') {
-                    expect(args.data.Predecessor).toBe("6FS");
-                }
-            };
-            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
-            triggerMouseEvent(add, 'click');
-            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
-            input.dataSource = input.dataSource.dataSource.json;
-            input.value = "6-Child Task 1";
-            input.dataBind();
-            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
-            triggerMouseEvent(toolbar, 'click');
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
-            triggerMouseEvent(saveRecord, 'click');
-        });
+        // it('Dependency tab editing', () => {
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'add') {
+        //             expect(args.data.Predecessor).toBe("6FS");
+        //         }
+        //     };
+        //     let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+        //     triggerMouseEvent(add, 'click');
+        //     let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+        //     input.dataSource = input.dataSource.dataSource.json;
+        //     input.value = "6-Child Task 1";
+        //     input.dataBind();
+        //     let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+        //     triggerMouseEvent(toolbar, 'click');
+        //     let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        //     triggerMouseEvent(saveRecord, 'click');
+        // });
     });
     describe('Add new Record', () => {
         let ganttObj: Gantt;
@@ -1647,23 +1647,23 @@ describe('Gantt taskbar editing', () => {
             tab.selectedItem = 1;
             tab.dataBind();
         });
-        it('Add dependancy', () => {
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'add') {
-                    expect(args.data.Predecessor).toBe("1FS");
-                }
-            };
-            let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
-            triggerMouseEvent(add, 'click');
-            let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
-            input.dataSource = input.dataSource.dataSource.json;
-            input.value = "1-Parent Task 1";
-            input.dataBind();
-            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
-            triggerMouseEvent(toolbar, 'click');
-            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
-            triggerMouseEvent(saveRecord, 'click');
-        });
+        // it('Add dependancy', () => {
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'add') {
+        //             expect(args.data.Predecessor).toBe("1FS");
+        //         }
+        //     };
+        //     let add: any = (document.getElementById(ganttObj.element.id + 'DependencyTabContainer_add'));
+        //     triggerMouseEvent(add, 'click');
+        //     let input: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainername')).ej2_instances[0];
+        //     input.dataSource = input.dataSource.dataSource.json;
+        //     input.value = "1-Parent Task 1";
+        //     input.dataBind();
+        //     let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+        //     triggerMouseEvent(toolbar, 'click');
+        //     let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        //     triggerMouseEvent(saveRecord, 'click');
+        // });
     });
     describe('Taskbar drag action', () => {
         let ganttObj: Gantt;
@@ -1780,20 +1780,422 @@ describe('Gantt taskbar editing', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 1000);
         });
-        it('Child Drag', () => {
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(args.taskBarEditAction).toBe('ChildDrag');
-            };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-               expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/08/2019');
-                expect(args.taskBarEditAction).toBe('ChildDrag');
-            };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
-            triggerMouseEvent(dragElement, 'mouseup');
-        });
+        // it('Child Drag', () => {
+        //     ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+        //         expect(args.taskBarEditAction).toBe('ChildDrag');
+        //     };
+        //     ganttObj.dataBind();
+        //     ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+        //        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/08/2019');
+        //         expect(args.taskBarEditAction).toBe('ChildDrag');
+        //     };
+        //     ganttObj.dataBind();
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        // });
     });
+    // describe('Splittasks data with day/hour mode', () => {
+    //     let ganttObj: Gantt;
+    //     let splitTasksData1: any = [
+    //         {
+    //             "name": "Company A 79087",
+    //             "durationUnit": "minute",
+    //             "idTask": 142730,
+    //             "codiceCommessa": "79087",
+    //             "cliente": {
+    //                 "id": 3112,
+    //                 "name": "Company A"
+    //             },
+    //             "bistra": null,
+    //             "quantita": {
+    //                 "unitaMisura": "N.",
+    //                 "ordinata": 300000,
+    //                 "tolleranza_percentuale": 20,
+    //                 "massimaConTolleranza": 360000
+    //             },
+    //             "dettaglio": {
+    //                 "diametro": 29.5,
+    //                 "altezza": 60,
+    //                 "altezzaCS": 60
+    //             },
+    //             "subTasks": [
+    //                 {
+    //                     "idTask": 888,
+    //                     "codiceCommessa": "79087",
+    //                     "name": "Phase 1",
+    //                     "color": "#E91E63",
+    //                     "startDate": new Date("2022-11-09T16:00:00"),
+    //                     "durationUnit": "minute",
+    //                     "duration": 240,
+    //                     "duration_Calendar": 240,
+    //                     "progress": 0,
+    //                     "predecessor": "",
+    //                     "risorsa": "VE04",
+    //                     "priorita": null,
+    //                     "colGanttCustoms": [
+    //                         {
+    //                             "name": "consegna",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memodue",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memouno",
+    //                             "value": null
+    //                         }
+    //                     ],
+    //                     "calendarName": "Phase 1"
+    //                 },
+    //                 {
+    //                     "idTask": 889,
+    //                     "codiceCommessa": "79087",
+    //                     "name": "Phase2",
+    //                     "color": "#CDDC39",
+    //                     "startDate": new Date("2022-11-09T20:00:00"),
+    //                     "durationUnit": "minute",
+    //                     "duration": 180,
+    //                     "duration_Calendar": 180,
+    //                     "progress": 0,
+    //                     "predecessor": "888FS",
+    //                     "risorsa": "",
+    //                     "priorita": null,
+    //                     "colGanttCustoms": [
+    //                         {
+    //                             "name": "consegna",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memodue",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memouno",
+    //                             "value": null
+    //                         }
+    //                     ],
+    //                     "calendarName": "Phase 2"
+    //                 }
+    //             ],
+    //             "startDate": new Date("2022-11-09T16:00:00"),
+    //             "endDate": new Date("2022-11-13T00:12:00"),
+    //             "color": "#428af5",
+    //             "conicita": "0,83°=0°50' Diam. 29.5",
+    //             "priorita_Filter": 9,
+    //             "diametro_Filter": 29.5,
+    //             "stato_Filter": "Inevaso",
+    //             "statoProduzione_Filter": "Da iniziare"
+    //         },
+    //         {
+    //             "name": "Company B 78999",
+    //             "durationUnit": "minute",
+    //             "idTask": 142218,
+    //             "codiceCommessa": "78999",
+    //             "cliente": {
+    //                 "id": 1019,
+    //                 "name": "Company 2"
+    //             },
+    //             "bistra": null,
+    //             "dataConsegna": "2022-12-05T00:00:00",
+    //             "dataInserimento": "2022-12-05T00:00:00",
+    //             "quantita": {
+    //                 "unitaMisura": "N.",
+    //                 "ordinata": 80000,
+    //                 "tolleranza_percentuale": 40,
+    //                 "massimaConTolleranza": 112000
+    //             },
+    //             "dettaglio": {
+    //                 "diametro": 34,
+    //                 "altezza": 128,
+    //                 "altezzaCS": 140
+    //             },
+    //             "subTasks": [
+    //                 {
+    //                     "idTask": 898,
+    //                     "codiceCommessa": "78999",
+    //                     "name": "Phase 1",
+    //                     "color": "#E91E63",
+    //                     "startDate": new Date("2022-11-09T16:00:00"),
+    //                     "durationUnit": "minute",
+    //                     "duration": 240,
+    //                     "duration_Calendar": 240,
+    //                     "progress": 0,
+    //                     "predecessor": "",
+    //                     "risorsa": "VE08",
+    //                     "priorita": null,
+    //                     "colGanttCustoms": [
+    //                         {
+    //                             "name": "consegna",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memodue",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memouno",
+    //                             "value": null
+    //                         }
+    //                     ],
+    //                     "calendarName": "Phase 1"
+    //                 },
+    //                 {
+    //                     "idTask": 899,
+    //                     "codiceCommessa": "78999",
+    //                     "name": "Phase 2",
+    //                     "color": "#CDDC39",
+    //                     "startDate": new Date("2022-11-09T20:00:00"),
+    //                     "durationUnit": "minute",
+    //                     "duration": 1560,
+    //                     "duration_Calendar": 1560,
+    //                     "progress": 0,
+    //                     "predecessor": "898FS",
+    //                     "risorsa": "",
+    //                     "priorita": null,
+    //                     "colGanttCustoms": [
+    //                         {
+    //                             "name": "consegna",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memodue",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memouno",
+    //                             "value": null
+    //                         }
+    //                     ],
+    //                     "calendarName": "Phase 2",
+    //                     "segments": [
+    //                         {
+    //                             "startDate": new Date("2022-11-09T20:00:00"),
+    //                             "duration": 240
+    //                         },
+    //                         {
+    //                             "startDate": new Date("2022-11-10T00:00:00"),
+    //                             "duration": 1320
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "startDate": new Date("2022-11-09T16:00:00"),
+    //             "endDate": new Date("2022-11-10T22:51:00"),
+    //             "color": "#428af5",
+    //             "conicita": "3,6°=3°36' Diam. 34",
+    //             "priorita_Filter": 9,
+    //             "diametro_Filter": 34,
+    //             "stato_Filter": "Inevaso",
+    //             "statoProduzione_Filter": "Da iniziare"
+    //         },
+    //         {
+    //             "name": "Company C 79128",
+    //             "durationUnit": "minute",
+    //             "mercePronta": "2022-10-05T00:00:00",
+    //             "idTask": 142948,
+    //             "codiceCommessa": "79128",
+    //             "cliente": {
+    //                 "id": 6207,
+    //                 "name": "Company 3"
+    //             },
+    //             "bistra": null,
+    //             "dataConsegna": "2022-10-15T00:00:00",
+    //             "dataInserimento": "2022-10-15T00:00:00",
+    //             "quantita": {
+    //                 "unitaMisura": "N.",
+    //                 "ordinata": 10000,
+    //                 "tolleranza_percentuale": 40,
+    //                 "massimaConTolleranza": 14000
+    //             },
+    //             "dettaglio": {
+    //                 "diametro": 34,
+    //                 "altezza": 122,
+    //                 "altezzaCS": 134
+    //             },
+    //             "subTasks": [
+    //                 {
+    //                     "idTask": 858,
+    //                     "codiceCommessa": "79128",
+    //                     "name": "Phase 1",
+    //                     "color": "#E91E63",
+    //                     "startDate": new Date("2022-11-09T22:00:00"),
+    //                     "durationUnit": "minute",
+    //                     "duration": 180,
+    //                     "duration_Calendar": 660,
+    //                     "progress": 0,
+    //                     "predecessor": "",
+    //                     "risorsa": "VE08",
+    //                     "priorita": null,
+    //                     "colGanttCustoms": [
+    //                         {
+    //                             "name": "consegna",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memodue",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memouno",
+    //                             "value": null
+    //                         }
+    //                     ],
+    //                     "calendarName": "Phase 1",
+    //                     "segments": [
+    //                         {
+    //                             "startDate": new Date("2022-11-09T22:00:00"),
+    //                             "duration": 60
+    //                         },
+    //                         {
+    //                             "startDate": new Date("2022-11-10T07:00:00"),
+    //                             "duration": 120
+    //                         }
+    //                     ]
+    //                 },
+    //                 {
+    //                     "idTask": 859,
+    //                     "codiceCommessa": "79128",
+    //                     "name": "Phase 2",
+    //                     "color": "#CDDC39",
+    //                     "startDate": new Date("2022-11-09T23:00:00"),
+    //                     "durationUnit": "minute",
+    //                     "duration": 360,
+    //                     "duration_Calendar": 360,
+    //                     "progress": 0,
+    //                     "predecessor": "",
+    //                     "risorsa": "",
+    //                     "priorita": null,
+    //                     "colGanttCustoms": [
+    //                         {
+    //                             "name": "consegna",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memodue",
+    //                             "value": null
+    //                         },
+    //                         {
+    //                             "name": "memouno",
+    //                             "value": null
+    //                         }
+    //                     ],
+    //                     "calendarName": "Phase 2",
+    //                     "segments": [
+    //                         {
+    //                             "startDate": new Date("2022-11-09T23:00:00"),
+    //                             "duration": 60
+    //                         },
+    //                         {
+    //                             "startDate": new Date("2022-11-10T00:00:00"),
+    //                             "duration": 300
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "startDate": new Date("2022-11-09T22:00:00"),
+    //             "endDate": new Date("2022-11-10T07:58:00"),
+    //             "color": "#428af5",
+    //             "conicita": "4,36°=4°22' Diam. 34",
+    //             "priorita_Filter": 9,
+    //             "diametro_Filter": 34,
+    //             "stato_Filter": "Inevaso",
+    //             "statoProduzione_Filter": "Da iniziare"
+    //         }
+    //     ];
+    //     beforeAll((done: Function) => {
+    //         ganttObj = createGantt(
+    //             {
+    //                 dataSource: splitTasksData1,
+    //                 taskFields: {
+    //                     id: "idTask",
+    //                     name: "name",
+    //                     startDate: "startDate",
+    //                     endDate: "endDate",
+    //                     duration: "duration",
+    //                     durationUnit: "durationUnit",
+    //                     progress: "progress",
+    //                     dependency: "predecessor",
+    //                     child: "subTasks",
+    //                     segments: "segments",
+    //                 },
+    //                 actionBegin(args) {
+    //                     if (args.requestType == "beforeSave") {
+    //                       console.log(args.modifiedTaskData);
+    //                     }
+    //                   },
+    //                 renderBaseline: true,
+    //                 baselineColor: 'red',
+    //                 editSettings: {
+    //                     allowAdding: true,
+    //                     allowEditing: true,
+    //                     allowDeleting: true,
+    //                     allowTaskbarEditing: true,
+    //                     showDeleteConfirmDialog: true
+    //                 },
+                    
+    //                 allowSelection: true,
+    //                 gridLines: "Both",
+    //                 showColumnMenu: true,
+    //                 highlightWeekends: true,
+    //                 timezone: "Europe/Rome",
+    //                 timelineSettings: {
+    //                     timelineUnitSize: 40,
+    //                     timelineViewMode: "Day",
+    //                     topTier: {
+    //                       unit: "Day",
+    //                       format: "E, d MMMM",
+    //                       count: 1,
+    //                     },
+    //                     bottomTier: {
+    //                       unit: "Hour",
+    //                       count: 1,
+    //                     },
+    //                     weekStartDay: 1,
+    //                     weekendBackground: "rgba(0,0,0,0.1)",
+    //                     updateTimescaleView: false,
+    //                 },
+    //                 workWeek: [
+    //                     "Monday",
+    //                     "Tuesday",
+    //                     "Wednesday",
+    //                     "Thursday",
+    //                     "Friday",
+    //                     "Saturday",
+    //                     "Sunday",
+    //                   ],
+    //                   dayWorkingTime: [
+    //                         {
+    //                           from: 0,
+    //                           to: 24,
+    //                         },
+    //                       ],
+    //                 height: '550px',
+    //                 durationUnit: 'Minute',
+    //                 projectStartDate: new Date('2022-11-09'),
+    //                 projectEndDate: new Date('2022-11-12'),
+    
+    //             }, done);
+    //     });
+    //     it('Splittasks data with day/hour mode', () => {
+    //         ganttObj.actionBegin = function (args: any): void {
+    //             if (args.requestType == "beforeSave") {
+    //                 expect(args.modifiedTaskData.length).toBe(2);
+    //               }
+    //         };
+    //         ganttObj.dataBind()
+    //         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(8) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-last.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+    //         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+    //         triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft - 150), dragElement.offsetTop);
+    //         triggerMouseEvent(dragElement, 'mouseup');
+    //     });
+    //     afterAll(() => {
+    //         destroyGantt(ganttObj);
+    //     });
+    //     beforeEach((done: Function) => {
+    //         setTimeout(done, 2000);
+    //     });
+    // });
 });

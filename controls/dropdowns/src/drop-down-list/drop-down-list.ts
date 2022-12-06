@@ -1357,9 +1357,9 @@ export class DropDownList extends DropDownBase implements IInput {
             attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id != '' ? this.inputElement.id : this.element.id});
             this.targetElement().removeAttribute('aria-live');
         }
-        if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])){
+        if (this.isPopupOpen && !isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])){
             attributes(this.targetElement(), {'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id});
-        } else if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-active')[0])) { 
+        } else if (this.isPopupOpen && !isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-active')[0])) { 
             attributes(this.targetElement(), { 'aria-activedescendant':  this.ulElement.getElementsByClassName('e-active')[0].id });
         }
     }
@@ -1684,9 +1684,9 @@ export class DropDownList extends DropDownBase implements IInput {
     /**
      * To filter the data from given data source by using query
      *
-     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
-     * @param  {Query} query - Specify the query to filter the data.
-     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @param {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param {Query} query - Specify the query to filter the data.
+     * @param {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @returns {void}
      * @deprecated
      */

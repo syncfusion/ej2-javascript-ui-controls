@@ -779,18 +779,38 @@ export class TextMarkupAnnotation {
     }
     // eslint-disable-next-line
     private drawAnnotationSelector(newAnnotation: any, annotation: any, newcanvas?: any): void {
+        let newBounds: any = [];
+        let x: number = 0;
+        let y: number = 0;
+        let width: number = 0;
+        let height: number = 0;
+        let currentTop: number = 0;
+        let nextTop: number = 0;
         for (let i: number = 0; i < newAnnotation.bounds.length; i++) {
-            // eslint-disable-next-line
-            let bound: any = newAnnotation.bounds[i];
-            const x: number = bound.left ? bound.left : bound.Left;
-            const y: number = bound.top ? bound.top : bound.Top;
-            const width: number = bound.width ? bound.width : bound.Width;
-            const height: number = bound.height ? bound.height : bound.Height;
-            if (!newcanvas) {
-                newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);
+            currentTop = newAnnotation.bounds[i].top ? newAnnotation.bounds[i].top : newAnnotation.bounds[i].Top;
+            nextTop = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].top ? newAnnotation.bounds[i + 1].top : newAnnotation.bounds[i + 1].Top : 0;
+            if (newAnnotation.bounds.length > 1 && i < newAnnotation.bounds.length - 1 && currentTop === nextTop) {
+                newBounds.push(newAnnotation.bounds[i]);
+            } else {
+                if (i === newAnnotation.bounds.length - 1 || newAnnotation.bounds.length >= 1) {
+                    newBounds.push(newAnnotation.bounds[i]);
+                }
+                if (newBounds.length >= 1) {
+                    x = newBounds[0].left ? newBounds[0].left : newBounds[0].Left;
+                    y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
+                    height = newBounds[0].height ? newBounds[0].height: newBounds[0].Height;
+                    for (var j = 0; j < newBounds.length; j++) {
+                        width += newBounds[j].width ? newBounds[j].width : newBounds[j].Width;
+                    }
+                    if (!newcanvas) {
+                        newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);
+                    }
+                    // eslint-disable-next-line max-len
+                    this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
+                    newBounds = [];
+                    width = 0;
+                }
             }
-            // eslint-disable-next-line max-len
-            this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()), this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
         }
     }
     // eslint-disable-next-line

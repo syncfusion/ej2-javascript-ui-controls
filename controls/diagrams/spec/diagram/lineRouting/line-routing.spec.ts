@@ -7671,4 +7671,95 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[7] as Connector).intermediatePoints[0].x == 2257.5 && (diagram.connectors[7] as Connector).intermediatePoints[0].y == 20 && (diagram.connectors[7] as Connector).intermediatePoints[1].x == 2470 && (diagram.connectors[7] as Connector).intermediatePoints[1].y == 20).toBe(true); done();
         });
     });
+    describe('Line routing', () => {
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            nodes = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 300,
+                    ports: [
+                        { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                        { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                        { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                        { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                    ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                    { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+            ];
+            connectors = [{
+                id: 'Connector1',
+                sourceID: 'node1',
+                targetID:'node1',
+                targetPortID: 'port1', sourcePortID: 'port1',
+            }];
+            diagram = new Diagram({
+                width: 1000, height: 600,
+                connectors: connectors, nodes: nodes,
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting, getConnectorDefaults: function (connector: ConnectorModel) { connector.type = 'Orthogonal'; }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Connector with same source and target id', (done: Function) => {
+            console.log('connector');
+            expect((diagram.connectors[0] as Connector).sourceID == (diagram.connectors[0] as Connector).targetID).toBe(true);
+            done();
+        });
+    });
+    describe('Line routing', () => {
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            nodes = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 300,
+                    ports: [
+                        { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                        { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                        { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                        { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                    ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                    { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+            ];
+            connectors = [{
+                id: 'Connector1',
+                targetID:'node2',
+                targetPortID: 'port1', sourcePortID: 'port2',
+            }];
+            diagram = new Diagram({
+                width: 1000, height: 600,
+                connectors: connectors, nodes: nodes,
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting, getConnectorDefaults: function (connector: ConnectorModel) { connector.type = 'Orthogonal'; }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Connector without sourceid', (done: Function) => {
+            console.log('connector');
+            expect((diagram.connectors[0] as Connector).sourceID == "").toBe(true);
+            done();
+        });
+    });
 });

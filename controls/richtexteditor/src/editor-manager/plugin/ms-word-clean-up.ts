@@ -251,7 +251,9 @@ export class MsWordPaste {
         for (let i: number = 0; i < allElements.length; i++) {
             if (allElements[i].children.length === 0 && allElements[i].innerHTML === '&nbsp;' &&
             (allElements[i].innerHTML === '&nbsp;' && !allElements[i].closest('li')) &&
-            !allElements[i].closest('td')) {
+            !allElements[i].closest('td') && (allElements[i].nodeName !== 'SPAN' ||
+            allElements[i].nodeName === 'SPAN' && (isNOU(allElements[i].previousElementSibling) &&
+            isNOU(allElements[i].nextElementSibling)))) {
                 const detachableElement: HTMLElement = this.findDetachElem(allElements[i]);
                 const brElement: HTMLElement = createElement('br') as HTMLElement;
                 if (!isNOU(detachableElement.parentElement)) {

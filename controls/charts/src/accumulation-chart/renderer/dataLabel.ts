@@ -1129,6 +1129,9 @@ export class AccumulationDataLabel extends AccumulationBase {
                     this.arrangeRightSidePoints(series);
                     break;
                 }
+                if (count > 360) {
+                    break;
+                }
                 count++;
             }
         } else {
@@ -1141,6 +1144,9 @@ export class AccumulationDataLabel extends AccumulationBase {
                     break;
                 }
                 this.changeLabelAngle(nextPoint, newAngle);
+                if (count > 360) {
+                    break;
+                }
                 count++;
             }
         }

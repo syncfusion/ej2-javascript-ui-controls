@@ -1708,15 +1708,29 @@ export class SearchBox {
     public searchFocus(args: { target: HTMLInputElement }): void {
         args.target.parentElement.classList.add('e-input-focus');
         if (args.target.classList.contains('e-input') && args.target.classList.contains('e-search') && args.target.value){
-            args.target.parentElement.querySelector('.e-clear-icon').classList.remove('e-clear-icon-hide');
+            const sIcon: HTMLElement = args.target.parentElement.querySelector('.e-sicon');
+            sIcon.classList.add('e-clear-icon');
+            sIcon.setAttribute('title', 'Clear');
+            (sIcon).style.cursor = 'pointer';
         }
     }
 
     protected searchBlur(args: Event & FocusEvent): void {
-        (<HTMLInputElement>args.target).parentElement.classList.remove('e-input-focus');
-        if ((<HTMLElement>args.target).classList.contains('e-search') && args.relatedTarget && !((<HTMLElement>args.relatedTarget).classList.contains('e-sicon e-clear-icon'))
-        && !((<HTMLElement>args.relatedTarget).classList.contains('e-sicon'))){
-            (<HTMLInputElement>args.target).parentElement.querySelector('.e-clear-icon').classList.add('e-clear-icon-hide');
+        const relatedTarget: EventTarget = args.relatedTarget ? args.relatedTarget : null;
+        if ((<HTMLElement>relatedTarget) && (<HTMLElement>relatedTarget).classList.contains('e-sicon')) {
+            if ((<HTMLElement>relatedTarget).classList.contains('e-clear-icon')) {
+                (<HTMLElement>args.target).parentElement.classList.remove('e-input-focus');
+            }
+        }
+        else {
+            (<HTMLInputElement>args.target).parentElement.classList.remove('e-input-focus');
+        }
+        if ((<HTMLElement>args.target).classList.contains('e-search') && relatedTarget && !((<HTMLElement>relatedTarget).classList.contains('e-sicon e-clear-icon'))
+        && !((<HTMLElement>relatedTarget).classList.contains('e-sicon'))){
+            const sIcon: HTMLInputElement = (<HTMLInputElement>args.target).parentElement.querySelector('.e-sicon');
+            sIcon.classList.remove('e-clear-icon');
+            sIcon.removeAttribute('title');
+            sIcon.style.cursor = 'default';
         }
     }
 

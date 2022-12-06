@@ -2,7 +2,7 @@
  * Enter Key spec
  */
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { RichTextEditor} from './../../../../src/index';
+import { EditorManager, RichTextEditor} from './../../../../src/index';
 import { renderRTE, destroy } from './../../render.spec';
 import { NodeSelection } from './../../../../src/selection/index';
 
@@ -1891,5 +1891,25 @@ describe( 'EJ2-64636 Duplicate text is created when deleting different nodes and
         let cursorElem: HTMLElement;
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.innerHTML === `<p>Hello</p><p><br></p><p><span style="background-color: unset; text-align: inherit;" class="focusNode">Syncfusion</span><br></p>` ).toBe(true);
+    });
+});
+
+describe('EJ2-65987 - Image duplicated when pressing enter',() => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `<p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`;
+    let editObj: EditorManager = new EditorManager( { document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: innerHTML
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('check image duplicated when pressing enter',() => {
+        (rteObj as any).inputElement.focus();
+        editObj.nodeSelection.setSelectionText(document,(rteObj as any).inputElement.childNodes[0].firstChild,(rteObj as any).inputElement.childNodes[0].firstChild, 0, 0);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML==`<p><br></p><p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`).toBe(true);
     });
 });

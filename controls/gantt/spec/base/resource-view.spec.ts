@@ -1276,4 +1276,78 @@ describe('Resource view with persistence', () => {
             triggerMouseEvent(saveButton, 'click');
         });
     });
+     describe('Check unassingned task dates resource view', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: normalResourceData,
+            resources: resourceCollection,
+            viewType: 'ResourceView',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            showOverAllocation: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resources', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            splitterSettings: { columnIndex: 3 },
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('delete Resource assigned record', () => {
+            ganttObj.actionComplete = (arg: any): void => {
+                if (arg.requestType == "delete") {
+                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[15].ganttProperties.startDate, 'M/dd/yyyy')).toBe('3/29/2019');
+                }
+            };
+            ganttObj.dataBind();
+            ganttObj.deleteRecord(2);
+        });
+    });
 });

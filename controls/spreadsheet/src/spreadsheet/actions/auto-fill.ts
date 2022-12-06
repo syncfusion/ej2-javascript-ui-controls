@@ -56,6 +56,7 @@ export class AutoFill {
             iconCss: 'e-icons e-dragfill-icon',
             items: this.getfillItems(),
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             select: (args: MenuEventArgs): void => {
                 this.autoFillOptionClick({ type: this.getFillType(args.item.text) });
             },
@@ -159,6 +160,7 @@ export class AutoFill {
         let colIdx: number = indexes[3];
         let height: number; let width: number;
         let pos: { top: number, left: number };
+        const isRtl: boolean = this.parent.enableRtl;
         const cell: HTMLElement = this.parent.getCell(rowIdx, colIdx);
         if (isHiddenCol(sheet, indexes[3]) || isHiddenRow(sheet, indexes[2]) ||
             (cell && cell.classList.contains('e-formularef-selection')) || (sheet.isProtected && sheet.protectSettings.selectUnLockedCells
@@ -221,7 +223,12 @@ export class AutoFill {
                 left += Math.round(pos.left) + ldiff;
                 if (this.autoFillElement) {
                     removeClass([this.autoFillElement], 'e-hide');
-                    this.autoFillElement.style.top = top + 'px'; this.autoFillElement.style.left = left + 'px';
+                    this.autoFillElement.style.top = top + 'px';
+                    if (isRtl) {
+                        this.autoFillElement.style.right = left + 'px';
+                    } else {
+                        this.autoFillElement.style.left = left + 'px';
+                    }
                     this.autoFillCell = { rowIndex: rowIdx, colIndex: colIdx };
                     const clientRect: ClientRect = this.autoFillElement.getBoundingClientRect();
                     this.autoFillElementPosition = {
@@ -229,7 +236,12 @@ export class AutoFill {
                     };
                     if (this.parent.autoFillSettings.showFillOptions && args && args.isautofill) {
                         removeClass([this.autoFillDropDown.element], 'e-hide');
-                        this.autoFillDropDown.element.style.top = top + otdiff + 'px'; this.autoFillDropDown.element.style.left = left + oldiff + 'px';
+                        this.autoFillDropDown.element.style.top = top + otdiff + 'px';
+                        if (isRtl) {
+                            this.autoFillDropDown.element.style.right = left + oldiff + 'px';
+                        } else {
+                            this.autoFillDropDown.element.style.left = left + oldiff + 'px';
+                        }
                     }
                 }
             }

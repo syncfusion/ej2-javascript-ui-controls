@@ -1931,6 +1931,9 @@ export class Editor {
         revisionType = (this.owner.enableTrackChanges && isNullOrUndefined(revisionType)) ? 'Insertion' : revisionType;
         let commentStarts: CommentCharacterElementBox[] = this.checkAndRemoveComments();
         this.isListTextSelected();
+        if (selection.bookmarks.length > 0) {
+            this.extendSelectionToBookmarkStart();
+        }
         if (isNullOrUndefined(revisionType) || revisionType === 'Insertion') {
             this.initHistory('Insert');
         }
@@ -2157,6 +2160,33 @@ export class Editor {
             }
         }
         this.updateHistoryForComments(commentStarts);
+    }
+
+    private extendSelectionToBookmarkStart(): void {
+        if (this.documentHelper.bookmarks.length > 0) {
+            let startPos: TextPosition = this.selection.start;
+            let endPos: TextPosition = this.selection.end;
+            if (!this.selection.isForward) {
+                startPos = this.selection.end;
+                endPos = this.selection.start;
+            }
+            let bookMark: BookmarkElementBox;
+            let selectionBookmark: string[] = this.selection.bookmarks;
+            for (let i: number = 0; i < selectionBookmark.length; i++) {
+                bookMark = this.documentHelper.bookmarks.get(selectionBookmark[i]);
+                if (this.selection.isElementInSelection(bookMark.reference, false) &&
+                    !this.selection.isElementInSelection(bookMark, true)) {
+                    let bookmarkPargraph: ParagraphWidget = bookMark.line.paragraph;
+                    let selectionParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
+                    if (bookmarkPargraph.equals(selectionParagraphInfo.paragraph)) {
+                        let elementOffset: number = bookMark.line.getOffset(bookMark, bookMark.bookmarkType);
+                        if (bookMark.line === startPos.currentWidget && selectionParagraphInfo.offset === elementOffset + 1) {
+                            startPos.offset--;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private updateElementInFieldRevision(revisionElement: ElementBox, elementToInclude: ElementBox, revisions: Revision[], isEnd: boolean): void {
@@ -3878,11 +3908,22 @@ export class Editor {
         this.updateEndPosition();
         this.reLayout(selection, true);
     }
-    private initInsertInline(element: ElementBox, insertHyperlink?: boolean): void {
+    private initInsertInline(element: ElementBox, insertHyperlink?: boolean, isInsertRemovedBookamrk?: boolean): void {
+        let selection: Selection = this.selection;
+        let isSelectionUpdated: boolean = false;
+        if (isInsertRemovedBookamrk && element instanceof BookmarkElementBox) {
+            selection.start.offset--;
+            selection.end.offset--;
+            isSelectionUpdated = true;
+        }
         this.initHistory('InsertInline');
-        this.insertInlineInSelection(this.documentHelper.selection, element);
+        this.insertInlineInSelection(selection, element);
         if (this.editorHistory) {
             this.editorHistory.updateHistory();
+        }
+        if (isSelectionUpdated) {
+            selection.start.offset++;
+            selection.end.offset++;
         }
     }
 
@@ -5857,6 +5898,13 @@ export class Editor {
             (element as TextElementBox).text = (element as TextElementBox).text.substring(0, index) + (newElement as TextElementBox).text + (element as TextElementBox).text.substring(index);
         }
         newElement.line = element.line;
+        if (newElement instanceof BookmarkElementBox) {
+            let bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+            newElement.reference.reference = newElement;
+            if (!bookmarkCol.containsKey(newElement.name)) {
+                bookmarkCol.add(newElement.name, newElement);
+            }
+        }
         if (!isNullOrUndefined(newElement.line.paragraph.containerWidget) && !isNullOrUndefined(newElement.line.paragraph.containerWidget.containerWidget) && newElement.line.paragraph.containerWidget.containerWidget instanceof FootNoteWidget) {
             newElement.line.paragraph.containerWidget.containerWidget.height += newElement.height;
         }
@@ -13520,6 +13568,9 @@ export class Editor {
         this.removeEditRange = true;
         let selection: Selection = this.documentHelper.selection;
         this.documentHelper.triggerSpellCheck = true;
+        if (selection.bookmarks.length > 0) {
+            this.extendSelectionToBookmarkStart();
+        }
         if (selection.isEmpty) {
             this.singleBackspace(selection, false);
         } else {
@@ -13561,9 +13612,6 @@ export class Editor {
             let bookMark: BookmarkElementBox = this.removedBookmarkElements[i];
 
             if (bookMark.bookmarkType === 0) {
-                if (!this.documentHelper.bookmarks.containsKey(bookMark.name)) {
-                    this.documentHelper.bookmarks.add(bookMark.name, bookMark);
-                }
                 let bookMarkStart: BookmarkElementBox = bookMark;
                 if (bookMarkStart && bookMarkStart.reference && this.removedBookmarkElements.indexOf(bookMarkStart.reference) !== -1) {
                     let endIndex: number = this.removedBookmarkElements.indexOf(bookMarkStart.reference);
@@ -13576,7 +13624,7 @@ export class Editor {
                         this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
                         this.editorHistory.updateHistory();
                     }
-                    this.initInsertInline(bookMarkStart.clone());
+                    this.initInsertInline(bookMarkStart.clone(), undefined, true);
                     if (this.editorHistory.currentHistoryInfo) {
                         this.editorHistory.updateComplexHistory();
                         isHandledComplexHistory = true;
@@ -13595,7 +13643,7 @@ export class Editor {
                         this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
                         this.editorHistory.updateHistory();
                     }
-                    this.initInsertInline(bookMarkEnd.clone());
+                    this.initInsertInline(bookMarkEnd.clone(), undefined, true);
                     if (this.editorHistory.currentHistoryInfo) {
                         this.editorHistory.updateComplexHistory();
                         isHandledComplexHistory = true;
@@ -14434,6 +14482,9 @@ export class Editor {
     public delete(): void {
         this.removeEditRange = true;
         let selection: Selection = this.documentHelper.selection;
+        if (selection.bookmarks.length > 0) {
+            this.extendSelectionToBookmarkStart();
+        }
         if (selection.isEmpty) {
             this.singleDelete(selection, false);
         } else {
@@ -17044,7 +17095,7 @@ export class Editor {
             } else {
                 styleName = headingStyleName;
             }
-            const tocStyleName: string = 'Toc' + this.tocStyles[styleName];
+            const tocStyleName: string = 'TOC ' + this.tocStyles[styleName];
             let paraStyle: Object = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
             if (isNullOrUndefined(paraStyle)) {
 

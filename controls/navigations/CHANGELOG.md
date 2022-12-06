@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I415237` - The TreeView performance issue in Vue3 framework has been resolved.
+
 ## 20.3.58 (2022-11-22)
 
 ### Carousel

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I419658` - Resolved template column not rendered properly when stacked header enabled.
+
 ## 20.3.58 (2022-11-22)
 
 ### Tree Grid

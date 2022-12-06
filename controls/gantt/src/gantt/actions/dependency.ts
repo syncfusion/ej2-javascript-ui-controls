@@ -747,6 +747,9 @@ export class Dependency {
                     this.parent.dataOperation.updateParentItems(record, true);
                 }
             }
+            else if (record && record.hasChildRecords && !ganttProp) {
+                    this.parent.editModule['updateChildItems'](record);
+            }
         }
     }
 

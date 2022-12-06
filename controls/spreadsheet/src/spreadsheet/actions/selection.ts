@@ -156,6 +156,7 @@ export class Selection {
             }
             const sheet: SheetModel = this.parent.getActiveSheet();
             let ele: HTMLElement = this.getActiveCell();
+            const isRtl: boolean = this.parent.enableRtl;
             if (ele && (sheet.frozenRows || sheet.frozenColumns || sheet.selectedRange.includes(' '))) {
                 this.selectRange({ address: sheet.selectedRange });
                 return;
@@ -173,7 +174,11 @@ export class Selection {
                 if (colIdx === args.colIdx || isActiveCell) {
                     ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
                 } else if (colIdx > args.colIdx) {
-                    ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
+                    if (isRtl) {
+                        ele.style.right = `${parseFloat(ele.style.right) + args.threshold}px`;
+                    } else {
+                        ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
+                    }
                 }
             }
             ele = this.getSelectionElement();
@@ -184,7 +189,11 @@ export class Selection {
             if (colStart <= args.colIdx && colEnd >= args.colIdx && ele) {
                 ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
             } else if (colStart > args.colIdx && ele) {
-                ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
+                if (isRtl) {
+                    ele.style.right = `${parseFloat(ele.style.right) + args.threshold}px`;
+                } else {
+                    ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
+                }
             }
         });
     }

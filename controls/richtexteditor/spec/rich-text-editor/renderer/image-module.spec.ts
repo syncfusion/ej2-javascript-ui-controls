@@ -1802,22 +1802,22 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
+            expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+            quickTBItem.item(5).click();
+            (document.querySelector('.e-img-link') as any).value = 'https://www.syncfusion.com';
+            (document.querySelector('.e-update-link') as any).click();
+            target = rteObj.contentModule.getEditPanel().querySelector('img');
+            expect(closest(target, 'a')).not.toBe(null);
+            keyboardEventArgs.ctrlKey = true;
+            keyboardEventArgs.keyCode = 90;
+            keyboardEventArgs.action = 'undo';
+            (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
             setTimeout(function () {
-                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
-                expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
-                quickTBItem.item(5).click();
-                (document.querySelector('.e-img-link') as any).value = 'https://www.syncfusion.com';
-                (document.querySelector('.e-update-link') as any).click();
-                target = rteObj.contentModule.getEditPanel().querySelector('img');
-                expect(closest(target, 'a')).not.toBe(null);
-                keyboardEventArgs.ctrlKey = true;
-                keyboardEventArgs.keyCode = 90;
-                keyboardEventArgs.action = 'undo';
-                (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
                 expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
                 done();
-            }, 200);
+            }, 1000);
         });
         it('caption check', (done: Function) => {
             let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
@@ -4170,6 +4170,41 @@ client side. Customer easy to edit the contents and get the HTML content for
             for(let i: number = 0; i < allDropDownPopups.length; i++) {
                 detach(allDropDownPopups[i]);
             }
+        });
+    });
+
+    describe('EJ2-66350: DisplayLayout option checking in image quicktoolbar', () => {
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("DisplayLayout option checking in image quicktoolbar", () => {
+            let target: HTMLElement = rteEle.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+            let imgPop: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+            (<HTMLElement>document.querySelectorAll(".e-rte-dropdown-btn")[1]).click();
+            expect(document.querySelectorAll('li')[0].innerHTML === "Inline");
+            expect(document.querySelectorAll('li')[1].innerHTML === "Break");
         });
     });
 });

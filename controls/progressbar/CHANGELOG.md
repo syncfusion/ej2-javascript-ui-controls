@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.3.59 (2022-11-29)
+## 20.3.60 (2022-12-06)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I420052` - Now progress bar API reference are refreshing properly.
+
+## 20.3.57 (2022-11-15)
 
 ### ProgressBar
 

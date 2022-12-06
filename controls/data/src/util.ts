@@ -1674,12 +1674,19 @@ export class DataUtil {
                     let isUTC: boolean = value.indexOf('Z') > -1 || value.indexOf('z') > -1;
                     let arr: string[] = (<string>value).split(/[^0-9.]/);
                     if (isUTC) {
+                        if (arr[5].indexOf('.') > -1) {
+                            const secondsMs: string[] = arr[5].split('.');
+                            arr[5] = secondsMs[0];
+                            arr[6] = secondsMs[1];
+                        } else {
+                            arr[6] = '00';
+                        }
                         value = DataUtil.dateParse
                         .toTimeZone(new Date(
                                     parseInt(arr[0], 10),
                                     parseInt(arr[1], 10) - 1,
                                     parseInt(arr[2], 10),
-                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
+                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10), parseInt(arr[6], 10)),
                                     DataUtil.serverTimezoneOffset, false);
                     } else {
                         let utcFormat: Date = new Date(

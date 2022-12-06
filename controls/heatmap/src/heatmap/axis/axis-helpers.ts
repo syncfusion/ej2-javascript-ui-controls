@@ -205,6 +205,13 @@ export class AxisHelper {
         for (let i: number = 0, len: number = axisCollection.length; i < len; i++) {
             const axis: Axis = axisCollection[i];
             axis.rect = <Rect>extend({}, rect, null, true);
+            if (axis.orientation === 'Horizontal' && axis.multiLevelLabels.length !== 0) {
+                if (axis.opposedPosition) {
+                    axis.rect.y += (axis.angle === 0 || axis.angle === 180 || axis.angle === 360 ? 0 : this.padding);
+                    this.heatMap.initialClipRect.y += (axis.angle === 0 || axis.angle === 180 || axis.angle === 360 ? 0 : this.padding);
+                }
+                rect.height -= (axis.angle === 0 || axis.angle === 180 || axis.angle === 360 ? 0 : this.padding);
+            }
             if (axis.orientation === 'Horizontal' && !axis.opposedPosition) {
                 axis.rect.y = rect.y + rect.height;
                 axis.rect.height = 0;

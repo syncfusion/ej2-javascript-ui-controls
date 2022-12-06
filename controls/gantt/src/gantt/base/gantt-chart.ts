@@ -334,6 +334,9 @@ export class GanttChart {
             this.parent.notify('chartMouseDown', e);
             this.parent.element.tabIndex = 0;
         }
+        if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+            this.parent.treeGrid.endEdit();
+        }
     }
 
     private ganttChartMouseClick(e: PointerEvent): void {

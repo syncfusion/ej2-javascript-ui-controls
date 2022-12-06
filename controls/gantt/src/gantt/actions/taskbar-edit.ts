@@ -1658,11 +1658,20 @@ export class TaskbarEdit extends DateProcessor {
                     new Date(nextSegment.startDate.getTime()) : this.parent.cloneProjectEndDate;
                 const eDate: Date = !isNullOrUndefined(previousSegment) ?
                     new Date(previousSegment.endDate.getTime()) : this.parent.cloneProjectStartDate;
-                sDate.setHours(0, 0, 0, 0); eDate.setHours(0, 0, 0, 0);
                 const cStartDate: Date = new Date(segment.startDate.getTime());
                 const cEndDate: Date = new Date(segment.endDate.getTime());
-                cStartDate.setDate(cStartDate.getDate() - 1); cEndDate.setDate(cEndDate.getDate() + 1);
-                cStartDate.setHours(0, 0, 0, 0); cEndDate.setHours(0, 0, 0, 0);
+                if (this.parent.timelineModule.topTier === 'Day' && this.parent.timelineModule.bottomTier === 'Hour') {
+                    cStartDate.setHours(cStartDate.getHours() - 1);
+                    cEndDate.setHours(cEndDate.getHours() + 1);
+                }
+                else {
+                    sDate.setHours(0, 0, 0, 0);
+                    eDate.setHours(0, 0, 0, 0);
+                    cStartDate.setDate(cStartDate.getDate() - 1);
+                    cEndDate.setDate(cEndDate.getDate() + 1);
+                    cStartDate.setHours(0, 0, 0, 0);
+                    cEndDate.setHours(0, 0, 0, 0);
+                }
                 if (cStartDate.getTime() <= eDate.getTime() && !isNullOrUndefined(previousSegment) && !isNullOrUndefined(segment)) {
                     const segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
                         { 'firstSegmentIndex': previousSegment.segmentIndex, 'secondSegmentIndex': segment.segmentIndex }

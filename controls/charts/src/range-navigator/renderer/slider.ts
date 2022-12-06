@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/ban-types */
-import { RangeNavigator, RangeValueType } from '../index';
+import { PeriodsModel, RangeNavigator, RangeValueType } from '../index';
 import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RectOption, drawSymbol, linear } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
@@ -11,6 +11,7 @@ import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { IChangedEventArgs, IRangeStyle } from '../model/range-navigator-interface';
 import { ThumbSettingsModel, StyleSettingsModel } from '../model/range-base-model';
+import { PeriodSelector } from '../../common';
 
 /**
  * Class for slider
@@ -33,6 +34,7 @@ export class RangeSlider {
     private sliderWidth: number;
     public currentStart: number;
     public currentEnd: number;
+    public selectedPeriod: string;
     private previousMoveX: number;
     private thumpPadding: number;
     private thumbColor: string;
@@ -257,7 +259,8 @@ export class RangeSlider {
             selectedData: getExactData(this.points, this.currentStart, this.currentEnd),
             zoomPosition: (this.control.enableRtl ? range.max - this.currentEnd :
                 this.currentStart - range.min) / range.delta,
-            zoomFactor: (this.currentEnd - this.currentStart) / range.delta
+            zoomFactor: (this.currentEnd - this.currentStart) / range.delta,
+            selectedPeriod: this.selectedPeriod ? this.selectedPeriod : '',
         };
         this.control.trigger('changed', argsData);
     }
@@ -323,6 +326,18 @@ export class RangeSlider {
             }
             if (e.preventDefault && this.isIOS) {
                 e.preventDefault();
+            }
+            if (this.selectedPeriod) {
+                let periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
+                if (periodSelectorModule) {
+                    let buttons: PeriodsModel[] = periodSelectorModule.control.periods;
+                    buttons.map(function (period) {
+                        period.selected = false;
+                    });
+                    periodSelectorModule.selectedIndex = undefined;
+                    let selectedIndex: number = periodSelectorModule.findSelectedIndex(control.startValue, control.endValue, buttons);
+                    periodSelectorModule.setSelectedStyle(selectedIndex);
+                }
             }
             this.setSlider(
                 control.startValue, control.endValue,
@@ -424,6 +439,18 @@ export class RangeSlider {
             trigger = false;
         } else if (this.currentSlider === 'firstLevelLabels' || this.currentSlider === 'secondLevelLabels') {
             const secondLabel: VisibleLabels = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
+            if (this.selectedPeriod) {
+                let periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
+                if (periodSelectorModule) {
+                    let buttons: PeriodsModel[] = periodSelectorModule.control.periods;
+                    buttons.map(function (period) {
+                        period.selected = false;
+                    });
+                    periodSelectorModule.selectedIndex = undefined;
+                    let selectedIndex: number = periodSelectorModule.findSelectedIndex(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), buttons)
+                    periodSelectorModule.setSelectedStyle(selectedIndex);
+                }
+            }
             /**
              * One millisecond is subtracted from the label to indicate the previous label value
              */

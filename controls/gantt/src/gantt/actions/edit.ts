@@ -826,6 +826,7 @@ export class Edit {
                     this.parent.editedTaskBarItem = ganttRecord;
                 }
                 this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
+                this.parent.predecessorModule.isValidatedParentTaskID = '';
             }
             if (ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
                 (args.action === "DrawConnectorLine" || args.action === "CellEditing" || args.action === "DialogEditing")) {
@@ -1392,6 +1393,12 @@ export class Edit {
         }
         if (!isNullOrUndefined(unassignedTasks)) {
             this.addNewRecord(updateRecord, unassignedTasks);
+            const updatedData: IGanttData = this.parent.currentViewData.filter((data: IGanttData) => {
+                return (data.ganttProperties.taskId === updateRecord.ganttProperties.taskId &&
+                    (data.hasChildRecords === updateRecord.hasChildRecords));
+            })[0];
+            updateRecord.parentItem = updatedData.parentItem;
+            updateRecord.parentUniqueID = updatedData.parentUniqueID;
         } else {
             // Block for create the unassigned task.
             const unassignTaskObj: Object = {};
@@ -1668,13 +1675,17 @@ export class Edit {
                 const data: IGanttData = selectedRecords[i];
                 const ids: string[] = data.ganttProperties.sharedTaskUniqueIds;
                 for (let j: number = 0; j < ids.length; j++) {
-                    deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j].toString())]);
+                    if (this.parent.ids.indexOf(ids[j].toString()) !== -1) {
+                       deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j].toString())]);
+                    }
                 }
-                deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(data.ganttProperties.rowUniqueID)]);
+                if (this.parent.ids.indexOf(data.ganttProperties.rowUniqueID) !== -1) {
+                   deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(data.ganttProperties.rowUniqueID)]);
+                }
             }
             else {
                 const resourceParent: IGanttData = this.parent.flatData.filter((data: IGanttData) => {
-                    return (parseInt(data.ganttProperties.taskId) == parseInt(selectedRecords[i].ganttProperties.taskId) &&
+                    return (data.ganttProperties.taskId === selectedRecords[i].ganttProperties.taskId &&
                     data.hasChildRecords);       
                 })[0];
                 deleteRecords.push(resourceParent);
@@ -2117,7 +2128,26 @@ export class Edit {
                 return !data.hasChildRecords;
             })
             for (let i: number = 0; i < updateUnAssignedResources.length; i++) {
-                this.checkWithUnassignedTask(updateUnAssignedResources[i]);
+                const unassignedTask: IGanttData = this.parent.flatData.filter((data: IGanttData) => {
+                    return data.ganttProperties.taskName === this.parent.localeObj.getConstant('unassignedTask');
+                })[0];
+                const isDuplicate: IGanttData[] = unassignedTask.childRecords.filter((data: IGanttData) => {
+                    return data.ganttProperties.taskId === updateUnAssignedResources[i].ganttProperties.taskId;
+                });
+                const parentTask = this.parent.getParentTask(updateUnAssignedResources[i].parentItem);
+                if (parentTask && parentTask.ganttProperties.taskName !==
+                   this.parent.localeObj.getConstant('unassignedTask') && isDuplicate.length === 0) {
+                    this.checkWithUnassignedTask(updateUnAssignedResources[i]);
+                    if (parentTask) {
+                        this.parent.dataOperation.updateParentItems(updateUnAssignedResources[i].parentItem);
+                    }
+                }
+                else if (!parentTask && isDuplicate.length === 0) {
+                    this.checkWithUnassignedTask(updateUnAssignedResources[i]);
+                    if (updateUnAssignedResources[i].parentItem) {
+                        this.parent.dataOperation.updateParentItems(updateUnAssignedResources[i].parentItem);
+                    }
+                }
             }
         }
         this.parent.trigger('actionComplete', eventArgs);

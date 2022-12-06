@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#I420089` - The issue "API documentation broken on autocomplete Component" has been resolved.
+
 ## 20.3.59 (2022-11-29)
 
 ### ListBox

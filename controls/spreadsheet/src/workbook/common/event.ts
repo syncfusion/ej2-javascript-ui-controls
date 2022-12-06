@@ -131,11 +131,8 @@ export const cellValidation: string = 'cellValidation';
 export const addHighlight: string = 'addHighlight';
 /** @hidden */
 export const dataValidate: string = 'dataValidate';
-
 /** @hidden */
-export const findNext: string = 'findNext';
-/** @hidden */
-export const findPrevious: string = 'findPrevious';
+export const find: string = 'find';
 /** @hidden */
 export const goto: string = 'gotoHandler';
 /** @hidden */

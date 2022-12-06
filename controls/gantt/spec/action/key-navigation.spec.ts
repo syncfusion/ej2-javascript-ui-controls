@@ -87,7 +87,12 @@ describe('Gantt Selection support', () => {
         it('end key testing', () => {
             let args: any = { action: 'end', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args);
-            expect(ganttObj.selectedRowIndex).toBe(ganttObj.currentViewData.length - 1);
+            expect(ganttObj.selectedRowIndex).toBe(3);
+        });
+        it('end key last data selection testing', () => {
+            let args: any = { action: 'end', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args);
+            expect(ganttObj.currentViewData[40]!==ganttObj.selectedRowIndex).toBe(true);
         });
         it('collapseAll key testing', () => {
             

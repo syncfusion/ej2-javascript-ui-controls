@@ -225,7 +225,9 @@ export class Formula {
             formulaCollection: []
         };
         this.parent.notify(workbookFormulaOperation, eventArgs);
-        this.autocompleteInstance.dataSource = eventArgs.formulaCollection;
+        if (this.autocompleteInstance) {
+            this.autocompleteInstance.dataSource = eventArgs.formulaCollection;
+        }
     }
 
     private keyUpHandler(e: KeyboardEventArgs): void {

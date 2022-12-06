@@ -5313,6 +5313,7 @@ export class PdfViewerBase {
         let bounds: any = data['textBounds'];
         // eslint-disable-next-line
         let rotation: any = data['rotation'];
+        let rtldoc: any = this.checkIsRtlText(data.pageText);
         let textLayer: HTMLElement = this.getElement('_textLayer_' + pageIndex);
         if (!textLayer) {
             // eslint-disable-next-line max-len
@@ -5321,7 +5322,7 @@ export class PdfViewerBase {
         if (textLayer && texts && bounds) {
             textLayer.style.display = 'block';
             if (textLayer.childNodes.length === 0) {
-                this.textLayer.renderTextContents(pageIndex, texts, bounds, rotation);
+                this.textLayer.renderTextContents(pageIndex, texts, bounds, rotation, rtldoc);
             } else {
                 this.textLayer.resizeTextContents(pageIndex, texts, bounds, rotation, true);
             }
@@ -6025,7 +6026,7 @@ export class PdfViewerBase {
 			
 			let formFieldsPageList: any = this.getFormFieldsPageList();
             jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
-			
+			jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
             const url: string = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.exportFormFields;
             proxy.exportFormFieldsRequestHandler = new AjaxHandler(this.pdfViewer);
             proxy.exportFormFieldsRequestHandler.url = url;
@@ -7737,6 +7738,9 @@ export class PdfViewerBase {
         this.currentPosition = this.getMousePosition(evt);
         if (this.pdfViewer.annotation) {
             this.activeElements.activePageID = this.pdfViewer.annotation.getEventPageNumber(evt);
+        }
+        if (isNaN(this.activeElements.activePageID) && this.pdfViewer.formDesignerModule) {
+            this.activeElements.activePageID = this.pdfViewer.formDesignerModule.getEventPageNumber(evt);
         }
         const shapeElement: IElement = findActiveElement(evt as MouseEvent, this, this.pdfViewer);
         let mouseMoveforce: boolean = false; let target: PdfAnnotationBaseModel;

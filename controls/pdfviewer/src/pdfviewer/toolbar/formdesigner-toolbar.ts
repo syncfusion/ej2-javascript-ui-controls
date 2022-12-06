@@ -291,7 +291,7 @@ export class FormDesignerToolbar {
 
     // eslint-disable-next-line
     private createToolbarItems(): any[] {
-        const signTemplate: string = this.getTemplate('span', '_formfield_signature', 'e-pv-annotation-handwritten-container');
+        const signTemplate: string = this.getTemplate('button', '_formfield_signature', 'e-pv-annotation-handwritten-container');
         // eslint-disable-next-line
         let items: any[] = [];
         // eslint-disable-next-line max-len
@@ -336,6 +336,8 @@ export class FormDesignerToolbar {
                 this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
                 if(args.element && args.element.className.indexOf("e-separator")!==-1) {
                     args.element.style.margin = "8px 0";
+                    args.element.setAttribute('role','menuitem');
+                    args.element.setAttribute('aria-label','separator')
                 }
                 if (args.item.text === 'ADD SIGNATURE') {
                     args.element.innerHTML = '';
@@ -352,6 +354,7 @@ export class FormDesignerToolbar {
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
                     args.element.style.alignItems = 'center';
+                    args.element.setAttribute('role','menuitem');
                 }
 
                 if (args.item.text === 'ADD INITIAL') { 
@@ -369,6 +372,7 @@ export class FormDesignerToolbar {
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
                     args.element.style.alignItems = 'center';
+                    args.element.setAttribute('role','menuitem');
                 }
             },
         };

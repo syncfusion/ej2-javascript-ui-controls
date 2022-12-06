@@ -1857,7 +1857,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private setzIndex(zIndexElement: HTMLElement, setPopupZindex: boolean): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        this.zIndex = getZindexPartial(zIndexElement);
+        const currentzIndex = getZindexPartial(zIndexElement);
+        this.zIndex = currentzIndex > this.zIndex ? currentzIndex : this.zIndex;
         this.isProtectedOnChange = prevOnChange;
         if (setPopupZindex) {
             this.popupObj.zIndex = this.zIndex;

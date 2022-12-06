@@ -299,7 +299,8 @@ export class SpatialSearch {
                 if (quad.fourth) {
                     this.findRight(quad.fourth);
                 }
-            } else {
+            }
+            {
                 if (quad.first) {
                     this.findRight(quad.first);
 

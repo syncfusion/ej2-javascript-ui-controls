@@ -2715,16 +2715,22 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             return this.getChildGroup(this.groupedData, parentId, isRoot);
         } else {
             if (typeof this.fields.child === 'string') {
+                let index: number = obj.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === parentId);
+                if(index !== -1){return <{ [key: string]: Object }[]>getValue(this.fields.child, obj[index]);}
+                if(index === -1){
                 for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
-                    let dataId: Object = getValue(this.fields.id, obj[i]);
-                    if (dataId && dataId.toString() === parentId) {
-                        return <{ [key: string]: Object }[]>getValue(this.fields.child, obj[i]);
-                    } else if (!isNOU(getValue(this.fields.child, obj[i]))) {
-                        childNodes = this.getChildNodes(<{ [key: string]: Object }[]>getValue(this.fields.child, obj[i]), parentId);
+                    let tempArray: { [key: string]: Object }[] = getValue(this.fields.child, obj[i]);
+                    let childIndex: number = !isNOU(tempArray) ? tempArray.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === parentId) : -1;
+                    if(childIndex!==-1){
+                        return <{ [key: string]: Object }[]>getValue(this.fields.child, tempArray[childIndex]);
+                    }
+                    else if (!isNOU(tempArray)) {
+                        childNodes = this.getChildNodes(tempArray, parentId);
                         if (childNodes !== undefined) {
                             break;
                         }
                     }
+                }
                 }
             }
         }
@@ -4529,7 +4535,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(dropLi)) {
             dropIcon1 = select('div.' + ICON, dropLi);
         }
-        if (this.dataType === 1 && dropIcon1 && dropIcon1.classList.contains(EXPANDABLE)) { this.preventExpand = true; }
+        if (this.dataType === 1 && dropIcon1 && dropIcon1.classList.contains(EXPANDABLE) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) { this.preventExpand = true; }
         if(this.dataType !== 1) {
             this.addChildData(this.treeData, this.fields, id, nodes, index);
             this.isFirstRender = false;
@@ -4546,7 +4552,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[i], refNode);
                 }
-                if (this.dataType === 1 && !isNullOrUndefined(dropLi)) {
+                if (this.dataType === 1 && !isNullOrUndefined(dropLi) && !isNOU(this.element.offsetParent) && !this.element.offsetParent.parentElement.classList.contains('e-filemanager')) {
                     this.preventExpand = false;
                     let dropIcon: Element = select('div.' + ICON, dropLi);
                     if (dropIcon && dropIcon.classList.contains(EXPANDABLE)) {

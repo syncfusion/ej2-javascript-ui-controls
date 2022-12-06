@@ -1451,11 +1451,15 @@ export class TextSelection {
             }
             for (let i = 0; i < selectionTexts.length; i++) {
                 let text = selectionTexts[i];
-                if (text.slice(text.length - 2) === '\r\n'|| i === selectionTexts.length-1) {
+                // While copy and paste for space construct new line
+                if (i != 0 && text === ' ' && selectionTexts[i - 1].includes('\r\n')) {
+                    text = ''
+                }
+                if (text.slice(text.length - 2) !== '\r\n' || i === selectionTexts.length - 1) {
                     this.allTextContent += text;
                 }
                 else {
-                    this.allTextContent += text + "\r\n";
+                    this.allTextContent += text;
                 }
             }
         }

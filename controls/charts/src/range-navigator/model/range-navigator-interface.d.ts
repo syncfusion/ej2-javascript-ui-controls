@@ -100,6 +100,8 @@ export interface IChangedEventArgs extends IRangeEventArgs {
     zoomPosition: number;
     /** Defined the zoomFactor of the range navigator */
     zoomFactor: number;
+    /**Defined the selected Period of the range navigator */
+    selectedPeriod: string;
 }
 export interface IResizeRangeNavigatorEventArgs {
     /** Defines the name of the Event */

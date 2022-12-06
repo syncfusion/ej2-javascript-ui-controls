@@ -288,16 +288,15 @@ describe('FileManager module', () => {
         });
         it('FileManager class availability testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+            fileEle = document.body.querySelector('.e-rte-file-manager-dialog');
             expect(isNullOrUndefined(fileEle)).toBe(false);
+            rteObj.fileManagerModule.onDocumentClick({ target: ele });
             setTimeout(() => {
+                // Should Dialog close on document click
+                fileEle = document.body.querySelector('.e-rte-file-manager-dialog');
+                expect(isNullOrUndefined(fileEle)).toBe(true);
                 done();
             }, 2000);
-        });
-        it('Dialog close on document click', () => {
-            rteObj.fileManagerModule.onDocumentClick({ target: ele });
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(true);
         });
     });
     describe('Outside node selection with image insert testing', () => {

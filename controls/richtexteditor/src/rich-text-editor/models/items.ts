@@ -584,8 +584,8 @@ export let videoAlignItems: IDropDownItemModel[] = [
 ];
 
 let displayLocale: { [ket: string]: string }[] = [
-    { locale: 'imageLayoutOptionDropDownInline', value: 'Inline' },
-    { locale: 'imageLayoutOptionDropDownBreak', value: 'Break' }
+    { locale: 'imageDisplayDropDownInline', value: 'Inline' },
+    { locale: 'imageDisplayDropDownBreak', value: 'Break' }
 ];
 
 let audioLayoutOptionLocale: { [ket: string]: string }[] = [

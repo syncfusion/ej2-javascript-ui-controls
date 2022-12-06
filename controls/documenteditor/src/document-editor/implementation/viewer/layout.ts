@@ -6807,7 +6807,7 @@ export class Layout {
                 }
                 footnote.bodyWidget.containerWidget = undefined;
             }
-            table.footnoteElement = undefined;
+            table.footnoteElement = [];
         }
     }
     /**

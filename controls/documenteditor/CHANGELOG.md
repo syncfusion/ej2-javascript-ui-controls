@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I418719` - Resolved the issue with removing bookmark element.
+- `#I420043` - Table of content (TOC) is now updated properly.
+
 ## 20.3.59 (2022-11-29)
 
 ### Document Editor

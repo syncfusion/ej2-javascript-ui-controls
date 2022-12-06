@@ -1221,9 +1221,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * To filter the multiselect data from given data source by using query
      *
-     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
-     * @param  {Query} query - Specify the query to filter the data.
-     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @param {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param {Query} query - Specify the query to filter the data.
+     * @param {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @returns {void}
      */
     public filter(
@@ -4199,7 +4199,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Adds a new item to the multiselect popup list. By default, new item appends to the list as the last item,
      * but you can insert based on the index parameter.
      *
-     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { Object[] } items - Specifies an array of JSON data or a JSON data.
      * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
      * @returns {void}
      */

@@ -1244,11 +1244,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - To find the specified cell value.
      */
     public findHandler(args: FindOptions): void {
-        if (args.findOpt === 'next') {
-            this.notify(events.findNext, args);
-        } else if (args.findOpt === 'prev') {
-            this.notify(events.findPrevious, args);
-        }
+        this.notify(events.find, args);
     }
     /**
      * @hidden

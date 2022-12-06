@@ -75,6 +75,46 @@ describe('Resize ->', () => {
             //     done();
             // });
         });
+
+        describe('EJ2-66027 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ enableRtl: true }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Issues on spreadsheet when render the component in RTL mode', (done: Function) => {
+                let spreadsheet: Spreadsheet = helper.getInstance();
+                let activeCell: HTMLElement = helper.getElementFromSpreadsheet('.e-active-cell');
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                expect(autoFill.style.top).toBe('15px');
+                expect(autoFill.style.right).toBe('59px');
+                let td: HTMLElement = helper.invoke('getCell', [12, 0]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                expect(autoFill.style.top).toBe('255px');
+                expect(autoFill.style.right).toBe('59px');
+                helper.invoke('selectRange', ['A1:A1']);
+                expect(activeCell.style.width).toBe('64px');
+                expect(spreadsheet.sheets[0].columns[0].width).toBeUndefined();
+                const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+                const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top + 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top + 1, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousemove', { x: offset.left - 50, y: offset.top + 1, offsetX: 3 }, spreadsheet.element, colHdr);
+                helper.triggerMouseAction('mouseup', { x: offset.left - 50, y: offset.top + 1, offsetX: 3 }, document, colHdr);
+                setTimeout((): void => {
+                    expect(activeCell.style.width).toBe('114px');
+                    expect(spreadsheet.sheets[0].columns[0].width).toBe(114);
+                    done();
+                }, 50);
+            });
+        });
     });
     describe('EJ2-56123 ->', () => {
         beforeEach((done: Function) => {

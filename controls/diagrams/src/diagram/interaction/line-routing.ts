@@ -159,7 +159,7 @@ export class LineRouting {
 
     private findEndPoint(connector: Connector, isSource: boolean, isPortBounds?: boolean): PointModel {
         let endPoint: PointModel; let portDirection: Direction;
-        if ((isSource && connector.sourcePortID !== '') || (!isSource && connector.targetPortID !== '')) {
+        if ((isSource && connector.sourcePortID !== '' && connector.sourcePortWrapper) || (!isSource && connector.targetPortID !== '' && connector.targetPortWrapper)) {
             endPoint = (isSource) ? { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY } :
                 { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
             portDirection = getPortDirection(
@@ -178,7 +178,8 @@ export class LineRouting {
             } else {
                 endPoint = { x: bounds.center.x, y: bounds.center.y };
             }
-        } else {
+        } 
+        else {
             if ((isSource && this.startNode) || (!isSource && this.targetNode)) {
                 endPoint = (isSource) ? { x: this.startNode.wrapper.offsetX, y: this.startNode.wrapper.offsetY } :
                     { x: this.targetNode.wrapper.offsetX, y: this.targetNode.wrapper.offsetY };

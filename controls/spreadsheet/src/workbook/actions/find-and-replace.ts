@@ -1,5 +1,5 @@
-import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel, getCell, getSheet } from '../base/index';
-import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count, getRangeIndexes, getSheetIndexFromAddress } from '../common/index';
+import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol } from '../base/index';
+import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress, FindArgs } from '../common/index';
 import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
@@ -30,8 +30,7 @@ export class WorkbookFindAndReplace {
     }
 
     private addEventListener(): void {
-        this.parent.on(findNext, this.findNext, this);
-        this.parent.on(findPrevious, this.findPrevious, this);
+        this.parent.on(find, this.find, this);
         this.parent.on(replace, this.replace, this);
         this.parent.on(replaceAll, this.replaceAll, this);
         this.parent.on(count, this.totalCount, this);
@@ -40,575 +39,248 @@ export class WorkbookFindAndReplace {
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(findNext, this.findNext);
-            this.parent.off(findPrevious, this.findPrevious);
+            this.parent.off(find, this.find);
             this.parent.off(replace, this.replace);
             this.parent.off(replaceAll, this.replaceAll);
             this.parent.off(count, this.totalCount);
             this.parent.off(findAllValues, this.findAllValues);
         }
     }
-
-    private findNext(args: FindOptions): void {
-        const sheets: SheetModel[] = this.parent.sheets; let val: string;
-        const sheetIndex: number = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
-        const sheet: SheetModel = sheets[sheetIndex];
-        const activecell: number[] = getCellIndexes(sheet.activeCell);
-        const usedRange: UsedRangeModel = sheet.usedRange; const endColumn: number = usedRange.colIndex;
-        const stringValue: string = args.value.toString(); let cidx: number; let ridx: number;
-        let count: number = 0; const endRow: number = usedRange.rowIndex;
-        const loopCount: number = 0; let cellFormat: string; let valueOfCell: string;
-        cidx = activecell[1]; ridx = activecell[0];
-        const startColumn: number = cidx; const startRow: number = ridx;
-        if (sheet.rows[ridx]) {
-            if (sheet.rows[ridx].cells && sheet.rows[ridx].cells[cidx]) {
-                cellFormat = sheet.rows[ridx].cells[cidx].format;
-                if (cellFormat) {
-                    const dispTxt: string = this.parent.getDisplayText(sheet.rows[ridx].cells[cidx]);
-                    valueOfCell = dispTxt.toString();
-                } else {
-                    if (sheet.rows[ridx].cells[cidx].value) {
-                        valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
-                    }
-                }
-            }
-        }
-        if (valueOfCell) {
-            const lcValueOfCell: string = valueOfCell.toLowerCase();
-            const ivalueOfCell: boolean = valueOfCell.indexOf(args.value) > -1;
-            const lowerCaseIndex: boolean = lcValueOfCell.indexOf(args.value.toString().toLowerCase()) > -1;
-            if ((stringValue === valueOfCell) || (stringValue === lcValueOfCell) || (ivalueOfCell) || (lowerCaseIndex)) {
-                if (args.searchBy === 'By Column') {
-                    ridx++;
-                } else {
-                    cidx++;
-                }
-                count++;
-            }
-        }
-        if (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex) {
-            if (activecell[0] > sheet.usedRange.rowIndex && activecell[1] <= sheet.usedRange.colIndex) {
-                ridx = 0;
-                cidx = activecell[1];
-            } else if (activecell[0] <= sheet.usedRange.rowIndex && activecell[1] > sheet.usedRange.colIndex) {
-                ridx = activecell[0];
-                cidx = 0;
+    private find(args: FindOptions): void {
+        const sheet: SheetModel = this.parent.sheets[args.sheetIndex];
+        const activeCell: number[] = getRangeIndexes(sheet.activeCell);
+        const findArgs: FindArgs = { startRow: activeCell[0], startCol: activeCell[1],
+            findVal: args.isCSen ? args.value : args.value.toLowerCase(), activeCell: activeCell };
+        if (args.searchBy === 'By Row' ? findArgs.startRow > sheet.usedRange.rowIndex : findArgs.startCol > sheet.usedRange.colIndex) {
+            if (args.findOpt === 'next') {
+                findArgs.startRow = findArgs.startCol = 0;
             } else {
-                ridx = 0;
-                cidx = 0;
+                findArgs.startRow = sheet.usedRange.rowIndex;
+                findArgs.startCol = sheet.usedRange.colIndex;
             }
-        }
-        const findNextArgs: FindNext = {
-            rowIndex: ridx, colIndex: cidx, usedRange: usedRange, endRow: endRow, endColumn: endColumn, startRow: startRow,
-            mode: args.mode, loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
-            sheetIndex: sheetIndex, startColumn: startColumn, sheets: sheets
-        };
-        if (args.searchBy === 'By Row') {
-            this.findNxtRow(findNextArgs);
-        }
-        if (args.searchBy === 'By Column') {
-            this.findNxtCol(findNextArgs);
-        }
-    }
-    private findNxtRow(findNextArgs: FindNext): void {
-        let usedRange: UsedRangeModel; let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex];
-        const sheetsLen: number = this.parent.sheets.length; usedRange = sheet.usedRange;
-        let activecell: number[] = getCellIndexes(sheet.activeCell);
-        if (findNextArgs.colIndex >= findNextArgs.usedRange.colIndex + 1) {
-            findNextArgs.colIndex = 0;
-            findNextArgs.rowIndex++;
-        }
-        for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.endRow + 1; findNextArgs.rowIndex++) {
-            if (findNextArgs.rowIndex > findNextArgs.endRow) {
-                if (findNextArgs.mode === 'Workbook') {
-                    const noCellfound: number = this.parent.activeSheetIndex;
-                    findNextArgs.sheetIndex++;
-                    if (sheetsLen === findNextArgs.sheetIndex) {
-                        findNextArgs.sheetIndex = 0;
-                    }
-                    if (noCellfound === findNextArgs.sheetIndex) {
-                        if (findNextArgs.count === 0) {
-                            this.parent.notify(showDialog, null);
-                            return;
+        } else {
+            if (args.searchBy === 'By Row') {
+                if (findArgs.startCol > sheet.usedRange.colIndex) {
+                    if (args.findOpt === 'next') {
+                        findArgs.startRow++;
+                        if (findArgs.startRow > sheet.usedRange.rowIndex) {
+                            findArgs.startRow = 0;
                         }
-                    }
-                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
-                    usedRange = sheet.usedRange;
-                    activecell = getCellIndexes(sheet.activeCell);
-                    findNextArgs.rowIndex = 0; findNextArgs.colIndex = 0; findNextArgs.endColumn = usedRange.colIndex;
-                    findNextArgs.endRow = usedRange.rowIndex;
-                }
-                if (findNextArgs.colIndex === 0 && findNextArgs.rowIndex > findNextArgs.endRow) {
-                    if ((activecell[0] === 0 && activecell[1] === 0)) {
-                        if (findNextArgs.count === 0) {
-                            this.parent.notify(showDialog, null);
-                            return;
-                        }
-                    } else if ((activecell[0] !== 0 && activecell[1] !== 0) || (activecell[0] !== 0 || activecell[1] !== 0)) {
-                        findNextArgs.startColumn = 0; findNextArgs.startRow = 0; findNextArgs.endColumn = usedRange.colIndex;
-                        findNextArgs.endRow = activecell[0]; findNextArgs.rowIndex = findNextArgs.startRow;
-                        findNextArgs.colIndex = findNextArgs.startColumn;
-                        findNextArgs.loopCount++;
-                    }
-                }
-            }
-            if (findNextArgs.count > 0) {
-                if (usedRange.rowIndex < findNextArgs.rowIndex) {
-                    findNextArgs.rowIndex = 0;
-                    if (findNextArgs.rowIndex === 0) {
-                        findNextArgs.colIndex = 0;
-                    }
-                }
-            }
-            if (sheet.rows[findNextArgs.rowIndex]) {
-                const row: RowModel = sheet.rows[findNextArgs.rowIndex];
-                for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.endColumn; findNextArgs.colIndex++) {
-                    if (row) {
-                        if (row.cells && row.cells[findNextArgs.colIndex]) {
-                            const checkTrue: boolean = this.nextCommon(findNextArgs);
-                            if (checkTrue) {
-                                return;
-                            }
-                        }
-                    }
-                }
-                if (findNextArgs.colIndex > findNextArgs.endColumn) {
-                    findNextArgs.colIndex = 0;
-                }
-                if (findNextArgs.loopCount > 0) {
-                    if (activecell[0] === findNextArgs.rowIndex) {
-                        this.parent.notify(showDialog, null);
-                        return;
-                    }
-                }
-            }
-        }
-        if (findNextArgs.count === 0) {
-            this.parent.notify(showDialog, null);
-            return;
-        }
-    }
-    private findNxtCol(findNextArgs: FindNext): void {
-        let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex]; let noFound: number;
-        let activecell: number[] = getCellIndexes(sheet.activeCell);
-        const sheetsLen: number = this.parent.sheets.length;
-        if (findNextArgs.rowIndex >= findNextArgs.usedRange.rowIndex) {
-            findNextArgs.rowIndex = 0;
-            findNextArgs.colIndex++;
-        }
-        for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.usedRange.colIndex + 1; findNextArgs.colIndex++) {
-            if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
-                if (findNextArgs.mode === 'Workbook') {
-                    noFound = this.parent.activeSheetIndex;
-                    findNextArgs.sheetIndex++;
-                    if (sheetsLen === findNextArgs.sheetIndex) {
-                        findNextArgs.sheetIndex = 0;
-                    }
-                    if (noFound === findNextArgs.sheetIndex) {
-                        if (findNextArgs.count === 0) {
-                            this.parent.notify(showDialog, null);
-                            return;
-                        }
-                    }
-                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
-                    findNextArgs.usedRange = sheet.usedRange;
-                    activecell = getCellIndexes(sheet.activeCell);
-                    findNextArgs.colIndex = 0; findNextArgs.rowIndex = 0; findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
-                    findNextArgs.endRow = findNextArgs.usedRange.rowIndex;
-                }
-            }
-            if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
-                findNextArgs.colIndex = 0;
-            }
-            if (findNextArgs.rowIndex > findNextArgs.endRow && findNextArgs.colIndex === 0) {
-                if ((activecell[0] === 0 && activecell[1] === 0) ||
-                    (activecell[1] > sheet.usedRange.rowIndex || activecell[0] > sheet.usedRange.colIndex)) {
-                    if (findNextArgs.count === 0) {
-                        this.parent.notify(showDialog, null);
-                        return;
-                    }
-                } else if ((activecell[1] !== 0 || activecell[0] !== 0) || (activecell[1] !== 0 && activecell[0] !== 0)) {
-                    findNextArgs.startRow = 0; findNextArgs.startColumn = 0;
-                    findNextArgs.endRow = activecell[0]; findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
-                    findNextArgs.colIndex = findNextArgs.startColumn; findNextArgs.rowIndex = findNextArgs.startRow;
-                    findNextArgs.loopCount++;
-                }
-            }
-            if (findNextArgs.count > 0) {
-                if (findNextArgs.usedRange.colIndex + 1 < findNextArgs.colIndex) {
-                    findNextArgs.colIndex = 0;
-                    findNextArgs.rowIndex = 0;
-                }
-            }
-            if (findNextArgs.rowIndex >= findNextArgs.endRow) {
-                findNextArgs.rowIndex = 0;
-            }
-            if (findNextArgs.colIndex <= findNextArgs.usedRange.colIndex) {
-                for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.usedRange.rowIndex; findNextArgs.rowIndex++) {
-                    if (sheet.rows[findNextArgs.rowIndex]) {
-                        if (sheet.rows[findNextArgs.rowIndex].cells && sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
-                            const checkTrue: boolean = this.nextCommon(findNextArgs);
-                            if (checkTrue) {
-                                return;
-                            }
-                        }
-                    }
-                }
-                if (findNextArgs.loopCount > 0) {
-                    if (activecell[1] === findNextArgs.colIndex) {
-                        this.parent.notify(showDialog, null);
-                        return;
-                    }
-                }
-            }
-        }
-        if (findNextArgs.count === 0) {
-            this.parent.notify(showDialog, null);
-            return;
-        }
-    }
-    private nextCommon(findNextArgs: FindNext): boolean {
-        const sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex];
-        const row: ExtendedRowModel = sheet.rows[findNextArgs.rowIndex];
-        if (row && (!row.isFiltered || !row.hidden)) {
-            const rowCol: CellModel = row.cells[findNextArgs.colIndex];
-            if (rowCol && rowCol.value) {
-                if (sheet.isProtected && (rowCol.isLocked || rowCol.isLocked === undefined ) && sheet.protectSettings.selectUnLockedCells) {
-                    return false;
-                }
-                const cellType: CellModel = row.cells[findNextArgs.colIndex];
-                if (cellType) {
-                    let cellval: string;
-                    if (cellType.format) {
-                        const displayTxt: string = this.parent.getDisplayText(row.cells[findNextArgs.colIndex]);
-                        cellval = displayTxt;
+                        findArgs.startCol = 0;
                     } else {
-                        cellval = row.cells[findNextArgs.colIndex].value.toString();
-                    }
-                    if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                        if (cellval === findNextArgs.stringValue) {
-                            const address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
+                        findArgs.startRow--;
+                        if (findArgs.startRow < 0) {
+                            findArgs.startRow = sheet.usedRange.rowIndex;
                         }
-                    } else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                        const index: boolean = cellval.indexOf(findNextArgs.args.value) > -1;
-                        if ((cellval === findNextArgs.stringValue) || (index)) {
-                            const address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
-                        }
-                    } else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
-                        findNextArgs.val = cellval.toString().toLowerCase();
-                        if (findNextArgs.val === findNextArgs.stringValue) {
-                            const address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
-                        }
-                    } else if (!findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
-                        findNextArgs.val = cellval.toString().toLowerCase();
-                        const index: boolean = findNextArgs.val.indexOf(findNextArgs.args.value.toString().toLowerCase()) > -1;
-                        const lowerCaseIndex: boolean = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
-                        if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
-                            (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
-                            const address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findNextArgs.count++;
-                            return true;
-                        }
+                        findArgs.startCol = sheet.usedRange.colIndex;
                     }
                 }
-            }
-        }
-        return false;
-    }
-
-    private findPrevious(args: FindOptions): void {
-        const sheets: SheetModel[] = this.parent.sheets; const sheetIndex: number = args.sheetIndex;
-        const sheet: SheetModel = sheets[sheetIndex]; let valueOfCell: string; let cellFormat: string; let val: string;
-        const activecell: number[] = getCellIndexes(sheet.activeCell); const loopCount: number = 0; let count: number = 0;
-        const endRow: number = sheet.usedRange.rowIndex;
-        const endColumn: number = sheet.usedRange.colIndex;
-        const stringValue: string = args.value.toString(); let cidx: number = activecell[1]; let ridx: number = activecell[0];
-        const startColumn: number = cidx; const startRow: number = ridx;
-        if (sheet.rows[ridx]) {
-            if (sheet.rows[ridx].cells[cidx]) {
-                cellFormat = sheet.rows[ridx].cells[cidx].format;
-                if (cellFormat) {
-                    const displayTxt: string = this.parent.getDisplayText(sheet.rows[ridx].cells[cidx]);
-                    valueOfCell = displayTxt.toString();
-                } else {
-                    if (sheet.rows[ridx].cells[cidx].value) {
-                        valueOfCell = sheet.rows[ridx].cells[cidx].value.toString();
-                    }
-                }
-            }
-        }
-        if (valueOfCell) {
-            const lcValue: string = valueOfCell.toLowerCase();
-            const ivalue: boolean = valueOfCell.indexOf(args.value) > -1;
-            const lowerCaseIndex: boolean = lcValue.indexOf(args.value.toString().toLowerCase()) > -1;
-            if ((stringValue === valueOfCell) || (stringValue === lcValue) || (ivalue) || (lowerCaseIndex)) {
-                if (args.searchBy === 'By Row') {
-                    cidx--;
-                }
-                if (args.searchBy === 'By Column') {
-                    ridx--;
-                }
-                count++;
-            }
-        }
-        if (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex) {
-            if (activecell[0] > sheet.usedRange.rowIndex && activecell[1] <= sheet.usedRange.colIndex) {
-                ridx = sheet.usedRange.rowIndex;
-                cidx = activecell[1];
-            } else if (activecell[0] <= sheet.usedRange.rowIndex && activecell[1] > sheet.usedRange.colIndex) {
-                ridx = activecell[0];
-                cidx = sheet.usedRange.colIndex;
             } else {
-                ridx = sheet.usedRange.rowIndex;
-                cidx = sheet.usedRange.colIndex;
-            }
-        }
-        const findPrevArgs: FindPrevious = {
-            rowIndex: ridx, colIndex: cidx, endRow: endRow, endColumn: endColumn, startRow: startRow,
-            loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
-            sheets: sheets, sheetIndex: sheetIndex, startColumn: startColumn
-        };
-        if (args.searchBy === 'By Row') {
-            this.findPreRow(findPrevArgs);
-        }
-        if (args.searchBy === 'By Column') {
-            this.findPreCol(findPrevArgs);
-        }
-
-    }
-    private findPreRow(findPrevArgs: FindPrevious): void {
-        let usedRan: UsedRangeModel; let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-        const sheetsLength: number = this.parent.sheets.length; let noValueBoolean: boolean = false;
-        let activecell: number[] = getCellIndexes(sheet.activeCell);
-        if (findPrevArgs.colIndex === -1) {
-            findPrevArgs.colIndex = findPrevArgs.endColumn;
-            findPrevArgs.rowIndex--;
-        }
-        for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= -1; findPrevArgs.rowIndex--) {
-            if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex <= 0) {
-                if (findPrevArgs.args.mode === 'Workbook') {
-                    const noCellfound: number = this.parent.activeSheetIndex;
-                    findPrevArgs.sheetIndex--;
-                    if (findPrevArgs.sheetIndex === -1) {
-                        findPrevArgs.sheetIndex = sheetsLength - 1;
-                    }
-                    if (noCellfound === findPrevArgs.sheetIndex) {
-                        if (findPrevArgs.count === 0) {
-                            this.parent.notify(showDialog, null);
-                            return;
+                if (findArgs.startRow > sheet.usedRange.rowIndex) {
+                    if (args.findOpt === 'next') {
+                        findArgs.startCol++;
+                        if (findArgs.startCol > sheet.usedRange.colIndex) {
+                            findArgs.startRow = 0;
                         }
-                    }
-
-                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-                    usedRan = sheet.usedRange;
-                    activecell = getCellIndexes(sheet.activeCell);
-                    findPrevArgs.rowIndex = usedRan.rowIndex; findPrevArgs.colIndex = usedRan.colIndex; findPrevArgs.endColumn = 0;
-                    findPrevArgs.endRow = 0;
-                }
-                noValueBoolean = this.commonCondition(findPrevArgs, activecell);
-            }
-            if (!noValueBoolean) {
-                if (findPrevArgs.args.mode !== 'Workbook') {
-                    if (findPrevArgs.count > 0) {
-                        if (findPrevArgs.rowIndex === -1) {
-                            findPrevArgs.rowIndex = findPrevArgs.endRow;
-                        }
-                    }
-                }
-                if (findPrevArgs.rowIndex === -1) {
-                    findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
-                    findPrevArgs.colIndex = sheet.usedRange.colIndex;
-                }
-                const row: RowModel = sheet.rows[findPrevArgs.rowIndex];
-                if (row) {
-                    if (findPrevArgs.colIndex === -1) {
-                        findPrevArgs.colIndex = sheet.usedRange.colIndex;
-                    }
-                    for (findPrevArgs.colIndex; findPrevArgs.colIndex >= 0; findPrevArgs.colIndex--) {
-                        if (row) {
-                            if (row.cells && row.cells[findPrevArgs.colIndex]) {
-                                const checkTrue: boolean = this.prevCommon(findPrevArgs);
-                                if (checkTrue) {
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    if (findPrevArgs.loopCount > 0) {
-                        if (activecell[0] === findPrevArgs.rowIndex) {
-                            this.parent.notify(showDialog, null);
-                            return;
-                        }
-                    }
-                }
-            }
-
-        }
-        if (!noValueBoolean) {
-            if (findPrevArgs.count === 0) {
-                this.parent.notify(showDialog, null);
-                return;
-            }
-        }
-    }
-    private findPreCol(findPrevArgs: FindPrevious): void {
-        let usedRange: UsedRangeModel; let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-        const sheetsLen: number = this.parent.sheets.length; let noValueBoolean: boolean = false;
-        let activecell: number[] = getCellIndexes(sheet.activeCell);
-        for (findPrevArgs.colIndex; findPrevArgs.colIndex >= -1; findPrevArgs.colIndex--) {
-            if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex <= 0) {
-                if (findPrevArgs.args.mode === 'Workbook') {
-                    const noCellfound: number = this.parent.activeSheetIndex;
-                    findPrevArgs.sheetIndex--;
-                    if (findPrevArgs.sheetIndex === -1) {
-                        findPrevArgs.sheetIndex = sheetsLen - 1;
-                    }
-                    if (noCellfound === findPrevArgs.sheetIndex) {
-                        if (findPrevArgs.count === 0) {
-                            this.parent.notify(showDialog, null);
-                            return;
-                        }
-                    }
-                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-                    usedRange = sheet.usedRange;
-                    activecell = getCellIndexes(sheet.activeCell);
-                    findPrevArgs.rowIndex = usedRange.rowIndex; findPrevArgs.colIndex = usedRange.colIndex; findPrevArgs.endColumn = 0;
-                    findPrevArgs.endRow = 0;
-                }
-                noValueBoolean = this.commonCondition(findPrevArgs, activecell);
-            }
-            if (!noValueBoolean) {
-                if (findPrevArgs.count > 0) {
-                    if (findPrevArgs.colIndex < 0) {
-                        findPrevArgs.colIndex = findPrevArgs.endColumn;
-                    }
-                }
-                if (findPrevArgs.rowIndex < 0) {
-                    findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
-                }
-                if (findPrevArgs.colIndex < -1) {
-                    findPrevArgs.colIndex = sheet.usedRange.colIndex;
-                    findPrevArgs.rowIndex--;
-                }
-                const row: RowModel = sheet.rows[findPrevArgs.rowIndex];
-                if (row) {
-                    if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
-                        if (findPrevArgs.rowIndex === -1) {
-                            findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
-                        }
-                    }
-                }
-                for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= 0; findPrevArgs.rowIndex--) {
-                    if (row) {
-                        if (row.cells && row.cells[findPrevArgs.colIndex]) {
-                            const check: boolean = this.prevCommon(findPrevArgs);
-                            if (check) {
-                                return;
-                            }
-                        }
-                    }
-                    if (findPrevArgs.loopCount > 0) {
-                        if (activecell[1] === findPrevArgs.colIndex) {
-                            this.parent.notify(showDialog, null);
-                            return;
-                        }
-                    }
-                }
-            }
-
-        }
-        if (!noValueBoolean) {
-            if (findPrevArgs.count === 0) {
-                this.parent.notify(showDialog, null);
-                return;
-            }
-        }
-    }
-    private commonCondition(findPrevArgs: FindPrevious, activecell: number[]): boolean {
-        const sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-        let isTrue: boolean;
-        if ((activecell[0] !== findPrevArgs.endRow && activecell[1] !== findPrevArgs.endColumn) ||
-            (activecell[0] !== findPrevArgs.endRow || activecell[1] !== findPrevArgs.endColumn)) {
-            findPrevArgs.startColumn = sheet.usedRange.colIndex;
-            findPrevArgs.startRow = sheet.usedRange.rowIndex;
-            findPrevArgs.endColumn = 0; findPrevArgs.endRow = activecell[0]; findPrevArgs.rowIndex = findPrevArgs.startRow;
-            findPrevArgs.colIndex = findPrevArgs.startColumn; findPrevArgs.loopCount++;
-            isTrue = false;
-        } else if (((activecell[0] === sheet.usedRange.rowIndex && activecell[1] === sheet.usedRange.colIndex) ||
-            (activecell[0] > sheet.usedRange.rowIndex || activecell[1] > sheet.usedRange.colIndex)) &&
-            (activecell[0] !== 0 && activecell[1] !== 0)) {
-            this.parent.notify(showDialog, null);
-            isTrue = true;
-        }
-        return isTrue;
-    }
-    private prevCommon(findPrevArgs: FindPrevious): boolean {
-        const sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
-        const row: ExtendedRowModel = sheet.rows[findPrevArgs.rowIndex];
-        if (row && (!row.isFiltered || !row.hidden)) {
-            const rowCol: CellModel = row.cells[findPrevArgs.colIndex];
-            if (rowCol && rowCol.value) {
-                if (sheet.isProtected && ( rowCol.isLocked || rowCol.isLocked === undefined ) && sheet.protectSettings.selectUnLockedCells) {
-                    return false;
-                }
-                const cellType: CellModel = row.cells[findPrevArgs.colIndex];
-                if (cellType) {
-                    let cellvalue: string;
-                    if (cellType.format) {
-                        const displayTxt: string = this.parent.getDisplayText(row.cells[findPrevArgs.colIndex]);
-                        cellvalue = displayTxt;
+                        findArgs.startRow = 0;
                     } else {
-                        cellvalue = row.cells[findPrevArgs.colIndex].value.toString();
+                        findArgs.startCol--;
+                        if (findArgs.startCol < 0) {
+                            findArgs.startCol = sheet.usedRange.colIndex;
+                        }
+                        findArgs.startRow = sheet.usedRange.colIndex;
                     }
-                    if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        if (cellvalue === findPrevArgs.stringValue) {
-                            const address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                }
+            }
+        }
+        if (args.mode === 'Workbook') {
+            findArgs.sheets = this.parent.sheets;
+            findArgs.sheetIdx = args.sheetIndex;
+        } else {
+            findArgs.sheets = [sheet];
+            findArgs.sheetIdx = 0;
+        }
+        if (args.findOpt === 'next') {
+            this.findNext(args, findArgs);
+        } else {
+            this.findPrevious(args, findArgs);
+        }
+    }
+    private findNext(args: FindOptions, findArgs: FindArgs): void {
+        const findOnSheet: Function = (startIdx: number, endIdx: number, initIteration?: boolean): string => {
+            let sheet: SheetModel; let cellAddr: string;
+            for (let sheetIdx: number = startIdx; sheetIdx <= endIdx; sheetIdx++) {
+                sheet = findArgs.sheets[sheetIdx as number];
+                if (sheetIdx === findArgs.sheetIdx) {
+                    if (initIteration) {
+                        cellAddr = this.findNextOnSheet(
+                            args, findArgs.startRow, findArgs.startCol, findArgs.findVal, sheet, undefined, findArgs.activeCell);
+                    } else {
+                        cellAddr = this.findNextOnSheet(
+                            args, 0, 0, findArgs.findVal, sheet, args.searchBy === 'By Row' ? findArgs.startRow : findArgs.startCol);
+                    }
+                } else {
+                    cellAddr = this.findNextOnSheet(args, 0, 0, findArgs.findVal, sheet);
+                }
+                if (cellAddr) {
+                    break;
+                }
+            }
+            return cellAddr;
+        };
+        let cellAddr: string;
+        cellAddr = findOnSheet(findArgs.sheetIdx, findArgs.sheets.length - 1, true);
+        if (!cellAddr) {
+            cellAddr = findOnSheet(0, findArgs.sheetIdx);
+        }
+        if (cellAddr) {
+            this.parent.notify(goto, { address: cellAddr });
+        } else {
+            this.parent.notify(showDialog, null);
+        }
+    }
+    private findNextOnSheet(
+        args: FindOptions, startRow: number, startCol: number, findVal: string, sheet: SheetModel, endIdx?: number,
+        activeCell?: number[]): string {
+        let cellAddr: string; let rowIdx: number; let colIdx: number;
+        if (args.searchBy === 'By Row') {
+            if (endIdx === undefined) {
+                endIdx = sheet.rows.length - 1;
+            }
+            let colLen: number;
+            for (rowIdx = startRow; rowIdx <= endIdx; rowIdx++) {
+                if (isHiddenRow(sheet, rowIdx)) {
+                    continue;
+                }
+                colIdx = activeCell && rowIdx === startRow ? startCol : 0;
+                colLen = sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].cells && sheet.rows[rowIdx as number].cells.length;
+                for (colIdx; colIdx < colLen; colIdx++) {
+                    if (!isHiddenCol(sheet, colIdx)) {
+                        cellAddr = this.checkMatch(args, findVal, rowIdx, colIdx, sheet, activeCell);
+                        if (cellAddr) {
+                            return cellAddr;
                         }
-                    } else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        const index: boolean = cellvalue.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellvalue === findPrevArgs.stringValue) || (index)) {
-                            const address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
-                        }
-                    } else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        if (findPrevArgs.val === findPrevArgs.stringValue) {
-                            const address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
-                        }
-                    } else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellvalue.toString().toLowerCase();
-                        const index: boolean = findPrevArgs.val.indexOf(findPrevArgs.args.value.toString().toLowerCase()) > -1;
-                        const lowerCaseIndex: boolean = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
-                            (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
-                            const address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
-                            this.parent.notify(goto, { address: address });
-                            findPrevArgs.count++;
-                            return true;
+                    }
+                }
+            }
+        } else {
+            if (endIdx === undefined) {
+                endIdx = sheet.usedRange.colIndex;
+            }
+            const endRow: number = sheet.rows && sheet.rows.length - 1;
+            for (colIdx = startCol; colIdx <= endIdx; colIdx++) {
+                if (isHiddenCol(sheet, colIdx)) {
+                    continue;
+                }
+                rowIdx = activeCell && colIdx === startCol ? startRow : 0;
+                for (rowIdx; rowIdx <= endRow; rowIdx++) {
+                    if (!isHiddenRow(sheet, rowIdx)) {
+                        cellAddr = this.checkMatch(args, findVal, rowIdx, colIdx, sheet, activeCell);
+                        if (cellAddr) {
+                            return cellAddr;
                         }
                     }
                 }
             }
         }
-        return false;
+        return cellAddr;
+    }
+    private findPrevious(args: FindOptions, findArgs: FindArgs): void {
+        const findOnSheet: Function = (startIdx: number, endIdx: number, initIteration?: boolean): string => {
+            let sheet: SheetModel; let cellAddr: string;
+            for (let sheetIdx: number = startIdx; sheetIdx >= endIdx; sheetIdx--) {
+                sheet = findArgs.sheets[sheetIdx as number];
+                if (sheetIdx === findArgs.sheetIdx) {
+                    if (initIteration) {
+                        cellAddr = this.findPrevOnSheet(
+                            args, findArgs.startRow, findArgs.startCol, 0, 0, findArgs.findVal, sheet, findArgs.activeCell);
+                    } else {
+                        if (args.searchBy === 'By Row') {
+                            cellAddr = this.findPrevOnSheet(
+                                args, sheet.usedRange.rowIndex, sheet.usedRange.colIndex, findArgs.startRow, 0, findArgs.findVal, sheet);
+                        } else {
+                            cellAddr = this.findPrevOnSheet(
+                                args, sheet.usedRange.rowIndex, sheet.usedRange.colIndex, 0, findArgs.startCol, findArgs.findVal, sheet);
+                        }
+                    }
+                } else {
+                    cellAddr = this.findPrevOnSheet(
+                        args, sheet.usedRange.rowIndex, sheet.usedRange.colIndex, 0, 0, findArgs.findVal, sheet);
+                }
+                if (cellAddr) {
+                    break;
+                }
+            }
+            return cellAddr;
+        };
+        let cellAddr: string;
+        cellAddr = findOnSheet(findArgs.sheetIdx, 0, true);
+        if (!cellAddr) {
+            cellAddr = findOnSheet(findArgs.sheets.length - 1, findArgs.sheetIdx);
+        }
+        if (cellAddr) {
+            this.parent.notify(goto, { address: cellAddr });
+        } else {
+            this.parent.notify(showDialog, null);
+        }
+    }
+    private findPrevOnSheet(
+        args: FindOptions, startRow: number, startCol: number, endRow: number, endCol: number, findVal: string, sheet: SheetModel,
+        activeCell?: number[]): string {
+        let cellAddr: string; let colIdx: number; let rowIdx: number;
+        if (args.searchBy === 'By Row') {
+            for (rowIdx = startRow; rowIdx >= endRow; rowIdx--) {
+                if (isHiddenRow(sheet, rowIdx)) {
+                    continue;
+                }
+                colIdx = activeCell && rowIdx === startRow ? startCol : sheet.rows[rowIdx as number] &&
+                    sheet.rows[rowIdx as number].cells && sheet.rows[rowIdx as number].cells.length - 1;
+                for (colIdx; colIdx >= endCol; colIdx--) {
+                    if (!isHiddenCol(sheet, colIdx)) {
+                        cellAddr = this.checkMatch(args, findVal, rowIdx, colIdx, sheet, activeCell);
+                        if (cellAddr) {
+                            return cellAddr;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (colIdx = startCol; colIdx >= endCol; colIdx--) {
+                if (isHiddenCol(sheet, colIdx)) {
+                    continue;
+                }
+                rowIdx = activeCell && colIdx === startCol ? startRow : sheet.rows && sheet.rows.length - 1;
+                for (rowIdx; rowIdx >= endRow; rowIdx--) {
+                    if (!isHiddenRow(sheet, rowIdx)) {
+                        cellAddr = this.checkMatch(args, findVal, rowIdx, colIdx, sheet, activeCell);
+                        if (cellAddr) {
+                            return cellAddr;
+                        }
+                    }
+                }
+            }
+        }
+        return cellAddr;
+    }
+    private checkMatch(args: FindOptions, findVal: string, rowIdx: number, colIdx: number, sheet: SheetModel, curCell?: number[]): string {
+        if (curCell && rowIdx === curCell[0] && colIdx === curCell[1]) {
+            return null;
+        }
+        const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+        let cellVal: string = this.parent.getDisplayText(cell);
+        if (cellVal) {
+            if (!args.isCSen) {
+                cellVal = cellVal.toLowerCase();
+            }
+            if (args.isEMatch) {
+                if (cellVal === findVal) {
+                    return `${sheet.name}!${getCellAddress(rowIdx, colIdx)}`;
+                }
+            } else if (cellVal.includes(findVal)) {
+                return `${sheet.name}!${getCellAddress(rowIdx, colIdx)}`;
+            }
+        }
+        return null;
     }
     public replace(args: FindOptions): void {
         const sheetIndex: number = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
@@ -628,7 +300,7 @@ export class WorkbookFindAndReplace {
         let replacedValue: string = this.getReplaceValue(args, compareVal, checkValue);
         if (!replacedValue) {
             args.findOpt = 'next';
-            this.findNext(args);
+            this.find(args);
             activeCell = getCellIndexes(sheet.activeCell);
             compareVal = this.parent.getDisplayText(getCell(activeCell[0], activeCell[1], sheet)).toString();
             replacedValue = this.getReplaceValue(args, compareVal, checkValue);

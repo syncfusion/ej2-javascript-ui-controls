@@ -1652,6 +1652,75 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             })
         });
+        it('Using wrong address in formula argument does not throws any error', (done: Function) => {
+            helper.edit('A6', '=COUNT(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNT(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(5);
+            helper.edit('A6', '=COUNT(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNT(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=COUNTIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNTIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(0);
+            helper.edit('A6', '=COUNTIF(A1:5A,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNTIF(A1:5A,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=COUNTIFs(A1:A5,"=1",B1:B5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNTIFs(A1:A5,"=1",B1:B5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(1);
+            helper.edit('A6', '=COUNTIFS(A1:A5,"=1",1B:B5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=COUNTIFS(A1:A5,"=1",1B:B5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=SUM(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUM(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(15);
+            helper.edit('A6', '=SUM(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUM(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=SUMIF(A1:A5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUMIF(A1:A5,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(1);
+            helper.edit('A6', '=SUMIF(A1:5A,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUMIF(A1:5A,"=1")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=SUMIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUMIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(0);
+            helper.edit('A6', '=SUMIFS(A1:A5,B1:5B,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=SUMIFS(A1:A5,B1:5B,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=AVERAGE(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGE(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('3');
+            helper.edit('A6', '=AVERAGE(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGE(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=AVERAGEIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIF(A1:A5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual(NaN);
+            helper.edit('A6', '=AVERAGEIF(A1:5A,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIF(A1:5A,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=AVERAGEIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIFS(A1:A5,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#DIV/0!');
+            helper.edit('A6', '=AVERAGEIFS(A1:5A,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=AVERAGEIFS(A1:5A,B1:B5,"=0")');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=MAX(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=MAX(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('5');
+            helper.edit('A6', '=MAX(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=MAX(1A:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            helper.edit('A6', '=MIN(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=MIN(A1:A5)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('1');
+            helper.edit('A6', '=MIN(A1:5A)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].formula).toEqual('=MIN(A1:5A)');
+            expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toEqual('#VALUE!');
+            done();
+        });
     });
     describe('EJ2-65615-> Column wise ->', () => {
         beforeEach((done: Function) => {
@@ -1810,6 +1879,51 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[0].cells[6].value).toEqual('0');
                 done();
             })
+        });
+    });
+    describe('EJ2-66087-> ', () => {
+        beforeEach((done: Function) => {
+            const addSum = (sourceValue: any, destinationValue: any) => {
+                let data = sourceValue + destinationValue;
+                return data;
+            };
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        name: 'Monthly Budget',
+                        rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '', formula: '=ADDSUM(A1,B1)' }] },
+                        { cells: [{ value: '2' }, { value: '3' }, { value: '', formula: '=ADDSUM(A2,B2)' },] },
+                        { cells: [{ value: '4' }, { value: '5' }, { value: '', formula: '=ADDSUM(A3,B3)' }] },
+                        { cells: [{ value: '5' }, { value: '5' }, { value: '', formula: '=ADDSUM(A4,B4)' }] },
+                        { cells: [{ value: '5' }, { value: '6' }, { value: '', formula: '=ADDSUM(A5,B5)' }] }
+                        ],
+                        columns: [
+                            { width: 110 }, { width: 115 }, { width: 110 }, { width: 100 }
+                        ]
+                    }
+                ],
+                beforeDataBound: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.addCustomFunction(addSum, 'ADDSUM');
+                }
+            },
+                done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Custom function calculated values are not updated properly in cell data binding', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].formula).toEqual('=ADDSUM(A1,B1)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toEqual("12");
+            expect(helper.getInstance().sheets[0].rows[1].cells[2].formula).toEqual('=ADDSUM(A2,B2)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toEqual("23");
+            expect(helper.getInstance().sheets[0].rows[2].cells[2].formula).toEqual('=ADDSUM(A3,B3)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toEqual("45");
+            expect(helper.getInstance().sheets[0].rows[3].cells[2].formula).toEqual('=ADDSUM(A4,B4)');
+            expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toEqual("55");
+            expect(helper.getInstance().sheets[0].rows[4].cells[2].formula).toEqual('=ADDSUM(A5,B5)');
+            expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toEqual("56");
+            done();
         });
     });
 });

@@ -92,6 +92,14 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
+                }else if( formatNode.textContent !== nodes[index].textContent && formatNode.nodeName === 'SPAN' && (formatNode as HTMLElement).style[0] ==='font-size'){
+                    let currentParentElem : Node = nodes[index].parentElement.textContent !== nodes[index].textContent ? nodes[index] : nodes[index].parentElement;
+                    let isSameTextContent : boolean = true;
+                    while ( currentParentElem.textContent !== nodes[index].textContent && ( nodes[index] as HTMLElement ).style[0]!== format && currentParentElem.nodeName === 'SPAN') {
+                        isSameTextContent = currentParentElem.textContent === currentParentElem.parentElement.textContent;
+                        currentParentElem = !isNOU(currentParentElem.parentElement) && isSameTextContent ? currentParentElem.parentElement :currentParentElem;
+                    }
+                    formatNode = currentParentElem;
                 }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
@@ -429,7 +437,32 @@ export class SelectionCommands {
                                 liElement.style.textDecoration = 'inherit';
                             }
                         }
-                        nodes[index] = this.applyStyles(nodes, index, element);
+                        let enterType: string = isNOU(this.enterAction) ? 'P' : this.enterAction.toString();
+                        const currentNode : any = nodes[index];
+                        let isNestedNode: boolean = !isNOU(currentNode)  &&  nodes[index].nodeName === '#text' && nodes[index].parentElement.nodeName !== enterType ;
+                        let currentParentElem : HTMLElement = currentNode.parentElement.textContent !== currentNode.textContent ? currentNode : currentNode.parentElement;
+                        if( isNestedNode  ){
+                            let isSameTextContent : boolean = true;
+                            isNestedNode = false;
+                            while( !isNOU(currentParentElem) && isSameTextContent && currentParentElem.parentElement.nodeName !== enterType 
+                                && ( currentParentElem.nodeName === 'SPAN' && ( currentParentElem.style.textDecoration === 'line-through' || 'underline')
+                                || currentParentElem.nodeName === 'SPAN' && ( currentParentElem.style[0] === 'background-color' || 'font-family' || 'color' )
+                                || ( currentParentElem.nodeName === 'EM' || 'STRONG' || 'SUB' || 'SUP') ) ){
+                                    isSameTextContent = currentParentElem.textContent === currentParentElem.parentElement.textContent;
+                                    currentParentElem = !isNOU(currentParentElem.parentElement) && isSameTextContent ? currentParentElem.parentElement :currentParentElem;
+                                }
+                            if(!isNOU(currentParentElem) && currentParentElem.childNodes.length>0 ){
+                                let nodeList : NodeList = currentParentElem.querySelectorAll('span,strong,em,sub,sup');
+                                isNestedNode = nodeList.length > 0 && isSameTextContent ;
+                            }
+                        }
+                        if( isNestedNode ){
+                            let nodeList : Node [] =  [];
+                            nodeList[0] = currentParentElem as Node;
+                            this.applyStyles(nodeList, index, element);
+                        } else {
+                            nodes[index] = this.applyStyles(nodes, index, element);
+                        }                        
                         if (format === 'fontsize') {
                             const bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
                             if (!isNOU(bg)) {

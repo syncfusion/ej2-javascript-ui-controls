@@ -39,6 +39,7 @@ export class AutoComplete extends ComboBox {
      * * groupBy - Group the list items with it's related items by mapping groupBy field
      *
      * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
+     * 
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
      *
      * @default { value: null, iconCss: null, groupBy: null}
@@ -315,9 +316,9 @@ export class AutoComplete extends ComboBox {
     /**
      * To filter the data from given data source by using query
      *
-     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
-     * @param  {Query} query - Specify the query to filter the data.
-     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @param {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param {Query} query - Specify the query to filter the data.
+     * @param {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @returns {void}
      * @deprecated
      */
@@ -364,7 +365,9 @@ export class AutoComplete extends ComboBox {
     private postBackAction(): void {
         if (this.autofill && !isNullOrUndefined(this.liCollections[0]) && this.searchList) {
             const items: HTMLElement[] = [this.liCollections[0]];
-            const searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase);
+            const dataSource: { [key: string]: Object }[] = this.listData as { [key: string]: Object }[];
+            const type: string = this.typeOfData(dataSource).typeof as string;
+            const searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase, dataSource, this.fields, type);
             this.searchList = false;
             if (!isNullOrUndefined(searchItem.item)) {
                 super.setAutoFill(this.liCollections[0], true);

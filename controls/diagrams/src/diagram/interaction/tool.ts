@@ -664,10 +664,12 @@ export class ConnectTool extends ToolBase {
         }
         this.commandHandler.updateBlazorSelector();
         this.canCancel = undefined; this.tempArgs = undefined;
+        if (args.source && (args.source as SelectorModel).connectors) {
         let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
         if ((connector as Connector).isBezierEditing) {
             (connector as Connector).isBezierEditing = false;
         }
+    }
         super.mouseUp(args);
     }
 

@@ -2609,6 +2609,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.visibleSeries[index].xAxis.orientation = null;
             this.visibleSeries[index].yAxis.orientation = null;
         }
+        for (let i: number = 0; i < this.axes.length; i++) {
+            if ((this.axes[i as number] as Axis).orientation === null) {
+                this.axes.splice(i, 1);
+            }
+        }
         this.series.splice(index, 1);
         this.refresh();
     }
@@ -2820,7 +2825,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         element.style.display = 'block';
         // To fix angular and react tooltip div scrollbar issue
         element.style.overflow = 'hidden';
-        element.style.height = element.style.height ? element.style.height : 'inherit';
+        element.style.height = (element.style.height || (this.height && this.height.indexOf('%') === -1)) ? element.style.height : 'inherit';
     }
     /**
      * Finds the orientation.

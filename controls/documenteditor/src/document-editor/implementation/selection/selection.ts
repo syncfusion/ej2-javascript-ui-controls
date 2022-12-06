@@ -5211,6 +5211,8 @@ export class Selection {
             } else {
                 return this.getNextParagraphCell(cell);
             }
+        } else if(cell.nextSplitWidget && cell.nextSplitWidget.childWidgets.length === 0){
+            cell = cell.getSplitWidgets().pop() as TableCellWidget;
         }
         return this.getNextParagraphRow((cell as TableCellWidget).containerWidget as BlockWidget);
     }

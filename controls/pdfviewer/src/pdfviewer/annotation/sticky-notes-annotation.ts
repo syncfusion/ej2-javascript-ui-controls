@@ -1136,7 +1136,7 @@ export class StickyNotesAnnotation {
         }
         if (commentsContainer  && lastElement) {
             commentsContainer.removeChild(lastElement);
-            const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox' });
+            const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox_' + this.commentsreplyCount });
             this.commentsreplyCount = this.commentsreplyCount + 1;
             // eslint-disable-next-line
             let replyCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + 'replyDiv' + this.commentsreplyCount, className: 'e-pv-reply-div' });
@@ -1200,7 +1200,7 @@ export class StickyNotesAnnotation {
     // eslint-disable-next-line
     private renderComments(data: any, commentDiv: any, undoRedoAction?: boolean, id?: string, isCommentAction?: boolean): void {
         let annotationAuthor: string;
-        const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox' });
+        const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox_' + this.commentsreplyCount });
         this.commentsreplyCount = this.commentsreplyCount + 1;
         const replyDiv: HTMLElement = createElement('div', { id: 'replyDiv' + this.commentsreplyCount, className: 'e-pv-reply-div' });
         if (undoRedoAction) {

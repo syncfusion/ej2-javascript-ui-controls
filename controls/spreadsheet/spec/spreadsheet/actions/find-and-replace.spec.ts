@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet, SpreadsheetModel } from '../../../src/spreadsheet/index';
+import { Spreadsheet, SpreadsheetModel, SheetModel } from '../../../src/index';
 
 describe('Find & Replace ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -159,7 +159,7 @@ describe('Find & Replace ->', () => {
                                         helper.click('.e-find-dlg .e-findnreplace-checkmatch');
                                         findTxtBox.value = 'Sneakers';
                                         helper.click('.e-find-dlg .e-btn-findNext');
-                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('H3:H3');
+                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A7:A7');
                                         helper.invoke('selectRange', ['A1']);
                                         findTxtBox.value = 'Sneaker';
                                         helper.click('.e-find-dlg .e-btn-findNext');
@@ -182,11 +182,7 @@ describe('Find & Replace ->', () => {
                                         // setTimeout(() => {
                                         //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as any).disabled).toBeTruthy();
                                         //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as any).disabled).toBeTruthy();
-                                        helper.click('.e-find-dlg .e-dlg-closeicon-btn');
-                                        setTimeout(() => {
-                                            // expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).toBeNull(); // Check this now
-                                            done();
-                                        }, 20);
+                                        done();
                                         //});
                                     });
                                 });
@@ -195,6 +191,58 @@ describe('Find & Replace ->', () => {
                     });
                 });
             });
+        });
+        it('Find action when the active cell greater than used range', (done: Function) => {
+            helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+            helper.invoke('selectRange', ['I2:I2']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.click('.e-find-dlg .e-btn-findNext');
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            expect(sheet.selectedRange).toBe('B11:B11');
+            helper.invoke('selectRange', ['I2:I2']);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            expect(sheet.selectedRange).toBe('H2:H2');
+            helper.invoke('selectRange', ['E12:E12']);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(sheet.selectedRange).toBe('F9:F9');
+            helper.invoke('selectRange', ['E13:E13']);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            expect(sheet.selectedRange).toBe('D2:D2');
+            helper.invoke('selectRange', ['I13:I13']);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(sheet.selectedRange).toBe('B11:B11');
+            helper.invoke('selectRange', ['I13:I13']);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            expect(sheet.selectedRange).toBe('H2:H2');
+            const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
+            dropDownList.ej2_instances[0].value = 'By Row';
+            dropDownList.ej2_instances[0].dataBind();
+            helper.invoke('selectRange', ['I3:I3']);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(sheet.selectedRange).toBe('E6:E6');
+            helper.invoke('selectRange', ['I3:I3']);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            expect(sheet.selectedRange).toBe('H2:H2');
+            helper.invoke('selectRange', ['E13:E13']);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(sheet.selectedRange).toBe('D2:D2');
+            helper.invoke('selectRange', ['E13:E13']);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            expect(sheet.selectedRange).toBe('E11:E11');
+            helper.invoke('selectRange', ['J13:J13']);
+            findTxtBox.value = 'www';
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(sheet.selectedRange).toBe('J13:J13');
+            expect(helper.getElementFromSpreadsheet('.e-find-dlg .e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            helper.invoke('selectRange', ['J13:J13']);
+            expect(helper.getElementFromSpreadsheet('.e-find-dlg .e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
+            helper.click('.e-find-dlg .e-dlg-closeicon-btn');
+            setTimeout(() => {
+                // expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).toBeNull(); // Check this now
+                done();
+            }, 20);
         });
 
         // it('Find by MatchCase', (done: Function) => {

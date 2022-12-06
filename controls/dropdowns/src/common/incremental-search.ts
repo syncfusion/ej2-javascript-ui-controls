@@ -1,6 +1,9 @@
 /**
  * IncrementalSearch module file
  */
+import { isNullOrUndefined } from "@syncfusion/ej2-base";
+import { DataManager } from "@syncfusion/ej2-data";
+import { FieldSettingsModel } from "@syncfusion/ej2-lists";
 
 let queryString: string = '';
 let prevString: string = '';
@@ -75,7 +78,8 @@ export function incrementalSearch(
  * @returns {Element | number} Returns the search matched items.
  */
 export function Search(
-    inputVal: string, items: HTMLElement[], searchType: SearchType, ignoreCase?: boolean): { [key: string]: Element | number } {
+    inputVal: string, items: HTMLElement[], searchType: SearchType, ignoreCase?: boolean, dataSource?: string[] | number[] | boolean[] | {
+        [key: string]: Object}[], fields?: any, type?: string): { [key: string]: Element | number } {
     const listItems: Element[] = items;
     ignoreCase = ignoreCase !== undefined && ignoreCase !== null ? ignoreCase : true;
     const itemData: { [key: string]: Element | number } = { item: null, index: null };
@@ -85,7 +89,20 @@ export function Search(
         queryStr = escapeCharRegExp(queryStr);
         for (let i: number = 0, itemsData: Element[] = listItems; i < itemsData.length; i++) {
             const item: Element = itemsData[i];
-            const text: string = (ignoreCase ? item.textContent.toLocaleLowerCase() : item.textContent).replace(/^\s+|\s+$/g, '');
+            let text: string;
+            let filterValue : string;
+            if (items && dataSource) {
+                let checkField : Element = item;
+                let fieldValue = fields.text.split('.');
+                (dataSource as { [key: string]: Object }[]).filter(function (data: any) {
+                Array.prototype.slice.call(fieldValue).forEach(function (value: string | number) {
+                    if (type === 'object' && checkField.textContent.toString().indexOf(data[value]) !== -1 && checkField.getAttribute('data-value') === data[fields.value]  || type === 'string' && checkField.textContent.toString().indexOf(data) !== -1) {
+                    filterValue = type === 'object' ? data[value] : data;
+                    }
+                });
+            })
+            }
+            text = dataSource && filterValue ? (ignoreCase ? filterValue.toLocaleLowerCase() : filterValue).replace(/^\s+|\s+$/g, '') : (ignoreCase ? item.textContent.toLocaleLowerCase() : item.textContent).replace(/^\s+|\s+$/g, '');
             if ((searchType === 'Equal' && text === queryStr) || (searchType === 'StartsWith' && text.substr(0, strLength) === queryStr) || (searchType === 'EndsWith' && text.substr(text.length - queryStr.length) === queryStr) || (searchType === 'Contains' && new RegExp(queryStr,"g").test(text))) {
                 itemData.item = item;
                 itemData.index = i;

@@ -25,6 +25,7 @@ export class PeriodSelector {
     private nodes: Node;
     public calendarId: string;
     public selectedIndex: number;
+    public selectedPeriod: PeriodsModel;
     public datePickerTriggered: boolean;
     public rootControl: StockChart | RangeNavigator;
     //constructor for period selector
@@ -124,6 +125,7 @@ export class PeriodSelector {
         const buttonStyles: string = 'text-transform: none; text-overflow: unset';
         const isStringTemplate: string = 'isStringTemplate';
         const dateRangeId: string = controlId + 'customRange';
+        let selectedPeriod:PeriodsModel;
         this.periodSelectorDiv.appendChild(selectorElement);
         for (let i: number = 0; i < buttons.length; i++) {
             selector.push({ align: 'Left', text: buttons[i].text });
@@ -162,13 +164,17 @@ export class PeriodSelector {
                 this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
                 if (isNullOrUndefined(this.selectedIndex)) {
                     buttons.map((period: PeriodsModel, index: number) => {
-                        if (period.selected) {
+                        if (period.selected && this.selectedPeriod !== null) {
+                            selectedPeriod = period;
                             this.control.startValue = this.changedRange(
                                 period.intervalType, this.control.endValue, period.interval
                             ).getTime();
                             this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
                         }
                     });
+                }
+                if (!selectedPeriod) {
+                    this.selectedIndex = this.findSelectedIndex(this.control.startValue, this.control.endValue, buttons);
                 }
                 this.setSelectedStyle(this.selectedIndex);
             }
@@ -212,6 +218,11 @@ export class PeriodSelector {
                 change: (args: RangeEventArgs) => {
                     if (this.triggerChange) {
                         if (this.control.rangeSlider && args.event) {
+                            this.control.rangeNavigatorControl.startValue = args.startDate.getTime();
+                            this.control.rangeNavigatorControl.endValue = args.endDate.getTime();
+                            this.selectedIndex = undefined;
+                            this.selectedPeriod = null;
+                            this.control.rangeNavigatorControl.refresh();
                             this.control.rangeSlider.performAnimation(
                                 (args.startDate as Date).getTime(), (args.endDate as Date).getTime(), this.control.rangeNavigatorControl
                             );
@@ -236,6 +247,34 @@ export class PeriodSelector {
             this.datePicker.appendTo('#' + this.calendarId);
         }
     }
+
+    public findSelectedIndex(startDate: number, endDate: number, buttons: PeriodsModel[]): number {
+        let daysDiffence: number = (endDate - startDate) / (1000 * 60 * 60 * 24);
+        let selectedIndex: number;
+        for (let i: number = 0; i < buttons.length; i++) {
+            let period: PeriodsModel = buttons[i as number];
+            if (period.intervalType === 'Years' && daysDiffence / 365 === period.interval) {
+                selectedIndex = i;
+            }
+            else if (period.intervalType === 'Months' && daysDiffence / 30 === period.interval) {
+                selectedIndex = i;
+            }
+            else if (period.intervalType === 'Days' && daysDiffence === period.interval) {
+                selectedIndex = i;
+            }
+            else if (period.intervalType === 'Weeks' && daysDiffence / 7 === period.interval) {
+                selectedIndex = i;
+            }
+            else if (period.intervalType === 'Hours' && daysDiffence * 24 === period.interval) {
+                selectedIndex = i;
+            }
+            else if (period.intervalType === 'Seconds' && (daysDiffence * 24 * 3600) === period.interval) {
+                selectedIndex = i;
+            }
+        };
+        return selectedIndex;
+    }
+
     private updateCustomElement(): ItemModel[] {
         const selector: ItemModel[] = [];
         const controlId: string = this.rootControl.element.id;
@@ -267,12 +306,12 @@ export class PeriodSelector {
      * @returns {void}
      */
 
-    private setSelectedStyle(selectedIndex: number): void {
-        if (this.control.disableRangeSelector || this.rootControl.getModuleName() === 'stockChart') {
-            for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
-                (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
-                (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
-            }
+    public setSelectedStyle(selectedIndex: number): void {
+        for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
+            (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-flat');
+            (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
+        }
+        if (!isNullOrUndefined(selectedIndex)) {
             (this.nodes.childNodes[selectedIndex].childNodes[0] as Element).classList.add('e-flat');
             (this.nodes.childNodes[selectedIndex].childNodes[0] as Element).classList.add('e-active');
         }
@@ -295,12 +334,19 @@ export class PeriodSelector {
         let updatedStart: number;
         let updatedEnd: number;
         buttons.map((period: PeriodsModel, index: number) => {
+            if (period.selected) {
+                period.selected = false
+            }
             if (period.text === args.item.text) {
                 this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
+                period.selected = true
             }
         });
         if (args.item.text !== '') {
             this.setSelectedStyle(this.selectedIndex);
+        }
+        if (slider && clickedEle.text) {
+            slider.selectedPeriod = clickedEle.text
         }
 
         if (clickedEle.text.toLowerCase() === 'all') {

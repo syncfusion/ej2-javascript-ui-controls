@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I412801` - Issue with "cell text is not displayed while using the custom cell styling in the imported excel file" has been resolved.
+
 ## 20.3.56 (2022-11-08)
 
 ### Spreadsheet

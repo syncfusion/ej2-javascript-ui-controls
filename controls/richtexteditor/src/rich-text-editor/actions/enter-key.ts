@@ -184,7 +184,8 @@ export class EnterKeyAction {
                                         isNearBlockLengthZero = false;
                                     } else {
                                         if ((nearBlockNode.textContent.trim().length !== 0 ||
-                                        nearBlockNode.childNodes[0].nodeName === 'IMG')) {
+                                        nearBlockNode.childNodes[0].nodeName === 'IMG' ||
+                                        (nearBlockNode.textContent.trim() === '' && nearBlockNode.querySelectorAll('img').length > 0))) {
                                             if ((this.range.startOffset === this.range.endOffset && this.range.startOffset != 0)) {
                                                 newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                                     this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);

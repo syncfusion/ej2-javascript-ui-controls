@@ -798,3 +798,48 @@ describe('stacked header with template tree columnindex-EJ2-62337', () => {
     destroy(gridObj);
   });
 });
+
+describe('EJ2-65931- Template column with Stacked Header not working properly', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: stackedData,
+        allowPaging: true,
+        childMapping: 'subtasks',
+        height: 350,
+        treeColumnIndex: 1,
+        pageSettings: { pageCount: 5 },
+        columns: [
+          {field: 'orderID', headerText: 'Task ID', width: '90', textAlign: 'Right'},
+          {headerText: 'text',
+            columns: [
+              {field: 'orderName', headerText: 'Tasks',template: "<span>test</span>", width: '100', visible: true},
+              {field: 'orderID', headerText: 'Task ID',width: '90',textAlign: 'Right',template: "<span>test</span>"},
+            ],
+          },
+          {
+            headerText: 'text',
+            columns: [
+              {field: 'orderName', headerText: 'Tasks', template: "<span>test</span>", width: '100', visible: true},
+            ],
+          },
+        ],
+
+      },
+      done
+    );
+  });
+  it('check template rendering', () => {
+    expect(gridObj.getCellFromIndex(0,2).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(1,2).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(2,2).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(3,2).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(4,2).classList.contains("e-templatecell")).toBe(true);
+
+    });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

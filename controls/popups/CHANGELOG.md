@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.60 (2022-12-06)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I420756` - Now, the z-index value calculation will function properly when you have multiple dialog elements on the same page.
+
 ## 20.3.59 (2022-11-29)
 
 ### Dialog

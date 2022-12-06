@@ -3369,6 +3369,7 @@ export class Drawing {
         let zoomfactor: number = this.pdfViewer.viewerBase.getZoomFactor();
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
+        let fieldId: string;
         if (obj || this.pdfViewer.clipboardData.clipObject) {
             const copiedItems: PdfAnnotationBaseModel[] = obj ? this.getNewObject(obj) :
                 this.pdfViewer.clipboardData.clipObject as (PdfAnnotationBaseModel)[];
@@ -3378,6 +3379,7 @@ export class Drawing {
                     this.pdfViewer.clearSelection(index);
                 }
                 for (const copy of copiedItems) {
+                    fieldId = copy.id;
                     copy.id += randomId();
                     let fieldName = this.splitFormFieldName(copy);
                     let maxNumber = 0;// this.pdfViewer.formFieldCollection.length;
@@ -3422,7 +3424,7 @@ export class Drawing {
                             this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
                         }
                         if (!newNode.formFieldAnnotationType) {
-                            this.pdfViewer.annotation.addAction(newNode.pageIndex, null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
+                            this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
                         }
                     } else {
                         if (this.pdfViewer.annotationModule) {
@@ -3435,7 +3437,7 @@ export class Drawing {
                     }
                     const addedAnnot: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.add(newNode);
                     if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType) {
-                        this.pdfViewer.annotation.addAction(newNode.pageIndex, null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
+                        this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(true), null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
                     }
                     if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {
                         this.nodePropertyChange(addedAnnot, {});
@@ -3457,7 +3459,7 @@ export class Drawing {
                         }
                         this.pdfViewer.formFieldCollections.push(formField);
                         // eslint-disable-next-line max-len
-                        this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageIndex, this.pdfViewer);
+                        this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType, addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot, (addedAnnot as PdfFormFieldBaseModel).pageIndex, this.pdfViewer,fieldId);
                     }
                     this.pdfViewer.select([newNode.id], this.pdfViewer.annotationSelectorSettings);
                     if (!addedAnnot.formFieldAnnotationType) {

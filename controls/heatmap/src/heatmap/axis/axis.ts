@@ -273,8 +273,9 @@ export class Axis extends ChildProperty<Axis> {
         const innerPadding: number = axis.orientation === 'Horizontal' ? 10 : 20;
         const multiPosition: MultiLevelPosition = new MultiLevelPosition(0, 0);
         if (axis.orientation === 'Horizontal') {
-            const level0: number = axis.maxLabelSize.height + innerPadding ;
-            const level1: number = this.xAxisMultiLabelHeight[index - 1] ;
+            const level0: number = axis.maxLabelSize.height + innerPadding
+                + ((axis.angle === 0 || axis.angle === 180 || axis.angle === 360) ? 0 : innerPadding);
+            const level1: number = this.xAxisMultiLabelHeight[index - 1];
             multiPosition.x = (axis.isInversed ? axis.rect.x + axis.rect.width : axis.rect.x);
             multiPosition.y = index === 0 ? axis.rect.y + (axis.opposedPosition ? -level0 : level0) :
                 axis.multiLevelPosition[index - 1].y + (axis.opposedPosition ? -level1 : level1 );

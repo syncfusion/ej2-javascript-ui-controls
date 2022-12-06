@@ -547,3 +547,15 @@ export interface CFArgs {
     updatedCFModel?: ConditionalFormatModel[];
     cfClearActionArgs?: object;
 }
+/**@hidden */
+export interface FindArgs {
+    startRow: number;
+    startCol: number;
+    endRow?: number;
+    endCol?: number;
+    findVal: string;
+    sheet?: SheetModel;
+    activeCell: number[];
+    sheetIdx?: number;
+    sheets?: SheetModel[];
+}

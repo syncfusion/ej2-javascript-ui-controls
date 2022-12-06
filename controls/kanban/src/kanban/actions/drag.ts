@@ -392,9 +392,12 @@ export class DragAndDrop {
             element.classList.remove(cls.DROPPING_CLASS);
         });
         if (this.dragObj.targetClone.parentElement) {
-            const className: string = '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS;
+            const isMultipleDrag: boolean = (this.dragObj.selectedCards && (this.dragObj.selectedCards as  Record<string, any>[]).length > 1 &&
+                this.parent.sortSettings.sortBy === 'Index');
+            const className: string = !isMultipleDrag ? '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS :
+            '.' + cls.CARD_CLASS + ',.' + cls.DROPPED_CLONE_CLASS;
             const element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
-            dropIndex = element.indexOf(this.dragObj.targetClone);
+            dropIndex = !isMultipleDrag ? element.indexOf(this.dragObj.targetClone) : element.indexOf(this.dragObj.targetClone) - 1;
         }
         if (!isNullOrUndefined(this.kanbanObj) && this.kanbanObj.element.querySelector('.' + cls.TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target as HTMLElement, '.' + cls.MULTI_COLUMN_KEY_CLASS + ':not(.' + cls.DISABLED_CLASS + ')');

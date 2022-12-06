@@ -91,8 +91,10 @@ export class Resize {
         this.resizeTooltip(null, true, e);
         if (colResizeHandler || rowResizeHandler) {
             this.isMouseMoved = true;
+            const isRtl: boolean = this.parent.enableRtl;
             if (colResizeHandler) {
-                if (e.x > (this.trgtEle.parentElement.firstChild as HTMLElement).getBoundingClientRect().left) {
+                if ( isRtl ? (e.x < (this.trgtEle.parentElement.firstChild as HTMLElement).getBoundingClientRect().right) :
+                    (e.x > (this.trgtEle.parentElement.firstChild as HTMLElement).getBoundingClientRect().left)) {
                     colResizeHandler.style.left = e.clientX -
                         document.getElementById(this.parent.element.id + '_sheet').getBoundingClientRect().left + 'px';
                 }
@@ -189,7 +191,8 @@ export class Resize {
         }
         let newTrgt: HTMLElement; let tOffsetV: number; let eOffsetV: number; let tClass: string;
         if (closest(trgt, '.e-header-row')) {
-            eOffsetV = e.offsetX; tOffsetV = trgt.offsetWidth; tClass = 'e-colresize';
+            tOffsetV = trgt.offsetWidth; tClass = 'e-colresize';
+            eOffsetV = this.parent.enableRtl ? (tOffsetV - e.offsetX) : e.offsetX;
             const prevSibling: Element = this.getColPrevSibling(trgt);
             if (prevSibling && !prevSibling.classList.contains('e-select-all-cell')) {
                 newTrgt = <HTMLElement>prevSibling;
@@ -239,7 +242,8 @@ export class Resize {
 
     private updateTarget(e: MouseEvent, trgt: HTMLElement): void {
         if (closest(trgt, '.e-header-row')) {
-            if ((trgt.offsetWidth < 10 && e.offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (e.offsetX < 5 &&
+            let offsetX: number = this.parent.enableRtl ? (trgt.offsetWidth - e.offsetX) : e.offsetX;
+            if ((trgt.offsetWidth < 10 && offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (offsetX < 5 &&
                 trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize')) {
                 const sheet: SheetModel = this.parent.getActiveSheet();
                 const prevIdx: number = Number(this.trgtEle.getAttribute('aria-colindex')) - 2;
@@ -430,11 +434,12 @@ export class Resize {
 
     private resizeTooltip(trgt: HTMLElement, isResize?: boolean, e?: MouseEvent): void {
         if (isResize) {
+            const isRtl: boolean = this.parent.enableRtl;
             const HeaderTolltip: HTMLElement = document.querySelector('.e-header-tooltip');
             const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
             const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
             if (colResizeHandler) {
-                const trgtWidth: number = (e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left);
+                const trgtWidth: number = isRtl ? (Math.round(this.trgtEle.getBoundingClientRect().right) - (e.clientX)) : ((e.clientX) - Math.round(this.trgtEle.getBoundingClientRect().left));
                 if (HeaderTolltip) {
                     HeaderTolltip.firstChild.textContent = trgtWidth > 0 ? ('Width:(' + trgtWidth.toString() + ' pixels)') : ('Width: 0.00');
                 }
@@ -663,7 +668,7 @@ export class Resize {
             } else {
                 curWidth = getColumnWidth(this.parent.getActiveSheet(), idx);
             }
-            this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (e.clientX - this.event.clientX) + curWidth, curWidth);
+            this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (this.parent.enableRtl ? (this.event.clientX - e.clientX) : (e.clientX - this.event.clientX)) + curWidth, curWidth);
         }
         if (CellElem && CellElem.format && CellElem.format.indexOf('*') > -1) {
             this.parent.notify(rowFillHandler, { cell: CellElem, value: CellElem.format[CellElem.format.indexOf('*') + 1].toString(),

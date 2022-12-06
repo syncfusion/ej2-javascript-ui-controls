@@ -1716,7 +1716,7 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public footnoteElement: FootnoteElementBox[];
+    public footnoteElement: FootnoteElementBox[] = [];
     /**
      * @private
      */

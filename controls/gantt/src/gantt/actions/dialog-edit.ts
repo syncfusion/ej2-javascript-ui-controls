@@ -1864,7 +1864,7 @@ export class DialogEdit {
             inputElement = this.createInputElement('', ganttId + '' + column.field, column.field);
             divElement.appendChild(inputElement);
         }
-        inputModel.enabled = !this.isCheckIsDisabled(column);
+        inputModel.enabled = !isNullOrUndefined(inputModel.enabled) ? inputModel.enabled : !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
             if (!isNullOrUndefined(column.valueAccessor)) {
                 if (typeof column.valueAccessor === 'string') {

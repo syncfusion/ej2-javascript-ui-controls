@@ -63,12 +63,12 @@ export class ColumnChooser implements IAction {
         this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
         this.cBoxTrue.insertBefore(
             this.parent.createElement('input', {
-                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { type: 'checkbox' }
+                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { type: 'checkbox', 'aria-checked': 'true' }
             }),
             this.cBoxTrue.firstChild);
         this.cBoxFalse.insertBefore(
             this.parent.createElement('input', {
-                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox' }
+                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox', 'aria-checked': 'false' }
             }),
             this.cBoxFalse.firstChild);
         this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
@@ -545,8 +545,10 @@ export class ColumnChooser implements IAction {
             (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
             if (elem.querySelector('.e-check')) {
                 checkstate = true;
+                (elem.firstChild as HTMLElement).setAttribute('aria-checked', 'true');
             } else if (elem.querySelector('.e-uncheck')) {
                 checkstate = false;
+                (elem.firstChild as HTMLElement).setAttribute('aria-checked', 'false');
             } else {
                 return;
             }
@@ -574,13 +576,17 @@ export class ColumnChooser implements IAction {
         const elem: Element = this.ulElement.children[0].querySelector('.e-frame');
         const selected: number = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         const btn: Button = (<{ btnObj?: Button }>(this.dlgObj as DialogModel)).btnObj[0];
+        const inputElem: HTMLElement = elem.parentElement.querySelector('input');
         btn.disabled = false;
         if (cnt === selected) {
             className = ['e-check'];
+            inputElem.setAttribute('aria-checked', 'true');
         } else if (selected) {
             className = ['e-stop'];
+            inputElem.setAttribute('aria-checked', 'mixed');
         } else {
             className = ['e-uncheck'];
+            inputElem.setAttribute('aria-checked', 'flase');
             btn.disabled = true;
         }
         btn.dataBind();
