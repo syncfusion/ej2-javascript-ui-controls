@@ -14,6 +14,7 @@
 #### Bug Fixes
 
 - `#F178453` - Now, cut, copy and paste of form field are working properly on downloading.
+- `#I420531` - Now, Freetext annotations are no longer scaled upon double clicking.
 
 ## 20.3.59 (2022-11-29)
 

@@ -706,6 +706,17 @@ export interface IScrollChangeEventArgs {
 }
 
 /**
+ * Event triggers whenever the user rotate the mouse wheel either upwards or downwards
+ *
+ */
+ export interface IMouseWheelEventArgs {
+    /** returns the DOM Object*/
+    event:WheelEvent ;
+    /**specifies whether to cancel the mouse wheel interaction in the diagram*/
+    cancel:Boolean; 
+}
+
+/**
  * IPaletteSelectionChangeArgs notifies when the selection objects change in the symbol palette
  *
  */

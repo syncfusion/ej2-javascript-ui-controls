@@ -3710,7 +3710,7 @@
 
   .e-gridheader .e-headercontent .e-reorderuparrow {
     @if $grid-skin == 'fluent' or $grid-skin == 'bootstrap5' {
-      margin-top: -9px;
+      margin-top: -2px;
     }
   }
 

@@ -1823,8 +1823,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             result = result.split(this.tic).join('');
         }
         if (operator === 'equal') {
-            val1 = stack.pop().toString();
-            val2 = stack.pop().toString();
+            val1 = stack.pop().toString().toLowerCase();
+            val2 = stack.pop().toString().toLowerCase();
             result = val1 === val2 ? this.trueValue : this.falseValue;
         }
         if (operator === 'or') {
@@ -2087,8 +2087,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return sum;
     }
     private processNestedFormula(pText: string, sFormula: string, fResult: string | number): string {
-        const interiorCalcFString: string = pText.split(sFormula).join('n' + fResult);
-        return interiorCalcFString;
+        if (fResult && !fResult.toString().includes('"')) {
+            const formulaEndIdx: number = pText.indexOf(sFormula) + sFormula.length;
+            if (pText[formulaEndIdx as number] === '"' && this.getErrorStrings().indexOf(fResult.toString()) < 0 && !isNumber(fResult) && fResult !== this.trueValue && fResult !== this.falseValue) {
+                return pText.split(sFormula).join('"' + fResult + '"');
+            }
+        }
+        return pText.split(sFormula).join('n' + fResult);
     }
 
     /**

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.61 (2022-12-13)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I408271` - The reference link for the `checkBoxChange` event arguments has been updated in the documentation.
+- `#I420019` - script error for focusing the content after deleting all the records has been fixed.
+
 ## 20.3.60 (2022-12-06)
 
 ### Grid

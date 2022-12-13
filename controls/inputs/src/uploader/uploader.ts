@@ -617,6 +617,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
+     * 
      * {% codeBlock src='uploader/htmlAttributes/index.md' %}{% endcodeBlock %}
      *
      * @default {}

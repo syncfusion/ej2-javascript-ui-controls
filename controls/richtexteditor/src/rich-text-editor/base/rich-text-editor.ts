@@ -2576,8 +2576,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.rtlMode, { enableRtl: this.enableRtl });
         if (this.enableRtl) {
             this.element.classList.add(classes.CLS_RTL);
+            this.inputElement.classList.add(classes.CLS_RTL);
         } else {
             this.element.classList.remove(classes.CLS_RTL);
+            this.inputElement.classList.remove(classes.CLS_RTL);
         }
     }
     private updateReadOnly(): void {

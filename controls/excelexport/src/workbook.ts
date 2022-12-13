@@ -1900,7 +1900,7 @@ export class Workbook {
         for (let i: number = 0; i < length; i++) {
             /* tslint:disable-next-line:max-line-length */
             sheetsOverride += '<Override PartName="/xl/worksheets/sheet' + (i + 1).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml" />';
-            if(this.worksheets[i].images != undefined && this.worksheets[i].images.length > 0){                
+            if(this.worksheets[i].images != undefined && this.worksheets[i].images.length > 0){
                 drawingIndex++;
                 /* tslint:disable-next-line:max-line-length */
                 sheetsOverride += '<Override PartName="/xl/drawings/drawing' + (drawingIndex).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml" />';                

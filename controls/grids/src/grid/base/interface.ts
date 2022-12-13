@@ -2136,9 +2136,6 @@ export interface IEdit {
     previousData?: object
 }
 
-/**
- * @hidden
- */
 export interface CheckBoxChangeEventArgs extends ICancel {
     /** Defines the checked state. */
     checked?: boolean;

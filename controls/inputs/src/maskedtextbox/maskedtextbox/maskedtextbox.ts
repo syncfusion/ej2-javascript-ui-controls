@@ -149,6 +149,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * For more information on mask, refer to
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
+     * 
      * {% codeBlock src='maskedtextbox/mask/index.md' %}{% endcodeBlock %}
      *
      * @default null

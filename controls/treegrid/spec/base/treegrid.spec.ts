@@ -1965,6 +1965,84 @@ describe('EJ2-65573- The expanded or collapsed state is not read properly by the
   });
 });
 
+describe('EJ2-65701- With the frozenRows property, the methods expand & collpase do not work properly using external button', () => {
+  let gridObj: TreeGrid;
+  let rows: HTMLTableRowElement[];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: '410',
+        frozenRows:3,
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+          { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+          { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+        ]
+      },
+      done
+    );
+  });
+
+  it('expand & collapse action checking while enable the frozen row', () => {
+    rows = gridObj.getRows();
+    gridObj.collapseRow(rows[5]);
+    expect(rows[6].style.display).toBe('none');
+    gridObj.expandRow(rows[5]);
+    expect(rows[6].style.display).toBe('table-row');
+  });
+  it('expandall & collapseall action checking while enable the frozen row', () => {
+    gridObj.collapseAll();
+    expect(gridObj.getRows()[11].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    gridObj.expandAll();
+    expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('EJ2-66816- Collapsing the records after filtering thows script error', () => {
+  let gridObj: TreeGrid;
+  let rows: HTMLTableRowElement[];
+  let actionComplete: ()=> void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+      dataSource: sampleData,
+      allowFiltering: true,
+      childMapping: 'subtasks',
+      height: 350,
+      treeColumnIndex: 1,
+      columns: [
+            {field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 90,  isPrimaryKey: true },
+            {field: 'taskName', headerText: 'Task Name', width: 130 },
+            {field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', format: 'yMd'},
+            {field: 'progress', headerText: 'Progress', width: 90, textAlign: 'Right' },
+            {field: 'duration', headerText: 'Duration', width: 90, textAlign: 'Right' },
+            {field: 'priority', headerText: 'Priority', width: 90 }
+        ]
+      },
+      done
+    );
+  });
+
+  it('collapseAll after filtering the records', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      gridObj.collapseAll();
+	  expect(gridObj.getVisibleRecords().length === 1).toBe(true);
+      done();
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.filterByColumn('taskName', 'startswith', 'Testing');
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
 describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', () => {
 
   type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };

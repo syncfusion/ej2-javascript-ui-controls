@@ -3776,7 +3776,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.detailTemplate) {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
-                record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+                record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
             }
         }
         return record;
@@ -4302,8 +4302,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     ));
         }
         let gridRowsObject: Row<GridColumn>[] = this.grid.getRowsObject();
-        if (gridRowsObject[record.index].visible !== false) {
-            gridRowsObject[record.index].visible = true;
+        if (!isNullOrUndefined(gridRowsObject[this.getCurrentViewRecords().indexOf(record)].visible) && gridRowsObject[this.getCurrentViewRecords().indexOf(record)].visible !== false) {
+            gridRowsObject[this.getCurrentViewRecords().indexOf(record)].visible = true;
         }
         const detailrows: HTMLTableRowElement[] = gridRows.filter(
             (r: HTMLTableRowElement) =>
@@ -4317,10 +4317,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (!isNullOrUndefined(rows[i]) && !this.allowPaging && !(this.enableVirtualization || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
                 gridRowsObject[rows[i].rowIndex].visible = displayAction != 'none' ? true : false;
-                if ("parentItem" in record) {
-                    if (gridRows[record.parentItem.index].getElementsByClassName('e-treegridcollapse').length) {
-                        gridRowsObject[record.index].visible = false;
-                    }
+                const parentRecord: ITreeData = getValue('uniqueIDCollection.' + record.parentUniqueID, this)
+                if (!isNullOrUndefined(parentRecord) && gridRows[this.getCurrentViewRecords().indexOf(parentRecord)].getElementsByClassName('e-treegridcollapse').length) {
+                    gridRowsObject[this.getCurrentViewRecords().indexOf(record)].visible = false;
                 }
             }
             if (!isNullOrUndefined(movableRows)) {

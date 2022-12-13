@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.61 (2022-12-13)
+
+### Diagram
+
+#### New Feature
+
+- `#I409589` - Support to override the mouseWheel event has been added.
+
 ## 20.3.60 (2022-12-06)
 
 ### Diagram

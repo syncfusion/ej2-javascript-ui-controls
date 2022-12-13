@@ -934,6 +934,18 @@
       }
     }
 
+    & .e-toolbar-items{
+      & .e-input-group-icon.e-icons.e-sicon:hover:not(.e-clear-icon),
+      & .e-input-group-icon.e-icons.e-sicon:active:not(.e-clear-icon),
+      & .e-input-group-icon.e-icons.e-sicon:focus:not(.e-clear-icon) {
+          background: none;
+          box-shadow: none;
+      }
+      & .e-input-group-icon.e-icons.e-sicon:not(.e-clear-icon) {
+          border: none;
+      }
+  }
+
     .e-res-toolbar {
       border-bottom: 1px solid;
       border-bottom-color: $grid-header-border-color;
@@ -1631,6 +1643,7 @@
     }
 
     &.e-responsive .e-rowcell.e-gridchkbox,
+    &.e-responsive .e-rowcell.e-gridchkbox-cell,
     &.e-responsive .e-headercelldiv.e-headerchkcelldiv {
       text-overflow: clip;
     }
@@ -2485,14 +2498,12 @@
       font-size: $grid-group-down-arrow-icon-font-size;
       padding: $grid-group-down-arrow-icon-padding;
       text-decoration: none;
-      text-indent: $group-collapse-icon-text-indent;
     }
 
     .e-icon-grightarrow {
       font-size: $grid-group-right-arrow-icon-font-size;
       padding: $grid-group-right-arrow-icon-padding;
       text-decoration: none;
-      text-indent: $group-expand-icon-text-indent;
     }
 
     .e-recordplusexpand {
@@ -3699,7 +3710,7 @@
 
   .e-gridheader .e-headercontent .e-reorderuparrow {
     @if $grid-skin == 'fluent' or $grid-skin == 'bootstrap5' {
-      margin-top: -9px;
+      margin-top: -2px;
     }
   }
 

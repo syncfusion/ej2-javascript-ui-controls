@@ -274,7 +274,7 @@ export interface FilterSettingsModel {
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
-     * > Check the [`Filter Menu Operator`](../../grid/filtering/filter-menu/#customizing-filter-menu-operators-list/) customization.
+     * > Check the [`Filter Menu Operator`](../../grid/filtering/filter-menu/#customizing-filter-menu-operators-list) customization.
      *
      * @default null
      */
@@ -283,7 +283,7 @@ export interface FilterSettingsModel {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter/) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter) filtering.
      *
      * @default false
      */
@@ -453,7 +453,7 @@ export interface SearchSettingsModel {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter/) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter) filtering.
      *
      * @default false
      */

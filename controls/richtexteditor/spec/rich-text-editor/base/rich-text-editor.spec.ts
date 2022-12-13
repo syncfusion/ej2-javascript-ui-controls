@@ -5972,3 +5972,168 @@ describe('Initial audio and video loading', () => {
         destroy(rteObj);
     });
 });
+
+describe("fontfamily testing after default value set -", () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    let EnterkeyboardEventArgs = {
+        preventDefault: function () { },
+        altKey: false,
+        ctrlKey: false,
+        shiftKey: false,
+        char: '',
+        key: '',
+        charCode: 13,
+        keyCode: 13,
+        which: 13,
+        code: 'Enter',
+        action: 'enter',
+        type: 'keydown'
+    };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: [ 'FontName']
+            },
+            fontFamily: {
+                default: 'Arial',
+                items: [
+                  {
+                    text: 'Arial',
+                    value: 'Arial,Helvetica,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Book Antiqua',
+                    value:
+                      '"Book Antiqua", Palatino, "Palatino Linotype", "Palatino LT STD", Georgia, serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Calibri',
+                    value: 'Calibri, "Open Sans", Arial,Helvetica,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Comic Sans MS',
+                    value:
+                      '"Comic Sans", "Comic Sans MS", "Chalkboard", "ChalkboardSE-Regular", sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Courier New',
+                    value: 'Courier New,Courier,monospace,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Georgia',
+                    value: 'Georgia, "Times New Roman", Times, serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Gill Sans MT',
+                    value:
+                      '"Gill Sans MT", "Myriad Pro", Myriad, Helvetica, Arial, sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Great vibes',
+                    value: 'Great Vibes,cursive',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Helvetica',
+                    value: 'Helvetica,Arial,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Roboto',
+                    value: 'Roboto, "Segoe UI",Arial,Helvetica,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Segoe UI',
+                    value: '"Segoe UI", "Open Sans",Arial,Helvetica,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Shizuru',
+                    value: 'Shizuru, cursive',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Symbol',
+                    value: 'Symbol',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Tahoma',
+                    value: 'Tahoma,Geneva,sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Terminal',
+                    value: 'Terminal',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Times New Roman',
+                    value: 'Times New Roman,Times,serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Trebuchet MS',
+                    value:
+                      'trebuchet ms, "Myriad Pro", Myriad, Helvetica, Arial, sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                  {
+                    text: 'Verdana',
+                    value: 'verdana, "Myriad Pro", Myriad, Helvetica,Arial, sans-serif',
+                    command: 'Font',
+                    subCommand: 'FontName',
+                  },
+                ],
+              }
+        });
+        elem = rteObj.element;
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Dynamic mode RTE testing fontfamily', (done: Function) => {
+        rteObj.focusIn();
+        rteObj.contentModule.getEditPanel().innerHTML = '<p>Testing</p>';
+        let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0].firstChild;
+        let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+        (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+        ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        ((document.querySelector('.e-font-name-tbar-btn ul') as HTMLElement).childNodes[0] as HTMLElement).click();
+        expect((((<any>rteObj).contentModule.getEditPanel().childNodes[1] as HTMLElement).firstElementChild as HTMLElement).style.fontFamily === 'Arial, Helvetica, sans-serif').toBe(true);
+        nodetext = ((<any>rteObj).contentModule.getEditPanel().childNodes[1] as HTMLElement).firstElementChild.firstChild;
+        setCursorPoint(document, nodetext, nodetext.textContent.length);
+        (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+        ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        ((document.querySelector('.e-font-name-tbar-btn ul') as HTMLElement).childNodes[17] as HTMLElement).click();
+        expect((((rteObj.contentModule.getEditPanel() as HTMLElement).childNodes[2] as HTMLElement).firstElementChild as HTMLElement).style.fontFamily === 'verdana, "Myriad Pro", Myriad, Helvetica, Arial, sans-serif').toBe(true);
+        done();
+    });
+});

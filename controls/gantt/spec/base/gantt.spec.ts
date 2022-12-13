@@ -1039,3 +1039,80 @@ describe('Gantt - Base', () => {
         });
     });
 });
+describe('Baseline render', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: [
+                        {
+                            TaskID: 1,
+                            TaskName: 'Receive vehicle and create job card',
+                            BaselineStartDate: new Date('03/05/2018 00:00:00 AM'),
+                            BaselineEndDate: new Date('03/03/2018 00:00:00 AM'),
+                            Duration: 1,
+                            StartDate: new Date('03/05/2018 00:00:00 AM'),
+                            EndDate: new Date('03/10/2018 00:00:00 AM'),
+                        },
+                    ],
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                        { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    ],
+                    durationUnit: 'Day',
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                    timelineSettings: {
+                        timelineUnitSize: 65,
+                        topTier: {
+                            unit: 'Month',
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1,
+                        },
+                    },
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/01/2018 00:00:00 AM'),
+                    projectEndDate: new Date('03/25/2018 00:00:00 PM'),
+
+                }, done);
+        });
+        it('End Date greater than start date', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.baselineEndDate.getDate()).toBe(5);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });

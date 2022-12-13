@@ -961,7 +961,7 @@ export class Matrix {
                 }
             }
             if (emptyTable) {
-                rowIndex = this.current[0];
+                rowIndex = this.current.length ? this.current[0] : 0;
                 return [rowIndex, columnIndex];
             }
         }

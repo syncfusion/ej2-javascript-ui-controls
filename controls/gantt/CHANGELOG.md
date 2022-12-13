@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.3.61 (2022-12-13)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I417035` - Expand Collapse not working properly after cell editing issue has been fixed.
+- `#I421663` - The baseline end date has not been properly validated issue has been fixed.
+
 ## 20.3.60 (2022-12-06)
 
 ### Gantt

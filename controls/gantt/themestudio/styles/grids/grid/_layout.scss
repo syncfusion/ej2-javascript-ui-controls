@@ -934,6 +934,18 @@
       }
     }
 
+    & .e-toolbar-items{
+      & .e-input-group-icon.e-icons.e-sicon:hover:not(.e-clear-icon),
+      & .e-input-group-icon.e-icons.e-sicon:active:not(.e-clear-icon),
+      & .e-input-group-icon.e-icons.e-sicon:focus:not(.e-clear-icon) {
+          background: none;
+          box-shadow: none;
+      }
+      & .e-input-group-icon.e-icons.e-sicon:not(.e-clear-icon) {
+          border: none;
+      }
+  }
+
     .e-res-toolbar {
       border-bottom: 1px solid;
       border-bottom-color: $grid-header-border-color;
@@ -3698,7 +3710,7 @@
 
   .e-gridheader .e-headercontent .e-reorderuparrow {
     @if $grid-skin == 'fluent' or $grid-skin == 'bootstrap5' {
-      margin-top: -9px;
+      margin-top: -2px;
     }
   }
 

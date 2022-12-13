@@ -2,7 +2,7 @@
 
 # JavaScript Grid Control
 
-The [JavaScript Grid](https://www.syncfusion.com/javascript-ui-controls/js-data-grid?utm_source=npm&utm_medium=listing&utm_campaign=javascript-grid-npm) control is used to display and manipulate tabular data with configuration options to control the way the data is presented and manipulated. It will pull data from a data source, such as array of JSON objects, `OData web services`, or [`DataManager`](http://ej2.syncfusion.com/documentation/data?utm_source=npm&utm_medium=listing&utm_campaign=javascript-grid-npm) binding data fields to columns. Also displaying a column header to identify the field with support for grouped records.
+The [JavaScript Grid](https://www.syncfusion.com/javascript-ui-controls/js-data-grid?utm_source=npm&utm_medium=listing&utm_campaign=javascript-grid-npm) control is used to display and manipulate tabular data with configuration options to control the way the data is presented and manipulated. It will pull data from a data source, such as array of JSON objects, `OData web services`, or DataManager binding data fields to columns. Also displaying a column header to identify the field with support for grouped records.
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/grid/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-grid-npm">Getting started</a>
@@ -12,12 +12,12 @@ The [JavaScript Grid](https://www.syncfusion.com/javascript-ui-controls/js-data-
   <a href="https://www.syncfusion.com/javascript-ui-controls/grid">Learn more</a>
 </p>
 
-![JavaScript Grid](https://www.syncfusion.com/products/essential-js2/control/images/grid/javascript-grid-banner-preview.png)
+![JavaScript Grid Control](https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-datagrid.png)
 
 <p align="center">
 Trusted by the world's leading companies
-  <a href="https://getbootstrap.com/">
-    <img src="https://cdn.syncfusion.com/content/images/home-v1/trusted-by-updated/webp/syncfusion-trusted-companies-v1.webp" alt="Bootstrap logo">
+  <a href="https://www.syncfusion.com">
+    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Bootstrap logo">
   </a>
 </p>
   
@@ -81,7 +81,7 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of [Syncfusion's EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaSciprt UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
 
 > A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 

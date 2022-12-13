@@ -1812,6 +1812,15 @@
     }
   }
 
+  @media (min-width: 360px) and (max-width: 500px) {
+    @if $skin-name == 'FluentUI' {
+      .e-bigger .e-filemanager .e-grid .e-checkbox-wrapper .e-frame {
+        position: relative;
+        right: 10px;
+      }
+    }
+  }
+  
   .e-content-placeholder.e-filemanager.e-placeholder-filemanager {
     height: 100%;
     width: 100%;

@@ -24,7 +24,7 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs } from './objects/interface/IElement';
 import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
@@ -1157,6 +1157,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public scrollChange: EmitType<IScrollChangeEventArgs>;
+
+    /**
+     * Event triggers whenever the user rotate the mouse wheel either upwards or downwards
+     *
+     * @event
+    */
+    @Event()
+    public mouseWheel: EmitType<IMouseWheelEventArgs>;
 
     /**
      * Triggers when the selection is changed in diagram

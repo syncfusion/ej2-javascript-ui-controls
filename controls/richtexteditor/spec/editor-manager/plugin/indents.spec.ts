@@ -233,4 +233,36 @@ describe('Indents plugin', () => {
             detach(elem);
         });
     });
+
+    describe('RTL - apply Indents testing for RTL Mode', () => {
+        let editorObj: EditorManager;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner e-rtl">
+          <p class='first-p-node'>dom node
+           <a href="https://www.google.com" tabindex="1">Google</a>
+           <label>First label Node</label>
+           </p>
+           <p class='last-p-node'>
+             <label>Last Label Node</label>
+           </p>
+         </div>
+         ` });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('increase indents for RTL Mode', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('p');
+            let end: HTMLElement = elem.querySelector('label');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '20px').toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 });

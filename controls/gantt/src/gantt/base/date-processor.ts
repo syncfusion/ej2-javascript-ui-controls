@@ -210,6 +210,10 @@ export class DateProcessor {
                     }
                 }
             }
+            if (ganttProp && ganttProp.baselineStartDate && cloneDate &&
+                ganttProp.baselineStartDate.getTime() > cloneDate.getTime()) {
+                cloneDate.setDate(cloneDate.getDate() + 1);
+            }
             return cloneDate;
         }
     }

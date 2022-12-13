@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.3.61 (2022-12-13)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I419247` - `expandRow` and `collapseRow` methods are working properly while expanding or collapsing a row respectively when `frozenRows` property enabled
+
 ## 20.3.60 (2022-12-06)
 
 ### Tree Grid

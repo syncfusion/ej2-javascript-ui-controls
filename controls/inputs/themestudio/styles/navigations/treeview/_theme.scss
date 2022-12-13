@@ -10,7 +10,17 @@
 }
 
 @mixin active-hover-theme {
-  background-color: $treeview-item-active-hover-bg;
+  @if $theme-name =='fluentui-dark' {
+    background-color: lighten($treeview-item-active-bg, 5%);
+  }
+
+  @else if $theme-name =='tailwind' {
+    background-color: darken($treeview-item-active-hover-bg, 10%);
+  }
+
+  @else {
+    background-color: $treeview-item-active-hover-bg;
+  }
   border-color: $treeview-item-active-hover-border-color;
   @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
     -webkit-box-shadow: $treeview-border-shadow;

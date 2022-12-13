@@ -2067,7 +2067,7 @@ export class AnnotationToolbar {
     }
 
     // eslint-disable-next-line
-    private onFontSizeChange(args: any): void {
+    private onFontSizeChange(args: any, isInteracted: boolean): void {
         let currentValue: string;
         if (!isBlazor()) {
             currentValue = (args && args.fontSize && args.fontSize.value) ? args.fontSize.value : '';
@@ -2076,7 +2076,7 @@ export class AnnotationToolbar {
         }
         const fontSize: number = parseFloat(currentValue);
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
-            this.pdfViewer.annotation.modifyFontSize(fontSize);
+            this.pdfViewer.annotation.modifyFontSize(fontSize, isInteracted);
         } else {
             this.pdfViewer.freeTextSettings.fontSize = fontSize;
             this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
@@ -2792,8 +2792,8 @@ export class AnnotationToolbar {
         this.fontSize.value = '16px';
         this.fontSize.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font size'));
-        this.fontSize.addEventListener('change', (): void => {
-            this.onFontSizeChange(this);
+        this.fontSize.addEventListener('change', function(args: any): void {
+            this.onFontSizeChange(this, args.isInteracted);
         });
     }
 

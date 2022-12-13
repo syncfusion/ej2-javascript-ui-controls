@@ -421,6 +421,12 @@ export class GanttChart {
      */
     private documentMouseUp(e: PointerEvent): void {
         this.isGanttElement = true;
+        if ((e.target as HTMLElement).classList.contains('e-treegridexpand') || 
+           (e.target as HTMLElement).classList.contains('e-treegridcollapse')) {
+            if (getValue('isEditCollapse', this.parent.treeGrid) === true) {
+                setValue('isEditCollapse',false, this.parent.treeGrid);
+            }
+        }
         if (this.parent.allowRowDragAndDrop) {
             const ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
             if (ganttDragElemet) {

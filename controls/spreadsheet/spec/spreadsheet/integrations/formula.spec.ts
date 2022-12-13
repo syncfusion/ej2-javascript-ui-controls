@@ -1881,7 +1881,7 @@ describe('Spreadsheet formula module ->', () => {
             })
         });
     });
-    describe('EJ2-66087-> ', () => {
+    describe('EJ2-66087,EJ2-66341-> ', () => {
         beforeEach((done: Function) => {
             const addSum = (sourceValue: any, destinationValue: any) => {
                 let data = sourceValue + destinationValue;
@@ -1923,6 +1923,31 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toEqual("55");
             expect(helper.getInstance().sheets[0].rows[4].cells[2].formula).toEqual('=ADDSUM(A5,B5)');
             expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toEqual("56");
+            done();
+        });
+        it('Nested IF formula which contains Index formula returns wrong value', (done: Function) => {
+            helper.edit('A1', 'test');
+            helper.edit('B1', '=IF(INDEX(A1:A2,1,1)="TEST",TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].formula).toEqual('=IF(INDEX(A1:A2,1,1)="TEST",TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toEqual("TRUE");
+            helper.edit('B1', '=IF(IF(A1="TEST","TEST","SET")=A1,TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].formula).toEqual('=IF(IF(A1="TEST","TEST","SET")=A1,TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toEqual("TRUE");
+            helper.edit('A2', '2');
+            helper.edit('B2', '=IF(INDEX(A1:A2,2,1)=2,1,2)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[1].formula).toEqual('=IF(INDEX(A1:A2,2,1)=2,1,2)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toEqual("1");
+            helper.edit('B2', '=IF(INDEX(A1:A2,2,1)=A2,1,2)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[1].formula).toEqual('=IF(INDEX(A1:A2,2,1)=A2,1,2)');
+            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toEqual("1");
+            helper.edit('A3', '5');
+            helper.edit('B3', '=IF(IF(A3=5,"test","set")="test",TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[1].formula).toEqual('=IF(IF(A3=5,"test","set")="test",TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toEqual("TRUE");
+            helper.edit('A4', 'tests');
+            helper.edit('B4', '=IF(IF(A4="test","test","set")="test",TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[3].cells[1].formula).toEqual('=IF(IF(A4="test","test","set")="test",TRUE,FALSE)');
+            expect(helper.getInstance().sheets[0].rows[3].cells[1].value).toEqual("FALSE");
             done();
         });
     });

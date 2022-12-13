@@ -11,9 +11,10 @@ import { Month } from '../renderer/month';
 import { WorkWeek } from '../renderer/work-week';
 import { Week } from '../renderer/week';
 import { Day } from '../renderer/day';
-import { EventSettingsModel, GroupModel } from '../models/models';
+import { EventSettingsModel, GroupModel, TimeScaleModel, ViewsModel } from '../models/models';
 import { ScheduleModel } from '../base/schedule-model';
 import * as events from '../base/constant';
+import { View } from '../base/type';
 
 /**
  * Print Module
@@ -95,16 +96,22 @@ export class Print {
             'dateFormat', 'enableRtl', 'endHour', 'eventSettings', 'firstDayOfWeek',
             'firstMonthOfYear', 'group', 'height', 'locale', 'maxDate', 'minDate', 'readonly',
             'resources', 'rowAutoHeight', 'selectedDate', 'showHeaderBar', 'showTimeIndicator', 'showWeekNumber',
-            'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'views', 'width', 'workDays', 'workHours'
+            'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'views', 'width', 'workDays', 'workHours',
+            'dateHeaderTemplate', 'dateRangeTemplate', 'cellHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate',
+            'cellTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate'
         ];
+        const scheduleTemplates: string[] = ['cellHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate', 'cellTemplate',
+            'dateHeaderTemplate', 'dateRangeTemplate', 'eventTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate'];
         let eventSettings: EventSettingsModel;
         let group: GroupModel;
+        let timeScale: TimeScaleModel;
+        let views: View[] | ViewsModel[];
         for (const key of scheduleProps) {
             switch (key) {
             case 'eventSettings':
                 eventSettings = Object.assign({}, (this.parent.eventSettings as Record<string, any>).properties);
                 eventSettings.dataSource = this.parent.eventsData;
-                eventSettings.template = null;
+                eventSettings.template = typeof(eventSettings.template) === 'function' ? null : eventSettings.template;
                 printModel.eventSettings = eventSettings;
                 break;
             case 'group':
@@ -112,9 +119,34 @@ export class Print {
                 group.headerTooltipTemplate = null;
                 printModel.group = group;
                 break;
+            case 'timeScale':
+                timeScale = isNullOrUndefined(printOptions.timeScale) ? this.parent.timeScale : printOptions.timeScale;
+                timeScale.majorSlotTemplate = typeof(timeScale.majorSlotTemplate) === 'function' ? null : timeScale.majorSlotTemplate;
+                timeScale.minorSlotTemplate = typeof(timeScale.minorSlotTemplate) === 'function' ? null : timeScale.minorSlotTemplate;
+                printOptions.timeScale = timeScale;
+                break;
+            case 'views':
+                views = isNullOrUndefined(printOptions.views) ? this.parent.views : printOptions.views;
+                if (views && views.length > 0 && typeof(views[0]) === 'object') {
+                    for (const view of views) {
+                        scheduleTemplates.forEach((x: string) => {
+                            if (!isNullOrUndefined((view as Record<string, any>)[`${x}`])) {
+                                (view as Record<string, any>)[`${x}`] = typeof((view as Record<string, any>)[`${x}`]) === 'function' ? null : (view as Record<string, any>)[`${x}`];
+                            }
+                        });
+                    }
+                }
+                printModel.views = views;
+                break;
             default:
-                (printModel as Record<string, any>)[key] = isNullOrUndefined((printOptions as Record<string, any>)[key]) ?
-                    (this.parent as Record<string, any>)[key] : (printOptions as Record<string, any>)[key];
+                if (scheduleTemplates.indexOf(key) > -1) {
+                    (printModel as Record<string, any>)[`${key}`] = isNullOrUndefined((printOptions as Record<string, any>)[`${key}`]) ?
+                        (typeof((this.parent as Record<string, any>)[`${key}`]) === 'function' ? null : (this.parent as Record<string, any>)[`${key}`]) :
+                        (typeof((printOptions as Record<string, any>)[`${key}`]) === 'function' ? null :  (printOptions as Record<string, any>)[`${key}`]);
+                    break;
+                }
+                (printModel as Record<string, any>)[`${key}`] = isNullOrUndefined((printOptions as Record<string, any>)[`${key}`]) ?
+                    (this.parent as Record<string, any>)[`${key}`] : (printOptions as Record<string, any>)[`${key}`];
                 break;
             }
         }

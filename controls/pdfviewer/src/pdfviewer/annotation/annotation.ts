@@ -1832,7 +1832,6 @@ export class Annotation {
      */
     public redo(): void {
         const actionObject: IActionElements = this.redoCollection.pop();
-        const annotationObject: any = (this.pdfViewer.nameTable as any)[actionObject.annotation.id];
         if (actionObject) {
             // eslint-disable-next-line
             let shapeType: any = actionObject.annotation.shapeAnnotationType;
@@ -1856,26 +1855,26 @@ export class Annotation {
                     if (isLineShapes(actionObject.annotation)) {
                         this.pdfViewer.nodePropertyChange(
                             // eslint-disable-next-line max-len
-                            annotationObject, { bounds: actionObject.redoElement.bounds, vertexPoints: actionObject.redoElement.vertexPoints, leaderHeight: actionObject.redoElement.leaderHeight });
+                            actionObject.annotation, { bounds: actionObject.redoElement.bounds, vertexPoints: actionObject.redoElement.vertexPoints, leaderHeight: actionObject.redoElement.leaderHeight });
 
                     } else {
-                        this.pdfViewer.nodePropertyChange(annotationObject, { bounds: actionObject.redoElement.bounds });
+                        this.pdfViewer.nodePropertyChange(actionObject.annotation, { bounds: actionObject.redoElement.bounds });
                     }
                     // eslint-disable-next-line max-len
                     if (actionObject.annotation.measureType === 'Distance' || actionObject.annotation.measureType === 'Perimeter' || actionObject.annotation.measureType === 'Area' ||
                         actionObject.annotation.measureType === 'Radius' || actionObject.annotation.measureType === 'Volume') {
-                        this.pdfViewer.nodePropertyChange(annotationObject, { notes: actionObject.redoElement.notes });
-                        this.updateCalibrateValues(annotationObject);
+                        this.pdfViewer.nodePropertyChange(actionObject.annotation, { notes: actionObject.redoElement.notes });
+                        this.updateCalibrateValues(actionObject.annotation);
                     }
                     if (actionObject.annotation.formFieldAnnotationType) {
-                        this.pdfViewer.formDesigner.updateHTMLElement(annotationObject);
+                        this.pdfViewer.formDesigner.updateHTMLElement(actionObject.annotation);
                     }
                     this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                    this.pdfViewer.select([annotationObject.id]);
+                    this.pdfViewer.select([actionObject.annotation.id]);
                     // eslint-disable-next-line max-len
                     if (actionObject.annotation.shapeAnnotationType === 'Line' || actionObject.annotation.shapeAnnotationType === 'Rectangle' || actionObject.annotation.shapeAnnotationType === 'Ellipse' || actionObject.annotation.shapeAnnotationType === 'Polygon' || actionObject.annotation.shapeAnnotationType === 'LineWidthArrowHead'
                         || actionObject.annotation.shapeAnnotationType === 'Radius' || actionObject.annotation.shapeAnnotationType === 'FreeText' || actionObject.annotation.shapeAnnotationType === 'HandWrittenSignature' || actionObject.annotation.shapeAnnotationType === 'SignatureText' || actionObject.annotation.shapeAnnotationType === 'SignatureImage' || actionObject.annotation.shapeAnnotationType === 'Ink') {
-                        this.modifyInCollections(annotationObject, 'bounds');
+                        this.modifyInCollections(actionObject.annotation, 'bounds');
                     }
                     break;
                 case 'Addition':
@@ -1997,42 +1996,42 @@ export class Annotation {
                     }
                     break;
                 case 'stampOpacity':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { opacity: actionObject.redoElement.opacity });
-                    this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationObject, null, true);
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.redoElement.opacity });
+                    this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
                     break;
                 case 'Shape Stroke':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { strokeColor: actionObject.redoElement.strokeColor });
-                    this.modifyInCollections(annotationObject, 'stroke');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { strokeColor: actionObject.redoElement.strokeColor });
+                    this.modifyInCollections(actionObject.annotation, 'stroke');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'Shape Fill':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { fillColor: actionObject.redoElement.fillColor });
-                    this.modifyInCollections(annotationObject, 'fill');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { fillColor: actionObject.redoElement.fillColor });
+                    this.modifyInCollections(actionObject.annotation, 'fill');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'Shape Opacity':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { opacity: actionObject.redoElement.opacity });
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.redoElement.opacity });
                     if (actionObject.annotation.shapeAnnotationType === 'StickyNotes') {
-                        this.stickyNotesAnnotationModule.updateOpacityValue(annotationObject);
-                        this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationObject, null, true);
+                        this.stickyNotesAnnotationModule.updateOpacityValue(actionObject.annotation);
+                        this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
                     } else {
-                        this.modifyInCollections(annotationObject, 'opacity');
+                        this.modifyInCollections(actionObject.annotation, 'opacity');
                     }
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'Shape Thickness':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { thickness: actionObject.redoElement.thickness });
-                    this.modifyInCollections(annotationObject, 'thickness');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { thickness: actionObject.redoElement.thickness });
+                    this.modifyInCollections(actionObject.annotation, 'thickness');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'Line properties change':
-                    this.pdfViewer.nodePropertyChange(annotationObject, {
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, {
                         // eslint-disable-next-line max-len
                         fillColor: actionObject.redoElement.fillColor, strokeColor: actionObject.redoElement.strokeColor, opacity: actionObject.redoElement.opacity, thickness: actionObject.redoElement.thickness,
                         sourceDecoraterShapes: this.getArrowType(actionObject.redoElement.lineHeadStart), taregetDecoraterShapes: this.getArrowType(actionObject.redoElement.lineHeadEnd),
                         borderDashArray: actionObject.redoElement.borderDashArray, borderStyle: actionObject.redoElement.borderStyle
                     });
-                    this.updateCollectionForLineProperty(annotationObject);
+                    this.updateCollectionForLineProperty(actionObject.annotation);
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'Text Property Added':
@@ -2075,29 +2074,29 @@ export class Annotation {
                     this.pdfViewer.select([actionObject.annotation.id]);
                     break;
                 case 'fontColor':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { fontColor: actionObject.redoElement.fontColor });
-                    this.modifyInCollections(annotationObject, 'fontColor');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { fontColor: actionObject.redoElement.fontColor });
+                    this.modifyInCollections(actionObject.annotation, 'fontColor');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'fontSize':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { fontSize: actionObject.redoElement.fontSize });
-                    this.modifyInCollections(annotationObject, 'fontSize');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { fontSize: actionObject.redoElement.fontSize });
+                    this.modifyInCollections(actionObject.annotation, 'fontSize');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'textAlign':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { textAlign: actionObject.redoElement.textAlign });
-                    this.modifyInCollections(annotationObject, 'textAlign');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { textAlign: actionObject.redoElement.textAlign });
+                    this.modifyInCollections(actionObject.annotation, 'textAlign');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'textPropertiesChange':
-                    this.pdfViewer.nodePropertyChange(annotationObject, { font: actionObject.redoElement.font });
-                    this.modifyInCollections(annotationObject, 'textPropertiesChange');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation, { font: actionObject.redoElement.font });
+                    this.modifyInCollections(actionObject.annotation, 'textPropertiesChange');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'Rotate':
                     // eslint-disable-next-line max-len
-                    this.pdfViewer.nodePropertyChange(annotationObject.annotations[0], { bounds: actionObject.redoElement.bounds, rotateAngle: actionObject.redoElement.rotateAngle });
-                    this.modifyInCollections(annotationObject.annotations[0], 'bounds');
+                    this.pdfViewer.nodePropertyChange(actionObject.annotation.annotations[0], { bounds: actionObject.redoElement.bounds, rotateAngle: actionObject.redoElement.rotateAngle });
+                    this.modifyInCollections(actionObject.annotation.annotations[0], 'bounds');
                     this.pdfViewer.renderDrawing();
                     break;
                 case 'FormDesigner Properties Change':
@@ -2563,7 +2562,7 @@ export class Annotation {
      * @param currentValue
      * @private
      */
-    public modifyFontSize(currentValue: number): void {
+    public modifyFontSize(currentValue: number, isInteracted: boolean): void {
         const currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
         const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
         const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
@@ -2577,7 +2576,17 @@ export class Annotation {
             if (currentAnnotation) {
                 if (currentAnnotation.previousFontSize > currentValue) {
                     freeTextAnnotation.inputBoxElement.style.height = 'auto';
-                    freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
+                    if(isInteracted){
+                        freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
+                    }
+                    else{
+                        if(freeTextAnnotation.inputBoxElement.scrollHeight + 5 > currentAnnotation.bounds.height){
+                            freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
+                        }
+                        else{
+                            freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height;
+                        }
+                    }
                 }
                 let inputEleHeight: number = parseFloat(freeTextAnnotation.inputBoxElement.style.height);
                 let inputEleWidth: number = parseFloat(freeTextAnnotation.inputBoxElement.style.width);

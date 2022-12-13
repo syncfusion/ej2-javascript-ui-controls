@@ -997,7 +997,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let intCoord: Coordinates = this.getCoordinates(evt);
         let ele: HTMLElement;
         let prevStyle: string = this.helperElement.style.pointerEvents || '';
-        if (compareElementParent(evt.target as Element, this.helperElement) || evt.type.indexOf('touch') !== -1) {
+        let isPointer: boolean = evt.type.indexOf('pointer') !== -1 && Browser.info.name === 'safari' && parseInt(Browser.info.version) > 12 ;
+        if (compareElementParent(evt.target as Element, this.helperElement) || evt.type.indexOf('touch') !== -1 || isPointer) {
             this.helperElement.style.pointerEvents = 'none';
             ele = <HTMLElement>document.elementFromPoint(intCoord.clientX, intCoord.clientY);
             this.helperElement.style.pointerEvents = prevStyle;

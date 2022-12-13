@@ -258,7 +258,7 @@ export class ToolbarStatus {
             && (fontName === null || fontName === undefined || (fontName.filter((value: string, pos: number) => {
                 const pattern: RegExp = new RegExp(name, 'i');
                 if ((value.replace(/"/g, '').replace(/ /g, '').toLowerCase() === name.replace(/"/g, '').replace(/ /g, '').toLowerCase()) ||
-                    (value.search(pattern) > -1)) {
+                    (value.split(',')[0] && value.split(',')[0].search(pattern) > -1)) {
                     index = pos;
                 }
             }) && (index !== null)))) {

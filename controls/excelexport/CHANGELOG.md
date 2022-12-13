@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-## 20.3.60 (2022-12-06)
+## 20.3.61 (2022-12-13)
 
 ### Excel Export
 
 #### Bug Fixes
 
-- Fixed the exception issue when image exist in the last column of the grid.
+- Modified the "\n" character at end of row as "\r\n" in Grid to CSV export.
+
+## 20.3.47 (2022-09-29)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed the exception issue when the images are added in the last column of Grid.
 
 ## 20.2.39 (2022-07-19)
 

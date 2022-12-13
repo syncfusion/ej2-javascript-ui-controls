@@ -55,7 +55,7 @@ export class CsvHelper {
             //Row index
             if (row.index !== null && row.index !== undefined) {
                 while (count < row.index) {
-                    this.csvStr += '\n';
+                    this.csvStr += '\r\n';
                     count++;
                 }
                 this.parseRow(row);

@@ -5,7 +5,7 @@
 import { Browser } from '@syncfusion/ej2-base';
 import { PointModel } from '../primitives/point-model';
 import { Point } from '../primitives/point';
-import { IElement, IClickEventArgs, IDoubleClickEventArgs, IMouseEventArgs, StackEntryObject } from '../objects/interface/IElement';
+import { IElement, IClickEventArgs, IDoubleClickEventArgs, IMouseEventArgs, StackEntryObject, IMouseWheelEventArgs } from '../objects/interface/IElement';
 import { UserHandleEventsArgs } from '../objects/interface/IElement';
 import { ICommandExecuteEventArgs, IKeyEventArgs } from '../objects/interface/IElement';
 import { IBlazorDoubleClickEventArgs, IBlazorClickEventArgs, IBlazorMouseEventArgs } from '../objects/interface/IElement';
@@ -1120,6 +1120,13 @@ export class DiagramEventHandler {
     /** @private */
     public mouseWheel(evt: WheelEvent): void {
         this.diagram.blazorActions |= BlazorAction.interaction;
+          // EJ2-64831 - Need to provide support to override the mousewheel event
+          let arg: IMouseWheelEventArgs= {
+            event:evt,
+           cancel :false
+        };
+        this.diagram.triggerEvent(DiagramEvent.mouseWheel, arg);
+        if(!arg.cancel){  
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const up: boolean = ((evt as any).wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
         const mousePosition: PointModel = this.getMousePosition(evt);
@@ -1170,6 +1177,7 @@ export class DiagramEventHandler {
             this.diagram.isTriggerEvent = false;
         }
         this.diagram.blazorActions = this.diagram.blazorActions & ~BlazorAction.interaction;
+    }
     }
     private keyArgs: IKeyEventArgs = {};
     /** @private */

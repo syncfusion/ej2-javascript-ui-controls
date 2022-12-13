@@ -95,6 +95,7 @@ export class NodeCutter {
             for (let i: number = 0; !isNOU(firstChild.childNodes) && i < firstChild.childNodes.length; i++) {
                 if (firstChild.childNodes[i].nodeName === 'IMG' || (firstChild.childNodes[i].nodeName === 'SPAN' &&
                 ((firstChild.childNodes[i] as HTMLElement).classList.contains('e-video-wrap') ||
+                (firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-embed-video-wrap') ||
                 (firstChild.childNodes[i] as HTMLElement).classList.contains('e-audio-wrap')))) {
                     result = false;
                 }
