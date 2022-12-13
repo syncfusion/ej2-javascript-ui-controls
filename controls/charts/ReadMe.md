@@ -1,7 +1,7 @@
 # ej2-charts
 
-The [Chart control](https://www.syncfusion.com/javascript-ui-controls/js-charts) is used to visualize the data with user interactivity and provides customizing options to configure the data visually. It can bind data from  datasource such as array of JSON objects , `OData web services` or
-[DataManager](https://ej2.syncfusion.com/documentation/data/?lang=typescript). All chart elements are rendered using Scalable Vector Graphics (SVG).
+The [JavaScript Chart control](https://www.syncfusion.com/javascript-ui-controls/js-charts?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples) is used to visualize the data with user interactivity and provides customizing options to configure the data visually. It can bind data from  datasource such as array of JSON objects , `OData web services` or
+[DataManager](https://ej2.syncfusion.com/documentation/data/?lang=typescript?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples). All chart elements are rendered using Scalable Vector Graphics (SVG).
 
 ![Chart](https://ej2.syncfusion.com/products/images/chart/readme.gif)
 
@@ -17,19 +17,19 @@ npm install @syncfusion/ej2-charts
 ## Components included
 
 Following list of components are available in the package
-*	[Chart](https://www.syncfusion.com/products/javascript/chart)  - Feature-rich chart control with built-in support for over 25 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball. 
+* [JavScript Chart](https://www.syncfusion.com/products/javascript/chart)  - Feature-rich chart control with built-in support for over 25 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball. 
       *	[Getting Started](https://ej2.syncfusion.com/documentation/chart/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/chart/line.html)
-*	[Accumulation Chart](https://www.syncfusion.com/products/javascript/chart)  - Built-in support for Pie, Doughnut, Pyramid and funnel series type, to show the proportions and percentages between the categories.
+* [Accumulation Chart](https://www.syncfusion.com/products/javascript/chart)  - Built-in support for Pie, Doughnut, Pyramid and funnel series type, to show the proportions and percentages between the categories.
       *	[Getting Started](https://ej2.syncfusion.com/documentation/accumulation-chart/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/chart/default-pie.html)
     *	[Range Navigator](https://www.syncfusion.com/products/javascript/rangenavigator)  - Interface for selecting a small range from a large collection. It is commonly used in financial dashboards to filter a date range for data that needs to be visualized.
       *	[Getting Started](https://ej2.syncfusion.com/documentation/rangenavigator/getting-started.html?lang=typescript)
       *	[View Online Demos](https://ej2.syncfusion.com/demos/#/material/rangenavigator/default.html)
-    *	[Sparkline](https://www.syncfusion.com/products/javascript/sparkline): Very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing data in a small amount of space.
+* [Sparkline](https://www.syncfusion.com/products/javascript/sparkline): Very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing data in a small amount of space.
       *	[Getting started](https://ej2.syncfusion.com/documentation/sparkline/getting-started.html?lang=typescript)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/sparkline/default.html)
-   * [Smith chart](https://www.syncfusion.com/products/javascript/smithchart?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
+* [Smith chart](https://www.syncfusion.com/products/javascript/smithchart?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
 : Tool for visualize data of high frequency circuit applications. It contains two sets of circles to plot parameters of transmission lines.
       *	[Getting started](https://ej2.syncfusion.com/documentation/smithchart/getting-started??utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
       *	[View online demos](https://ej2.syncfusion.com/demos/#/material/smithchart/default.html?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)
@@ -134,7 +134,7 @@ Syncfusion's [JavaScript UI Components](https://www.syncfusion.com/javascript-ui
 
 ## About Syncfusion
 
-Founded in 2001 and headquartered in Research Triangle Park, N.C., Syncfusion has more than 28000+ companies and more than 1 million users, including large financial institutions, Fortune 500 companies, and global IT consultancies.
+Founded in 2001 and headquartered in Research Triangle Park, N.C., Syncfusion has more than 28000 companies and more than 1 million users, including large financial institutions, Fortune 500 companies, and global IT consultancies.
 
 Today, we provide 1700+ controls and frameworks for web ([ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [ASP.NET WebForms](https://www.syncfusion.com/jquery/aspnet-webforms-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [Angular](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [React](https://www.syncfusion.com/react-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [Blazor](https://www.syncfusion.com/blazor-components?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [Vue](https://www.syncfusion.com/vue-ui-components?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), and [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)), mobile ([WinForms](https://www.syncfusion.com/WinForms-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [JavaScript](https://www.syncfusion.com/javascript-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), and [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)), and desktop development ([Windows Forms](https://www.syncfusion.com/winforms-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [WPF](https://www.syncfusion.com/wpf-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [UWP](https://www.syncfusion.com/uwp-ui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [WinUI)](https://www.syncfusion.com/winui-controls?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples), [.NET MAUI](https://www.syncfusion.com/maui-controls), and [Flutter](https://www.syncfusion.com/flutter-widgets?utm_source=github&utm_medium=listing&utm_campaign=javascript-charts-github-samples)). We provide ready-to-deploy enterprise software for dashboards, reports, data integration, and big data processing. Many customers have saved millions in licensing fees by deploying our software.
 
